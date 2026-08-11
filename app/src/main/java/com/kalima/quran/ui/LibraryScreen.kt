@@ -202,8 +202,6 @@ private fun LibraryWordCard(
             if (expanded) {
                 Spacer(Modifier.height(14.dp))
                 Text(word.verseArabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.End, style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(6.dp))
-                Text(word.verseMeaning, color = Muted)
                 Spacer(Modifier.height(8.dp))
                 Text(word.insight, color = Forest, style = MaterialTheme.typography.bodyMedium)
             }

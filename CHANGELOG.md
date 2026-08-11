@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.8.2 — 2026-08-11
+
+- Removed the redundant context-meaning line from expanded Words cards while
+  preserving the Arabic verse and the additional usage note.
+
 ## 0.8.1 — 2026-08-11
 
 - Removed the redundant context-meaning line from Study cards, leaving the
