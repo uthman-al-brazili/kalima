@@ -48,6 +48,7 @@ fun KalimaApp(
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
     val selected = AppTab.valueOf(selectedName)
+    val pronouncer = rememberArabicPronouncer()
 
     KalimaTheme {
         Scaffold(
@@ -77,9 +78,14 @@ fun KalimaApp(
                         progress = progress,
                         onAnswer = onAnswer,
                         onEnableLockScreen = { onLockScreenChange(true) },
+                        pronouncer = pronouncer,
                     )
-                    AppTab.Library -> LibraryScreen(progress = progress)
-                    AppTab.Quiz -> QuizScreen(progress = progress, onAnswer = onQuizAnswer)
+                    AppTab.Library -> LibraryScreen(progress = progress, pronouncer = pronouncer)
+                    AppTab.Quiz -> QuizScreen(
+                        progress = progress,
+                        onAnswer = onQuizAnswer,
+                        pronouncer = pronouncer,
+                    )
                     AppTab.Progress -> ProgressScreen(
                         progress = progress,
                         onLockScreenChange = onLockScreenChange,

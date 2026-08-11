@@ -12,6 +12,10 @@
     <string name="root_label">Raiz</string>
     <string name="root_value">Raiz  %1$s</string>
     <string name="reference_root">%1$s  •  raiz %2$s</string>
+    <string name="listen_pronunciation">Ouvir pronúncia</string>
+    <string name="pronunciation_loading">A voz árabe está sendo preparada. Tente novamente em instantes.</string>
+    <string name="pronunciation_unavailable">Nenhuma voz árabe está instalada. Adicione uma nas configurações de síntese de voz do Android.</string>
+    <string name="pronunciation_failed">Não foi possível reproduzir a pronúncia. Tente novamente.</string>
 
     <string name="study_lock_screen_title">Estude sempre que ligar a tela</string>
     <string name="study_lock_screen_description">Ative a função principal do Kalima para receber uma palavra a cada desbloqueio.</string>

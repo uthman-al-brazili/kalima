@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
+import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
@@ -49,7 +50,10 @@ private enum class LibraryFilter(@param:StringRes val labelRes: Int) {
 }
 
 @Composable
-fun LibraryScreen(progress: StudyProgress) {
+fun LibraryScreen(
+    progress: StudyProgress,
+    pronouncer: ArabicPronouncer,
+) {
     var query by rememberSaveable { mutableStateOf("") }
     var filterName by rememberSaveable { mutableStateOf(LibraryFilter.All.name) }
     var expandedId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -150,6 +154,7 @@ fun LibraryScreen(progress: StudyProgress) {
                 status = progress.statusFor(word.id),
                 expanded = expandedId == word.id,
                 onClick = { expandedId = if (expandedId == word.id) null else word.id },
+                pronouncer = pronouncer,
             )
         }
     }
@@ -161,6 +166,7 @@ private fun LibraryWordCard(
     status: WordStatus,
     expanded: Boolean,
     onClick: () -> Unit,
+    pronouncer: ArabicPronouncer,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
@@ -174,6 +180,11 @@ private fun LibraryWordCard(
                     Text(word.transliteration, color = Muted, style = MaterialTheme.typography.labelLarge)
                     Text(word.meaning, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                 }
+                PronunciationButton(
+                    arabic = word.arabic,
+                    pronouncer = pronouncer,
+                    compact = true,
+                )
                 ArabicText(word.arabic, size = 30, color = Forest)
             }
             Row(

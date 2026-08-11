@@ -5,6 +5,7 @@ Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit,
 ## O que já funciona
 
 - cartão diário com árabe, transliteração, significado, raiz e informação gramatical;
+- pronúncia das palavras em árabe pelo mecanismo de voz do Android, disponível nos cartões, no vocabulário, nos quizzes e no estudo da tela bloqueada;
 - seletor de idioma em **Progresso**, com interface, significados, quizzes, notificações e cartões de tela bloqueada em português ou inglês;
 - trecho corânico contextualizado e paráfrase de estudo em português;
 - ações “Revisar de novo” e “Já aprendi”;
@@ -35,6 +36,7 @@ Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit,
 - SharedPreferences para o estado local do MVP
 - AlarmManager para lembretes inexatos, sem permissão de alarme exato
 - serviço em primeiro plano do tipo specialUse para escutar eventos de tela ligada
+- TextToSpeech do Android com seleção automática de uma voz árabe instalada
 
 ## Executar
 

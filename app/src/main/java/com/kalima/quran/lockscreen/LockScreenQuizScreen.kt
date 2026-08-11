@@ -39,6 +39,8 @@ import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
 import com.kalima.quran.quiz.VerseExcerptBuilder
 import com.kalima.quran.ui.ArabicText
+import com.kalima.quran.ui.PronunciationButton
+import com.kalima.quran.ui.rememberArabicPronouncer
 import com.kalima.quran.ui.theme.Cream
 import com.kalima.quran.ui.theme.Forest
 import com.kalima.quran.ui.theme.Gold
@@ -53,6 +55,7 @@ fun LockScreenQuizScreen(
     onDismiss: () -> Unit,
 ) {
     var selectedOption by remember(question.word.id) { mutableStateOf(initialSelectedOption) }
+    val pronouncer = rememberArabicPronouncer()
 
     KalimaTheme {
         Surface(color = Forest, modifier = Modifier.fillMaxSize()) {
@@ -149,6 +152,12 @@ fun LockScreenQuizScreen(
                                     color = Forest.copy(alpha = 0.72f),
                                 )
                                 Text(question.word.reference, color = Forest, style = MaterialTheme.typography.bodySmall)
+                                Spacer(Modifier.height(10.dp))
+                                PronunciationButton(
+                                    arabic = question.word.arabic,
+                                    pronouncer = pronouncer,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
                             }
                         }
                     }

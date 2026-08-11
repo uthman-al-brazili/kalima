@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
+import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QUIZ_MASTERY_DAYS
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.WordRepository
@@ -51,6 +52,7 @@ import com.kalima.quran.ui.theme.Muted
 fun QuizScreen(
     progress: StudyProgress,
     onAnswer: (String, Boolean) -> Unit,
+    pronouncer: ArabicPronouncer,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val activeWords = remember(progress.studyScope, selectionKey) {
@@ -130,6 +132,7 @@ fun QuizScreen(
                 correctDays = progress.quizCorrectDayCount(question.word.id),
                 onNext = { currentIndex += 1 },
                 lastQuestion = currentIndex == session.lastIndex,
+                pronouncer = pronouncer,
             )
         }
         Spacer(Modifier.height(24.dp))
@@ -262,6 +265,7 @@ private fun QuizFeedback(
     correctDays: Int,
     onNext: () -> Unit,
     lastQuestion: Boolean,
+    pronouncer: ArabicPronouncer,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -289,6 +293,12 @@ private fun QuizFeedback(
                 color = Muted,
             )
             Text(question.word.reference, color = Forest, style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.height(10.dp))
+            PronunciationButton(
+                arabic = question.word.arabic,
+                pronouncer = pronouncer,
+                modifier = Modifier.fillMaxWidth(),
+            )
             Spacer(Modifier.height(7.dp))
             Text(
                 stringResource(

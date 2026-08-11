@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
+import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
@@ -51,6 +52,7 @@ fun StudyScreen(
     progress: StudyProgress,
     onAnswer: (String, Boolean) -> Unit,
     onEnableLockScreen: () -> Unit,
+    pronouncer: ArabicPronouncer,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val session = remember(progress.studyScope, selectionKey) {
@@ -98,7 +100,7 @@ fun StudyScreen(
             }
         }
         Spacer(Modifier.height(20.dp))
-        WordCard(word, progress)
+        WordCard(word, progress, pronouncer)
         Spacer(Modifier.height(18.dp))
         Row(Modifier.fillMaxWidth()) {
             OutlinedButton(
@@ -195,7 +197,11 @@ private fun StudyHeader(progress: StudyProgress) {
 }
 
 @Composable
-private fun WordCard(word: QuranWord, progress: StudyProgress) {
+private fun WordCard(
+    word: QuranWord,
+    progress: StudyProgress,
+    pronouncer: ArabicPronouncer,
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
@@ -224,6 +230,8 @@ private fun WordCard(word: QuranWord, progress: StudyProgress) {
                 color = Muted,
                 style = MaterialTheme.typography.titleMedium,
             )
+            Spacer(Modifier.height(8.dp))
+            PronunciationButton(arabic = word.arabic, pronouncer = pronouncer)
             Spacer(Modifier.height(14.dp))
             Text(
                 word.meaning,

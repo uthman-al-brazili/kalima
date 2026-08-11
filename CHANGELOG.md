@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.8.0 — 2026-08-11
+
+- Added Arabic pronunciation playback to study cards, vocabulary entries, quiz
+  feedback, and lock-screen learning.
+- Added clear localized guidance when the device is still preparing speech or
+  does not have an Arabic text-to-speech voice installed.
+- Normalized Quranic word forms before speech playback while preserving the
+  vowel marks that guide pronunciation.
+
 ## 0.7.1 — 2026-08-11
 
 - Reduced the launcher emblem's visual size so the book fits comfortably inside

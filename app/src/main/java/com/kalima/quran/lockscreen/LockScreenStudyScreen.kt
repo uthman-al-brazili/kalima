@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.ui.ArabicText
+import com.kalima.quran.ui.PronunciationButton
+import com.kalima.quran.ui.rememberArabicPronouncer
 import com.kalima.quran.ui.theme.Cream
 import com.kalima.quran.ui.theme.Forest
 import com.kalima.quran.ui.theme.Gold
@@ -44,6 +46,7 @@ fun LockScreenStudyScreen(
     onLearned: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val pronouncer = rememberArabicPronouncer()
     KalimaTheme {
         Surface(color = Forest, modifier = Modifier.fillMaxSize()) {
             Column(
@@ -95,6 +98,13 @@ fun LockScreenStudyScreen(
                         word.transliteration,
                         color = Color.White.copy(alpha = 0.7f),
                         style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    PronunciationButton(
+                        arabic = word.arabic,
+                        pronouncer = pronouncer,
+                        contentColor = Gold,
+                        borderColor = Gold.copy(alpha = 0.65f),
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
