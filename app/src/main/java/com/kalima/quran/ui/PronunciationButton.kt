@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
+import com.kalima.quran.audio.ArabicVoiceInstaller
 import com.kalima.quran.audio.PronunciationResult
 import com.kalima.quran.ui.theme.Forest
 
@@ -47,16 +48,28 @@ fun PronunciationButton(
     val label = stringResource(R.string.listen_pronunciation)
     val loadingMessage = stringResource(R.string.pronunciation_loading)
     val unavailableMessage = stringResource(R.string.pronunciation_unavailable)
+    val installationFailedMessage = stringResource(R.string.pronunciation_installation_failed)
     val failedMessage = stringResource(R.string.pronunciation_failed)
     val onClick: () -> Unit = {
-        val message = when (pronouncer.speak(arabic)) {
-            PronunciationResult.Started -> null
-            PronunciationResult.Initializing -> loadingMessage
-            PronunciationResult.Unavailable -> unavailableMessage
-            PronunciationResult.Failed -> failedMessage
+        when (pronouncer.speak(arabic)) {
+            PronunciationResult.Started -> Unit
+            PronunciationResult.Initializing -> {
+                Toast.makeText(context, loadingMessage, Toast.LENGTH_LONG).show()
+            }
+            PronunciationResult.Unavailable -> {
+                Toast.makeText(context, unavailableMessage, Toast.LENGTH_LONG).show()
+                val opened = ArabicVoiceInstaller.open(
+                    context = context,
+                    preferredEnginePackage = pronouncer.preferredEnginePackage(),
+                )
+                if (!opened) {
+                    Toast.makeText(context, installationFailedMessage, Toast.LENGTH_LONG).show()
+                }
+            }
+            PronunciationResult.Failed -> {
+                Toast.makeText(context, failedMessage, Toast.LENGTH_LONG).show()
+            }
         }
-        message?.let { Toast.makeText(context, it, Toast.LENGTH_LONG).show() }
-        Unit
     }
 
     if (compact) {

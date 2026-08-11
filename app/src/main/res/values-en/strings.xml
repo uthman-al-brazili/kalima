@@ -14,7 +14,8 @@
     <string name="reference_root">%1$s  •  root %2$s</string>
     <string name="listen_pronunciation">Hear pronunciation</string>
     <string name="pronunciation_loading">The Arabic voice is being prepared. Try again in a moment.</string>
-    <string name="pronunciation_unavailable">No Arabic voice is installed. Add one in Android’s text-to-speech settings.</string>
+    <string name="pronunciation_unavailable">No Arabic voice is installed. Opening Android’s voice installation screen.</string>
+    <string name="pronunciation_installation_failed">The voice installer could not be opened. Open Settings and search for “Text-to-speech”.</string>
     <string name="pronunciation_failed">The pronunciation could not be played. Please try again.</string>
 
     <string name="study_lock_screen_title">Study whenever you turn on the screen</string>

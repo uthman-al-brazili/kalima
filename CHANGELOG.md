@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.9.1 — 2026-08-11
+
+- When an Arabic voice is missing, the pronunciation button now opens Android's
+  voice-data installer for the active text-to-speech engine.
+- Added fallbacks to the text-to-speech settings and general device settings on
+  phones that do not expose the standard voice installer.
+- The app now checks for an Arabic voice again after installation, allowing
+  playback without restarting Kalima.
+
 ## 0.9.0 — 2026-08-11
 
 - Added an **Open Kalima** button to study and quiz cards on the lock screen.

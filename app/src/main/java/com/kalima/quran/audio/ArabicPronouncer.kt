@@ -21,51 +21,68 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
 
     @Volatile
     private var state = State.Initializing
+    @Volatile
+    private var initialized = false
     private var engine: TextToSpeech? = TextToSpeech(context.applicationContext, this)
 
     override fun onInit(status: Int) {
-        val currentEngine = engine ?: return
         if (status != TextToSpeech.SUCCESS) {
             state = State.Unavailable
             return
         }
 
+        initialized = true
+        state = if (configureArabicVoice()) State.Ready else State.Unavailable
+    }
+
+    private fun configureArabicVoice(): Boolean {
+        val currentEngine = engine ?: return false
         val arabic = Locale.forLanguageTag("ar")
         val available = currentEngine.isLanguageAvailable(arabic)
         if (available < TextToSpeech.LANG_AVAILABLE ||
             currentEngine.setLanguage(arabic) < TextToSpeech.LANG_AVAILABLE
         ) {
-            state = State.Unavailable
-            return
+            return false
         }
 
         currentEngine.setSpeechRate(0.78f)
-        state = State.Ready
+        return true
     }
 
     fun speak(text: String): PronunciationResult = when (state) {
         State.Initializing -> PronunciationResult.Initializing
-        State.Unavailable -> PronunciationResult.Unavailable
-        State.Ready -> {
-            val prepared = ArabicSpeechText.prepare(text)
-            val result = engine?.speak(
-                prepared,
-                TextToSpeech.QUEUE_FLUSH,
-                null,
-                "kalima-word-${System.nanoTime()}",
-            ) ?: TextToSpeech.ERROR
-            if (result == TextToSpeech.ERROR) {
-                PronunciationResult.Failed
+        State.Unavailable -> {
+            if (initialized && configureArabicVoice()) {
+                state = State.Ready
+                speakPrepared(text)
             } else {
-                PronunciationResult.Started
+                PronunciationResult.Unavailable
             }
         }
+        State.Ready -> speakPrepared(text)
     }
+
+    private fun speakPrepared(text: String): PronunciationResult {
+        val result = engine?.speak(
+            ArabicSpeechText.prepare(text),
+            TextToSpeech.QUEUE_FLUSH,
+            null,
+            "kalima-word-${System.nanoTime()}",
+        ) ?: TextToSpeech.ERROR
+        return if (result == TextToSpeech.ERROR) {
+            PronunciationResult.Failed
+        } else {
+            PronunciationResult.Started
+        }
+    }
+
+    fun preferredEnginePackage(): String? = engine?.defaultEngine
 
     fun shutdown() {
         engine?.stop()
         engine?.shutdown()
         engine = null
+        initialized = false
         state = State.Unavailable
     }
 }
