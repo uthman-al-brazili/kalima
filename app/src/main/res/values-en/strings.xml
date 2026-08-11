@@ -126,6 +126,7 @@
     <string name="quick_study">QUICK STUDY</string>
     <string name="quick_quiz">QUICK QUIZ</string>
     <string name="not_now">Not now  ✕</string>
+    <string name="open_app">Open Kalima</string>
     <string name="continue_action">Continue</string>
     <string name="lock_screen_security_note">Your lock screen and biometrics remain protected by Android.</string>
 

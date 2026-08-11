@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -53,6 +54,7 @@ fun LockScreenQuizScreen(
     onAnswered: (Int, Boolean) -> Unit,
     onContinue: () -> Unit,
     onDismiss: () -> Unit,
+    onOpenApp: () -> Unit,
 ) {
     var selectedOption by remember(question.word.id) { mutableStateOf(initialSelectedOption) }
     val pronouncer = rememberArabicPronouncer()
@@ -173,6 +175,15 @@ fun LockScreenQuizScreen(
                     ) {
                         Text(stringResource(R.string.continue_action), fontWeight = FontWeight.Bold)
                     }
+                    Spacer(Modifier.height(10.dp))
+                }
+                OutlinedButton(
+                    onClick = onOpenApp,
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Gold),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Text(stringResource(R.string.open_app), fontWeight = FontWeight.Bold)
                 }
             }
         }

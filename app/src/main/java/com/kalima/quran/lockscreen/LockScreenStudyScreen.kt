@@ -45,6 +45,7 @@ fun LockScreenStudyScreen(
     onReview: () -> Unit,
     onLearned: () -> Unit,
     onDismiss: () -> Unit,
+    onOpenApp: () -> Unit,
 ) {
     val pronouncer = rememberArabicPronouncer()
     KalimaTheme {
@@ -166,6 +167,17 @@ fun LockScreenStudyScreen(
                     )
                     Spacer(Modifier.height(12.dp))
                 }
+
+                OutlinedButton(
+                    onClick = onOpenApp,
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Gold),
+                ) {
+                    Text(stringResource(R.string.open_app), fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(Modifier.height(10.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 10.dp),

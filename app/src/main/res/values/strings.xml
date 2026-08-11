@@ -126,6 +126,7 @@
     <string name="quick_study">ESTUDO RÁPIDO</string>
     <string name="quick_quiz">QUIZ RÁPIDO</string>
     <string name="not_now">Agora não  ✕</string>
+    <string name="open_app">Abrir o Kalima</string>
     <string name="continue_action">Continuar</string>
     <string name="lock_screen_security_note">O bloqueio e a biometria continuam protegidos pelo Android.</string>
 

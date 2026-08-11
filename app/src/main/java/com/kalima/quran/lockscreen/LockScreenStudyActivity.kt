@@ -1,5 +1,6 @@
 package com.kalima.quran.lockscreen
 
+import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,6 +12,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import com.kalima.quran.MainActivity
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.localization.LanguageManager
@@ -23,14 +25,15 @@ class LockScreenStudyActivity : ComponentActivity() {
     private lateinit var currentContent: LockScreenContent
     private var quizSelectedOption: Int? = null
     private var receiverRegistered = false
+    private var openingMainApp = false
 
     private val closeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
             when (intent?.action) {
+                Intent.ACTION_SCREEN_OFF -> finish()
                 ACTION_CLOSE,
-                Intent.ACTION_SCREEN_OFF,
                 Intent.ACTION_USER_PRESENT,
-                -> finish()
+                -> if (!openingMainApp) finish()
             }
         }
     }
@@ -60,6 +63,7 @@ class LockScreenStudyActivity : ComponentActivity() {
                         finish()
                     },
                     onDismiss = ::finish,
+                    onOpenApp = ::openMainApp,
                 )
 
                 is LockScreenContent.QuizCard -> LockScreenQuizScreen(
@@ -71,6 +75,7 @@ class LockScreenStudyActivity : ComponentActivity() {
                     },
                     onContinue = ::finish,
                     onDismiss = ::finish,
+                    onOpenApp = ::openMainApp,
                 )
             }
         }
@@ -149,6 +154,45 @@ class LockScreenStudyActivity : ComponentActivity() {
             window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
         }
         WindowCompat.setDecorFitsSystemWindows(window, false)
+    }
+
+    private fun openMainApp() {
+        if (openingMainApp) return
+        openingMainApp = true
+
+        val keyguardManager = getSystemService(KeyguardManager::class.java)
+        if (!keyguardManager.isKeyguardLocked) {
+            launchMainActivity()
+            return
+        }
+
+        keyguardManager.requestDismissKeyguard(
+            this,
+            object : KeyguardManager.KeyguardDismissCallback() {
+                override fun onDismissSucceeded() = launchMainActivity()
+
+                override fun onDismissCancelled() {
+                    openingMainApp = false
+                }
+
+                override fun onDismissError() {
+                    openingMainApp = false
+                }
+            },
+        )
+    }
+
+    private fun launchMainActivity() {
+        startActivity(
+            Intent(this, MainActivity::class.java).apply {
+                addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP,
+                )
+            },
+        )
+        finish()
     }
 
     companion object {

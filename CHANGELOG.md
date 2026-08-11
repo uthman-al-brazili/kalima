@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.9.0 — 2026-08-11
+
+- Added an **Open Kalima** button to study and quiz cards on the lock screen.
+- Opening the full app from a card now asks Android to unlock the device first,
+  preserving the phone's PIN, pattern, password, and biometric protection.
+
 ## 0.8.2 — 2026-08-11
 
 - Removed the redundant context-meaning line from expanded Words cards while

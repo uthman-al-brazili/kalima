@@ -12,5 +12,6 @@ Os arquivos APK e ZIP desta pasta são preservados por versão e não devem ser 
 | 0.8.0 | `v0.8.0` | `kalima-0.8.0-debug.apk` | `kalima-0.8.0-source.zip` |
 | 0.8.1 | `v0.8.1` | `kalima-0.8.1-debug.apk` | `kalima-0.8.1-source.zip` |
 | 0.8.2 | `v0.8.2` | `kalima-0.8.2-debug.apk` | `kalima-0.8.2-source.zip` |
+| 0.9.0 | `v0.9.0` | `kalima-0.9.0-debug.apk` | `kalima-0.9.0-source.zip` |
 
 Use `SHA256SUMS.txt` para verificar a integridade dos artefatos locais.
