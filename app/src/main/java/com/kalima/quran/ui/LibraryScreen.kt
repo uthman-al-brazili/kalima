@@ -1,0 +1,177 @@
+package com.kalima.quran.ui
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.kalima.quran.data.QuranWord
+import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.WordStatus
+import com.kalima.quran.ui.theme.Forest
+import com.kalima.quran.ui.theme.Muted
+
+private enum class LibraryFilter(val label: String) {
+    All("Todas"),
+    New("Novas"),
+    Reviewing("Revisão"),
+    Learned("Aprendidas"),
+}
+
+@Composable
+fun LibraryScreen(progress: StudyProgress) {
+    var query by rememberSaveable { mutableStateOf("") }
+    var filterName by rememberSaveable { mutableStateOf(LibraryFilter.All.name) }
+    var expandedId by rememberSaveable { mutableStateOf<String?>(null) }
+    val filter = LibraryFilter.valueOf(filterName)
+    val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
+    val activeWords = remember(progress.studyScope, selectionKey) {
+        WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs)
+    }
+    val words = remember(
+        query,
+        filter,
+        activeWords,
+        progress.learnedIds,
+        progress.reviewingIds,
+    ) {
+        WordRepository.search(query, activeWords).filter { word ->
+            when (filter) {
+                LibraryFilter.All -> true
+                LibraryFilter.New -> progress.statusFor(word.id) == WordStatus.New
+                LibraryFilter.Reviewing -> progress.statusFor(word.id) == WordStatus.Reviewing
+                LibraryFilter.Learned -> progress.statusFor(word.id) == WordStatus.Learned
+            }
+        }
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        item {
+            Text("Vocabulário", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(
+                when (progress.studyScope) {
+                    StudyScope.All -> "${activeWords.size} cartões disponíveis"
+                    StudyScope.Frequent -> "${activeWords.size} formas mais frequentes no Alcorão"
+                    StudyScope.Surahs -> if (progress.selectedSurahs.size <= 4) {
+                        "${activeWords.size} palavras únicas das suras ${progress.selectedSurahs.sorted().joinToString(", ")}"
+                    } else {
+                        "${activeWords.size} palavras únicas em ${progress.selectedSurahs.size} suras"
+                    }
+                },
+                color = Muted,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(Modifier.height(16.dp))
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Buscar em árabe, português ou raiz") },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+            )
+            Spacer(Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                LibraryFilter.entries.forEach { option ->
+                    FilterChip(
+                        selected = filter == option,
+                        onClick = { filterName = option.name },
+                        label = { Text(option.label) },
+                    )
+                }
+            }
+        }
+        if (words.isEmpty()) {
+            item {
+                Text(
+                    "Nenhuma palavra encontrada.",
+                    modifier = Modifier.fillMaxWidth().padding(top = 40.dp),
+                    textAlign = TextAlign.Center,
+                    color = Muted,
+                )
+            }
+        }
+        items(words, key = { it.id }) { word ->
+            LibraryWordCard(
+                word = word,
+                status = progress.statusFor(word.id),
+                expanded = expandedId == word.id,
+                onClick = { expandedId = if (expandedId == word.id) null else word.id },
+            )
+        }
+    }
+}
+
+@Composable
+private fun LibraryWordCard(
+    word: QuranWord,
+    status: WordStatus,
+    expanded: Boolean,
+    onClick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) {
+        Column(Modifier.padding(17.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(word.transliteration, color = Muted, style = MaterialTheme.typography.labelLarge)
+                    Text(word.meaning, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                }
+                ArabicText(word.arabic, size = 30, color = Forest)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("${word.reference}  •  raiz ${word.root}", color = Muted, style = MaterialTheme.typography.bodySmall)
+                WordStatusPill(status)
+            }
+            if (expanded) {
+                Spacer(Modifier.height(14.dp))
+                Text(word.verseArabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.End, style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(6.dp))
+                Text(word.verseMeaning, color = Muted)
+                Spacer(Modifier.height(8.dp))
+                Text(word.insight, color = Forest, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}

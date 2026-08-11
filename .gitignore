@@ -1,0 +1,17 @@
+*.iml
+.gradle/
+.gradle-cache/
+.gradle-wrapper/
+/local.properties
+/.idea/
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+app/build/
+tools/cache/
+__pycache__/
+*.pyc
+/releases/*.apk
+/releases/*.zip
+/releases/SHA256SUMS.txt
