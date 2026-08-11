@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.8.1 — 2026-08-11
+
+- Removed the redundant context-meaning line from Study cards, leaving the
+  Arabic verse as the focused usage example without repeating the word meaning.
+
 ## 0.8.0 — 2026-08-11
 
 - Added Arabic pronunciation playback to study cards, vocabulary entries, quiz

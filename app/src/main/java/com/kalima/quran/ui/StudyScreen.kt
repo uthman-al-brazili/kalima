@@ -254,8 +254,6 @@ private fun WordCard(
                         size = 25,
                         align = TextAlign.End,
                     )
-                    Spacer(Modifier.height(6.dp))
-                    Text(word.verseMeaning, color = Muted, style = MaterialTheme.typography.bodyLarge)
                 }
             }
             Spacer(Modifier.height(18.dp))
