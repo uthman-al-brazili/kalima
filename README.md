@@ -117,7 +117,7 @@ O arquivo `tools/pt_gloss_cache.json` deve ser revisado por um especialista ante
 
 ## Backups de versão
 
-Cada versão concluída deve ser preservada com commit, tag Git, APK e arquivo ZIP do código-fonte. Os artefatos locais ficam em `releases/` e o procedimento completo está documentado em [RELEASE_PROCESS.md](RELEASE_PROCESS.md).
+Cada versão concluída deve ser preservada com commit, tag Git, APK e arquivo ZIP do código-fonte. As mudanças de cada atualização ficam em [CHANGELOG.md](CHANGELOG.md). Os artefatos locais ficam em `releases/` e o procedimento completo está documentado em [RELEASE_PROCESS.md](RELEASE_PROCESS.md).
 
 ## Próximas etapas
 
