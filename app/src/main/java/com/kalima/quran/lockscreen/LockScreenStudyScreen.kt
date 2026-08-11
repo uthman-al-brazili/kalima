@@ -150,8 +150,6 @@ fun LockScreenStudyScreen(
                                 color = Forest,
                                 align = TextAlign.End,
                             )
-                            Spacer(Modifier.height(6.dp))
-                            Text(word.verseMeaning, color = Muted, style = MaterialTheme.typography.bodyLarge)
                             Spacer(Modifier.height(14.dp))
                             HorizontalDivider(color = Muted.copy(alpha = 0.2f))
                             Spacer(Modifier.height(12.dp))
@@ -159,6 +157,15 @@ fun LockScreenStudyScreen(
                         }
                     }
                     Spacer(Modifier.height(18.dp))
+                    OutlinedButton(
+                        onClick = onOpenApp,
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Gold),
+                    ) {
+                        Text(stringResource(R.string.open_app), fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(Modifier.height(12.dp))
                     Text(
                         stringResource(R.string.lock_screen_security_note),
                         color = Color.White.copy(alpha = 0.58f),
@@ -167,17 +174,6 @@ fun LockScreenStudyScreen(
                     )
                     Spacer(Modifier.height(12.dp))
                 }
-
-                OutlinedButton(
-                    onClick = onOpenApp,
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Gold),
-                ) {
-                    Text(stringResource(R.string.open_app), fontWeight = FontWeight.Bold)
-                }
-
-                Spacer(Modifier.height(10.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 10.dp),

@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.9.2 — 2026-08-11
+
+- Removed the redundant context-meaning line from lock-screen study cards.
+- Fixed the rounded verse panel being visually cut off by placing the **Open
+  Kalima** action in the scrollable content on shorter screens.
+
 ## 0.9.1 — 2026-08-11
 
 - When an Arabic voice is missing, the pronunciation button now opens Android's
