@@ -18,6 +18,7 @@ import com.kalima.quran.R
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.lockscreen.LockScreenStudyService
+import com.kalima.quran.localization.LanguageManager
 
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
@@ -45,12 +46,13 @@ object NotificationHelper {
     private const val NOTIFICATION_ID = 1207
 
     fun createChannel(context: Context) {
+        val localized = LanguageManager.localizedContext(context)
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Palavra diária",
+            localized.getString(R.string.daily_word_channel),
             NotificationManager.IMPORTANCE_DEFAULT,
         ).apply {
-            description = "Um cartão curto de árabe corânico por dia"
+            description = localized.getString(R.string.daily_word_channel_description)
             lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
         }
         context.getSystemService(NotificationManager::class.java)
@@ -64,7 +66,8 @@ object NotificationHelper {
             PackageManager.PERMISSION_GRANTED
         ) return
 
-        createChannel(context)
+        val localized = LanguageManager.localizedContext(context)
+        createChannel(localized)
         val progress = ProgressStore(context).progress.value
         val activeWords = WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs)
         val word = WordRepository.wordFor(source = activeWords)
@@ -74,7 +77,7 @@ object NotificationHelper {
             Intent(context, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(localized, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("${word.arabic}  •  ${word.transliteration}")
             .setContentText(word.meaning)

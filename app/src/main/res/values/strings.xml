@@ -1,3 +1,135 @@
 <resources>
     <string name="app_name">Kalima</string>
+
+    <string name="tab_study">Estudar</string>
+    <string name="tab_words">Palavras</string>
+    <string name="tab_quiz">Quiz</string>
+    <string name="tab_progress">Progresso</string>
+
+    <string name="status_new">Nova</string>
+    <string name="status_reviewing">Revisando</string>
+    <string name="status_learned">Aprendida</string>
+    <string name="root_label">Raiz</string>
+    <string name="root_value">Raiz  %1$s</string>
+    <string name="reference_root">%1$s  •  raiz %2$s</string>
+
+    <string name="study_lock_screen_title">Estude sempre que ligar a tela</string>
+    <string name="study_lock_screen_description">Ative a função principal do Kalima para receber uma palavra a cada desbloqueio.</string>
+    <string name="enable">Ativar</string>
+    <string name="review_again">Revisar de novo</string>
+    <string name="review_later">Rever depois</string>
+    <string name="already_learned">Já aprendi</string>
+    <string name="context_meaning_note">O significado acompanha este contexto. Uma mesma palavra pode mudar de nuance em outro versículo.</string>
+    <string name="today_word">Sua palavra de hoje</string>
+    <string name="scope_all_description">Todo o conteúdo disponível</string>
+    <string name="scope_frequent_description">100 palavras mais frequentes</string>
+    <string name="scope_surah_list">Suras %1$s</string>
+    <plurals name="selected_surahs_count">
+        <item quantity="one">%1$d sura selecionada</item>
+        <item quantity="other">%1$d suras selecionadas</item>
+    </plurals>
+    <plurals name="streak_days">
+        <item quantity="one">🔥 %1$d dia</item>
+        <item quantity="other">🔥 %1$d dias</item>
+    </plurals>
+
+    <string name="library_title">Vocabulário</string>
+    <plurals name="library_available_cards">
+        <item quantity="one">%1$d cartão disponível</item>
+        <item quantity="other">%1$d cartões disponíveis</item>
+    </plurals>
+    <plurals name="library_frequent_forms">
+        <item quantity="one">%1$d forma mais frequente no Alcorão</item>
+        <item quantity="other">%1$d formas mais frequentes no Alcorão</item>
+    </plurals>
+    <string name="library_surah_list">%1$d palavras únicas das suras %2$s</string>
+    <string name="library_surah_count">%1$d palavras únicas em %2$d suras</string>
+    <string name="library_search_hint">Buscar em árabe, português ou raiz</string>
+    <string name="filter_all">Todas</string>
+    <string name="filter_new">Novas</string>
+    <string name="filter_reviewing">Revisão</string>
+    <string name="filter_learned">Aprendidas</string>
+    <string name="no_words_found">Nenhuma palavra encontrada.</string>
+
+    <string name="progress_title">Seu progresso</string>
+    <string name="progress_subtitle">Consistência pequena, compreensão duradoura.</string>
+    <string name="stat_learned">aprendidas</string>
+    <string name="stat_reviewing">em revisão</string>
+    <string name="stat_days">dias</string>
+    <string name="selected_content">Conteúdo selecionado</string>
+    <string name="selected_content_note">O progresso acima acompanha apenas o conjunto que você escolheu estudar agora.</string>
+    <string name="choose_words">Escolher palavras</string>
+    <string name="choose_words_note">A escolha também controla os cartões exibidos ao ligar a tela.</string>
+    <string name="scope_all">Tudo</string>
+    <string name="scope_frequent">Mais usadas</string>
+    <string name="scope_surah">Por sura</string>
+    <string name="one_selected_surah">1 sura selecionada: %1$d</string>
+    <string name="search_choose_surahs">Pesquisar e escolher suras</string>
+    <plurals name="cards_in_current_study">
+        <item quantity="one">%1$d cartão no estudo atual</item>
+        <item quantity="other">%1$d cartões no estudo atual</item>
+    </plurals>
+    <string name="routine">Rotina</string>
+    <string name="lock_screen_study">Estudo ao ligar a tela</string>
+    <string name="lock_screen_study_enabled">Ativo: uma nova palavra será aberta sempre que a tela acender.</string>
+    <string name="lock_screen_study_disabled">Requer a permissão “Aparecer sobre outros apps” e mantém um serviço ativo.</string>
+    <string name="preview_card">Testar cartão</string>
+    <string name="settings">Configurações</string>
+    <string name="lock_screen_quiz">Quiz ao ligar a tela</string>
+    <plurals name="lock_screen_quiz_enabled">
+        <item quantity="one">Um quiz aparecerá depois de %1$d palavra.</item>
+        <item quantity="other">Um quiz aparecerá depois de %1$d palavras.</item>
+    </plurals>
+    <string name="lock_screen_quiz_disabled">Opcional: intercale perguntas de quatro alternativas com os cartões.</string>
+    <string name="interval">Intervalo</string>
+    <plurals name="words_count">
+        <item quantity="one">%1$d palavra</item>
+        <item quantity="other">%1$d palavras</item>
+    </plurals>
+    <string name="daily_reminder">Lembrete diário</string>
+    <string name="daily_reminder_description">Notificação diária às 8h, respeitando as permissões do Android.</string>
+    <string name="daily_goal">Meta diária</string>
+    <string name="editorial_note">Nota editorial: raízes, morfologia e traduções de estudo devem passar por revisão de um especialista antes da publicação.</string>
+    <string name="language">Idioma</string>
+    <string name="language_description">Escolha o idioma da interface e dos significados das palavras.</string>
+    <string name="language_portuguese">Português</string>
+    <string name="language_english">English</string>
+
+    <string name="choose_surahs">Escolher suras</string>
+    <plurals name="surahs_selected">
+        <item quantity="one">%1$d selecionada</item>
+        <item quantity="other">%1$d selecionadas</item>
+    </plurals>
+    <string name="surah_search_hint">Número ou nome da sura</string>
+    <string name="done">Concluir</string>
+
+    <string name="quiz_intro">Cinco perguntas, sem cronômetro e sem penalidades.</string>
+    <string name="quiz_arabic_to_meaning">Qual é o significado desta palavra?</string>
+    <string name="quiz_meaning_to_arabic">Qual palavra árabe corresponde a:</string>
+    <string name="quiz_contextual_meaning">Qual é o significado da palavra destacada?</string>
+    <string name="correct">Correto</string>
+    <string name="correct_answer">Resposta correta: %1$s</string>
+    <string name="quiz_mastery">Domínio no quiz: %1$d/%2$d dias</string>
+    <string name="view_result">Ver resultado</string>
+    <string name="next_question">Próxima pergunta</string>
+    <string name="quiz_completed">Quiz concluído</string>
+    <string name="quiz_excellent">Excelente. Continue revisando com calma.</string>
+    <string name="quiz_good">Bom trabalho. Cada contato fortalece a memória.</string>
+    <string name="quiz_keep_practicing">Tudo bem. Essas palavras voltarão para revisão.</string>
+    <string name="overall_accuracy">Precisão geral: %1$d%%</string>
+    <string name="start_another_quiz">Começar outro quiz</string>
+
+    <string name="quick_study">ESTUDO RÁPIDO</string>
+    <string name="quick_quiz">QUIZ RÁPIDO</string>
+    <string name="not_now">Agora não  ✕</string>
+    <string name="continue_action">Continuar</string>
+    <string name="lock_screen_security_note">O bloqueio e a biometria continuam protegidos pelo Android.</string>
+
+    <string name="daily_word_channel">Palavra diária</string>
+    <string name="daily_word_channel_description">Um cartão curto de árabe corânico por dia</string>
+    <string name="lock_screen_service_title">Estudo na tela de bloqueio ativo</string>
+    <string name="lock_screen_service_text">Uma nova palavra aparecerá sempre que a tela acender.</string>
+    <string name="disable">Desativar</string>
+    <string name="lock_screen_channel">Estudo na tela de bloqueio</string>
+    <string name="lock_screen_channel_description">Mantém ativa a detecção de tela ligada</string>
 </resources>

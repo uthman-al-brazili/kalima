@@ -25,8 +25,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.kalima.quran.R
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.ui.theme.Forest
 import com.kalima.quran.ui.theme.Muted
@@ -55,9 +58,13 @@ internal fun SurahSelectionDialog(
         onDismissRequest = onDismiss,
         title = {
             Column {
-                Text("Escolher suras")
+                Text(stringResource(R.string.choose_surahs))
                 Text(
-                    "${selectedSurahs.size} selecionada${if (selectedSurahs.size == 1) "" else "s"}",
+                    pluralStringResource(
+                        R.plurals.surahs_selected,
+                        selectedSurahs.size,
+                        selectedSurahs.size,
+                    ),
                     color = Muted,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Normal,
@@ -70,7 +77,7 @@ internal fun SurahSelectionDialog(
                     value = query,
                     onValueChange = { query = it },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Número ou nome da sura") },
+                    label = { Text(stringResource(R.string.surah_search_hint)) },
                     singleLine = true,
                 )
                 Spacer(Modifier.height(10.dp))
@@ -103,7 +110,7 @@ internal fun SurahSelectionDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Concluir")
+                Text(stringResource(R.string.done))
             }
         },
     )

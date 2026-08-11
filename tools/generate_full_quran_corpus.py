@@ -19,7 +19,7 @@ import generate_quran_vocabulary as legacy
 
 ALL_SURAHS = range(1, 115)
 FREQUENT_LIMIT = 100
-FORMAT_HEADER = "#kalima-quran-v1"
+FORMAT_HEADER = "#kalima-quran-v2"
 
 
 @dataclass(frozen=True)
@@ -220,6 +220,7 @@ def write_corpus(
                         morph.lemma,
                         context.transliteration,
                         meaning,
+                        context.english_gloss,
                         legacy.spaced_root(morph.root),
                         morph.grammar,
                         str(morph.surah),

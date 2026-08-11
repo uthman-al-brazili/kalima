@@ -31,9 +31,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.kalima.quran.R
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
@@ -77,19 +80,19 @@ fun StudyScreen(
                 ) {
                     Column(Modifier.weight(1f)) {
                         Text(
-                            "Estude sempre que ligar a tela",
+                            stringResource(R.string.study_lock_screen_title),
                             color = Forest,
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            "Ative a função principal do Kalima para receber uma palavra a cada desbloqueio.",
+                            stringResource(R.string.study_lock_screen_description),
                             color = Muted,
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
                     Spacer(Modifier.width(12.dp))
                     Button(onClick = onEnableLockScreen) {
-                        Text("Ativar")
+                        Text(stringResource(R.string.enable))
                     }
                 }
             }
@@ -106,7 +109,7 @@ fun StudyScreen(
                 modifier = Modifier.weight(1f).height(54.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text("Revisar de novo", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.review_again), fontWeight = FontWeight.SemiBold)
             }
             Spacer(Modifier.width(12.dp))
             Button(
@@ -118,12 +121,12 @@ fun StudyScreen(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Forest),
             ) {
-                Text("Já aprendi", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.already_learned), fontWeight = FontWeight.SemiBold)
             }
         }
         Spacer(Modifier.height(16.dp))
         Text(
-            "O significado acompanha este contexto. Uma mesma palavra pode mudar de nuance em outro versículo.",
+            stringResource(R.string.context_meaning_note),
             modifier = Modifier.fillMaxWidth(),
             color = Muted,
             style = MaterialTheme.typography.bodySmall,
@@ -139,15 +142,22 @@ private fun StudyHeader(progress: StudyProgress) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text("السَّلَامُ عَلَيْكُمْ", color = Forest, style = MaterialTheme.typography.titleMedium)
-            Text("Sua palavra de hoje", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.today_word), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text(
                 when (progress.studyScope) {
-                    StudyScope.All -> "Todo o conteúdo disponível"
-                    StudyScope.Frequent -> "100 palavras mais frequentes"
+                    StudyScope.All -> stringResource(R.string.scope_all_description)
+                    StudyScope.Frequent -> stringResource(R.string.scope_frequent_description)
                     StudyScope.Surahs -> if (progress.selectedSurahs.size <= 4) {
-                        "Suras ${progress.selectedSurahs.sorted().joinToString(", ")}"
+                        stringResource(
+                            R.string.scope_surah_list,
+                            progress.selectedSurahs.sorted().joinToString(", "),
+                        )
                     } else {
-                        "${progress.selectedSurahs.size} suras selecionadas"
+                        pluralStringResource(
+                            R.plurals.selected_surahs_count,
+                            progress.selectedSurahs.size,
+                            progress.selectedSurahs.size,
+                        )
                     }
                 },
                 color = Muted,
@@ -156,7 +166,11 @@ private fun StudyHeader(progress: StudyProgress) {
         }
         Surface(color = Gold.copy(alpha = 0.35f), shape = RoundedCornerShape(100.dp)) {
             Text(
-                "🔥 ${progress.streakDays} dias",
+                pluralStringResource(
+                    R.plurals.streak_days,
+                    progress.streakDays,
+                    progress.streakDays,
+                ),
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,

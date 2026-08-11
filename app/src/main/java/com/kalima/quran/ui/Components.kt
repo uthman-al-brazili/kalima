@@ -14,11 +14,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kalima.quran.R
 import com.kalima.quran.data.WordStatus
 import com.kalima.quran.ui.theme.Forest
 import com.kalima.quran.ui.theme.Gold
@@ -46,9 +48,9 @@ fun ArabicText(
 @Composable
 fun WordStatusPill(status: WordStatus) {
     val (label, container, content) = when (status) {
-        WordStatus.New -> Triple("Nova", MaterialTheme.colorScheme.surfaceVariant, Muted)
-        WordStatus.Reviewing -> Triple("Revisando", MaterialTheme.colorScheme.secondaryContainer, Forest)
-        WordStatus.Learned -> Triple("Aprendida", MaterialTheme.colorScheme.primaryContainer, Forest)
+        WordStatus.New -> Triple(stringResource(R.string.status_new), MaterialTheme.colorScheme.surfaceVariant, Muted)
+        WordStatus.Reviewing -> Triple(stringResource(R.string.status_reviewing), MaterialTheme.colorScheme.secondaryContainer, Forest)
+        WordStatus.Learned -> Triple(stringResource(R.string.status_learned), MaterialTheme.colorScheme.primaryContainer, Forest)
     }
     Surface(color = container, contentColor = content, shape = RoundedCornerShape(100.dp)) {
         Text(
@@ -84,7 +86,7 @@ fun RootAndGrammar(root: String, grammar: String) {
     ) {
         Surface(color = Gold.copy(alpha = 0.3f), shape = RoundedCornerShape(10.dp)) {
             Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                Text("Raiz", style = MaterialTheme.typography.labelMedium, color = Muted)
+                Text(stringResource(R.string.root_label), style = MaterialTheme.typography.labelMedium, color = Muted)
                 Spacer(Modifier.width(8.dp))
                 Text(root, fontWeight = FontWeight.Bold)
             }

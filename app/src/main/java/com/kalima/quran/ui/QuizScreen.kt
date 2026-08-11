@@ -28,12 +28,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kalima.quran.R
 import com.kalima.quran.data.QUIZ_MASTERY_DAYS
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.WordRepository
@@ -82,7 +84,7 @@ fun QuizScreen(
     ) {
         Text("Quiz", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text(
-            "Cinco perguntas, sem cronômetro e sem penalidades.",
+            stringResource(R.string.quiz_intro),
             color = Muted,
             style = MaterialTheme.typography.bodyMedium,
         )
@@ -148,9 +150,9 @@ private fun QuizQuestionCard(question: QuizQuestion) {
         ) {
             Text(
                 when (question.type) {
-                    QuizQuestionType.ArabicToPortuguese -> "Qual é o significado desta palavra?"
-                    QuizQuestionType.PortugueseToArabic -> "Qual palavra árabe corresponde a:"
-                    QuizQuestionType.ContextualMeaning -> "Qual é o significado da palavra destacada?"
+                    QuizQuestionType.ArabicToPortuguese -> stringResource(R.string.quiz_arabic_to_meaning)
+                    QuizQuestionType.PortugueseToArabic -> stringResource(R.string.quiz_meaning_to_arabic)
+                    QuizQuestionType.ContextualMeaning -> stringResource(R.string.quiz_contextual_meaning)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 color = Muted,
@@ -268,23 +270,42 @@ private fun QuizFeedback(
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
-                if (correct) "Correto" else "Resposta correta: ${question.correctAnswer}",
+                if (correct) {
+                    stringResource(R.string.correct)
+                } else {
+                    stringResource(R.string.correct_answer, question.correctAnswer)
+                },
                 color = if (correct) Forest else MaterialTheme.colorScheme.onErrorContainer,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
             )
             Spacer(Modifier.height(6.dp))
-            Text("${question.word.transliteration}  •  raiz ${question.word.root}", color = Muted)
+            Text(
+                stringResource(
+                    R.string.reference_root,
+                    question.word.transliteration,
+                    question.word.root,
+                ),
+                color = Muted,
+            )
             Text(question.word.reference, color = Forest, style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(7.dp))
             Text(
-                "Domínio no quiz: ${correctDays.coerceAtMost(QUIZ_MASTERY_DAYS)}/$QUIZ_MASTERY_DAYS dias",
+                stringResource(
+                    R.string.quiz_mastery,
+                    correctDays.coerceAtMost(QUIZ_MASTERY_DAYS),
+                    QUIZ_MASTERY_DAYS,
+                ),
                 color = Forest,
                 style = MaterialTheme.typography.labelLarge,
             )
             Spacer(Modifier.height(12.dp))
             Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
-                Text(if (lastQuestion) "Ver resultado" else "Próxima pergunta")
+                Text(
+                    stringResource(
+                        if (lastQuestion) R.string.view_result else R.string.next_question,
+                    ),
+                )
             }
         }
     }
@@ -306,7 +327,7 @@ private fun QuizSummary(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("Quiz concluído", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.quiz_completed), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp))
         Text(
             "$score/${QuizEngine.SESSION_SIZE}",
@@ -316,20 +337,24 @@ private fun QuizSummary(
         )
         Text(
             when (score) {
-                5 -> "Excelente. Continue revisando com calma."
-                in 3..4 -> "Bom trabalho. Cada contato fortalece a memória."
-                else -> "Tudo bem. Essas palavras voltarão para revisão."
+                5 -> stringResource(R.string.quiz_excellent)
+                in 3..4 -> stringResource(R.string.quiz_good)
+                else -> stringResource(R.string.quiz_keep_practicing)
             },
             color = Muted,
             textAlign = TextAlign.Center,
         )
         if (progress.quizTotalAnswers > 0) {
             Spacer(Modifier.height(10.dp))
-            Text("Precisão geral: $historicalAccuracy%", color = Forest, fontWeight = FontWeight.SemiBold)
+            Text(
+                stringResource(R.string.overall_accuracy, historicalAccuracy),
+                color = Forest,
+                fontWeight = FontWeight.SemiBold,
+            )
         }
         Spacer(Modifier.height(22.dp))
         Button(onClick = onNewQuiz) {
-            Text("Começar outro quiz")
+            Text(stringResource(R.string.start_another_quiz))
         }
     }
 }

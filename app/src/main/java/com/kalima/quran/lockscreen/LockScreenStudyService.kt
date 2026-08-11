@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import com.kalima.quran.MainActivity
 import com.kalima.quran.R
 import com.kalima.quran.data.ProgressStore
+import com.kalima.quran.localization.LanguageManager
 
 class LockScreenStudyService : Service() {
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -62,6 +63,10 @@ class LockScreenStudyService : Service() {
         }
     }
 
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LanguageManager.localizedContext(newBase))
+    }
+
     override fun onCreate() {
         super.onCreate()
         createChannel()
@@ -91,6 +96,7 @@ class LockScreenStudyService : Service() {
         } else {
             0
         }
+        createChannel()
         ServiceCompat.startForeground(
             this,
             NOTIFICATION_ID,
@@ -113,6 +119,7 @@ class LockScreenStudyService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun buildNotification(): android.app.Notification {
+        val localized = LanguageManager.localizedContext(this)
         val openApp = PendingIntent.getActivity(
             this,
             0,
@@ -125,12 +132,12 @@ class LockScreenStudyService : Service() {
             Intent(this, LockScreenStudyService::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        return NotificationCompat.Builder(localized, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("Estudo na tela de bloqueio ativo")
-            .setContentText("Uma nova palavra aparecerá sempre que a tela acender.")
+            .setContentTitle(localized.getString(R.string.lock_screen_service_title))
+            .setContentText(localized.getString(R.string.lock_screen_service_text))
             .setContentIntent(openApp)
-            .addAction(0, "Desativar", stopService)
+            .addAction(0, localized.getString(R.string.disable), stopService)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setOngoing(true)
             .setSilent(true)
@@ -139,12 +146,13 @@ class LockScreenStudyService : Service() {
     }
 
     private fun createChannel() {
+        val localized = LanguageManager.localizedContext(this)
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Estudo na tela de bloqueio",
+            localized.getString(R.string.lock_screen_channel),
             NotificationManager.IMPORTANCE_LOW,
         ).apply {
-            description = "Mantém ativa a detecção de tela ligada"
+            description = localized.getString(R.string.lock_screen_channel_description)
             setShowBadge(false)
         }
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)

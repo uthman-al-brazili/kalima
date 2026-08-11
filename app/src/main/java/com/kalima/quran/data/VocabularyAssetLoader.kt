@@ -1,36 +1,41 @@
 package com.kalima.quran.data
 
+import com.kalima.quran.localization.AppLanguage
 import java.io.BufferedInputStream
 import java.io.InputStream
 import java.util.zip.GZIPInputStream
 
 internal object VocabularyAssetLoader {
     const val ASSET_NAME = "quran_vocabulary.tsv"
-    private const val FORMAT_HEADER = "#kalima-quran-v1"
-    private const val FIELD_COUNT = 13
+    private const val FORMAT_HEADER = "#kalima-quran-v2"
+    private const val FIELD_COUNT = 14
 
-    fun load(input: InputStream): List<QuranWord> {
+    fun load(
+        input: InputStream,
+        language: AppLanguage = AppLanguage.Portuguese,
+    ): List<QuranWord> {
         val stringPool = HashMap<String, String>(65_536)
         val surahNames = GeneratedQuranSurahs.all.associate { it.number to it.transliteratedName }
         val result = ArrayList<QuranWord>(42_101)
+        val english = language == AppLanguage.English
 
         decoded(input).bufferedReader(Charsets.UTF_8).use { reader ->
-            require(reader.readLine() == FORMAT_HEADER) { "Formato de corpus não reconhecido" }
+            require(reader.readLine() == FORMAT_HEADER) { "Unrecognized corpus format" }
             reader.lineSequence().forEachIndexed { index, line ->
                 val fields = line.split('\t', limit = FIELD_COUNT)
                 require(fields.size == FIELD_COUNT) {
-                    "Registro inválido na linha ${index + 2}: ${fields.size} campos"
+                    "Invalid record on line ${index + 2}: ${fields.size} fields"
                 }
 
-                val referenceSurah = fields[7].toInt()
-                val referenceVerse = fields[8].toInt()
-                val frequency = fields[9].toInt()
-                val studySurah = fields[10].toInt()
-                val isFrequent = fields[11].toBooleanStrict()
-                val meaning = fields[4].pooled(stringPool)
+                val referenceSurah = fields[8].toInt()
+                val referenceVerse = fields[9].toInt()
+                val frequency = fields[10].toInt()
+                val studySurah = fields[11].toInt()
+                val isFrequent = fields[12].toBooleanStrict()
+                val meaning = fields[if (english) 5 else 4].pooled(stringPool)
                 val lemma = fields[2].pooled(stringPool)
-                val surahName = surahNames[referenceSurah] ?: "Sura $referenceSurah"
-                val occurrence = if (frequency == 1) "vez" else "vezes"
+                val surahName = surahNames[referenceSurah] ?: "Surah $referenceSurah"
+                val grammar = localizedGrammar(fields[7], language).pooled(stringPool)
 
                 result += QuranWord(
                     id = fields[0],
@@ -38,16 +43,34 @@ internal object VocabularyAssetLoader {
                     lemma = lemma,
                     transliteration = fields[3].pooled(stringPool),
                     meaning = meaning,
-                    root = fields[5].pooled(stringPool),
-                    grammar = fields[6].pooled(stringPool),
-                    category = if (isFrequent) "Mais frequentes" else "Sura $studySurah",
+                    root = fields[6].pooled(stringPool),
+                    grammar = grammar,
+                    category = when {
+                        isFrequent && english -> "Most frequent"
+                        isFrequent -> "Mais frequentes"
+                        english -> "Surah $studySurah"
+                        else -> "Sura $studySurah"
+                    },
                     reference = "$surahName $referenceSurah:$referenceVerse",
-                    verseArabic = fields[12].pooled(stringPool),
-                    verseMeaning = "Neste contexto, o sentido de apoio é: $meaning.",
-                    insight = if (isFrequent) {
-                        "Esta forma aparece $frequency vezes no Alcorão. Lema registrado: $lemma."
+                    verseArabic = fields[13].pooled(stringPool),
+                    verseMeaning = if (english) {
+                        "In this context, the supporting meaning is: $meaning."
                     } else {
-                        "Aparece $frequency $occurrence nesta sura. Lema registrado: $lemma."
+                        "Neste contexto, o sentido de apoio é: $meaning."
+                    },
+                    insight = when {
+                        isFrequent && english ->
+                            "This form appears $frequency times in the Quran. Recorded lemma: $lemma."
+                        isFrequent ->
+                            "Esta forma aparece $frequency vezes no Alcorão. Lema registrado: $lemma."
+                        english -> {
+                            val occurrence = if (frequency == 1) "time" else "times"
+                            "It appears $frequency $occurrence in this surah. Recorded lemma: $lemma."
+                        }
+                        else -> {
+                            val occurrence = if (frequency == 1) "vez" else "vezes"
+                            "Aparece $frequency $occurrence nesta sura. Lema registrado: $lemma."
+                        }
                     },
                     frequency = frequency,
                     surahNumber = studySurah.takeIf { it > 0 },
@@ -56,6 +79,18 @@ internal object VocabularyAssetLoader {
             }
         }
         return result
+    }
+
+    private fun localizedGrammar(value: String, language: AppLanguage): String {
+        if (language == AppLanguage.Portuguese) return value
+        return when (value) {
+            "substantivo" -> "noun"
+            "verbo" -> "verb"
+            "partícula" -> "particle"
+            "adjetivo" -> "adjective"
+            "nome próprio" -> "proper noun"
+            else -> value
+        }
     }
 
     private fun decoded(input: InputStream): InputStream {

@@ -1,10 +1,11 @@
 # Kalima — árabe corânico em pequenos momentos
 
-Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit, mas com identidade, interface e implementação próprias. O foco é vocabulário do árabe clássico encontrado no Alcorão, apresentado em português e dentro de contexto.
+Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit, mas com identidade, interface e implementação próprias. O foco é vocabulário do árabe clássico encontrado no Alcorão, apresentado em português ou inglês e dentro de contexto.
 
 ## O que já funciona
 
 - cartão diário com árabe, transliteração, significado, raiz e informação gramatical;
+- seletor de idioma em **Progresso**, com interface, significados, quizzes, notificações e cartões de tela bloqueada em português ou inglês;
 - trecho corânico contextualizado e paráfrase de estudo em português;
 - ações “Revisar de novo” e “Já aprendi”;
 - meta diária e sequência de dias;

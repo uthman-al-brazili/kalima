@@ -1,10 +1,12 @@
 package com.kalima.quran.data
 
 import android.content.Context
+import com.kalima.quran.localization.AppLanguage
+import com.kalima.quran.localization.LanguageManager
 import java.time.LocalDate
 
 object WordRepository {
-    private val curatedWords: List<QuranWord> = listOf(
+    private val curatedPortugueseWords: List<QuranWord> = listOf(
         QuranWord(
             id = "allah",
             arabic = "ٱللَّهُ",
@@ -231,9 +233,132 @@ object WordRepository {
         ),
     )
 
+    private data class EnglishCuratedText(
+        val meaning: String,
+        val grammar: String,
+        val category: String,
+        val verseMeaning: String,
+        val insight: String,
+    )
+
+    private val englishCuratedText = mapOf(
+        "allah" to EnglishCuratedText(
+            "God; the divine proper name",
+            "proper noun",
+            "Foundations",
+            "In the name of God, the Entirely Merciful, the Especially Merciful.",
+            "In the Quran, the name Allah identifies the one God and has no plural form.",
+        ),
+        "rabb" to EnglishCuratedText(
+            "Lord, caretaker, and sustainer",
+            "noun",
+            "Foundations",
+            "All praise belongs to God, Lord of all worlds.",
+            "Rabb brings together the ideas of authority, care, upbringing, and sustenance.",
+        ),
+        "rahman" to EnglishCuratedText(
+            "the Entirely Merciful",
+            "intensive noun",
+            "Attributes",
+            "The Entirely Merciful, the Especially Merciful.",
+            "The root r-ḥ-m is connected to mercy, compassion, and care.",
+        ),
+        "din" to EnglishCuratedText(
+            "recompense, judgment; also religion",
+            "noun",
+            "Foundations",
+            "Sovereign of the Day of Recompense.",
+            "Context determines the sense. In this verse, dīn indicates accountability and recompense.",
+        ),
+        "nabudu" to EnglishCuratedText(
+            "we worship and serve",
+            "verb, first-person plural",
+            "Worship",
+            "You alone we worship, and You alone we ask for help.",
+            "The same root forms ʿabd, servant. Worship includes conscious submission and service.",
+        ),
+        "kitab" to EnglishCuratedText(
+            "the Book, the Scripture",
+            "noun",
+            "Revelation",
+            "This is the Book in which there is no doubt.",
+            "The root k-t-b involves writing, recording, and prescribing.",
+        ),
+        "huda" to EnglishCuratedText(
+            "guidance",
+            "verbal noun",
+            "Revelation",
+            "Guidance for those mindful of God.",
+            "The root h-d-y conveys gently leading someone to the right path.",
+        ),
+        "muttaqin" to EnglishCuratedText(
+            "those mindful of God, those who guard themselves",
+            "active participle, plural",
+            "Character",
+            "Guidance for those who cultivate mindfulness and guard themselves before God.",
+            "Taqwā comes from the idea of protection: acting with awareness of spiritual consequences.",
+        ),
+        "ghayb" to EnglishCuratedText(
+            "the unseen, that which is hidden",
+            "noun",
+            "Belief",
+            "Those who believe in what lies beyond perception.",
+            "Ghayb refers to realities that cannot be reached directly by the senses.",
+        ),
+        "salah" to EnglishCuratedText(
+            "the ritual prayer",
+            "noun",
+            "Worship",
+            "And they establish prayer.",
+            "The verb often paired with ṣalāh is aqāma: to establish and maintain consistently.",
+        ),
+        "razaqna" to EnglishCuratedText(
+            "We have provided for them",
+            "verb + object pronoun",
+            "Actions",
+            "And they share from what We have provided for them.",
+            "Rizq includes material provision and other benefits that are granted.",
+        ),
+        "yuminun" to EnglishCuratedText(
+            "they believe, they trust",
+            "verb, third-person masculine plural",
+            "Belief",
+            "Those who believe in what lies beyond perception.",
+            "The root ʾ-m-n also carries the senses of safety, trust, and faithfulness.",
+        ),
+        "akhirah" to EnglishCuratedText(
+            "the afterlife, the Hereafter",
+            "noun",
+            "Belief",
+            "And they are certain of the Hereafter.",
+            "The root indicates what comes last or afterward, in contrast with dunyā, the nearer life.",
+        ),
+        "muflihun" to EnglishCuratedText(
+            "the successful, those who prosper",
+            "active participle, plural",
+            "Character",
+            "And it is they who are truly successful.",
+            "Falāḥ is broad and lasting success, not merely immediate gain.",
+        ),
+        "haqq" to EnglishCuratedText(
+            "the truth, what is real and due",
+            "noun",
+            "Foundations",
+            "The truth comes from your Lord.",
+            "Ḥaqq can indicate truth, established reality, a right, or a duty.",
+        ),
+        "sabirin" to EnglishCuratedText(
+            "the patient and steadfast",
+            "active participle, plural",
+            "Character",
+            "God is with the patient and steadfast.",
+            "Ṣabr includes patience, steadfastness, and self-control in difficulty.",
+        ),
+    )
+
     val selectableSurahs: List<QuranSurah> = GeneratedQuranSurahs.all
 
-    private val fallbackWords = curatedWords + GeneratedQuranVocabulary.words
+    private val fallbackWords = curatedPortugueseWords + GeneratedQuranVocabulary.words
 
     @Volatile
     private var corpusWords: List<QuranWord> = fallbackWords
@@ -246,7 +371,7 @@ object WordRepository {
         fallbackWords.filter { it.surahNumber != null }.groupBy { requireNotNull(it.surahNumber) }
 
     @Volatile
-    private var initialized = false
+    private var initializedLanguage: AppLanguage? = null
 
     val words: List<QuranWord> get() = corpusWords
 
@@ -254,14 +379,31 @@ object WordRepository {
 
     @Synchronized
     fun initialize(context: Context) {
-        if (initialized) return
-        val imported = context.assets.open(VocabularyAssetLoader.ASSET_NAME).use(VocabularyAssetLoader::load)
-        corpusWords = curatedWords + imported
+        val language = LanguageManager.selectedLanguage(context)
+        if (initializedLanguage == language) return
+        val imported = context.assets.open(VocabularyAssetLoader.ASSET_NAME).use { input ->
+            VocabularyAssetLoader.load(input, language)
+        }
+        corpusWords = curatedWords(language) + imported
         frequentIndex = imported.filter(QuranWord::isFrequent)
         surahIndex = imported
             .filter { it.surahNumber != null }
             .groupBy { requireNotNull(it.surahNumber) }
-        initialized = true
+        initializedLanguage = language
+    }
+
+    private fun curatedWords(language: AppLanguage): List<QuranWord> {
+        if (language == AppLanguage.Portuguese) return curatedPortugueseWords
+        return curatedPortugueseWords.map { word ->
+            val text = requireNotNull(englishCuratedText[word.id])
+            word.copy(
+                meaning = text.meaning,
+                grammar = text.grammar,
+                category = text.category,
+                verseMeaning = text.verseMeaning,
+                insight = text.insight,
+            )
+        }
     }
 
     fun wordsFor(scope: StudyScope, selectedSurahs: Set<Int>): List<QuranWord> =

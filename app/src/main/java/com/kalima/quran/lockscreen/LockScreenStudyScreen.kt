@@ -24,9 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.kalima.quran.R
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.ui.ArabicText
 import com.kalima.quran.ui.theme.Cream
@@ -57,10 +59,10 @@ fun LockScreenStudyScreen(
                 ) {
                     Column {
                         Text("كَلِمَة", color = Gold, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                        Text("ESTUDO RÁPIDO", color = Color.White.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.quick_study), color = Color.White.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
                     }
                     TextButton(onClick = onDismiss) {
-                        Text("Agora não  ✕", color = Color.White)
+                        Text(stringResource(R.string.not_now), color = Color.White)
                     }
                 }
 
@@ -106,7 +108,7 @@ fun LockScreenStudyScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Surface(color = Color.White.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
                             Text(
-                                "Raiz  ${word.root}",
+                                stringResource(R.string.root_value, word.root),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 color = Color.White,
                                 fontWeight = FontWeight.SemiBold,
@@ -147,7 +149,7 @@ fun LockScreenStudyScreen(
                     }
                     Spacer(Modifier.height(18.dp))
                     Text(
-                        "O bloqueio e a biometria continuam protegidos pelo Android.",
+                        stringResource(R.string.lock_screen_security_note),
                         color = Color.White.copy(alpha = 0.58f),
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center,
@@ -165,7 +167,7 @@ fun LockScreenStudyScreen(
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
                     ) {
-                        Text("Rever depois", fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.review_later), fontWeight = FontWeight.SemiBold)
                     }
                     Button(
                         onClick = onLearned,
@@ -173,7 +175,7 @@ fun LockScreenStudyScreen(
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Gold, contentColor = Forest),
                     ) {
-                        Text("Já aprendi", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.already_learned), fontWeight = FontWeight.Bold)
                     }
                 }
             }

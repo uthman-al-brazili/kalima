@@ -2,6 +2,7 @@ package com.kalima.quran
 
 import android.Manifest
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -17,6 +18,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.lockscreen.LockScreenStudyService
 import com.kalima.quran.lockscreen.LockScreenStudyActivity
+import com.kalima.quran.localization.AppLanguage
+import com.kalima.quran.localization.LanguageManager
 import com.kalima.quran.notifications.NotificationHelper
 import com.kalima.quran.notifications.ReminderScheduler
 import com.kalima.quran.ui.KalimaApp
@@ -43,6 +46,10 @@ class MainActivity : ComponentActivity() {
             progressStore.setLockScreenEnabled(false)
             LockScreenStudyService.stop(this)
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LanguageManager.localizedContext(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,8 +82,16 @@ class MainActivity : ComponentActivity() {
                 onToggleSurah = progressStore::toggleSurah,
                 onOpenAppSettings = ::openAppSettings,
                 onPreviewLockScreen = ::previewLockScreen,
+                currentLanguage = LanguageManager.selectedLanguage(this),
+                onLanguageChange = ::changeLanguage,
             )
         }
+    }
+
+    private fun changeLanguage(language: AppLanguage) {
+        if (LanguageManager.selectedLanguage(this) == language) return
+        LanguageManager.setLanguage(applicationContext, language)
+        recreate()
     }
 
     private fun changeLockScreen(enabled: Boolean) {

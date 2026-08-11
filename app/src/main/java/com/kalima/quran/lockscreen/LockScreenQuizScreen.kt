@@ -27,12 +27,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kalima.quran.R
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
 import com.kalima.quran.quiz.VerseExcerptBuilder
@@ -67,10 +69,10 @@ fun LockScreenQuizScreen(
                 ) {
                     Column {
                         Text("كَلِمَة", color = Gold, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                        Text("QUIZ RÁPIDO", color = Color.White.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.quick_quiz), color = Color.White.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
                     }
                     TextButton(onClick = onDismiss) {
-                        Text("Agora não  ✕", color = Color.White)
+                        Text(stringResource(R.string.not_now), color = Color.White)
                     }
                 }
 
@@ -81,9 +83,9 @@ fun LockScreenQuizScreen(
                     Spacer(Modifier.height(18.dp))
                     Text(
                         when (question.type) {
-                            QuizQuestionType.ArabicToPortuguese -> "Qual é o significado desta palavra?"
-                            QuizQuestionType.PortugueseToArabic -> "Qual palavra árabe corresponde a:"
-                            QuizQuestionType.ContextualMeaning -> "Qual é o significado da palavra destacada?"
+                            QuizQuestionType.ArabicToPortuguese -> stringResource(R.string.quiz_arabic_to_meaning)
+                            QuizQuestionType.PortugueseToArabic -> stringResource(R.string.quiz_meaning_to_arabic)
+                            QuizQuestionType.ContextualMeaning -> stringResource(R.string.quiz_contextual_meaning)
                         },
                         color = Color.White,
                         textAlign = TextAlign.Center,
@@ -130,16 +132,20 @@ fun LockScreenQuizScreen(
                             Column(Modifier.padding(16.dp)) {
                                 Text(
                                     if (selectedOption == question.correctOptionIndex) {
-                                        "Correto"
+                                        stringResource(R.string.correct)
                                     } else {
-                                        "Resposta correta: ${question.correctAnswer}"
+                                        stringResource(R.string.correct_answer, question.correctAnswer)
                                     },
                                     color = Forest,
                                     fontWeight = FontWeight.Bold,
                                     style = MaterialTheme.typography.titleMedium,
                                 )
                                 Text(
-                                    "${question.word.transliteration}  •  raiz ${question.word.root}",
+                                    stringResource(
+                                        R.string.reference_root,
+                                        question.word.transliteration,
+                                        question.word.root,
+                                    ),
                                     color = Forest.copy(alpha = 0.72f),
                                 )
                                 Text(question.word.reference, color = Forest, style = MaterialTheme.typography.bodySmall)
@@ -156,7 +162,7 @@ fun LockScreenQuizScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Gold, contentColor = Forest),
                         shape = RoundedCornerShape(16.dp),
                     ) {
-                        Text("Continuar", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.continue_action), fontWeight = FontWeight.Bold)
                     }
                 }
             }

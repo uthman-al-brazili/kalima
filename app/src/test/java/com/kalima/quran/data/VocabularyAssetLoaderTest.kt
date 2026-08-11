@@ -1,5 +1,6 @@
 package com.kalima.quran.data
 
+import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.quiz.VerseExcerptBuilder
 import com.kalima.quran.quiz.QuizEngine
 import org.junit.Assert.assertEquals
@@ -31,6 +32,26 @@ class VocabularyAssetLoaderTest {
         assertTrue(corpus.all { it.meaning.isNotBlank() })
         assertTrue(corpus.all { it.verseArabic.isNotBlank() })
         assertTrue(corpus.all { it.reference.matches(Regex(".+ \\d+:\\d+")) })
+    }
+
+    @Test
+    fun corpusLoadsPortugueseAndEnglishGlossesWithoutChangingCardIds() {
+        val portuguese = VocabularyAssetLoader.load(
+            findCorpusAsset().inputStream(),
+            AppLanguage.Portuguese,
+        )
+        val english = VocabularyAssetLoader.load(
+            findCorpusAsset().inputStream(),
+            AppLanguage.English,
+        )
+
+        assertEquals(portuguese.map(QuranWord::id), english.map(QuranWord::id))
+        assertEquals("de", portuguese.first().meaning)
+        assertEquals("from", english.first().meaning)
+        assertEquals("partícula", portuguese.first().grammar)
+        assertEquals("particle", english.first().grammar)
+        assertTrue(english.all { it.meaning.isNotBlank() })
+        assertTrue(english.all { it.verseMeaning.startsWith("In this context") })
     }
 
     @Test

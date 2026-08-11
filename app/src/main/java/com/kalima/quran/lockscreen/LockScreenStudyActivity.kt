@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.localization.LanguageManager
 import com.kalima.quran.quiz.LockScreenContent
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
@@ -32,6 +33,10 @@ class LockScreenStudyActivity : ComponentActivity() {
                 -> finish()
             }
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LanguageManager.localizedContext(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,5 +1,6 @@
 package com.kalima.quran.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,9 +27,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.kalima.quran.R
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
@@ -37,11 +41,11 @@ import com.kalima.quran.data.WordStatus
 import com.kalima.quran.ui.theme.Forest
 import com.kalima.quran.ui.theme.Muted
 
-private enum class LibraryFilter(val label: String) {
-    All("Todas"),
-    New("Novas"),
-    Reviewing("Revisão"),
-    Learned("Aprendidas"),
+private enum class LibraryFilter(@param:StringRes val labelRes: Int) {
+    All(R.string.filter_all),
+    New(R.string.filter_new),
+    Reviewing(R.string.filter_reviewing),
+    Learned(R.string.filter_learned),
 }
 
 @Composable
@@ -77,15 +81,31 @@ fun LibraryScreen(progress: StudyProgress) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            Text("Vocabulário", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.library_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Text(
                 when (progress.studyScope) {
-                    StudyScope.All -> "${activeWords.size} cartões disponíveis"
-                    StudyScope.Frequent -> "${activeWords.size} formas mais frequentes no Alcorão"
+                    StudyScope.All -> pluralStringResource(
+                        R.plurals.library_available_cards,
+                        activeWords.size,
+                        activeWords.size,
+                    )
+                    StudyScope.Frequent -> pluralStringResource(
+                        R.plurals.library_frequent_forms,
+                        activeWords.size,
+                        activeWords.size,
+                    )
                     StudyScope.Surahs -> if (progress.selectedSurahs.size <= 4) {
-                        "${activeWords.size} palavras únicas das suras ${progress.selectedSurahs.sorted().joinToString(", ")}"
+                        stringResource(
+                            R.string.library_surah_list,
+                            activeWords.size,
+                            progress.selectedSurahs.sorted().joinToString(", "),
+                        )
                     } else {
-                        "${activeWords.size} palavras únicas em ${progress.selectedSurahs.size} suras"
+                        stringResource(
+                            R.string.library_surah_count,
+                            activeWords.size,
+                            progress.selectedSurahs.size,
+                        )
                     }
                 },
                 color = Muted,
@@ -96,7 +116,7 @@ fun LibraryScreen(progress: StudyProgress) {
                 value = query,
                 onValueChange = { query = it },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Buscar em árabe, português ou raiz") },
+                label = { Text(stringResource(R.string.library_search_hint)) },
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
             )
@@ -109,7 +129,7 @@ fun LibraryScreen(progress: StudyProgress) {
                     FilterChip(
                         selected = filter == option,
                         onClick = { filterName = option.name },
-                        label = { Text(option.label) },
+                        label = { Text(stringResource(option.labelRes)) },
                     )
                 }
             }
@@ -117,7 +137,7 @@ fun LibraryScreen(progress: StudyProgress) {
         if (words.isEmpty()) {
             item {
                 Text(
-                    "Nenhuma palavra encontrada.",
+                    stringResource(R.string.no_words_found),
                     modifier = Modifier.fillMaxWidth().padding(top = 40.dp),
                     textAlign = TextAlign.Center,
                     color = Muted,
@@ -161,7 +181,11 @@ private fun LibraryWordCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("${word.reference}  •  raiz ${word.root}", color = Muted, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    stringResource(R.string.reference_root, word.reference, word.root),
+                    color = Muted,
+                    style = MaterialTheme.typography.bodySmall,
+                )
                 WordStatusPill(status)
             }
             if (expanded) {

@@ -31,11 +31,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.kalima.quran.R
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.ui.theme.Forest
 import com.kalima.quran.ui.theme.Gold
 import com.kalima.quran.ui.theme.Muted
@@ -53,6 +57,8 @@ fun ProgressScreen(
     onToggleSurah: (Int) -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
+    currentLanguage: AppLanguage,
+    onLanguageChange: (AppLanguage) -> Unit,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val activeWords = remember(progress.studyScope, selectionKey) {
@@ -77,23 +83,23 @@ fun ProgressScreen(
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
     ) {
-        Text("Seu progresso", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text("Consistência pequena, compreensão duradoura.", color = Muted)
+        Text(stringResource(R.string.progress_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.progress_subtitle), color = Muted)
         Spacer(Modifier.height(20.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StatBlock(
                 value = progress.learnedIds.size.toString(),
-                label = "aprendidas",
+                label = stringResource(R.string.stat_learned),
                 modifier = Modifier.weight(1f),
             )
             StatBlock(
                 value = progress.reviewingIds.size.toString(),
-                label = "em revisão",
+                label = stringResource(R.string.stat_reviewing),
                 modifier = Modifier.weight(1f),
             )
             StatBlock(
                 value = "🔥 ${progress.streakDays}",
-                label = "dias",
+                label = stringResource(R.string.stat_days),
                 modifier = Modifier.weight(1f),
             )
         }
@@ -104,7 +110,7 @@ fun ProgressScreen(
         ) {
             Column(Modifier.padding(20.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Conteúdo selecionado", color = Gold, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.selected_content), color = Gold, fontWeight = FontWeight.Bold)
                     Text(
                         "$learnedInScope/${activeWords.size}",
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -119,16 +125,16 @@ fun ProgressScreen(
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    "O progresso acima acompanha apenas o conjunto que você escolheu estudar agora.",
+                    stringResource(R.string.selected_content_note),
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.82f),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
         }
         Spacer(Modifier.height(24.dp))
-        Text("Escolher palavras", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.choose_words), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text(
-            "A escolha também controla os cartões exibidos ao ligar a tela.",
+            stringResource(R.string.choose_words_note),
             color = Muted,
             style = MaterialTheme.typography.bodySmall,
         )
@@ -146,19 +152,19 @@ fun ProgressScreen(
                     FilterChip(
                         selected = progress.studyScope == StudyScope.All,
                         onClick = { onStudyScopeChange(StudyScope.All) },
-                        label = { Text("Tudo") },
+                        label = { Text(stringResource(R.string.scope_all)) },
                         modifier = Modifier.weight(1f),
                     )
                     FilterChip(
                         selected = progress.studyScope == StudyScope.Frequent,
                         onClick = { onStudyScopeChange(StudyScope.Frequent) },
-                        label = { Text("Mais usadas") },
+                        label = { Text(stringResource(R.string.scope_frequent)) },
                         modifier = Modifier.weight(1f),
                     )
                     FilterChip(
                         selected = progress.studyScope == StudyScope.Surahs,
                         onClick = { onStudyScopeChange(StudyScope.Surahs) },
-                        label = { Text("Por sura") },
+                        label = { Text(stringResource(R.string.scope_surah)) },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -166,9 +172,13 @@ fun ProgressScreen(
                     Spacer(Modifier.height(10.dp))
                     Text(
                         if (progress.selectedSurahs.size == 1) {
-                            "1 sura selecionada: ${progress.selectedSurahs.first()}"
+                            stringResource(R.string.one_selected_surah, progress.selectedSurahs.first())
                         } else {
-                            "${progress.selectedSurahs.size} suras selecionadas"
+                            pluralStringResource(
+                                R.plurals.selected_surahs_count,
+                                progress.selectedSurahs.size,
+                                progress.selectedSurahs.size,
+                            )
                         },
                         color = Forest,
                         fontWeight = FontWeight.SemiBold,
@@ -186,12 +196,16 @@ fun ProgressScreen(
                         onClick = { showSurahDialog = true },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Pesquisar e escolher suras")
+                        Text(stringResource(R.string.search_choose_surahs))
                     }
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "${activeWords.size} cartões no estudo atual",
+                    pluralStringResource(
+                        R.plurals.cards_in_current_study,
+                        activeWords.size,
+                        activeWords.size,
+                    ),
                     color = Forest,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
@@ -199,7 +213,38 @@ fun ProgressScreen(
             }
         }
         Spacer(Modifier.height(24.dp))
-        Text("Rotina", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.language), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(
+            stringResource(R.string.language_description),
+            color = Muted,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(Modifier.height(10.dp))
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(20.dp),
+            tonalElevation = 1.dp,
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(18.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilterChip(
+                    selected = currentLanguage == AppLanguage.Portuguese,
+                    onClick = { onLanguageChange(AppLanguage.Portuguese) },
+                    label = { Text(stringResource(R.string.language_portuguese)) },
+                    modifier = Modifier.weight(1f),
+                )
+                FilterChip(
+                    selected = currentLanguage == AppLanguage.English,
+                    onClick = { onLanguageChange(AppLanguage.English) },
+                    label = { Text(stringResource(R.string.language_english)) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        Spacer(Modifier.height(24.dp))
+        Text(stringResource(R.string.routine), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(10.dp))
         Surface(
             color = MaterialTheme.colorScheme.primaryContainer,
@@ -208,12 +253,12 @@ fun ProgressScreen(
             Column(Modifier.padding(18.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Estudo ao ligar a tela", color = Forest, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.lock_screen_study), color = Forest, fontWeight = FontWeight.Bold)
                         Text(
                             if (progress.lockScreenEnabled) {
-                                "Ativo: uma nova palavra será aberta sempre que a tela acender."
+                                stringResource(R.string.lock_screen_study_enabled)
                             } else {
-                                "Requer a permissão “Aparecer sobre outros apps” e mantém um serviço ativo."
+                                stringResource(R.string.lock_screen_study_disabled)
                             },
                             color = Muted,
                             style = MaterialTheme.typography.bodySmall,
@@ -226,22 +271,26 @@ fun ProgressScreen(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     TextButton(onClick = onPreviewLockScreen) {
-                        Text("Testar cartão")
+                        Text(stringResource(R.string.preview_card))
                     }
                     TextButton(onClick = onOpenAppSettings) {
-                        Text("Configurações")
+                        Text(stringResource(R.string.settings))
                     }
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
                 Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Quiz ao ligar a tela", color = Forest, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.lock_screen_quiz), color = Forest, fontWeight = FontWeight.Bold)
                         Text(
                             if (progress.lockScreenQuizEnabled) {
-                                "Um quiz aparecerá depois de ${progress.lockScreenQuizInterval} palavra${if (progress.lockScreenQuizInterval == 1) "" else "s"}."
+                                pluralStringResource(
+                                    R.plurals.lock_screen_quiz_enabled,
+                                    progress.lockScreenQuizInterval,
+                                    progress.lockScreenQuizInterval,
+                                )
                             } else {
-                                "Opcional: intercale perguntas de quatro alternativas com os cartões."
+                                stringResource(R.string.lock_screen_quiz_disabled)
                             },
                             color = Muted,
                             style = MaterialTheme.typography.bodySmall,
@@ -255,9 +304,13 @@ fun ProgressScreen(
                 if (progress.lockScreenQuizEnabled) {
                     Spacer(Modifier.height(12.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Intervalo", fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.interval), fontWeight = FontWeight.SemiBold)
                         Text(
-                            "${progress.lockScreenQuizInterval} palavra${if (progress.lockScreenQuizInterval == 1) "" else "s"}",
+                            pluralStringResource(
+                                R.plurals.words_count,
+                                progress.lockScreenQuizInterval,
+                                progress.lockScreenQuizInterval,
+                            ),
                             color = Forest,
                             fontWeight = FontWeight.Bold,
                         )
@@ -280,9 +333,9 @@ fun ProgressScreen(
             Column(Modifier.padding(18.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Lembrete diário", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.daily_reminder), fontWeight = FontWeight.Bold)
                         Text(
-                            "Notificação diária às 8h, respeitando as permissões do Android.",
+                            stringResource(R.string.daily_reminder_description),
                             color = Muted,
                             style = MaterialTheme.typography.bodySmall,
                         )
@@ -291,8 +344,12 @@ fun ProgressScreen(
                 }
                 Spacer(Modifier.height(20.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Meta diária", fontWeight = FontWeight.Bold)
-                    Text("${progress.dailyGoal} palavras", color = Forest, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.daily_goal), fontWeight = FontWeight.Bold)
+                    Text(
+                        pluralStringResource(R.plurals.words_count, progress.dailyGoal, progress.dailyGoal),
+                        color = Forest,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
                 Slider(
                     value = progress.dailyGoal.toFloat(),
@@ -308,7 +365,7 @@ fun ProgressScreen(
             shape = RoundedCornerShape(18.dp),
         ) {
             Text(
-                "Nota editorial: raízes, morfologia e traduções de estudo devem passar por revisão de um especialista antes da publicação.",
+                stringResource(R.string.editorial_note),
                 modifier = Modifier.padding(16.dp),
                 color = Forest,
                 style = MaterialTheme.typography.bodyMedium,

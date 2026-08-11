@@ -13,16 +13,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.annotation.StringRes
+import com.kalima.quran.R
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.ui.theme.KalimaTheme
 
-private enum class AppTab(val label: String, val symbol: String) {
-    Study("Estudar", "ا"),
-    Library("Palavras", "ب"),
-    Quiz("Quiz", "؟"),
-    Progress("Progresso", "ج"),
+private enum class AppTab(@param:StringRes val labelRes: Int, val symbol: String) {
+    Study(R.string.tab_study, "ا"),
+    Library(R.string.tab_words, "ب"),
+    Quiz(R.string.tab_quiz, "؟"),
+    Progress(R.string.tab_progress, "ج"),
 }
 
 @Composable
@@ -39,6 +43,8 @@ fun KalimaApp(
     onToggleSurah: (Int) -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
+    currentLanguage: AppLanguage,
+    onLanguageChange: (AppLanguage) -> Unit,
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
     val selected = AppTab.valueOf(selectedName)
@@ -59,7 +65,7 @@ fun KalimaApp(
                                     fontWeight = FontWeight.Bold,
                                 )
                             },
-                            label = { Text(tab.label) },
+                            label = { Text(stringResource(tab.labelRes)) },
                         )
                     }
                 }
@@ -85,6 +91,8 @@ fun KalimaApp(
                         onToggleSurah = onToggleSurah,
                         onOpenAppSettings = onOpenAppSettings,
                         onPreviewLockScreen = onPreviewLockScreen,
+                        currentLanguage = currentLanguage,
+                        onLanguageChange = onLanguageChange,
                     )
                 }
             }
