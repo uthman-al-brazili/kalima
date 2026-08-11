@@ -1,5 +1,6 @@
 package com.kalima.quran.data
 
+import com.kalima.quran.ui.buildStudySession
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -65,6 +66,32 @@ class WordRepositoryTest {
         assertTrue(selected.isNotEmpty())
         assertEquals(setOf(103, 110), selected.mapNotNull(QuranWord::surahNumber).toSet())
         assertTrue(selected.all { it.surahNumber in setOf(103, 110) })
+    }
+
+    @Test
+    fun requestedLockScreenWordStartsTheStudySession() {
+        val words = WordRepository.words.take(4)
+        val requested = words[2]
+
+        val session = buildStudySession(words, defaultWord = words[0], requestedWord = requested)
+
+        assertEquals(requested.id, session.first().id)
+        assertEquals(words.map(QuranWord::id).toSet(), session.map(QuranWord::id).toSet())
+    }
+
+    @Test
+    fun requestedWordOutsideTheCurrentScopeIsStillShownFirst() {
+        val scopedWords = WordRepository.words.take(3)
+        val requested = WordRepository.words[4]
+
+        val session = buildStudySession(
+            words = scopedWords,
+            defaultWord = scopedWords[0],
+            requestedWord = requested,
+        )
+
+        assertEquals(requested.id, session.first().id)
+        assertEquals(scopedWords.size + 1, session.size)
     }
 
     private companion object {

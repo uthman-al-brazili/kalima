@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.9.3 — 2026-08-11
+
+- Opening Kalima from a lock-screen study or quiz card now selects the **Study**
+  tab and shows that card's exact word first.
+- The same destination is honored when Kalima is already open on another tab,
+  including repeated openings of the same word.
+
 ## 0.9.2 — 2026-08-11
 
 - Removed the redundant context-meaning line from lock-screen study cards.

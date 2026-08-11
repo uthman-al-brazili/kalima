@@ -7,15 +7,19 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kalima.quran.data.ProgressStore
+import com.kalima.quran.data.WordRepository
 import com.kalima.quran.lockscreen.LockScreenStudyService
 import com.kalima.quran.lockscreen.LockScreenStudyActivity
 import com.kalima.quran.localization.AppLanguage
@@ -23,9 +27,11 @@ import com.kalima.quran.localization.LanguageManager
 import com.kalima.quran.notifications.NotificationHelper
 import com.kalima.quran.notifications.ReminderScheduler
 import com.kalima.quran.ui.KalimaApp
+import com.kalima.quran.ui.StudyLaunchTarget
 
 class MainActivity : ComponentActivity() {
     private lateinit var progressStore: ProgressStore
+    private var studyLaunchTarget by mutableStateOf<StudyLaunchTarget?>(null)
 
     private val notificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -55,6 +61,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         progressStore = ProgressStore(applicationContext)
+        updateStudyLaunchTarget(intent)
         NotificationHelper.createChannel(this)
         if (progressStore.progress.value.reminderEnabled) {
             ReminderScheduler.schedule(this)
@@ -84,8 +91,15 @@ class MainActivity : ComponentActivity() {
                 onPreviewLockScreen = ::previewLockScreen,
                 currentLanguage = LanguageManager.selectedLanguage(this),
                 onLanguageChange = ::changeLanguage,
+                studyLaunchTarget = studyLaunchTarget,
             )
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        updateStudyLaunchTarget(intent)
     }
 
     private fun changeLanguage(language: AppLanguage) {
@@ -148,5 +162,25 @@ class MainActivity : ComponentActivity() {
             progressStore.setReminderEnabled(true)
             ReminderScheduler.schedule(this)
         }
+    }
+
+    private fun updateStudyLaunchTarget(intent: Intent) {
+        val wordId = intent.getStringExtra(EXTRA_STUDY_WORD_ID) ?: return
+        if (WordRepository.words.none { it.id == wordId }) return
+        val requestId = intent.getLongExtra(EXTRA_STUDY_REQUEST_ID, 0L)
+            .takeIf { it != 0L }
+            ?: SystemClock.elapsedRealtimeNanos()
+        studyLaunchTarget = StudyLaunchTarget(wordId, requestId)
+    }
+
+    companion object {
+        private const val EXTRA_STUDY_WORD_ID = "com.kalima.quran.extra.STUDY_WORD_ID"
+        private const val EXTRA_STUDY_REQUEST_ID = "com.kalima.quran.extra.STUDY_REQUEST_ID"
+
+        fun createStudyIntent(context: Context, wordId: String): Intent =
+            Intent(context, MainActivity::class.java).apply {
+                putExtra(EXTRA_STUDY_WORD_ID, wordId)
+                putExtra(EXTRA_STUDY_REQUEST_ID, SystemClock.elapsedRealtimeNanos())
+            }
     }
 }

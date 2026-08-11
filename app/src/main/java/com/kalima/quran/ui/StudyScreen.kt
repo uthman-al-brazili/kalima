@@ -24,6 +24,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -53,20 +54,35 @@ fun StudyScreen(
     onAnswer: (String, Boolean) -> Unit,
     onEnableLockScreen: () -> Unit,
     pronouncer: ArabicPronouncer,
+    launchTarget: StudyLaunchTarget? = null,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val session = remember(progress.studyScope, selectionKey) {
+    val session = remember(progress.studyScope, selectionKey, launchTarget?.wordId) {
         val words = WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs)
-        val start = words.indexOf(WordRepository.wordFor(LocalDate.now(), words)).coerceAtLeast(0)
-        words.drop(start) + words.take(start)
+        val requestedWord = launchTarget?.wordId
+            ?.let { requestedId -> WordRepository.words.firstOrNull { it.id == requestedId } }
+        buildStudySession(
+            words = words,
+            defaultWord = WordRepository.wordFor(LocalDate.now(), words),
+            requestedWord = requestedWord,
+        )
     }
-    var currentIndex by rememberSaveable(progress.studyScope.name, selectionKey) { mutableIntStateOf(0) }
+    var currentIndex by rememberSaveable(
+        progress.studyScope.name,
+        selectionKey,
+        launchTarget?.requestId,
+    ) { mutableIntStateOf(0) }
     val word = session[currentIndex % session.size]
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(launchTarget?.requestId) {
+        if (launchTarget != null) scrollState.scrollTo(0)
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             .padding(horizontal = 20.dp, vertical = 18.dp),
     ) {
         StudyHeader(progress)
@@ -135,6 +151,20 @@ fun StudyScreen(
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+internal fun buildStudySession(
+    words: List<QuranWord>,
+    defaultWord: QuranWord,
+    requestedWord: QuranWord?,
+): List<QuranWord> {
+    val firstWord = requestedWord ?: defaultWord
+    val firstIndex = words.indexOfFirst { it.id == firstWord.id }
+    return when {
+        firstIndex >= 0 -> words.drop(firstIndex) + words.take(firstIndex)
+        requestedWord != null -> listOf(requestedWord) + words.filterNot { it.id == requestedWord.id }
+        else -> words
     }
 }
 

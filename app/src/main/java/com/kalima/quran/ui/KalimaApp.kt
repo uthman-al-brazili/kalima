@@ -8,7 +8,9 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -29,6 +31,8 @@ private enum class AppTab(@param:StringRes val labelRes: Int, val symbol: String
     Progress(R.string.tab_progress, "ج"),
 }
 
+data class StudyLaunchTarget(val wordId: String, val requestId: Long)
+
 @Composable
 fun KalimaApp(
     progress: StudyProgress,
@@ -45,10 +49,22 @@ fun KalimaApp(
     onPreviewLockScreen: () -> Unit,
     currentLanguage: AppLanguage,
     onLanguageChange: (AppLanguage) -> Unit,
+    studyLaunchTarget: StudyLaunchTarget? = null,
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
-    val selected = AppTab.valueOf(selectedName)
+    var handledStudyRequestId by rememberSaveable { mutableLongStateOf(NO_STUDY_REQUEST) }
+    val hasPendingStudyRequest = studyLaunchTarget != null &&
+        studyLaunchTarget.requestId != handledStudyRequestId
+    val selected = if (hasPendingStudyRequest) AppTab.Study else AppTab.valueOf(selectedName)
     val pronouncer = rememberArabicPronouncer()
+
+    LaunchedEffect(studyLaunchTarget?.requestId) {
+        val target = studyLaunchTarget ?: return@LaunchedEffect
+        if (target.requestId != handledStudyRequestId) {
+            selectedName = AppTab.Study.name
+            handledStudyRequestId = target.requestId
+        }
+    }
 
     KalimaTheme {
         Scaffold(
@@ -79,6 +95,7 @@ fun KalimaApp(
                         onAnswer = onAnswer,
                         onEnableLockScreen = { onLockScreenChange(true) },
                         pronouncer = pronouncer,
+                        launchTarget = studyLaunchTarget,
                     )
                     AppTab.Library -> LibraryScreen(progress = progress, pronouncer = pronouncer)
                     AppTab.Quiz -> QuizScreen(
@@ -105,3 +122,5 @@ fun KalimaApp(
         }
     }
 }
+
+private const val NO_STUDY_REQUEST = Long.MIN_VALUE

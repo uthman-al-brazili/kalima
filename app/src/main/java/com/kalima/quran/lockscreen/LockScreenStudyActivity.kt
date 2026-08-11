@@ -183,8 +183,12 @@ class LockScreenStudyActivity : ComponentActivity() {
     }
 
     private fun launchMainActivity() {
+        val wordId = when (val content = currentContent) {
+            is LockScreenContent.WordCard -> content.word.id
+            is LockScreenContent.QuizCard -> content.question.word.id
+        }
         startActivity(
-            Intent(this, MainActivity::class.java).apply {
+            MainActivity.createStudyIntent(this, wordId).apply {
                 addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TOP or
