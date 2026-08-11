@@ -47,8 +47,13 @@ class LockScreenStudyActivity : ComponentActivity() {
         progressStore = ProgressStore(applicationContext)
         configureWindowForLockScreen()
 
-        currentContent = restoreContent(savedInstanceState)
+        val content = restoreContent(savedInstanceState)
             ?: progressStore.nextLockScreenContent()
+        if (content == null) {
+            finish()
+            return
+        }
+        currentContent = content
 
         setContent {
             when (val content = currentContent) {

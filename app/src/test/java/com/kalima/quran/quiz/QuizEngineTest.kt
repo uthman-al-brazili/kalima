@@ -43,4 +43,19 @@ class QuizEngineTest {
 
         assertTrue(session.any { it.word.id == reviewingId })
     }
+
+    @Test
+    fun optionPoolDoesNotIntroduceAdditionalQuizTargets() {
+        val allowedTarget = words.first()
+
+        val session = QuizEngine.createSession(
+            words = listOf(allowedTarget),
+            statusFor = { WordStatus.New },
+            random = Random(53),
+            optionWords = words,
+        )
+
+        assertTrue(session.all { it.word.id == allowedTarget.id })
+        assertTrue(session.all { it.options.size == QuizQuestion.OPTION_COUNT })
+    }
 }

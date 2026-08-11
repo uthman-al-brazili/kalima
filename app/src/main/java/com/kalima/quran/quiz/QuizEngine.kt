@@ -27,13 +27,15 @@ object QuizEngine {
         words: List<QuranWord>,
         statusFor: (String) -> WordStatus,
         random: Random = Random.Default,
+        optionWords: List<QuranWord> = words,
     ): List<QuizQuestion> {
         require(words.isNotEmpty()) { "O quiz precisa de palavras" }
+        require(optionWords.isNotEmpty()) { "O quiz precisa de alternativas" }
         val targets = prioritized(words, statusFor, random)
             .let { ordered -> List(SESSION_SIZE) { ordered[it % ordered.size] } }
         val types = sessionTypes.shuffled(random)
         return targets.mapIndexed { index, word ->
-            createQuestion(word, types[index], words, random)
+            createQuestion(word, types[index], optionWords, random)
         }
     }
 
@@ -41,13 +43,15 @@ object QuizEngine {
         words: List<QuranWord>,
         statusFor: (String) -> WordStatus,
         sequence: Int,
+        optionWords: List<QuranWord> = words,
     ): QuizQuestion {
         require(words.isNotEmpty()) { "O quiz precisa de palavras" }
+        require(optionWords.isNotEmpty()) { "O quiz precisa de alternativas" }
         val random = Random(sequence * 7_919 + 41)
         val ordered = prioritized(words, statusFor, random)
         val word = ordered[Math.floorMod(sequence, ordered.size)]
         val type = lockScreenTypes[Math.floorMod(sequence, lockScreenTypes.size)]
-        return createQuestion(word, type, words, random)
+        return createQuestion(word, type, optionWords, random)
     }
 
     internal fun createQuestion(

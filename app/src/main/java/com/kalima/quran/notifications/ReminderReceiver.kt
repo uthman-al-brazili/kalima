@@ -17,6 +17,7 @@ import com.kalima.quran.MainActivity
 import com.kalima.quran.R
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.lockscreen.LockScreenStudyService
 import com.kalima.quran.localization.LanguageManager
 
@@ -69,7 +70,10 @@ object NotificationHelper {
         val localized = LanguageManager.localizedContext(context)
         createChannel(localized)
         val progress = ProgressStore(context).progress.value
-        val activeWords = WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs)
+        val activeWords = progress.limitNewWords(
+            WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs),
+        )
+        if (activeWords.isEmpty()) return
         val word = WordRepository.wordFor(source = activeWords)
         val contentIntent = PendingIntent.getActivity(
             context,

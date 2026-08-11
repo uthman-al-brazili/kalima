@@ -85,6 +85,7 @@ class MainActivity : ComponentActivity() {
                 onLockScreenQuizIntervalChange = progressStore::setLockScreenQuizInterval,
                 onReminderChange = ::changeReminder,
                 onDailyGoalChange = progressStore::setDailyGoal,
+                onMaximumWordsChange = progressStore::setMaximumWords,
                 onStudyScopeChange = progressStore::setStudyScope,
                 onToggleSurah = progressStore::toggleSurah,
                 onOpenAppSettings = ::openAppSettings,

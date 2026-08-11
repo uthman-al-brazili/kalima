@@ -74,6 +74,12 @@
         <item quantity="one">%1$d card in the current study set</item>
         <item quantity="other">%1$d cards in the current study set</item>
     </plurals>
+    <string name="learning_limit">Word limit</string>
+    <string name="learning_limit_description">Stop introducing new cards when the total number of learned or reviewing words reaches this maximum. Words you have already seen remain available.</string>
+    <string name="maximum_words">Maximum words</string>
+    <string name="learning_limit_range">Choose a number from %1$d to %2$d.</string>
+    <string name="learning_limit_reached_title">You have reached your word limit</string>
+    <string name="learning_limit_reached_description">There are no previously seen words in the selected content. Increase the limit or choose different content on the Progress tab.</string>
     <string name="routine">Routine</string>
     <string name="lock_screen_study">Study when the screen turns on</string>
     <string name="lock_screen_study_enabled">Active: a new word will open whenever the screen turns on.</string>

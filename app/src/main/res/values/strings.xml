@@ -74,6 +74,12 @@
         <item quantity="one">%1$d cartão no estudo atual</item>
         <item quantity="other">%1$d cartões no estudo atual</item>
     </plurals>
+    <string name="learning_limit">Limite de palavras</string>
+    <string name="learning_limit_description">Pare de apresentar cartões novos quando o total de palavras aprendidas ou em revisão alcançar o máximo. As palavras já vistas continuam disponíveis.</string>
+    <string name="maximum_words">Máximo de palavras</string>
+    <string name="learning_limit_range">Escolha um número entre %1$d e %2$d.</string>
+    <string name="learning_limit_reached_title">Seu limite de palavras foi alcançado</string>
+    <string name="learning_limit_reached_description">Não há palavras já vistas no conteúdo selecionado. Aumente o limite ou escolha outro conteúdo na aba Progresso.</string>
     <string name="routine">Rotina</string>
     <string name="lock_screen_study">Estudo ao ligar a tela</string>
     <string name="lock_screen_study_enabled">Ativo: uma nova palavra será aberta sempre que a tela acender.</string>

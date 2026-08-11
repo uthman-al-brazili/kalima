@@ -40,6 +40,7 @@ import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QUIZ_MASTERY_DAYS
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.quiz.QuizEngine
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
@@ -55,12 +56,29 @@ fun QuizScreen(
     pronouncer: ArabicPronouncer,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val activeWords = remember(progress.studyScope, selectionKey) {
+    val selectedWords = remember(progress.studyScope, selectionKey) {
         WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs)
+    }
+    val activeWords = remember(
+        progress.studyScope,
+        selectionKey,
+        progress.maximumWords,
+        progress.learnedIds,
+        progress.reviewingIds,
+    ) {
+        progress.limitNewWords(selectedWords)
+    }
+    if (activeWords.isEmpty()) {
+        LearningLimitEmptyState()
+        return
     }
     var sessionVersion by rememberSaveable { mutableIntStateOf(0) }
     val session = remember(progress.studyScope, selectionKey, sessionVersion) {
-        QuizEngine.createSession(activeWords, progress::statusFor)
+        QuizEngine.createSession(
+            words = activeWords,
+            statusFor = progress::statusFor,
+            optionWords = selectedWords,
+        )
     }
     var currentIndex by rememberSaveable(sessionVersion) { mutableIntStateOf(0) }
     var selectedOption by rememberSaveable(sessionVersion, currentIndex) {

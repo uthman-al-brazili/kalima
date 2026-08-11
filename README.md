@@ -15,6 +15,8 @@ Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit,
 - todas as 42.001 formas de vocabulário únicas das 114 suras, preservando um cartão por forma e por sura;
 - seleção pesquisável do estudo por uma ou várias suras, incluindo combinações como 2 + 36 + 114;
 - modos “Todo o conteúdo”, “Mais usadas” e “Por sura”;
+- limite máximo opcional e persistente para impedir que novos cartões ampliem
+  o conjunto de aprendizado além do total escolhido;
 - aba **Quiz** com sessões tranquilas de cinco perguntas e quatro alternativas;
 - distribuição por sessão: duas perguntas árabe → português, uma português → árabe e duas com palavra destacada em uma ayah;
 - domínio automático após acertos em três dias diferentes, sem contar repetições no mesmo dia;

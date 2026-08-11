@@ -18,6 +18,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -31,14 +32,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.LearningWordLimiter
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.ui.theme.Forest
 import com.kalima.quran.ui.theme.Gold
@@ -53,6 +58,7 @@ fun ProgressScreen(
     onLockScreenQuizIntervalChange: (Int) -> Unit,
     onReminderChange: (Boolean) -> Unit,
     onDailyGoalChange: (Int) -> Unit,
+    onMaximumWordsChange: (Int) -> Unit,
     onStudyScopeChange: (StudyScope) -> Unit,
     onToggleSurah: (Int) -> Unit,
     onOpenAppSettings: () -> Unit,
@@ -67,8 +73,25 @@ fun ProgressScreen(
     val learnedInScope = remember(activeWords, progress.learnedIds) {
         activeWords.count { it.id in progress.learnedIds }
     }
+    val learningWords = remember(
+        activeWords,
+        progress.maximumWords,
+        progress.learnedIds,
+        progress.reviewingIds,
+    ) {
+        progress.limitNewWords(activeWords)
+    }
     val learnedFraction = learnedInScope.toFloat() / activeWords.size
     var showSurahDialog by rememberSaveable { mutableStateOf(false) }
+    var maximumWordsText by rememberSaveable(progress.maximumWords) {
+        mutableStateOf(
+            (progress.maximumWords.takeIf { it != LearningWordLimiter.UNLIMITED }
+                ?: LearningWordLimiter.DEFAULT_LIMIT).toString(),
+        )
+    }
+    val enteredMaximum = maximumWordsText.toIntOrNull()
+    val validMaximum = enteredMaximum != null &&
+        enteredMaximum in LearningWordLimiter.MINIMUM_LIMIT..WordRepository.words.size
 
     if (showSurahDialog) {
         SurahSelectionDialog(
@@ -203,13 +226,72 @@ fun ProgressScreen(
                 Text(
                     pluralStringResource(
                         R.plurals.cards_in_current_study,
-                        activeWords.size,
-                        activeWords.size,
+                        learningWords.size,
+                        learningWords.size,
                     ),
                     color = Forest,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                 )
+                Spacer(Modifier.height(14.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
+                Spacer(Modifier.height(14.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.learning_limit), fontWeight = FontWeight.Bold)
+                        Text(
+                            stringResource(R.string.learning_limit_description),
+                            color = Muted,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Switch(
+                        checked = progress.maximumWords != LearningWordLimiter.UNLIMITED,
+                        onCheckedChange = { enabled ->
+                            onMaximumWordsChange(
+                                if (enabled) {
+                                    enteredMaximum?.takeIf { validMaximum }
+                                        ?: LearningWordLimiter.DEFAULT_LIMIT
+                                } else {
+                                    LearningWordLimiter.UNLIMITED
+                                },
+                            )
+                        },
+                    )
+                }
+                if (progress.maximumWords != LearningWordLimiter.UNLIMITED) {
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = maximumWordsText,
+                        onValueChange = { value ->
+                            if (
+                                value.all(Char::isDigit) &&
+                                value.length <= WordRepository.words.size.toString().length
+                            ) {
+                                maximumWordsText = value
+                                value.toIntOrNull()
+                                    ?.takeIf {
+                                        it in LearningWordLimiter.MINIMUM_LIMIT..WordRepository.words.size
+                                    }
+                                    ?.let(onMaximumWordsChange)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.maximum_words)) },
+                        supportingText = {
+                            Text(
+                                stringResource(
+                                    R.string.learning_limit_range,
+                                    LearningWordLimiter.MINIMUM_LIMIT,
+                                    WordRepository.words.size,
+                                ),
+                            )
+                        },
+                        isError = !validMaximum,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                    )
+                }
             }
         }
         Spacer(Modifier.height(24.dp))

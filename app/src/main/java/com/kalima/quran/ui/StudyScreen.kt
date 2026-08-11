@@ -43,6 +43,7 @@ import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.ui.theme.Forest
 import com.kalima.quran.ui.theme.Gold
 import com.kalima.quran.ui.theme.Muted
@@ -57,8 +58,22 @@ fun StudyScreen(
     launchTarget: StudyLaunchTarget? = null,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val session = remember(progress.studyScope, selectionKey, launchTarget?.wordId) {
-        val words = WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs)
+    val words = remember(
+        progress.studyScope,
+        selectionKey,
+        progress.maximumWords,
+        progress.learnedIds,
+        progress.reviewingIds,
+    ) {
+        progress.limitNewWords(
+            WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs),
+        )
+    }
+    if (words.isEmpty()) {
+        LearningLimitEmptyState()
+        return
+    }
+    val session = remember(words, launchTarget?.wordId) {
         val requestedWord = launchTarget?.wordId
             ?.let { requestedId -> WordRepository.words.firstOrNull { it.id == requestedId } }
         buildStudySession(

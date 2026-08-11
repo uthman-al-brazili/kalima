@@ -3,6 +3,16 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.10.0 — 2026-08-11
+
+- Added an optional, persistent maximum-word setting under **Progress > Choose
+  words**, with an exact user-entered limit.
+- Study cards, quizzes, daily reminders, and lock-screen learning now stop
+  introducing unseen words when the maximum is reached while continuing to
+  offer previously learned and reviewing words.
+- Lowering the limit never removes existing progress, and switching the limit
+  off restores the full selected study set.
+
 ## 0.9.3 — 2026-08-11
 
 - Opening Kalima from a lock-screen study or quiz card now selects the **Study**

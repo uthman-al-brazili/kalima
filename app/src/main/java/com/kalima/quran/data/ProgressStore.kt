@@ -18,6 +18,7 @@ data class StudyProgress(
     val reviewingIds: Set<String> = emptySet(),
     val todayAnsweredIds: Set<String> = emptySet(),
     val dailyGoal: Int = 5,
+    val maximumWords: Int = LearningWordLimiter.UNLIMITED,
     val streakDays: Int = 0,
     val reminderEnabled: Boolean = false,
     val lockScreenEnabled: Boolean = false,
@@ -164,9 +165,11 @@ class ProgressStore(context: Context) {
         persist(updated, today())
     }
 
-    fun nextLockScreenContent(): LockScreenContent {
+    fun nextLockScreenContent(): LockScreenContent? {
         val current = _progress.value
-        val source = WordRepository.wordsFor(current.studyScope, current.selectedSurahs)
+        val selectedSource = WordRepository.wordsFor(current.studyScope, current.selectedSurahs)
+        val source = current.limitNewWords(selectedSource)
+        if (source.isEmpty()) return null
         val wordsSinceQuiz = preferences.getInt(KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ, 0)
         if (
             LockScreenQuizSchedule.shouldShowQuiz(
@@ -181,6 +184,7 @@ class ProgressStore(context: Context) {
                     words = source,
                     statusFor = current::statusFor,
                     sequence = quizSequence,
+                    optionWords = selectedSource,
                 )
             }.getOrNull()
             if (question != null) {
@@ -209,6 +213,19 @@ class ProgressStore(context: Context) {
         persist(updated, today())
     }
 
+    fun setMaximumWords(maximumWords: Int) {
+        val normalized = if (maximumWords == LearningWordLimiter.UNLIMITED) {
+            LearningWordLimiter.UNLIMITED
+        } else {
+            maximumWords.coerceIn(LearningWordLimiter.MINIMUM_LIMIT, WordRepository.words.size)
+        }
+        preferences.edit {
+            putInt(KEY_LOCK_SCREEN_SEQUENCE, 0)
+            putInt(KEY_LOCK_SCREEN_QUIZ_SEQUENCE, 0)
+        }
+        persist(_progress.value.copy(maximumWords = normalized), today())
+    }
+
     private fun load(): StudyProgress {
         val date = today()
         val storedDay = preferences.getString(KEY_TODAY, null)
@@ -222,6 +239,16 @@ class ProgressStore(context: Context) {
             reviewingIds = preferences.getStringSet(KEY_REVIEWING, emptySet()).orEmpty(),
             todayAnsweredIds = answered,
             dailyGoal = preferences.getInt(KEY_DAILY_GOAL, 5),
+            maximumWords = preferences.getInt(
+                KEY_MAXIMUM_WORDS,
+                LearningWordLimiter.UNLIMITED,
+            ).let { stored ->
+                if (stored == LearningWordLimiter.UNLIMITED) {
+                    LearningWordLimiter.UNLIMITED
+                } else {
+                    stored.coerceIn(LearningWordLimiter.MINIMUM_LIMIT, WordRepository.words.size)
+                }
+            },
             streakDays = preferences.getInt(KEY_STREAK, 0),
             reminderEnabled = preferences.getBoolean(KEY_REMINDER, false),
             lockScreenEnabled = preferences.getBoolean(KEY_LOCK_SCREEN_ENABLED, false),
@@ -255,6 +282,7 @@ class ProgressStore(context: Context) {
             putStringSet(KEY_TODAY_ANSWERED, progress.todayAnsweredIds)
             putString(KEY_TODAY, date.toString())
             putInt(KEY_DAILY_GOAL, progress.dailyGoal)
+            putInt(KEY_MAXIMUM_WORDS, progress.maximumWords)
             putInt(KEY_STREAK, progress.streakDays)
             putBoolean(KEY_REMINDER, progress.reminderEnabled)
             putBoolean(KEY_LOCK_SCREEN_ENABLED, progress.lockScreenEnabled)
@@ -293,6 +321,7 @@ class ProgressStore(context: Context) {
         private const val KEY_TODAY_ANSWERED = "today_answered"
         private const val KEY_TODAY = "today"
         private const val KEY_DAILY_GOAL = "daily_goal"
+        private const val KEY_MAXIMUM_WORDS = "maximum_words"
         private const val KEY_STREAK = "streak"
         private const val KEY_REMINDER = "reminder"
         private const val KEY_LOCK_SCREEN_ENABLED = "lock_screen_enabled"
