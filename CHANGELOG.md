@@ -3,6 +3,18 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.14.4 — 2026-08-12
+
+- Fixed Windows pronunciation buttons silently doing nothing by using modern
+  Windows speech voices with a classic SAPI fallback, detecting whether an
+  Arabic voice is installed, and showing a localized recovery dialog that
+  opens Speech settings when one is needed.
+- Standardized speech text cleanup across Android and Windows so both device
+  voices receive the same normalized Arabic text.
+- Applied the official book-and-kāf logo consistently to Android onboarding
+  and notifications and to Windows onboarding, sidebar, title bar, tray,
+  executable, installer, and Start menu surfaces.
+
 ## 0.14.3 — 2026-08-12
 
 - Brought the Windows release up to date with Android: Arabic vocabulary

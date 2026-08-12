@@ -218,7 +218,7 @@ private fun LibraryDetail(
         Text(word.meaning, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { DesktopPronouncer.speak(word.arabic) }) { Text("▶  ${language.t("Ouvir", "Listen")}") }
+            OutlinedButton(onClick = { DesktopPronouncer.speak(word.arabic, language) }) { Text("▶  ${language.t("Ouvir", "Listen")}") }
             OutlinedButton(onClick = { store.toggleFavorite(word.id) }) {
                 Text((if (word.id in progress.favoriteIds) "★ " else "☆ ") + language.t("Favorita", "Favorite"))
             }
@@ -518,6 +518,22 @@ fun SettingsScreen(store: DesktopProgressStore) {
             }
         }
         Spacer(Modifier.height(14.dp))
+        SettingsBlock(language.t("Pronúncia", "Pronunciation")) {
+            Text(language.t("Voz árabe do Windows", "Windows Arabic voice"), fontWeight = FontWeight.SemiBold)
+            Text(
+                language.t(
+                    "O botão Ouvir usa uma voz árabe instalada no Windows. Se ainda não houver uma, instale-a nas configurações de fala.",
+                    "Listen uses an Arabic voice installed in Windows. If one is not available yet, install it in Speech settings.",
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(10.dp))
+            OutlinedButton(onClick = { DesktopPronouncer.openVoiceSettings(language) }) {
+                Text(language.t("Abrir configurações de voz", "Open voice settings"))
+            }
+        }
+        Spacer(Modifier.height(14.dp))
         SettingsBlock(language.t("Lembrete no Windows", "Windows reminder")) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -557,7 +573,7 @@ fun SettingsScreen(store: DesktopProgressStore) {
         }
         Spacer(Modifier.height(14.dp))
         SettingsBlock(language.t("Sobre esta versão", "About this version")) {
-            Text("Kalima 0.14.3 — Windows", fontWeight = FontWeight.Bold)
+            Text("Kalima 0.14.4 — Windows", fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(6.dp))
             Text(
                 language.t(

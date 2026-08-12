@@ -2,6 +2,7 @@ package com.kalima.quran.desktop
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -80,16 +81,19 @@ fun main(args: Array<String>) {
                 window.minimumSize = Dimension(920, 640)
             }
             KalimaTheme(store.progress.themeMode) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onBackground,
-                ) {
-                    if (store.progress.onboardingComplete) {
-                        DesktopApp(store)
-                    } else {
-                        DesktopOnboarding(store)
+                Box(Modifier.fillMaxSize()) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                    ) {
+                        if (store.progress.onboardingComplete) {
+                            DesktopApp(store)
+                        } else {
+                            DesktopOnboarding(store)
+                        }
                     }
+                    DesktopPronouncer.FeedbackDialog()
                 }
             }
         }
@@ -133,13 +137,7 @@ private fun DesktopSidebar(
     ) {
         Column(Modifier.padding(18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier.size(46.dp).clip(RoundedCornerShape(14.dp))
-                        .background(Gold),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("ك", color = MaterialTheme.colorScheme.primary, fontSize = 26.sp, fontWeight = FontWeight.Bold)
-                }
+                KalimaLogo(Modifier.size(46.dp))
                 Spacer(Modifier.width(12.dp))
                 Column {
                     Text("Kalima", fontWeight = FontWeight.Bold, fontSize = 22.sp)
@@ -216,7 +214,8 @@ private fun DesktopOnboarding(store: DesktopProgressStore) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.width(430.dp)) {
-                Text("كلمة", color = MaterialTheme.colorScheme.primary, fontSize = 60.sp, fontWeight = FontWeight.Bold)
+                KalimaLogo(Modifier.size(108.dp))
+                Spacer(Modifier.height(16.dp))
                 Text("Kalima", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(12.dp))
                 Text(
@@ -298,4 +297,13 @@ private fun DesktopOnboarding(store: DesktopProgressStore) {
             }
         }
     }
+}
+
+@Composable
+private fun KalimaLogo(modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource("ic_launcher-playstore.png"),
+        contentDescription = "Kalima",
+        modifier = modifier.clip(RoundedCornerShape(22)),
+    )
 }

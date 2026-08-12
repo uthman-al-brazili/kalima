@@ -89,9 +89,11 @@ o runtime necessário e não exige uma instalação separada do Java. O aplicati
 salva o progresso em `%APPDATA%\Kalima\progress.properties`.
 
 O estudo, quiz, biblioteca, progresso, idiomas, temas, voz do dispositivo e
-lembretes locais estão disponíveis no Windows. O cartão sobre a tela de
-bloqueio continua exclusivo do Android, pois a tela segura de entrada do
-Windows não aceita sobreposição de aplicativos comuns.
+lembretes locais estão disponíveis no Windows. A pronúncia requer uma voz
+árabe instalada em **Configurações > Hora e idioma > Fala**; quando ela não
+está disponível, o próprio Kalima oferece um atalho para essa tela. O cartão
+sobre a tela de bloqueio continua exclusivo do Android, pois a tela segura de
+entrada do Windows não aceita sobreposição de aplicativos comuns.
 
 ## Estudo na tela de bloqueio
 

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.kalima.quran"
-version = "0.14.3"
+version = "0.14.4"
 
 kotlin {
     jvmToolchain(17)
@@ -35,6 +35,7 @@ sourceSets {
             "com/kalima/quran/data/VocabularyAssetLoader.kt",
             "com/kalima/quran/data/WordRepository.kt",
             "com/kalima/quran/localization/AppLanguage.kt",
+            "com/kalima/quran/audio/ArabicSpeechText.kt",
             "com/kalima/quran/ui/theme/Theme.kt",
             "com/kalima/quran/quiz/QuizQuestion.kt",
             "com/kalima/quran/quiz/QuizEngine.kt",
@@ -59,6 +60,7 @@ compose.desktop {
             modules("java.desktop", "java.logging", "java.prefs")
 
             windows {
+                iconFile.set(project.file("src/main/resources/kalima.ico"))
                 perUserInstall = true
                 dirChooser = true
                 menuGroup = "Kalima"

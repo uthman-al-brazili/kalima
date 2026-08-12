@@ -2,7 +2,6 @@ package com.kalima.quran.audio
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
-import java.text.Normalizer
 import java.util.Locale
 
 enum class PronunciationResult {
@@ -102,16 +101,4 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
         const val DEFAULT_RATE = 0.78f
         const val SLOW_RATE = 0.58f
     }
-}
-
-object ArabicSpeechText {
-    fun prepare(text: String): String = Normalizer.normalize(text, Normalizer.Form.NFC)
-        .filterNot(::isQuranicAnnotation)
-        .replace("\u0640", "")
-        .trim()
-
-    private fun isQuranicAnnotation(character: Char): Boolean =
-        character.code in 0x0610..0x061A ||
-            character.code in 0x06D6..0x06ED ||
-            character.code in 0x08D3..0x08E1
 }

@@ -181,7 +181,7 @@ private fun StudyCard(
             )
             Spacer(Modifier.height(14.dp))
             OutlinedButton(
-                onClick = { DesktopPronouncer.speak(word.arabic) },
+                onClick = { DesktopPronouncer.speak(word.arabic, language) },
                 shape = RoundedCornerShape(14.dp),
             ) {
                 Text("▶  ${language.t("Ouvir voz do dispositivo", "Hear device voice")}")
@@ -422,7 +422,7 @@ private fun QuizQuestionCard(question: QuizQuestion, language: AppLanguage) {
                 QuizQuestionType.ArabicToPortuguese -> ArabicQuestionText(question.word.arabic, question.word.transliteration)
                 QuizQuestionType.PortugueseToArabic -> Text(question.word.meaning, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                 QuizQuestionType.ContextualMeaning -> ContextualQuestion(question)
-                QuizQuestionType.ListeningToPortuguese -> Button(onClick = { DesktopPronouncer.speak(question.word.arabic) }) {
+                QuizQuestionType.ListeningToPortuguese -> Button(onClick = { DesktopPronouncer.speak(question.word.arabic, language) }) {
                     Text("▶  ${language.t("Ouvir palavra", "Play word")}")
                 }
                 QuizQuestionType.ClozeToArabic -> {
@@ -523,7 +523,7 @@ private fun QuizFeedback(
                 Text("${question.word.transliteration}  •  ${question.word.root}  •  ${question.word.reference}")
                 Text(nextReview(schedule, language), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
             }
-            OutlinedButton(onClick = { DesktopPronouncer.speak(question.word.arabic) }) { Text("▶") }
+            OutlinedButton(onClick = { DesktopPronouncer.speak(question.word.arabic, language) }) { Text("▶") }
             Spacer(Modifier.width(10.dp))
             Button(onClick = onNext) { Text(language.t("Próxima", "Next")) }
         }
