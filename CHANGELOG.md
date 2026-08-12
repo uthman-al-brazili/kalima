@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.13.2 — 2026-08-12
+
+- Fixed quiz answers unexpectedly switching to a different question while the
+  tap was being recorded, which could show a correct choice as a failure.
+
 ## 0.13.1 — 2026-08-12
 
 - Fixed the English Progress screen so surah mastery rows use “Surah” instead

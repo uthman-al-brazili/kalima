@@ -43,6 +43,7 @@ import com.kalima.quran.data.ReviewQueue
 import com.kalima.quran.data.ReviewSchedule
 import com.kalima.quran.data.SpacedRepetition
 import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordStatus
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.limitNewWords
@@ -52,6 +53,26 @@ import com.kalima.quran.quiz.QuizQuestionType
 import com.kalima.quran.quiz.QuizMode
 import com.kalima.quran.quiz.VerseExcerptBuilder
 import java.time.Instant
+
+internal data class QuizSessionKey(
+    val studyScope: StudyScope,
+    val selectedSurahs: Set<Int>,
+    val favoriteIds: Set<String>,
+    val customStudyIds: Set<String>,
+    val maximumWords: Int,
+    val mode: QuizMode,
+    val version: Int,
+)
+
+internal fun StudyProgress.quizSessionKey(mode: QuizMode, version: Int) = QuizSessionKey(
+    studyScope = studyScope,
+    selectedSurahs = selectedSurahs,
+    favoriteIds = favoriteIds,
+    customStudyIds = customStudyIds,
+    maximumWords = maximumWords,
+    mode = mode,
+    version = version,
+)
 
 @Composable
 fun QuizScreen(
@@ -93,14 +114,8 @@ fun QuizScreen(
     var modeName by rememberSaveable { mutableStateOf(QuizMode.Mixed.name) }
     val mode = QuizMode.valueOf(modeName)
     var sessionVersion by rememberSaveable { mutableIntStateOf(0) }
-    val session = remember(
-        progress.studyScope,
-        selectionKey,
-        progress.maximumWords,
-        progress.reviewSchedules,
-        mode,
-        sessionVersion,
-    ) {
+    val sessionKey = progress.quizSessionKey(mode, sessionVersion)
+    val session = remember(sessionKey) {
         val ordered = ReviewQueue.ordered(
             words = activeWords,
             schedules = progress.reviewSchedules,
@@ -144,21 +159,11 @@ fun QuizScreen(
         )
         return
     }
-    var currentIndex by rememberSaveable(
-        progress.studyScope.name,
-        selectionKey,
-        progress.maximumWords,
-        sessionVersion,
-    ) { mutableIntStateOf(0) }
-    var selectedOption by rememberSaveable(sessionVersion, currentIndex) {
+    var currentIndex by rememberSaveable(sessionKey) { mutableIntStateOf(0) }
+    var selectedOption by rememberSaveable(sessionKey, currentIndex) {
         mutableStateOf<Int?>(null)
     }
-    var score by rememberSaveable(
-        progress.studyScope.name,
-        selectionKey,
-        progress.maximumWords,
-        sessionVersion,
-    ) { mutableIntStateOf(0) }
+    var score by rememberSaveable(sessionKey) { mutableIntStateOf(0) }
 
     if (currentIndex >= session.size) {
         QuizSummary(
