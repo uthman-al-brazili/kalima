@@ -5,6 +5,7 @@
     <string name="tab_words">Palavras</string>
     <string name="tab_quiz">Quiz</string>
     <string name="tab_progress">Progresso</string>
+    <string name="tab_settings">Ajustes</string>
 
     <string name="status_new">Nova</string>
     <string name="status_reviewing">Revisando</string>
@@ -85,7 +86,6 @@
     <string name="lock_screen_study_enabled">Ativo: uma nova palavra será aberta sempre que a tela acender.</string>
     <string name="lock_screen_study_disabled">Requer a permissão “Aparecer sobre outros apps” e mantém um serviço ativo.</string>
     <string name="preview_card">Testar cartão</string>
-    <string name="settings">Configurações</string>
     <string name="lock_screen_quiz">Quiz ao ligar a tela</string>
     <plurals name="lock_screen_quiz_enabled">
         <item quantity="one">Um quiz aparecerá depois de %1$d palavra.</item>
@@ -100,11 +100,24 @@
     <string name="daily_reminder">Lembrete diário</string>
     <string name="daily_reminder_description">Notificação diária às 8h, respeitando as permissões do Android.</string>
     <string name="daily_goal">Meta diária</string>
-    <string name="editorial_note">Nota editorial: raízes, morfologia e traduções de estudo devem passar por revisão de um especialista antes da publicação.</string>
     <string name="language">Idioma</string>
     <string name="language_description">Escolha o idioma da interface e dos significados das palavras.</string>
     <string name="language_portuguese">Português</string>
     <string name="language_english">English</string>
+
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_subtitle">Deixe o Kalima confortável para o seu estudo diário.</string>
+    <string name="appearance">Aparência</string>
+    <string name="appearance_description">Escolha o modo claro ou escuro, ou acompanhe o celular.</string>
+    <string name="theme_auto">Auto</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
+    <string name="show_advanced_settings">Mostrar ajustes avançados</string>
+    <string name="advanced_settings_description">Tela de bloqueio, intervalo do quiz e limites de palavras.</string>
+    <string name="lock_screen_features">Recursos da tela de bloqueio</string>
+    <string name="lock_screen_features_description">Ferramentas opcionais que podem aparecer quando a tela acender.</string>
+    <string name="android_app_settings">Ajustes do Android</string>
+    <string name="limit_new_words">Limitar palavras novas</string>
 
     <string name="choose_surahs">Escolher suras</string>
     <plurals name="surahs_selected">

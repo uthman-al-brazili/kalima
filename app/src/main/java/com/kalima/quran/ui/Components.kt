@@ -24,9 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.data.WordStatus
-import com.kalima.quran.ui.theme.Forest
-import com.kalima.quran.ui.theme.Gold
-import com.kalima.quran.ui.theme.Muted
 
 @Composable
 fun ArabicText(
@@ -50,9 +47,21 @@ fun ArabicText(
 @Composable
 fun WordStatusPill(status: WordStatus) {
     val (label, container, content) = when (status) {
-        WordStatus.New -> Triple(stringResource(R.string.status_new), MaterialTheme.colorScheme.surfaceVariant, Muted)
-        WordStatus.Reviewing -> Triple(stringResource(R.string.status_reviewing), MaterialTheme.colorScheme.secondaryContainer, Forest)
-        WordStatus.Learned -> Triple(stringResource(R.string.status_learned), MaterialTheme.colorScheme.primaryContainer, Forest)
+        WordStatus.New -> Triple(
+            stringResource(R.string.status_new),
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        WordStatus.Reviewing -> Triple(
+            stringResource(R.string.status_reviewing),
+            MaterialTheme.colorScheme.secondaryContainer,
+            MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+        WordStatus.Learned -> Triple(
+            stringResource(R.string.status_learned),
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        )
     }
     Surface(color = container, contentColor = content, shape = RoundedCornerShape(100.dp)) {
         Text(
@@ -75,7 +84,11 @@ fun StatBlock(value: String, label: String, modifier: Modifier = Modifier) {
         Column(Modifier.padding(18.dp)) {
             Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(4.dp))
-            Text(label, style = MaterialTheme.typography.bodyMedium, color = Muted)
+            Text(
+                label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -86,9 +99,16 @@ fun RootAndGrammar(root: String, grammar: String) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
-        Surface(color = Gold.copy(alpha = 0.3f), shape = RoundedCornerShape(10.dp)) {
+        Surface(
+            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f),
+            shape = RoundedCornerShape(10.dp),
+        ) {
             Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                Text(stringResource(R.string.root_label), style = MaterialTheme.typography.labelMedium, color = Muted)
+                Text(
+                    stringResource(R.string.root_label),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Spacer(Modifier.width(8.dp))
                 Text(root, fontWeight = FontWeight.Bold)
             }
@@ -113,7 +133,7 @@ fun LearningLimitEmptyState(modifier: Modifier = Modifier) {
     ) {
         Text(
             stringResource(R.string.learning_limit_reached_title),
-            color = Forest,
+            color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -121,7 +141,7 @@ fun LearningLimitEmptyState(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(10.dp))
         Text(
             stringResource(R.string.learning_limit_reached_description),
-            color = Muted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
     }

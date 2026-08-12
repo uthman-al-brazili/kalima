@@ -45,9 +45,6 @@ import com.kalima.quran.quiz.QuizEngine
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
 import com.kalima.quran.quiz.VerseExcerptBuilder
-import com.kalima.quran.ui.theme.Forest
-import com.kalima.quran.ui.theme.Gold
-import com.kalima.quran.ui.theme.Muted
 
 @Composable
 fun QuizScreen(
@@ -105,7 +102,7 @@ fun QuizScreen(
         Text("Quiz", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text(
             stringResource(R.string.quiz_intro),
-            color = Muted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodyMedium,
         )
         Spacer(Modifier.height(14.dp))
@@ -113,11 +110,11 @@ fun QuizScreen(
             LinearProgressIndicator(
                 progress = { currentIndex.toFloat() / session.size },
                 modifier = Modifier.weight(1f).height(7.dp),
-                color = Gold,
+                color = MaterialTheme.colorScheme.secondary,
             )
             Text(
                 "  ${currentIndex + 1}/${session.size}",
-                color = Forest,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
             )
         }
@@ -176,15 +173,23 @@ private fun QuizQuestionCard(question: QuizQuestion) {
                     QuizQuestionType.ContextualMeaning -> stringResource(R.string.quiz_contextual_meaning)
                 },
                 modifier = Modifier.fillMaxWidth(),
-                color = Muted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.height(18.dp))
             when (question.type) {
                 QuizQuestionType.ArabicToPortuguese -> {
-                    ArabicText(question.word.arabic, modifier = Modifier.fillMaxWidth(), size = 48, color = Forest)
-                    Text(question.word.transliteration, color = Muted)
+                    ArabicText(
+                        question.word.arabic,
+                        modifier = Modifier.fillMaxWidth(),
+                        size = 48,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        question.word.transliteration,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
 
                 QuizQuestionType.PortugueseToArabic -> Text(
@@ -193,7 +198,7 @@ private fun QuizQuestionCard(question: QuizQuestion) {
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Forest,
+                    color = MaterialTheme.colorScheme.primary,
                 )
 
                 QuizQuestionType.ContextualMeaning -> ContextualVerse(question)
@@ -210,8 +215,8 @@ private fun ContextualVerse(question: QuizQuestion) {
         if (excerpt.hasHighlight) {
             addStyle(
                 SpanStyle(
-                    background = Gold.copy(alpha = 0.42f),
-                    color = Forest,
+                    background = MaterialTheme.colorScheme.secondary.copy(alpha = 0.42f),
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                 ),
                 excerpt.highlightStart,
@@ -228,7 +233,11 @@ private fun ContextualVerse(question: QuizQuestion) {
         fontWeight = FontWeight.Medium,
     )
     Spacer(Modifier.height(10.dp))
-    Text(question.word.reference, color = Forest, style = MaterialTheme.typography.labelLarge)
+    Text(
+        question.word.reference,
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.labelLarge,
+    )
 }
 
 @Composable
@@ -241,12 +250,12 @@ private fun QuizOption(
     onClick: () -> Unit,
 ) {
     val container = when {
-        answered && correct -> Forest.copy(alpha = 0.16f)
+        answered && correct -> MaterialTheme.colorScheme.primaryContainer
         answered && selected -> MaterialTheme.colorScheme.errorContainer
         else -> MaterialTheme.colorScheme.surface
     }
     val border = when {
-        answered && correct -> Forest
+        answered && correct -> MaterialTheme.colorScheme.primary
         answered && selected -> MaterialTheme.colorScheme.error
         else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)
     }
@@ -263,7 +272,7 @@ private fun QuizOption(
                 text,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                 size = 28,
-                color = Forest,
+                color = MaterialTheme.colorScheme.primary,
             )
         } else {
             Text(
@@ -287,7 +296,11 @@ private fun QuizFeedback(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = if (correct) Forest.copy(alpha = 0.1f) else MaterialTheme.colorScheme.errorContainer,
+        color = if (correct) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.errorContainer
+        },
         shape = RoundedCornerShape(18.dp),
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -297,7 +310,11 @@ private fun QuizFeedback(
                 } else {
                     stringResource(R.string.correct_answer, question.correctAnswer)
                 },
-                color = if (correct) Forest else MaterialTheme.colorScheme.onErrorContainer,
+                color = if (correct) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onErrorContainer
+                },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
             )
@@ -308,9 +325,21 @@ private fun QuizFeedback(
                     question.word.transliteration,
                     question.word.root,
                 ),
-                color = Muted,
+                color = if (correct) {
+                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f)
+                } else {
+                    MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.78f)
+                },
             )
-            Text(question.word.reference, color = Forest, style = MaterialTheme.typography.bodySmall)
+            Text(
+                question.word.reference,
+                color = if (correct) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onErrorContainer
+                },
+                style = MaterialTheme.typography.bodySmall,
+            )
             Spacer(Modifier.height(10.dp))
             PronunciationButton(
                 arabic = question.word.arabic,
@@ -324,7 +353,7 @@ private fun QuizFeedback(
                     correctDays.coerceAtMost(QUIZ_MASTERY_DAYS),
                     QUIZ_MASTERY_DAYS,
                 ),
-                color = Forest,
+                color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.labelLarge,
             )
             Spacer(Modifier.height(12.dp))
@@ -359,7 +388,7 @@ private fun QuizSummary(
         Spacer(Modifier.height(12.dp))
         Text(
             "$score/${QuizEngine.SESSION_SIZE}",
-            color = Forest,
+            color = MaterialTheme.colorScheme.primary,
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
         )
@@ -369,14 +398,14 @@ private fun QuizSummary(
                 in 3..4 -> stringResource(R.string.quiz_good)
                 else -> stringResource(R.string.quiz_keep_practicing)
             },
-            color = Muted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         if (progress.quizTotalAnswers > 0) {
             Spacer(Modifier.height(10.dp))
             Text(
                 stringResource(R.string.overall_accuracy, historicalAccuracy),
-                color = Forest,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
             )
         }

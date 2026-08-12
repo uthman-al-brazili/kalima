@@ -39,8 +39,6 @@ import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.WordStatus
-import com.kalima.quran.ui.theme.Forest
-import com.kalima.quran.ui.theme.Muted
 
 private enum class LibraryFilter(@param:StringRes val labelRes: Int) {
     All(R.string.filter_all),
@@ -112,7 +110,7 @@ fun LibraryScreen(
                         )
                     }
                 },
-                color = Muted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(Modifier.height(16.dp))
@@ -144,7 +142,7 @@ fun LibraryScreen(
                     stringResource(R.string.no_words_found),
                     modifier = Modifier.fillMaxWidth().padding(top = 40.dp),
                     textAlign = TextAlign.Center,
-                    color = Muted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -177,7 +175,11 @@ private fun LibraryWordCard(
         Column(Modifier.padding(17.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(word.transliteration, color = Muted, style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        word.transliteration,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                     Text(word.meaning, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                 }
                 PronunciationButton(
@@ -185,7 +187,7 @@ private fun LibraryWordCard(
                     pronouncer = pronouncer,
                     compact = true,
                 )
-                ArabicText(word.arabic, size = 30, color = Forest)
+                ArabicText(word.arabic, size = 30, color = MaterialTheme.colorScheme.primary)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -194,7 +196,7 @@ private fun LibraryWordCard(
             ) {
                 Text(
                     stringResource(R.string.reference_root, word.reference, word.root),
-                    color = Muted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
                 WordStatusPill(status)
@@ -203,7 +205,11 @@ private fun LibraryWordCard(
                 Spacer(Modifier.height(14.dp))
                 Text(word.verseArabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.End, style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(8.dp))
-                Text(word.insight, color = Forest, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    word.insight,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
         }
     }

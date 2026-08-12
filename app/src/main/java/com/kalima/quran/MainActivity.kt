@@ -79,6 +79,7 @@ class MainActivity : ComponentActivity() {
             KalimaApp(
                 progress = progress,
                 onAnswer = progressStore::answer,
+                onCurrentStudyWordChange = progressStore::setCurrentStudyWord,
                 onQuizAnswer = progressStore::answerQuiz,
                 onLockScreenChange = ::changeLockScreen,
                 onLockScreenQuizChange = progressStore::setLockScreenQuizEnabled,
@@ -86,6 +87,8 @@ class MainActivity : ComponentActivity() {
                 onReminderChange = ::changeReminder,
                 onDailyGoalChange = progressStore::setDailyGoal,
                 onMaximumWordsChange = progressStore::setMaximumWords,
+                onThemeModeChange = progressStore::setThemeMode,
+                onAdvancedSettingsVisibleChange = progressStore::setAdvancedSettingsVisible,
                 onStudyScopeChange = progressStore::setStudyScope,
                 onToggleSurah = progressStore::toggleSurah,
                 onOpenAppSettings = ::openAppSettings,

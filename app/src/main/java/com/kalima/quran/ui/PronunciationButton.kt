@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +24,6 @@ import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.audio.ArabicVoiceInstaller
 import com.kalima.quran.audio.PronunciationResult
-import com.kalima.quran.ui.theme.Forest
 
 @Composable
 fun rememberArabicPronouncer(): ArabicPronouncer {
@@ -41,9 +41,19 @@ fun PronunciationButton(
     pronouncer: ArabicPronouncer,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
-    contentColor: Color = Forest,
-    borderColor: Color = contentColor.copy(alpha = 0.55f),
+    contentColor: Color = Color.Unspecified,
+    borderColor: Color = Color.Unspecified,
 ) {
+    val resolvedContentColor = if (contentColor == Color.Unspecified) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        contentColor
+    }
+    val resolvedBorderColor = if (borderColor == Color.Unspecified) {
+        resolvedContentColor.copy(alpha = 0.55f)
+    } else {
+        borderColor
+    }
     val context = LocalContext.current
     val label = stringResource(R.string.listen_pronunciation)
     val loadingMessage = stringResource(R.string.pronunciation_loading)
@@ -78,15 +88,15 @@ fun PronunciationButton(
                 painter = painterResource(R.drawable.ic_volume_up),
                 contentDescription = label,
                 modifier = Modifier.size(22.dp),
-                tint = contentColor,
+                tint = resolvedContentColor,
             )
         }
     } else {
         OutlinedButton(
             onClick = onClick,
             modifier = modifier,
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = contentColor),
-            border = BorderStroke(1.dp, borderColor),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = resolvedContentColor),
+            border = BorderStroke(1.dp, resolvedBorderColor),
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_volume_up),

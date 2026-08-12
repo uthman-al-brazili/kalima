@@ -13,6 +13,12 @@ import java.time.LocalDate
 
 const val QUIZ_MASTERY_DAYS = 3
 
+enum class AppThemeMode {
+    Auto,
+    Light,
+    Dark,
+}
+
 data class StudyProgress(
     val learnedIds: Set<String> = emptySet(),
     val reviewingIds: Set<String> = emptySet(),
@@ -29,6 +35,9 @@ data class StudyProgress(
     val quizTotalAnswers: Int = 0,
     val lockScreenQuizEnabled: Boolean = false,
     val lockScreenQuizInterval: Int = 3,
+    val themeMode: AppThemeMode = AppThemeMode.Auto,
+    val advancedSettingsVisible: Boolean = false,
+    val currentStudyWordId: String? = null,
 ) {
     val todayCompleted: Int get() = todayAnsweredIds.size
 
@@ -226,6 +235,22 @@ class ProgressStore(context: Context) {
         persist(_progress.value.copy(maximumWords = normalized), today())
     }
 
+    fun setThemeMode(themeMode: AppThemeMode) {
+        if (_progress.value.themeMode == themeMode) return
+        persist(_progress.value.copy(themeMode = themeMode), today())
+    }
+
+    fun setAdvancedSettingsVisible(visible: Boolean) {
+        if (_progress.value.advancedSettingsVisible == visible) return
+        persist(_progress.value.copy(advancedSettingsVisible = visible), today())
+    }
+
+    fun setCurrentStudyWord(wordId: String) {
+        if (_progress.value.currentStudyWordId == wordId) return
+        if (WordRepository.words.none { it.id == wordId }) return
+        persist(_progress.value.copy(currentStudyWordId = wordId), today())
+    }
+
     private fun load(): StudyProgress {
         val date = today()
         val storedDay = preferences.getString(KEY_TODAY, null)
@@ -267,6 +292,15 @@ class ProgressStore(context: Context) {
             lockScreenQuizEnabled = preferences.getBoolean(KEY_LOCK_SCREEN_QUIZ_ENABLED, false),
             lockScreenQuizInterval = preferences.getInt(KEY_LOCK_SCREEN_QUIZ_INTERVAL, 3)
                 .coerceIn(1, 10),
+            themeMode = preferences.getString(KEY_THEME_MODE, null)
+                ?.let { stored -> AppThemeMode.entries.firstOrNull { it.name == stored } }
+                ?: AppThemeMode.Auto,
+            advancedSettingsVisible = preferences.getBoolean(
+                KEY_ADVANCED_SETTINGS_VISIBLE,
+                false,
+            ),
+            currentStudyWordId = preferences.getString(KEY_CURRENT_STUDY_WORD_ID, null)
+                ?.takeIf { storedId -> WordRepository.words.any { it.id == storedId } },
         )
     }
 
@@ -293,6 +327,11 @@ class ProgressStore(context: Context) {
             putInt(KEY_QUIZ_TOTAL_ANSWERS, progress.quizTotalAnswers)
             putBoolean(KEY_LOCK_SCREEN_QUIZ_ENABLED, progress.lockScreenQuizEnabled)
             putInt(KEY_LOCK_SCREEN_QUIZ_INTERVAL, progress.lockScreenQuizInterval)
+            putString(KEY_THEME_MODE, progress.themeMode.name)
+            putBoolean(KEY_ADVANCED_SETTINGS_VISIBLE, progress.advancedSettingsVisible)
+            progress.currentStudyWordId?.let {
+                putString(KEY_CURRENT_STUDY_WORD_ID, it)
+            } ?: remove(KEY_CURRENT_STUDY_WORD_ID)
         }
         _progress.value = progress
     }
@@ -336,6 +375,9 @@ class ProgressStore(context: Context) {
         private const val KEY_LOCK_SCREEN_QUIZ_INTERVAL = "lock_screen_quiz_interval"
         private const val KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ = "lock_screen_words_since_quiz"
         private const val KEY_LOCK_SCREEN_QUIZ_SEQUENCE = "lock_screen_quiz_sequence"
+        private const val KEY_THEME_MODE = "theme_mode"
+        private const val KEY_ADVANCED_SETTINGS_VISIBLE = "advanced_settings_visible"
+        private const val KEY_CURRENT_STUDY_WORD_ID = "current_study_word_id"
         private const val DEFAULT_SURAH = 114
         private val AVAILABLE_SURAHS = 1..114
     }

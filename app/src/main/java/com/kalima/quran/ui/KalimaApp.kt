@@ -1,5 +1,6 @@
 package com.kalima.quran.ui
 
+import android.app.Activity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -9,16 +10,22 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.core.view.WindowCompat
 import androidx.annotation.StringRes
 import com.kalima.quran.R
+import com.kalima.quran.data.AppThemeMode
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.localization.AppLanguage
@@ -29,6 +36,7 @@ private enum class AppTab(@param:StringRes val labelRes: Int, val symbol: String
     Library(R.string.tab_words, "ب"),
     Quiz(R.string.tab_quiz, "؟"),
     Progress(R.string.tab_progress, "ج"),
+    Settings(R.string.tab_settings, "⚙"),
 }
 
 data class StudyLaunchTarget(val wordId: String, val requestId: Long)
@@ -37,6 +45,7 @@ data class StudyLaunchTarget(val wordId: String, val requestId: Long)
 fun KalimaApp(
     progress: StudyProgress,
     onAnswer: (String, Boolean) -> Unit,
+    onCurrentStudyWordChange: (String) -> Unit,
     onQuizAnswer: (String, Boolean) -> Unit,
     onLockScreenChange: (Boolean) -> Unit,
     onLockScreenQuizChange: (Boolean) -> Unit,
@@ -44,6 +53,8 @@ fun KalimaApp(
     onReminderChange: (Boolean) -> Unit,
     onDailyGoalChange: (Int) -> Unit,
     onMaximumWordsChange: (Int) -> Unit,
+    onThemeModeChange: (AppThemeMode) -> Unit,
+    onAdvancedSettingsVisibleChange: (Boolean) -> Unit,
     onStudyScopeChange: (StudyScope) -> Unit,
     onToggleSurah: (Int) -> Unit,
     onOpenAppSettings: () -> Unit,
@@ -67,7 +78,21 @@ fun KalimaApp(
         }
     }
 
-    KalimaTheme {
+    KalimaTheme(themeMode = progress.themeMode) {
+        val view = LocalView.current
+        val backgroundColor = MaterialTheme.colorScheme.background
+        val surfaceColor = MaterialTheme.colorScheme.surface
+        SideEffect {
+            if (!view.isInEditMode) {
+                val window = (view.context as Activity).window
+                window.statusBarColor = backgroundColor.toArgb()
+                window.navigationBarColor = surfaceColor.toArgb()
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = backgroundColor.luminance() > 0.5f
+                    isAppearanceLightNavigationBars = surfaceColor.luminance() > 0.5f
+                }
+            }
+        }
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             bottomBar = {
@@ -94,6 +119,7 @@ fun KalimaApp(
                     AppTab.Study -> StudyScreen(
                         progress = progress,
                         onAnswer = onAnswer,
+                        onCurrentWordChange = onCurrentStudyWordChange,
                         onEnableLockScreen = { onLockScreenChange(true) },
                         pronouncer = pronouncer,
                         launchTarget = studyLaunchTarget,
@@ -106,18 +132,23 @@ fun KalimaApp(
                     )
                     AppTab.Progress -> ProgressScreen(
                         progress = progress,
+                        onStudyScopeChange = onStudyScopeChange,
+                        onToggleSurah = onToggleSurah,
+                    )
+                    AppTab.Settings -> SettingsScreen(
+                        progress = progress,
+                        currentLanguage = currentLanguage,
+                        onThemeModeChange = onThemeModeChange,
+                        onLanguageChange = onLanguageChange,
+                        onReminderChange = onReminderChange,
+                        onDailyGoalChange = onDailyGoalChange,
+                        onAdvancedSettingsVisibleChange = onAdvancedSettingsVisibleChange,
                         onLockScreenChange = onLockScreenChange,
                         onLockScreenQuizChange = onLockScreenQuizChange,
                         onLockScreenQuizIntervalChange = onLockScreenQuizIntervalChange,
-                        onReminderChange = onReminderChange,
-                        onDailyGoalChange = onDailyGoalChange,
                         onMaximumWordsChange = onMaximumWordsChange,
-                        onStudyScopeChange = onStudyScopeChange,
-                        onToggleSurah = onToggleSurah,
                         onOpenAppSettings = onOpenAppSettings,
                         onPreviewLockScreen = onPreviewLockScreen,
-                        currentLanguage = currentLanguage,
-                        onLanguageChange = onLanguageChange,
                     )
                 }
             }

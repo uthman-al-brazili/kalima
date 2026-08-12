@@ -31,8 +31,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.data.WordRepository
-import com.kalima.quran.ui.theme.Forest
-import com.kalima.quran.ui.theme.Muted
 
 @Composable
 internal fun SurahSelectionDialog(
@@ -65,7 +63,7 @@ internal fun SurahSelectionDialog(
                         selectedSurahs.size,
                         selectedSurahs.size,
                     ),
-                    color = Muted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Normal,
                 )
@@ -97,7 +95,7 @@ internal fun SurahSelectionDialog(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     "${surah.number} · ${surah.transliteratedName}",
-                                    color = Forest,
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold,
                                 )
                                 Text(surah.arabicName, style = MaterialTheme.typography.titleMedium)

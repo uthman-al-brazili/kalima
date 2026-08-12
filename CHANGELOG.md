@@ -3,6 +3,19 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.11.0 — 2026-08-11
+
+- Added light, dark, and automatic appearance modes, with a dark palette across
+  study, vocabulary, quiz, progress, settings, and system bars.
+- Added a dedicated **Settings** tab with straightforward appearance, language,
+  reminder, and daily-goal controls. Lock-screen automation, quiz timing, and
+  word limits remain available behind an optional advanced-settings switch.
+- New installations now use English unless the phone language is Portuguese;
+  existing manually selected languages remain unchanged.
+- The currently displayed study word is now saved locally so reopening Kalima
+  continues on the same card. Intentional lock-screen card launches still take
+  priority.
+
 ## 0.10.0 — 2026-08-11
 
 - Added an optional, persistent maximum-word setting under **Progress > Choose

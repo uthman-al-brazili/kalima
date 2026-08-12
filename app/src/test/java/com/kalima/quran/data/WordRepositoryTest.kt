@@ -94,6 +94,21 @@ class WordRepositoryTest {
         assertEquals(scopedWords.size + 1, session.size)
     }
 
+    @Test
+    fun savedCurrentWordResumesTheStudySession() {
+        val words = WordRepository.words.take(5)
+        val savedCurrentWord = words[3]
+
+        val session = buildStudySession(
+            words = words,
+            defaultWord = savedCurrentWord,
+            requestedWord = null,
+        )
+
+        assertEquals(savedCurrentWord.id, session.first().id)
+        assertEquals(words.map(QuranWord::id).toSet(), session.map(QuranWord::id).toSet())
+    }
+
     private companion object {
         fun normalizeMarks(value: String): String = value
             .replace(Regex("\\p{M}"), "")

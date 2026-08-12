@@ -5,6 +5,7 @@
     <string name="tab_words">Words</string>
     <string name="tab_quiz">Quiz</string>
     <string name="tab_progress">Progress</string>
+    <string name="tab_settings">Settings</string>
 
     <string name="status_new">New</string>
     <string name="status_reviewing">Reviewing</string>
@@ -85,7 +86,6 @@
     <string name="lock_screen_study_enabled">Active: a new word will open whenever the screen turns on.</string>
     <string name="lock_screen_study_disabled">Requires the “Display over other apps” permission and keeps a service active.</string>
     <string name="preview_card">Preview card</string>
-    <string name="settings">Settings</string>
     <string name="lock_screen_quiz">Quiz when the screen turns on</string>
     <plurals name="lock_screen_quiz_enabled">
         <item quantity="one">A quiz will appear after %1$d word.</item>
@@ -100,11 +100,24 @@
     <string name="daily_reminder">Daily reminder</string>
     <string name="daily_reminder_description">Daily notification at 8:00 AM, subject to Android permissions.</string>
     <string name="daily_goal">Daily goal</string>
-    <string name="editorial_note">Editorial note: roots, morphology, and study translations should be reviewed by a specialist before publication.</string>
     <string name="language">Language</string>
     <string name="language_description">Choose the language used for the interface and word meanings.</string>
     <string name="language_portuguese">Português</string>
     <string name="language_english">English</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Make Kalima comfortable for your daily study.</string>
+    <string name="appearance">Appearance</string>
+    <string name="appearance_description">Choose a light or dark look, or follow your phone.</string>
+    <string name="theme_auto">Auto</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="show_advanced_settings">Show advanced settings</string>
+    <string name="advanced_settings_description">Lock-screen tools, quiz timing, and word limits.</string>
+    <string name="lock_screen_features">Lock-screen features</string>
+    <string name="lock_screen_features_description">Optional tools that can appear when your screen turns on.</string>
+    <string name="android_app_settings">Android settings</string>
+    <string name="limit_new_words">Limit new words</string>
 
     <string name="choose_surahs">Choose surahs</string>
     <plurals name="surahs_selected">

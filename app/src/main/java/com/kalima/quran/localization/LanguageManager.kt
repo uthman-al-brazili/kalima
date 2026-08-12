@@ -2,6 +2,7 @@ package com.kalima.quran.localization
 
 import android.content.Context
 import android.content.res.Configuration
+import android.os.LocaleList
 import androidx.core.content.edit
 import java.util.Locale
 
@@ -15,7 +16,7 @@ object LanguageManager {
         val storedTag = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
             .getString(KEY_LANGUAGE, null)
         return AppLanguage.entries.firstOrNull { it.languageTag == storedTag }
-            ?: AppLanguage.Portuguese
+            ?: defaultLanguageFor(LocaleList.getDefault().get(0)?.toLanguageTag())
     }
 
     fun setLanguage(context: Context, language: AppLanguage) {
@@ -35,4 +36,15 @@ object LanguageManager {
 
     private const val PREFERENCES = "kalima_language"
     private const val KEY_LANGUAGE = "language"
+
+    internal fun defaultLanguageFor(systemLanguageTag: String?): AppLanguage =
+        if (systemLanguageTag
+                ?.substringBefore('-')
+                ?.substringBefore('_')
+                ?.equals(AppLanguage.Portuguese.languageTag, ignoreCase = true) == true
+        ) {
+            AppLanguage.Portuguese
+        } else {
+            AppLanguage.English
+        }
 }

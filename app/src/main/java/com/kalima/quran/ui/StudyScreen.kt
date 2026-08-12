@@ -26,8 +26,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,15 +44,13 @@ import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.limitNewWords
-import com.kalima.quran.ui.theme.Forest
-import com.kalima.quran.ui.theme.Gold
-import com.kalima.quran.ui.theme.Muted
 import java.time.LocalDate
 
 @Composable
 fun StudyScreen(
     progress: StudyProgress,
     onAnswer: (String, Boolean) -> Unit,
+    onCurrentWordChange: (String) -> Unit,
     onEnableLockScreen: () -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
@@ -76,22 +74,31 @@ fun StudyScreen(
     val session = remember(words, launchTarget?.wordId) {
         val requestedWord = launchTarget?.wordId
             ?.let { requestedId -> WordRepository.words.firstOrNull { it.id == requestedId } }
+        val resumedWord = progress.currentStudyWordId
+            ?.let { currentId -> words.firstOrNull { it.id == currentId } }
         buildStudySession(
             words = words,
-            defaultWord = WordRepository.wordFor(LocalDate.now(), words),
+            defaultWord = resumedWord ?: WordRepository.wordFor(LocalDate.now(), words),
             requestedWord = requestedWord,
         )
     }
-    var currentIndex by rememberSaveable(
+    var currentWordId by rememberSaveable(
         progress.studyScope.name,
         selectionKey,
         launchTarget?.requestId,
-    ) { mutableIntStateOf(0) }
-    val word = session[currentIndex % session.size]
+    ) { mutableStateOf(session.first().id) }
+    val word = session.firstOrNull { it.id == currentWordId } ?: session.first()
+    val moveToNextWord = {
+        val currentIndex = session.indexOfFirst { it.id == word.id }.coerceAtLeast(0)
+        val nextWord = session[(currentIndex + 1) % session.size]
+        currentWordId = nextWord.id
+        onCurrentWordChange(nextWord.id)
+    }
     val scrollState = rememberScrollState()
 
-    LaunchedEffect(launchTarget?.requestId) {
-        if (launchTarget != null) scrollState.scrollTo(0)
+    LaunchedEffect(word.id) {
+        onCurrentWordChange(word.id)
+        scrollState.scrollTo(0)
     }
 
     Column(
@@ -114,12 +121,12 @@ fun StudyScreen(
                     Column(Modifier.weight(1f)) {
                         Text(
                             stringResource(R.string.study_lock_screen_title),
-                            color = Forest,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
                             stringResource(R.string.study_lock_screen_description),
-                            color = Muted,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f),
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
@@ -137,7 +144,7 @@ fun StudyScreen(
             OutlinedButton(
                 onClick = {
                     onAnswer(word.id, false)
-                    currentIndex += 1
+                    moveToNextWord()
                 },
                 modifier = Modifier.weight(1f).height(54.dp),
                 shape = RoundedCornerShape(16.dp),
@@ -148,11 +155,13 @@ fun StudyScreen(
             Button(
                 onClick = {
                     onAnswer(word.id, true)
-                    currentIndex += 1
+                    moveToNextWord()
                 },
                 modifier = Modifier.weight(1f).height(54.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Forest),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                ),
             ) {
                 Text(stringResource(R.string.already_learned), fontWeight = FontWeight.SemiBold)
             }
@@ -161,7 +170,7 @@ fun StudyScreen(
         Text(
             stringResource(R.string.context_meaning_note),
             modifier = Modifier.fillMaxWidth(),
-            color = Muted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center,
         )
@@ -188,7 +197,11 @@ private fun StudyHeader(progress: StudyProgress) {
     val fraction = (progress.todayCompleted.toFloat() / progress.dailyGoal).coerceIn(0f, 1f)
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text("السَّلَامُ عَلَيْكُمْ", color = Forest, style = MaterialTheme.typography.titleMedium)
+            Text(
+                "السَّلَامُ عَلَيْكُمْ",
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleMedium,
+            )
             Text(stringResource(R.string.today_word), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text(
                 when (progress.studyScope) {
@@ -207,11 +220,14 @@ private fun StudyHeader(progress: StudyProgress) {
                         )
                     }
                 },
-                color = Muted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
             )
         }
-        Surface(color = Gold.copy(alpha = 0.35f), shape = RoundedCornerShape(100.dp)) {
+        Surface(
+            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.35f),
+            shape = RoundedCornerShape(100.dp),
+        ) {
             Text(
                 pluralStringResource(
                     R.plurals.streak_days,
@@ -229,13 +245,13 @@ private fun StudyHeader(progress: StudyProgress) {
         LinearProgressIndicator(
             progress = { fraction },
             modifier = Modifier.weight(1f).height(7.dp),
-            color = Gold,
+            color = MaterialTheme.colorScheme.secondary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
         )
         Spacer(Modifier.width(12.dp))
         Text(
             "${progress.todayCompleted}/${progress.dailyGoal}",
-            color = Muted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelMedium,
         )
     }
@@ -263,16 +279,21 @@ private fun WordCard(
                         word.category,
                         modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp),
                         style = MaterialTheme.typography.labelMedium,
-                        color = Forest,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
                 WordStatusPill(progress.statusFor(word.id))
             }
             Spacer(Modifier.height(22.dp))
-            ArabicText(word.arabic, modifier = Modifier.fillMaxWidth(), size = 50, color = Forest)
+            ArabicText(
+                word.arabic,
+                modifier = Modifier.fillMaxWidth(),
+                size = 50,
+                color = MaterialTheme.colorScheme.primary,
+            )
             Text(
                 word.transliteration,
-                color = Muted,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.height(8.dp))
@@ -291,7 +312,11 @@ private fun WordCard(
             Spacer(Modifier.height(20.dp))
             Box(Modifier.fillMaxWidth()) {
                 Column {
-                    Text(word.reference, color = Forest, fontWeight = FontWeight.Bold)
+                    Text(
+                        word.reference,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                    )
                     Spacer(Modifier.height(8.dp))
                     ArabicText(
                         word.verseArabic,
@@ -311,7 +336,7 @@ private fun WordCard(
                     "💡 ${word.insight}",
                     modifier = Modifier.padding(14.dp),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Forest,
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }
