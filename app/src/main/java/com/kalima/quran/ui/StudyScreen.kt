@@ -47,6 +47,7 @@ import com.kalima.quran.data.SpacedRepetition
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.WordStatus
 import com.kalima.quran.data.limitNewWords
 import java.time.Instant
 import java.time.LocalDate
@@ -118,7 +119,9 @@ fun StudyScreen(
         launchTarget?.requestId,
     ) { mutableStateOf(session.first().id) }
     val word = session.firstOrNull { it.id == currentWordId } ?: session.first()
-    var meaningRevealed by rememberSaveable(word.id) { mutableStateOf(false) }
+    var meaningRevealed by rememberSaveable(word.id) {
+        mutableStateOf(shouldRevealMeaningInitially(progress.statusFor(word.id)))
+    }
     val moveToNextWord = {
         val currentIndex = session.indexOfFirst { it.id == word.id }.coerceAtLeast(0)
         val nextWord = session[(currentIndex + 1) % session.size]
@@ -230,6 +233,8 @@ fun StudyScreen(
         Spacer(Modifier.height(24.dp))
     }
 }
+
+internal fun shouldRevealMeaningInitially(status: WordStatus): Boolean = status == WordStatus.New
 
 @Composable
 private fun goodReviewLabel(schedule: ReviewSchedule?): String {

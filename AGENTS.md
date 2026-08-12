@@ -1,10 +1,13 @@
 # Kalima workspace instructions
 
-Every request to add, change, or fix application behavior is a cross-platform request. Implement the corresponding change in both the Android and Windows versions, keep their user-visible behavior and compatible data identifiers aligned, and update both platforms' version metadata together. Do not consider an application change complete until both implementations have been updated and validated. If the change cannot be implemented on one platform, stop and explain the blocker instead of releasing only the other platform.
+Application changes target the Android version only by default. Do not change,
+version, build, test, package, or release the Windows version unless the user
+explicitly requests Windows work. Preserve the existing Windows source and
+release artifacts when completing Android changes.
 
-For every completed application change that produces a new version:
+For every completed Android application change that produces a new version:
 
-1. Increment `versionCode` and `versionName`.
+1. Increment Android `versionCode` and `versionName` in `app/build.gradle.kts`.
 2. Add a dated section for the version at the top of `CHANGELOG.md`, summarizing its user-visible features and fixes.
 3. Run the relevant unit tests, Android lint, and APK assembly.
 4. Never overwrite or delete an existing file in `releases/`.

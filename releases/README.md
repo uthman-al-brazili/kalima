@@ -16,6 +16,7 @@ Os arquivos APK e ZIP desta pasta são preservados por versão e não devem ser 
 
 | Versão | Tag Git | APK | Código-fonte |
 |---|---|---|---|
+| 0.15.1 | `v0.15.1` | `kalima-0.15.1-debug.apk` | `kalima-0.15.1-source.zip` |
 | 0.15.0 | `v0.15.0` | `kalima-0.15.0-debug.apk` | `kalima-0.15.0-source.zip` |
 | 0.14.4 | `v0.14.4` | `kalima-0.14.4-debug.apk` | `kalima-0.14.4-source.zip` |
 | 0.14.3 | `v0.14.3` | `kalima-0.14.3-debug.apk` | `kalima-0.14.3-source.zip` |

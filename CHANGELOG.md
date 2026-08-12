@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.15.1 — 2026-08-12
+
+- New words now show their meaning and learning details immediately the first
+  time they are presented. Words already being reviewed still hide the answer
+  first so the learner can test their recall.
+
 ## 0.15.0 — 2026-08-12
 
 - Added optional Windows welcome-back study cards that detect renewed keyboard

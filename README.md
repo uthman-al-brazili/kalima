@@ -4,8 +4,8 @@ Kalima é um aplicativo para Android e Windows inspirado na ideia de aprendizado
 
 ## O que já funciona
 
-- cartão de recordação que primeiro oculta o significado e, depois de revelado,
-  apresenta árabe, transliteração, significado, raiz e informação gramatical;
+- cartão de recordação que apresenta imediatamente o significado de palavras
+  novas e o oculta primeiro nas revisões para testar a memória;
 - pronúncia lenta de palavras e leitura de trechos pelo mecanismo de voz árabe
   do Android, identificadas claramente como voz gerada — não como recitação;
 - seletor de idioma em **Configurações**, com interface, significados, quizzes, notificações e cartões de tela bloqueada em português ou inglês;
