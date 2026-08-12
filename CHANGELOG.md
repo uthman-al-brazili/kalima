@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.14.1 — 2026-08-12
+
+- Fixed open Windows screens continuing to show the previous language's word
+  content after switching between Portuguese and English.
+- Fixed the Windows tray reminder remaining registered after the main window
+  was closed.
+
 ## 0.14.0 — 2026-08-12
 
 - Added a native, self-contained Windows application with onboarding, study

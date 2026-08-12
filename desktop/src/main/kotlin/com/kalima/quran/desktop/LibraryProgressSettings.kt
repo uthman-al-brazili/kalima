@@ -87,6 +87,7 @@ fun LibraryScreen(
         progress.selectedSurahs,
         progress.favoriteIds,
         progress.customStudyIds,
+        language,
     ) {
         WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs, progress.favoriteIds, progress.customStudyIds)
     }
@@ -272,6 +273,7 @@ fun ProgressScreen(store: DesktopProgressStore) {
         progress.selectedSurahs,
         progress.favoriteIds,
         progress.customStudyIds,
+        language,
     ) { WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs, progress.favoriteIds, progress.customStudyIds) }
     val activeWords = remember(scopedWords, progress.maximumWords, progress.learnedIds, progress.reviewingIds) {
         progress.limitNewWords(scopedWords)
@@ -555,7 +557,7 @@ fun SettingsScreen(store: DesktopProgressStore) {
         }
         Spacer(Modifier.height(14.dp))
         SettingsBlock(language.t("Sobre esta versão", "About this version")) {
-            Text("Kalima 0.14.0 — Windows", fontWeight = FontWeight.Bold)
+            Text("Kalima 0.14.1 — Windows", fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(6.dp))
             Text(
                 language.t(

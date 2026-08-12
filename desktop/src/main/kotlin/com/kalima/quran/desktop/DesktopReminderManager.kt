@@ -11,6 +11,8 @@ import java.util.TimerTask
 object DesktopReminderManager {
     private var started = false
     private var lastShown: LocalDate? = null
+    private var trayIcon: TrayIcon? = null
+    private var timer: Timer? = null
 
     fun start(store: DesktopProgressStore) {
         if (started || !SystemTray.isSupported()) return
@@ -19,8 +21,9 @@ object DesktopReminderManager {
             isImageAutoSize = true
         }
         runCatching { SystemTray.getSystemTray().add(icon) }.onFailure { return }
+        trayIcon = icon
         started = true
-        Timer("kalima-reminder", true).scheduleAtFixedRate(
+        timer = Timer("kalima-reminder", true).also { reminderTimer -> reminderTimer.scheduleAtFixedRate(
             object : TimerTask() {
                 override fun run() {
                     val now = LocalDateTime.now()
@@ -45,6 +48,14 @@ object DesktopReminderManager {
             },
             1_000L,
             30_000L,
-        )
+        ) }
+    }
+
+    fun stop() {
+        timer?.cancel()
+        timer = null
+        trayIcon?.let { runCatching { SystemTray.getSystemTray().remove(it) } }
+        trayIcon = null
+        started = false
     }
 }

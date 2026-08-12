@@ -67,7 +67,7 @@ import java.time.format.DateTimeFormatter
 fun StudyScreen(store: DesktopProgressStore) {
     val progress = store.progress
     val language = store.language
-    val scopedWords = rememberScopedWords(progress)
+    val scopedWords = rememberScopedWords(progress, language)
     val activeWords = remember(scopedWords, progress.maximumWords, progress.learnedIds, progress.reviewingIds) {
         progress.limitNewWords(scopedWords)
     }
@@ -288,13 +288,13 @@ private fun EmptyStudyState(language: AppLanguage, hasProgress: Boolean) {
 fun QuizScreen(store: DesktopProgressStore) {
     val progress = store.progress
     val language = store.language
-    val scopedWords = rememberScopedWords(progress)
+    val scopedWords = rememberScopedWords(progress, language)
     val activeWords = remember(scopedWords, progress.maximumWords, progress.learnedIds, progress.reviewingIds) {
         progress.limitNewWords(scopedWords)
     }
     var mode by remember { mutableStateOf(QuizMode.Mixed) }
     var sessionVersion by remember { mutableIntStateOf(0) }
-    val sourceKey = "${progress.studyScope}:${progress.selectedSurahs.sorted()}:${progress.favoriteIds.size}:${progress.customStudyIds.size}"
+    val sourceKey = "${progress.studyScope}:${progress.selectedSurahs.sorted()}:${progress.favoriteIds.sorted()}:${progress.customStudyIds.sorted()}:$language"
     val session = remember(sourceKey, mode, sessionVersion) {
         createDesktopQuiz(activeWords, scopedWords, progress, mode)
     }
@@ -553,11 +553,12 @@ private fun QuizSummary(
 }
 
 @Composable
-private fun rememberScopedWords(progress: StudyProgress): List<QuranWord> = remember(
+private fun rememberScopedWords(progress: StudyProgress, language: AppLanguage): List<QuranWord> = remember(
     progress.studyScope,
     progress.selectedSurahs,
     progress.favoriteIds,
     progress.customStudyIds,
+    language,
 ) {
     WordRepository.wordsFor(
         progress.studyScope,

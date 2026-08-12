@@ -68,7 +68,10 @@ fun main(args: Array<String>) {
     DesktopReminderManager.start(store)
     application {
         Window(
-            onCloseRequest = ::exitApplication,
+            onCloseRequest = {
+                DesktopReminderManager.stop()
+                exitApplication()
+            },
             title = "Kalima — Árabe corânico",
             state = rememberWindowState(width = 1180.dp, height = 780.dp),
             icon = painterResource("ic_launcher-playstore.png"),
