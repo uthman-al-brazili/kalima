@@ -1,5 +1,7 @@
 package com.kalima.quran.desktop
 
+import java.awt.MenuItem
+import java.awt.PopupMenu
 import java.awt.SystemTray
 import java.awt.Toolkit
 import java.awt.TrayIcon
@@ -14,11 +16,25 @@ object DesktopReminderManager {
     private var trayIcon: TrayIcon? = null
     private var timer: Timer? = null
 
-    fun start(store: DesktopProgressStore) {
+    fun start(
+        store: DesktopProgressStore,
+        onOpen: () -> Unit,
+        onExit: () -> Unit,
+    ) {
         if (started || !SystemTray.isSupported()) return
         val resource = javaClass.getResource("/ic_launcher-playstore.png") ?: return
         val icon = TrayIcon(Toolkit.getDefaultToolkit().getImage(resource), "Kalima").apply {
             isImageAutoSize = true
+            popupMenu = PopupMenu().apply {
+                add(MenuItem(store.language.t("Abrir o Kalima", "Open Kalima")).apply {
+                    addActionListener { onOpen() }
+                })
+                addSeparator()
+                add(MenuItem(store.language.t("Sair", "Exit")).apply {
+                    addActionListener { onExit() }
+                })
+            }
+            addActionListener { onOpen() }
         }
         runCatching { SystemTray.getSystemTray().add(icon) }.onFailure { return }
         trayIcon = icon
@@ -58,4 +74,6 @@ object DesktopReminderManager {
         trayIcon = null
         started = false
     }
+
+    fun isSupported(): Boolean = SystemTray.isSupported()
 }

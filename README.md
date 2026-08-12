@@ -49,6 +49,9 @@ Kalima é um aplicativo para Android e Windows inspirado na ideia de aprendizado
 - 42.117 cartões offline no total e testes de integridade do conteúdo.
 - aplicativo nativo para Windows com as mesmas palavras, IDs, repetição
   espaçada, quiz, biblioteca, progresso, caminhos e configurações essenciais;
+- cartões opcionais de boas-vindas no Windows ao voltar depois de um período
+  ausente, com bandeja do sistema, início automático, horário silencioso,
+  limite diário, quiz ocasional e adiamento durante aplicativos em tela cheia;
 - instalador Windows autocontido, sem necessidade de instalar Java, com dados
   persistidos localmente em `%APPDATA%\Kalima` e lembrete enquanto o app está aberto.
 
@@ -88,12 +91,12 @@ O instalador é criado em `desktop/build/compose/binaries/main/exe/`. Ele inclui
 o runtime necessário e não exige uma instalação separada do Java. O aplicativo
 salva o progresso em `%APPDATA%\Kalima\progress.properties`.
 
-O estudo, quiz, biblioteca, progresso, idiomas, temas, voz do dispositivo e
-lembretes locais estão disponíveis no Windows. A pronúncia requer uma voz
+O estudo, quiz, biblioteca, progresso, idiomas, temas, voz do dispositivo,
+lembretes locais e cartões ao voltar ao computador estão disponíveis no Windows.
+Os cartões aparecem somente depois da entrada no Windows e nunca cobrem a tela
+segura de autenticação. A pronúncia requer uma voz
 árabe instalada em **Configurações > Hora e idioma > Fala**; quando ela não
-está disponível, o próprio Kalima oferece um atalho para essa tela. O cartão
-sobre a tela de bloqueio continua exclusivo do Android, pois a tela segura de
-entrada do Windows não aceita sobreposição de aplicativos comuns.
+está disponível, o próprio Kalima oferece um atalho para essa tela.
 
 ## Estudo na tela de bloqueio
 

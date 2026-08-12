@@ -20,3 +20,11 @@ O gerador consulta a API para obter a forma Uthmani, a transliteração, o conte
 ## Significados em português
 
 Os glossários em inglês foram convertidos em um primeiro rascunho em português e receberam correções editoriais pontuais. Eles são apresentados como apoio contextual, não como tradução oficial do Alcorão. O cache em `tools/pt_gloss_cache.json` e cada cartão devem passar por revisão linguística e religiosa antes da publicação.
+
+## Java Native Access (JNA)
+
+- Projeto: [Java Native Access](https://github.com/java-native-access/jna)
+- Uso: detecção local de inatividade, janelas em tela cheia e inicialização com
+  o Windows no aplicativo desktop.
+- Licença: Apache License 2.0 ou LGPL 2.1 ou posterior, conforme permitido pelo
+  projeto JNA.

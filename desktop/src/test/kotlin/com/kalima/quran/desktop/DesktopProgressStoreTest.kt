@@ -43,4 +43,35 @@ class DesktopProgressStoreTest {
         assertEquals(1, restored.progress.reviewSchedules.size)
         assertEquals(1, restored.progress.todayCompleted)
     }
+
+    @Test
+    fun persistsWelcomeBackCardSettingsWithAndroidCompatibleFields() {
+        val directory = Files.createTempDirectory("kalima-return-settings-test")
+        val first = DesktopProgressStore(directory)
+        first.setReturnCardsEnabled(true)
+        first.changeReturnCardIdleMinutes(20)
+        first.setReturnCardQuizEnabled(true)
+        first.setReturnCardQuizInterval(5)
+        first.setReturnCardDailyLimit(10)
+        first.setReturnCardQuietHoursEnabled(false)
+
+        val restored = DesktopProgressStore(directory)
+
+        assertTrue(restored.progress.lockScreenEnabled)
+        assertEquals(20, restored.returnCardIdleMinutes)
+        assertTrue(restored.progress.lockScreenQuizEnabled)
+        assertEquals(5, restored.progress.lockScreenQuizInterval)
+        assertEquals(10, restored.progress.lockScreenDailyLimit)
+        assertFalse(restored.progress.quietHoursEnabled)
+    }
+
+    @Test
+    fun previewBuildsReturnCardWithoutUsingDailyAllowance() {
+        val store = DesktopProgressStore(Files.createTempDirectory("kalima-return-preview-test"))
+
+        val content = store.nextReturnCardContent(preview = true)
+
+        assertTrue(content != null)
+        assertEquals(0, store.progress.lockScreenCardsToday)
+    }
 }

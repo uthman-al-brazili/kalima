@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -46,6 +47,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.localization.AppLanguage
+import com.kalima.quran.quiz.LockScreenContent
 import com.kalima.quran.ui.theme.Gold
 import com.kalima.quran.ui.theme.KalimaTheme
 import java.awt.Dimension
@@ -66,19 +68,60 @@ fun main(args: Array<String>) {
         println("Kalima Windows OK: ${com.kalima.quran.data.WordRepository.words.size} cards")
         return
     }
-    DesktopReminderManager.start(store)
     application {
+        var mainWindowVisible by remember {
+            mutableStateOf("--background" !in args || !DesktopReminderManager.isSupported())
+        }
+        var returnContent by remember { mutableStateOf<LockScreenContent?>(null) }
+        val returnManager = remember { DesktopReturnManager() }
+
+        fun showReturnCard(preview: Boolean = false) {
+            if (returnContent != null) return
+            returnContent = store.nextReturnCardContent(preview)
+        }
+
+        fun exitKalima() {
+            returnManager.stop()
+            DesktopReminderManager.stop()
+            exitApplication()
+        }
+
+        DisposableEffect(Unit) {
+            DesktopReminderManager.start(
+                store = store,
+                onOpen = { mainWindowVisible = true },
+                onExit = ::exitKalima,
+            )
+            returnManager.start(store) {
+                if (store.canShowReturnCard()) showReturnCard()
+            }
+            onDispose {
+                returnManager.stop()
+                DesktopReminderManager.stop()
+            }
+        }
+
         Window(
             onCloseRequest = {
-                DesktopReminderManager.stop()
-                exitApplication()
+                if (store.progress.lockScreenEnabled && DesktopReminderManager.isSupported()) {
+                    mainWindowVisible = false
+                } else {
+                    exitKalima()
+                }
             },
+            visible = mainWindowVisible,
             title = "Kalima — Árabe corânico",
             state = rememberWindowState(width = 1180.dp, height = 780.dp),
             icon = painterResource("ic_launcher-playstore.png"),
         ) {
             LaunchedEffect(Unit) {
                 window.minimumSize = Dimension(920, 640)
+            }
+            LaunchedEffect(mainWindowVisible) {
+                if (mainWindowVisible) {
+                    window.toFront()
+                    window.requestFocus()
+                }
             }
             KalimaTheme(store.progress.themeMode) {
                 Box(Modifier.fillMaxSize()) {
@@ -88,7 +131,7 @@ fun main(args: Array<String>) {
                         contentColor = MaterialTheme.colorScheme.onBackground,
                     ) {
                         if (store.progress.onboardingComplete) {
-                            DesktopApp(store)
+                            DesktopApp(store, onPreviewReturnCard = { showReturnCard(preview = true) })
                         } else {
                             DesktopOnboarding(store)
                         }
@@ -97,11 +140,37 @@ fun main(args: Array<String>) {
                 }
             }
         }
+
+        returnContent?.let { content ->
+            WelcomeBackWindow(
+                content = content,
+                language = store.language,
+                themeMode = store.progress.themeMode,
+                onWordAnswer = { wordId, remembered ->
+                    store.answerFromReturnCard(wordId, remembered)
+                    returnContent = null
+                },
+                onQuizAnswer = store::answerQuizFromReturnCard,
+                onDismiss = { returnContent = null },
+                onSnooze = {
+                    store.pauseReturnCardsForHour()
+                    returnContent = null
+                },
+                onOpenApp = { wordId ->
+                    store.setCurrentStudyWord(wordId)
+                    returnContent = null
+                    mainWindowVisible = true
+                },
+            )
+        }
     }
 }
 
 @Composable
-private fun DesktopApp(store: DesktopProgressStore) {
+private fun DesktopApp(
+    store: DesktopProgressStore,
+    onPreviewReturnCard: () -> Unit,
+) {
     var selectedTab by remember { mutableStateOf(DesktopTab.Study) }
     var libraryWordId by remember { mutableStateOf<String?>(null) }
     Row(Modifier.fillMaxSize()) {
@@ -116,7 +185,7 @@ private fun DesktopApp(store: DesktopProgressStore) {
                 DesktopTab.Quiz -> QuizScreen(store)
                 DesktopTab.Library -> LibraryScreen(store, libraryWordId) { libraryWordId = it }
                 DesktopTab.Progress -> ProgressScreen(store)
-                DesktopTab.Settings -> SettingsScreen(store)
+                DesktopTab.Settings -> SettingsScreen(store, onPreviewReturnCard)
             }
         }
     }

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.kalima.quran"
-version = "0.14.4"
+version = "0.15.0"
 
 kotlin {
     jvmToolchain(17)
@@ -16,6 +16,7 @@ kotlin {
 dependencies {
     implementation(compose.desktop.currentOs)
     implementation(compose.material3)
+    implementation("net.java.dev.jna:jna-platform:5.6.0")
     testImplementation(kotlin("test"))
 }
 
@@ -27,6 +28,7 @@ sourceSets {
             "com/kalima/quran/data/QuranWord.kt",
             "com/kalima/quran/data/StudyProgress.kt",
             "com/kalima/quran/data/LearningWordLimiter.kt",
+            "com/kalima/quran/data/LockScreenPolicy.kt",
             "com/kalima/quran/data/ReviewHistory.kt",
             "com/kalima/quran/data/SpacedRepetition.kt",
             "com/kalima/quran/data/StreakCalculator.kt",
@@ -40,6 +42,7 @@ sourceSets {
             "com/kalima/quran/quiz/QuizQuestion.kt",
             "com/kalima/quran/quiz/QuizEngine.kt",
             "com/kalima/quran/quiz/QuizMastery.kt",
+            "com/kalima/quran/quiz/LockScreenQuizSchedule.kt",
             "com/kalima/quran/quiz/VerseExcerptBuilder.kt",
         )
         resources.srcDirs("../app/src/main/assets", "../app/src/main")

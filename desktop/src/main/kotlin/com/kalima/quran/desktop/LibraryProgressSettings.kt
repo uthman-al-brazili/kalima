@@ -454,7 +454,10 @@ private fun SurahDialog(store: DesktopProgressStore, language: AppLanguage, onCl
 }
 
 @Composable
-fun SettingsScreen(store: DesktopProgressStore) {
+fun SettingsScreen(
+    store: DesktopProgressStore,
+    onPreviewReturnCard: () -> Unit,
+) {
     val progress = store.progress
     val language = store.language
     var maximumText by remember(progress.maximumWords) {
@@ -534,6 +537,175 @@ fun SettingsScreen(store: DesktopProgressStore) {
             }
         }
         Spacer(Modifier.height(14.dp))
+        SettingsBlock(language.t("Cartões de boas-vindas", "Welcome-back cards")) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        language.t("Estudar ao voltar ao computador", "Study when you return to the PC"),
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        language.t(
+                            "Mostra um cartão depois que o Windows fica inativo e você volta a usar o teclado ou o mouse. Ao fechar, o Kalima permanece na bandeja enquanto este recurso estiver ativo.",
+                            "Shows a card after Windows has been idle and you return to the keyboard or mouse. Closing Kalima keeps it in the tray while this feature is active.",
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                Switch(checked = progress.lockScreenEnabled, onCheckedChange = store::setReturnCardsEnabled)
+            }
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(onClick = onPreviewReturnCard) {
+                Text(language.t("Testar cartão", "Preview card"))
+            }
+            Spacer(Modifier.height(18.dp))
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(language.t("Iniciar com o Windows", "Start with Windows"), fontWeight = FontWeight.SemiBold)
+                    Text(
+                        if (DesktopStartupManager.isAvailable()) {
+                            language.t(
+                                "Inicia o Kalima minimizado na bandeja ao entrar no Windows.",
+                                "Starts Kalima minimized in the tray when you sign in to Windows.",
+                            )
+                        } else {
+                            language.t(
+                                "Disponível na versão instalada do Kalima.",
+                                "Available in the installed version of Kalima.",
+                            )
+                        },
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                Switch(
+                    checked = store.startWithWindows,
+                    enabled = DesktopStartupManager.isAvailable(),
+                    onCheckedChange = store::setStartWithWindows,
+                )
+            }
+            if (progress.lockScreenEnabled) {
+                Spacer(Modifier.height(18.dp))
+                Text(language.t("Tempo ausente", "Time away"), fontWeight = FontWeight.SemiBold)
+                Text(
+                    language.t(
+                        "O cartão aparece somente depois deste período sem entrada.",
+                        "The card appears only after this much time without input.",
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(5, 10, 20, 30).forEach { minutes ->
+                        FilterChip(
+                            selected = store.returnCardIdleMinutes == minutes,
+                            onClick = { store.changeReturnCardIdleMinutes(minutes) },
+                            label = { Text(language.t("$minutes min", "$minutes min")) },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(18.dp))
+                Text(language.t("Limite diário", "Daily limit"), fontWeight = FontWeight.SemiBold)
+                Text(
+                    language.t(
+                        "${progress.lockScreenCardsToday} cartões mostrados hoje.",
+                        "${progress.lockScreenCardsToday} cards shown today.",
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(5, 10, 20, 0).forEach { limit ->
+                        FilterChip(
+                            selected = progress.lockScreenDailyLimit == limit,
+                            onClick = { store.setReturnCardDailyLimit(limit) },
+                            label = { Text(if (limit == 0) language.t("Sem limite", "Unlimited") else "$limit") },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(18.dp))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(language.t("Horário silencioso", "Quiet hours"), fontWeight = FontWeight.SemiBold)
+                        Text(
+                            language.t(
+                                "Não mostra cartões entre ${progress.quietStartHour}:00 e ${progress.quietEndHour}:00.",
+                                "Do not show cards between ${progress.quietStartHour}:00 and ${progress.quietEndHour}:00.",
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Switch(
+                        checked = progress.quietHoursEnabled,
+                        onCheckedChange = store::setReturnCardQuietHoursEnabled,
+                    )
+                }
+                if (progress.quietHoursEnabled) {
+                    Spacer(Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        TimeStepper(progress.quietStartHour, 0..23) {
+                            store.setReturnCardQuietHours(it, progress.quietEndHour)
+                        }
+                        Text("  →  ", fontWeight = FontWeight.Bold)
+                        TimeStepper(progress.quietEndHour, 0..23) {
+                            store.setReturnCardQuietHours(progress.quietStartHour, it)
+                        }
+                    }
+                }
+                Spacer(Modifier.height(18.dp))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(language.t("Quiz ocasional", "Occasional quiz"), fontWeight = FontWeight.SemiBold)
+                        Text(
+                            language.t(
+                                "Intercala perguntas de quatro alternativas com os cartões.",
+                                "Mixes four-choice questions into the cards.",
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Switch(
+                        checked = progress.lockScreenQuizEnabled,
+                        onCheckedChange = store::setReturnCardQuizEnabled,
+                    )
+                }
+                if (progress.lockScreenQuizEnabled) {
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(1, 3, 5, 10).forEach { interval ->
+                            FilterChip(
+                                selected = progress.lockScreenQuizInterval == interval,
+                                onClick = { store.setReturnCardQuizInterval(interval) },
+                                label = {
+                                    Text(language.t("Após $interval", "After $interval"))
+                                },
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(18.dp))
+                if (progress.lockScreenPausedUntil?.isAfter(Instant.now()) == true) {
+                    OutlinedButton(onClick = store::resumeReturnCards) {
+                        Text(language.t("Retomar cartões", "Resume cards"))
+                    }
+                } else {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = store::pauseReturnCardsForHour) {
+                            Text(language.t("Pausar por 1 hora", "Pause for 1 hour"))
+                        }
+                        OutlinedButton(onClick = store::pauseReturnCardsUntilTomorrow) {
+                            Text(language.t("Pausar hoje", "Pause today"))
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(14.dp))
         SettingsBlock(language.t("Lembrete no Windows", "Windows reminder")) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -573,12 +745,12 @@ fun SettingsScreen(store: DesktopProgressStore) {
         }
         Spacer(Modifier.height(14.dp))
         SettingsBlock(language.t("Sobre esta versão", "About this version")) {
-            Text("Kalima 0.14.4 — Windows", fontWeight = FontWeight.Bold)
+            Text("Kalima 0.15.0 — Windows", fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(6.dp))
             Text(
                 language.t(
-                    "Aplicativo offline para estudo de vocabulário do árabe corânico. A integração com a tela de bloqueio permanece exclusiva do Android porque a tela segura do Windows não aceita sobreposição de apps comuns.",
-                    "Offline Quranic Arabic vocabulary study. Lock-screen integration remains Android-only because the secure Windows sign-in screen does not allow regular app overlays.",
+                    "Aplicativo offline para estudo de vocabulário do árabe corânico. No Windows, os cartões aparecem após o retorno ao computador, sem interferir na tela segura de entrada.",
+                    "Offline Quranic Arabic vocabulary study. On Windows, cards appear after you return to the PC without interfering with the secure sign-in screen.",
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

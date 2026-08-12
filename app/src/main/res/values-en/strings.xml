@@ -94,8 +94,8 @@
     <string name="all_caught_up_title">You’re all caught up</string>
     <string name="all_caught_up_description">No cards are scheduled right now. Kalima will bring each word back when its next review is due.</string>
     <string name="routine">Routine</string>
-    <string name="lock_screen_study">Study when the screen turns on</string>
-    <string name="lock_screen_study_enabled">Active: a new word will open whenever the screen turns on.</string>
+    <string name="lock_screen_study">Study when you return to your phone</string>
+    <string name="lock_screen_study_enabled">Active: a new word will open when you return after the screen turns on.</string>
     <string name="lock_screen_study_disabled">Requires the “Display over other apps” permission and keeps a service active.</string>
     <string name="preview_card">Preview card</string>
     <string name="lock_screen_quiz">Quiz when the screen turns on</string>

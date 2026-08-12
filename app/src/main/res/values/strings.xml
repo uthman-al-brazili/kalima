@@ -94,8 +94,8 @@
     <string name="all_caught_up_title">Revisões em dia</string>
     <string name="all_caught_up_description">Não há cartões programados para agora. O Kalima mostrará cada palavra novamente quando chegar a hora da próxima revisão.</string>
     <string name="routine">Rotina</string>
-    <string name="lock_screen_study">Estudo ao ligar a tela</string>
-    <string name="lock_screen_study_enabled">Ativo: uma nova palavra será aberta sempre que a tela acender.</string>
+    <string name="lock_screen_study">Estudar ao voltar ao celular</string>
+    <string name="lock_screen_study_enabled">Ativo: uma nova palavra será aberta quando você voltar depois que a tela acender.</string>
     <string name="lock_screen_study_disabled">Requer a permissão “Aparecer sobre outros apps” e mantém um serviço ativo.</string>
     <string name="preview_card">Testar cartão</string>
     <string name="lock_screen_quiz">Quiz ao ligar a tela</string>

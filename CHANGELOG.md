@@ -3,6 +3,19 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.15.0 — 2026-08-12
+
+- Added optional Windows welcome-back study cards that detect renewed keyboard
+  or mouse activity after a configurable period away from the PC, including
+  returns after Windows has been locked.
+- Matched the Android screen-on experience with Arabic pronunciation, review
+  actions, occasional quizzes, study-scope and spaced-repetition selection,
+  quiet hours, daily limits, snoozing, and a non-intrusive 45-second timeout.
+- Added Windows tray background operation, optional start-with-Windows support,
+  a preview action, and full-screen deferral so games, presentations, and videos
+  are not covered. Android wording now describes the corresponding behavior as
+  studying when the user returns to the phone.
+
 ## 0.14.4 — 2026-08-12
 
 - Fixed Windows pronunciation buttons silently doing nothing by using modern
