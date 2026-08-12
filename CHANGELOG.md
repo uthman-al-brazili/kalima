@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.14.2 — 2026-08-12
+
+- Fixed low-contrast onboarding text and controls when the phone uses dark mode.
+- Arabic vocabulary searches now ignore vowel marks and common alif variants,
+  and root searches work with either spaced or joined Arabic letters.
+
 ## 0.14.1 — 2026-08-12
 
 - Fixed open Windows screens continuing to show the previous language's word

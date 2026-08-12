@@ -4,9 +4,12 @@ import com.kalima.quran.localization.AppLanguage
 import java.io.InputStream
 import java.text.Normalizer
 import java.time.LocalDate
+import java.util.Locale
 
 object WordRepository {
     private val ARABIC_MARKS = Regex("[\\u0610-\\u061A\\u064B-\\u065F\\u0670\\u06D6-\\u06ED]")
+    private val SEARCH_WHITESPACE = Regex("\\s+")
+    private const val SEARCH_FIELD_SEPARATOR = "\u0000"
 
     private val curatedPortugueseWords: List<QuranWord> = listOf(
         QuranWord(
@@ -366,6 +369,9 @@ object WordRepository {
     private var corpusWords: List<QuranWord> = fallbackWords
 
     @Volatile
+    private var searchIndex: Map<String, SearchEntry> = buildSearchIndex(fallbackWords)
+
+    @Volatile
     private var frequentIndex: List<QuranWord> = fallbackWords.filter(QuranWord::isFrequent)
 
     @Volatile
@@ -389,7 +395,9 @@ object WordRepository {
             return
         }
         val imported = input.use { VocabularyAssetLoader.load(it, language) }
-        corpusWords = curatedWords(language) + imported
+        val loadedWords = curatedWords(language) + imported
+        searchIndex = buildSearchIndex(loadedWords)
+        corpusWords = loadedWords
         frequentIndex = imported.filter(QuranWord::isFrequent)
         rankedFrequencyIndex = buildRankedFrequencyIndex(imported)
         surahIndex = imported
@@ -475,20 +483,67 @@ object WordRepository {
         source[Math.floorMod(sequence, source.size)]
 
     fun search(query: String, source: List<QuranWord> = words): List<QuranWord> {
-        val term = query.trim().lowercase()
+        val term = normalizeSearchText(query)
         if (term.isEmpty()) return source
+        val compactArabicTerm = term
+            .takeIf(::containsArabicLetter)
+            ?.filterNot(Char::isWhitespace)
         return source.filter { word ->
-            listOf(
-                word.arabic,
-                word.lemma,
-                word.transliteration,
-                word.meaning,
-                word.root,
-                word.category,
-                word.reference,
-            ).any { it.lowercase().contains(term) }
+            val entry = searchIndex[word.id] ?: searchEntry(word)
+            entry.text.contains(term) ||
+                (compactArabicTerm != null && entry.compactRoot.contains(compactArabicTerm))
         }
     }
+
+    private fun buildSearchIndex(source: List<QuranWord>): Map<String, SearchEntry> =
+        source.associate { word -> word.id to searchEntry(word) }
+
+    private fun searchEntry(word: QuranWord): SearchEntry {
+        val fields = listOf(
+            word.arabic,
+            word.lemma,
+            word.transliteration,
+            word.meaning,
+            word.root,
+            word.category,
+            word.reference,
+        )
+        return SearchEntry(
+            text = fields.joinToString(SEARCH_FIELD_SEPARATOR, transform = ::normalizeSearchText),
+            compactRoot = normalizeSearchText(word.root).filterNot(Char::isWhitespace),
+        )
+    }
+
+    private fun normalizeSearchText(value: String): String = buildString(value.length) {
+        Normalizer.normalize(value, Normalizer.Form.NFD).forEach { character ->
+            val normalized = when {
+                character == 'ـ' || character.isCombiningMark() -> null
+                character in "أإآٱ" -> 'ا'
+                character == 'ى' -> 'ي'
+                else -> character
+            }
+            if (normalized != null) append(normalized)
+        }
+    }.lowercase(Locale.ROOT).trim().replace(SEARCH_WHITESPACE, " ")
+
+    private fun containsArabicLetter(value: String): Boolean = value.any { character ->
+        Character.UnicodeScript.of(character.code) == Character.UnicodeScript.ARABIC &&
+            Character.isLetter(character)
+    }
+
+    private fun Char.isCombiningMark(): Boolean = when (Character.getType(this)) {
+        Character.NON_SPACING_MARK.toInt(),
+        Character.COMBINING_SPACING_MARK.toInt(),
+        Character.ENCLOSING_MARK.toInt(),
+        -> true
+
+        else -> false
+    }
+
+    private data class SearchEntry(
+        val text: String,
+        val compactRoot: String,
+    )
 
 }
 

@@ -41,6 +41,13 @@ class WordRepositoryTest {
     }
 
     @Test
+    fun searchMatchesArabicWithoutVowelMarksOrRootSpaces() {
+        assertTrue(WordRepository.search("الرحمن").any { it.id == "rahman" })
+        assertTrue(WordRepository.search("الغيب").any { it.id == "ghayb" })
+        assertTrue(WordRepository.search("كتب").any { it.id == "kitab" })
+    }
+
+    @Test
     fun generatedCorpusContainsFrequentWordsAndEveryLastSurah() {
         assertEquals((1..114).toList(), WordRepository.selectableSurahs.map(QuranSurah::number))
         assertEquals(100, WordRepository.frequentWords.size)
