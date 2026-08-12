@@ -240,6 +240,7 @@
     <string name="difficult_words_note">Mais lapsos no sistema de repetição espaçada.</string>
     <string name="root_mastery">Domínio por raiz</string>
     <string name="surah_mastery">Domínio por surata</string>
+    <string name="surah_number">Surata %1$d</string>
     <string name="mastery_value">%1$d de %2$d familiares</string>
     <string name="no_history_yet">Sem histórico suficiente</string>
     <string name="guided_paths">Caminhos guiados</string>

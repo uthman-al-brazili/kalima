@@ -240,6 +240,7 @@
     <string name="difficult_words_note">Highest lapse counts in spaced repetition.</string>
     <string name="root_mastery">Mastery by root</string>
     <string name="surah_mastery">Mastery by surah</string>
+    <string name="surah_number">Surah %1$d</string>
     <string name="mastery_value">%1$d of %2$d familiar</string>
     <string name="no_history_yet">Not enough history yet</string>
     <string name="guided_paths">Guided paths</string>

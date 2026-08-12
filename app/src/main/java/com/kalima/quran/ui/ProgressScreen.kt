@@ -293,7 +293,11 @@ private fun SurahMastery(words: List<com.kalima.quran.data.QuranWord>, progress:
             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text("Surata $surah", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(
+                stringResource(R.string.surah_number, surah),
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
             Text(stringResource(R.string.mastery_value, familiar, total), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
