@@ -3,6 +3,22 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.14.0 — 2026-08-12
+
+- Added a native, self-contained Windows application with onboarding, study
+  cards, spaced repetition, all quiz modes, searchable library, progress
+  dashboard, surah/path selection, themes, Portuguese/English localization,
+  device speech, and local reminders.
+- The Windows build shares the Android app's 42,117-card offline corpus,
+  progress-compatible word identifiers, review scheduler, and quiz engine.
+- Windows progress is saved locally under `%APPDATA%\Kalima`; no account,
+  network connection, or separate Java installation is required at runtime.
+- Added a Windows `.exe` installer, desktop persistence tests, a packaged-app
+  smoke test, and Windows build/run instructions.
+- Kept secure lock-screen integration Android-only, with an explanation in the
+  Windows settings because regular apps cannot overlay the Windows sign-in
+  screen.
+
 ## 0.13.2 — 2026-08-12
 
 - Fixed quiz answers unexpectedly switching to a different question while the

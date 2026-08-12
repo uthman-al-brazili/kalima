@@ -6,11 +6,6 @@ import android.os.LocaleList
 import androidx.core.content.edit
 import java.util.Locale
 
-enum class AppLanguage(val languageTag: String) {
-    Portuguese("pt"),
-    English("en"),
-}
-
 object LanguageManager {
     fun selectedLanguage(context: Context): AppLanguage {
         val storedTag = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)

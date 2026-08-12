@@ -1,8 +1,7 @@
 package com.kalima.quran.data
 
-import android.content.Context
 import com.kalima.quran.localization.AppLanguage
-import com.kalima.quran.localization.LanguageManager
+import java.io.InputStream
 import java.text.Normalizer
 import java.time.LocalDate
 
@@ -384,12 +383,12 @@ object WordRepository {
     val frequentWords: List<QuranWord> get() = frequentIndex
 
     @Synchronized
-    fun initialize(context: Context) {
-        val language = LanguageManager.selectedLanguage(context)
-        if (initializedLanguage == language) return
-        val imported = context.assets.open(VocabularyAssetLoader.ASSET_NAME).use { input ->
-            VocabularyAssetLoader.load(input, language)
+    fun initialize(input: InputStream, language: AppLanguage) {
+        if (initializedLanguage == language) {
+            input.close()
+            return
         }
+        val imported = input.use { VocabularyAssetLoader.load(it, language) }
         corpusWords = curatedWords(language) + imported
         frequentIndex = imported.filter(QuranWord::isFrequent)
         rankedFrequencyIndex = buildRankedFrequencyIndex(imported)

@@ -1,6 +1,6 @@
 # Kalima — árabe corânico em pequenos momentos
 
-Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit, mas com identidade, interface e implementação próprias. O foco é vocabulário do árabe clássico encontrado no Alcorão, apresentado em português ou inglês e dentro de contexto.
+Kalima é um aplicativo para Android e Windows inspirado na ideia de aprendizado frequente do WordBit, mas com identidade, interface e implementação próprias. O foco é vocabulário do árabe clássico encontrado no Alcorão, apresentado em português ou inglês e dentro de contexto.
 
 ## O que já funciona
 
@@ -47,11 +47,16 @@ Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit,
 - navegação por ícones reconhecíveis, árabe em RTL com localidade informada a
   leitores de tela e tipografia escalável;
 - 42.117 cartões offline no total e testes de integridade do conteúdo.
+- aplicativo nativo para Windows com as mesmas palavras, IDs, repetição
+  espaçada, quiz, biblioteca, progresso, caminhos e configurações essenciais;
+- instalador Windows autocontido, sem necessidade de instalar Java, com dados
+  persistidos localmente em `%APPDATA%\Kalima` e lembrete enquanto o app está aberto.
 
 ## Tecnologia
 
 - Kotlin 2.2
 - Jetpack Compose + Material 3
+- Compose Multiplatform 1.11 para a interface nativa do Windows
 - Android Gradle Plugin 8.13
 - minSdk 26 e targetSdk 36
 - SharedPreferences para o estado local do MVP
@@ -59,7 +64,7 @@ Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit,
 - serviço em primeiro plano do tipo specialUse para escutar eventos de tela ligada
 - TextToSpeech do Android com seleção automática de uma voz árabe instalada
 
-## Executar
+## Executar no Android
 
 Abra a pasta no Android Studio e aguarde a sincronização. Pela linha de comando:
 
@@ -68,6 +73,25 @@ Abra a pasta no Android Studio e aguarde a sincronização. Pela linha de comand
 O APK de desenvolvimento é gerado em:
 
     app/build/outputs/apk/debug/app-debug.apk
+
+## Executar no Windows
+
+Para iniciar pelo código-fonte:
+
+    .\gradlew.bat -g .gradle-cache :desktop:run
+
+Para gerar o instalador autocontido:
+
+    .\gradlew.bat -g .gradle-cache :desktop:packageExe
+
+O instalador é criado em `desktop/build/compose/binaries/main/exe/`. Ele inclui
+o runtime necessário e não exige uma instalação separada do Java. O aplicativo
+salva o progresso em `%APPDATA%\Kalima\progress.properties`.
+
+O estudo, quiz, biblioteca, progresso, idiomas, temas, voz do dispositivo e
+lembretes locais estão disponíveis no Windows. O cartão sobre a tela de
+bloqueio continua exclusivo do Android, pois a tela segura de entrada do
+Windows não aceita sobreposição de aplicativos comuns.
 
 ## Estudo na tela de bloqueio
 

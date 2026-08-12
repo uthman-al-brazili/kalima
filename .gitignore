@@ -10,9 +10,11 @@
 .externalNativeBuild/
 .cxx/
 app/build/
+desktop/build/
 tools/cache/
 __pycache__/
 *.pyc
 /releases/*.apk
 /releases/*.zip
+/releases/*.exe
 /releases/SHA256SUMS.txt

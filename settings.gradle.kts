@@ -16,4 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Kalima"
 include(":app")
-
+include(":desktop")
