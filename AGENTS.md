@@ -1,5 +1,7 @@
 # Kalima workspace instructions
 
+Every request to add, change, or fix application behavior is a cross-platform request. Implement the corresponding change in both the Android and Windows versions, keep their user-visible behavior and compatible data identifiers aligned, and update both platforms' version metadata together. Do not consider an application change complete until both implementations have been updated and validated. If the change cannot be implemented on one platform, stop and explain the blocker instead of releasing only the other platform.
+
 For every completed application change that produces a new version:
 
 1. Increment `versionCode` and `versionName`.

@@ -20,6 +20,13 @@ class DesktopProgressStoreTest {
     }
 
     @Test
+    fun searchesArabicWithoutVowelMarksOrRootSpaces() {
+        assertTrue(WordRepository.search("الرحمن").any { it.id == "rahman" })
+        assertTrue(WordRepository.search("الغيب").any { it.id == "ghayb" })
+        assertTrue(WordRepository.search("كتب").any { it.id == "kitab" })
+    }
+
+    @Test
     fun persistsStudyProgressAndSettings() {
         val directory = Files.createTempDirectory("kalima-progress-test")
         val first = DesktopProgressStore(directory)

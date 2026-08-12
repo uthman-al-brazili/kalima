@@ -4,7 +4,8 @@ Cada versão concluída do Kalima deve possuir três formas de restauração:
 
 - um commit Git contendo todo o código-fonte;
 - uma tag anotada no formato `vX.Y.Z`;
-- artefatos locais em `releases/`: APK, ZIP do código e checksums SHA-256.
+- artefatos locais em `releases/`: APK, instalador Windows, ZIP do código e
+  checksums SHA-256.
 
 ## Procedimento
 

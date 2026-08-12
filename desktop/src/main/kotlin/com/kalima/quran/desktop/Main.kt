@@ -80,7 +80,11 @@ fun main(args: Array<String>) {
                 window.minimumSize = Dimension(920, 640)
             }
             KalimaTheme(store.progress.themeMode) {
-                Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
+                ) {
                     if (store.progress.onboardingComplete) {
                         DesktopApp(store)
                     } else {

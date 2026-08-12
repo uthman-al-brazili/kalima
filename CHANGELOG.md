@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.14.3 — 2026-08-12
+
+- Brought the Windows release up to date with Android: Arabic vocabulary
+  searches now ignore vowel marks and common alif variants, and root searches
+  accept either spaced or joined Arabic letters.
+- Made the Windows onboarding foreground and background colors explicit so its
+  text and controls retain readable contrast in dark mode.
+- Synchronized Android and Windows version metadata and release artifacts.
+
 ## 0.14.2 — 2026-08-12
 
 - Fixed low-contrast onboarding text and controls when the phone uses dark mode.

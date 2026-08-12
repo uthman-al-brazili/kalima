@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.kalima.quran"
-version = "0.14.1"
+version = "0.14.3"
 
 kotlin {
     jvmToolchain(17)

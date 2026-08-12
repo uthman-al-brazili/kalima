@@ -557,7 +557,7 @@ fun SettingsScreen(store: DesktopProgressStore) {
         }
         Spacer(Modifier.height(14.dp))
         SettingsBlock(language.t("Sobre esta versão", "About this version")) {
-            Text("Kalima 0.14.1 — Windows", fontWeight = FontWeight.Bold)
+            Text("Kalima 0.14.3 — Windows", fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(6.dp))
             Text(
                 language.t(
