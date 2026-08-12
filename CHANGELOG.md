@@ -3,6 +3,26 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.13.0 — 2026-08-12
+
+- Added first-run setup and guided First 50, Top 100/300/500, prayer, short-surah,
+  full-corpus, favorite, custom-list, and selected-surah learning paths.
+- Study cards now hide the answer until reveal, support favorites and personal
+  lists, provide slow word and verse playback using the device voice, and show
+  an honest editorial-draft status with a structured correction report.
+- Added focused listening, verse-cloze, root-family, due-only, and
+  difficult-only quiz modes on top of the existing mixed practice and
+  spaced-repetition scheduling.
+- Expanded Progress with 7- and 30-day accuracy, new-versus-reviewed activity,
+  a 14-day calendar, difficult cards, mastery by root and surah, and path
+  switching that preserves existing progress.
+- Added quiet hours, a daily lock-screen card cap, one-hour/today pauses, and a
+  service-health summary, plus explicit offline privacy and generated-audio
+  disclosures in Settings.
+- Replaced symbolic bottom navigation labels with accessible vector icons,
+  improved Arabic RTL/language metadata, and expanded unit coverage for review
+  history, guided paths, quiz modes, cloze generation, and lock-screen policy.
+
 ## 0.12.0 — 2026-08-12
 
 - Added persistent, per-word spaced-repetition schedules with a 10-minute

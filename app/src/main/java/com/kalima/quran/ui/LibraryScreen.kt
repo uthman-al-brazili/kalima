@@ -2,6 +2,7 @@ package com.kalima.quran.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,20 +47,33 @@ private enum class LibraryFilter(@param:StringRes val labelRes: Int) {
     New(R.string.filter_new),
     Reviewing(R.string.filter_reviewing),
     Learned(R.string.filter_learned),
+    Favorites(R.string.favorites_filter),
 }
 
 @Composable
 fun LibraryScreen(
     progress: StudyProgress,
     pronouncer: ArabicPronouncer,
+    onToggleFavorite: (String) -> Unit,
+    onToggleCustomList: (String) -> Unit,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var filterName by rememberSaveable { mutableStateOf(LibraryFilter.All.name) }
     var expandedId by rememberSaveable { mutableStateOf<String?>(null) }
     val filter = LibraryFilter.valueOf(filterName)
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val activeWords = remember(progress.studyScope, selectionKey) {
-        WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs)
+    val activeWords = remember(
+        progress.studyScope,
+        selectionKey,
+        progress.favoriteIds,
+        progress.customStudyIds,
+    ) {
+        WordRepository.wordsFor(
+            progress.studyScope,
+            progress.selectedSurahs,
+            progress.favoriteIds,
+            progress.customStudyIds,
+        )
     }
     val words = remember(
         query,
@@ -73,6 +88,7 @@ fun LibraryScreen(
                 LibraryFilter.New -> progress.statusFor(word.id) == WordStatus.New
                 LibraryFilter.Reviewing -> progress.statusFor(word.id) == WordStatus.Reviewing
                 LibraryFilter.Learned -> progress.statusFor(word.id) == WordStatus.Learned
+                LibraryFilter.Favorites -> word.id in progress.favoriteIds
             }
         }
     }
@@ -93,6 +109,18 @@ fun LibraryScreen(
                     )
                     StudyScope.Frequent -> pluralStringResource(
                         R.plurals.library_frequent_forms,
+                        activeWords.size,
+                        activeWords.size,
+                    )
+                    StudyScope.Frequent300,
+                    StudyScope.Frequent50,
+                    StudyScope.Frequent500,
+                    StudyScope.Prayer,
+                    StudyScope.ShortSurahs,
+                    StudyScope.Favorites,
+                    StudyScope.Custom,
+                    -> pluralStringResource(
+                        R.plurals.library_available_cards,
                         activeWords.size,
                         activeWords.size,
                     )
@@ -124,7 +152,7 @@ fun LibraryScreen(
             )
             Spacer(Modifier.height(10.dp))
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 LibraryFilter.entries.forEach { option ->
@@ -153,6 +181,10 @@ fun LibraryScreen(
                 expanded = expandedId == word.id,
                 onClick = { expandedId = if (expandedId == word.id) null else word.id },
                 pronouncer = pronouncer,
+                favorite = word.id in progress.favoriteIds,
+                inCustomList = word.id in progress.customStudyIds,
+                onToggleFavorite = onToggleFavorite,
+                onToggleCustomList = onToggleCustomList,
             )
         }
     }
@@ -165,6 +197,10 @@ private fun LibraryWordCard(
     expanded: Boolean,
     onClick: () -> Unit,
     pronouncer: ArabicPronouncer,
+    favorite: Boolean,
+    inCustomList: Boolean,
+    onToggleFavorite: (String) -> Unit,
+    onToggleCustomList: (String) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
@@ -203,13 +239,32 @@ private fun LibraryWordCard(
             }
             if (expanded) {
                 Spacer(Modifier.height(14.dp))
-                Text(word.verseArabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.End, style = MaterialTheme.typography.titleLarge)
+                ArabicText(
+                    word.verseArabic,
+                    modifier = Modifier.fillMaxWidth(),
+                    size = 27,
+                    align = TextAlign.End,
+                )
+                PronunciationButton(
+                    arabic = word.verseArabic,
+                    pronouncer = pronouncer,
+                    modifier = Modifier.fillMaxWidth(),
+                    labelRes = R.string.device_voice_verse,
+                )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     word.insight,
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyMedium,
                 )
+                WordCollectionActions(
+                    word = word,
+                    favorite = favorite,
+                    inCustomList = inCustomList,
+                    onToggleFavorite = onToggleFavorite,
+                    onToggleCustomList = onToggleCustomList,
+                )
+                EditorialReviewPanel(word)
             }
         }
     }

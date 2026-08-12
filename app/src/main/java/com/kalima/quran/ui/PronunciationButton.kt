@@ -24,6 +24,7 @@ import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.audio.ArabicVoiceInstaller
 import com.kalima.quran.audio.PronunciationResult
+import androidx.annotation.StringRes
 
 @Composable
 fun rememberArabicPronouncer(): ArabicPronouncer {
@@ -41,6 +42,9 @@ fun PronunciationButton(
     pronouncer: ArabicPronouncer,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
+    @StringRes labelRes: Int = R.string.listen_pronunciation,
+    speechRate: Float = ArabicPronouncer.DEFAULT_RATE,
+    repeatCount: Int = 1,
     contentColor: Color = Color.Unspecified,
     borderColor: Color = Color.Unspecified,
 ) {
@@ -55,13 +59,13 @@ fun PronunciationButton(
         borderColor
     }
     val context = LocalContext.current
-    val label = stringResource(R.string.listen_pronunciation)
+    val label = stringResource(labelRes)
     val loadingMessage = stringResource(R.string.pronunciation_loading)
     val unavailableMessage = stringResource(R.string.pronunciation_unavailable)
     val installationFailedMessage = stringResource(R.string.pronunciation_installation_failed)
     val failedMessage = stringResource(R.string.pronunciation_failed)
     val onClick: () -> Unit = {
-        when (pronouncer.speak(arabic)) {
+        when (pronouncer.speak(arabic, speechRate, repeatCount)) {
             PronunciationResult.Started -> Unit
             PronunciationResult.Initializing -> {
                 Toast.makeText(context, loadingMessage, Toast.LENGTH_LONG).show()

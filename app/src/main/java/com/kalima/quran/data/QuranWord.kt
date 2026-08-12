@@ -20,7 +20,14 @@ data class QuranWord(
 
 enum class StudyScope {
     All,
+    Frequent50,
     Frequent,
+    Frequent300,
+    Frequent500,
+    Prayer,
+    ShortSurahs,
+    Favorites,
+    Custom,
     Surahs,
 }
 

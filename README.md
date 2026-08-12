@@ -4,9 +4,11 @@ Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit,
 
 ## O que já funciona
 
-- cartão diário com árabe, transliteração, significado, raiz e informação gramatical;
-- pronúncia das palavras em árabe pelo mecanismo de voz do Android, disponível nos cartões, no vocabulário, nos quizzes e no estudo da tela bloqueada, com encaminhamento para instalar uma voz árabe quando necessário;
-- seletor de idioma em **Progresso**, com interface, significados, quizzes, notificações e cartões de tela bloqueada em português ou inglês;
+- cartão de recordação que primeiro oculta o significado e, depois de revelado,
+  apresenta árabe, transliteração, significado, raiz e informação gramatical;
+- pronúncia lenta de palavras e leitura de trechos pelo mecanismo de voz árabe
+  do Android, identificadas claramente como voz gerada — não como recitação;
+- seletor de idioma em **Configurações**, com interface, significados, quizzes, notificações e cartões de tela bloqueada em português ou inglês;
 - trecho corânico contextualizado e paráfrase de estudo em português;
 - repetição espaçada persistente por palavra: erros voltam após 10 minutos;
   acertos avançam para 1 dia, 3 dias e intervalos progressivamente maiores,
@@ -19,20 +21,31 @@ Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit,
 - 100 formas entre as mais frequentes no Alcorão;
 - todas as 42.001 formas de vocabulário únicas das 114 suras, preservando um cartão por forma e por sura;
 - seleção pesquisável do estudo por uma ou várias suras, incluindo combinações como 2 + 36 + 114;
-- modos “Todo o conteúdo”, “Mais usadas” e “Por sura”;
+- configuração inicial guiada para 100 essenciais, oração, suras curtas ou corpus completo;
+- caminhos persistentes Primeiras 50, Top 100, Top 300, Top 500, oração, suras 101–114,
+  todo o corpus e seleção por sura;
+- favoritos e lista de estudo personalizada, disponíveis como coleções independentes;
 - limite máximo opcional e persistente para impedir que novos cartões ampliem
   o conjunto de aprendizado além do total escolhido;
-- aba **Quiz** com sessões tranquilas de cinco perguntas e quatro alternativas;
-- distribuição por sessão: duas perguntas árabe → português, uma português → árabe e duas com palavra destacada em uma ayah;
+- aba **Quiz** com sessões tranquilas de até cinco perguntas e quatro alternativas;
+- modos misto, reconhecimento por escuta, palavra ausente no versículo, família
+  de raiz e somente revisões vencidas;
 - feedback do quiz com a data relativa da próxima revisão e sessões sem
   repetição artificial quando há menos de cinco cartões pendentes;
 - quiz opcional ao ligar a tela, com intervalo configurável entre 1 e 10 palavras;
-- filtros de palavras novas, em revisão e aprendidas;
+- filtros de palavras novas, em revisão, aprendidas e favoritas;
+- painel de progresso com precisão em 7/30 dias, novas e revisadas no dia,
+  calendário de atividade, palavras difíceis e domínio por raiz;
 - persistência local, sem conta e sem coleta de dados;
-- estudo automático a cada tela ligada, com uma palavra diferente em sequência;
+- estudo automático a cada tela ligada, com horário silencioso, limite diário e
+  pausa por uma hora ou até o dia seguinte;
 - cartão em tela cheia sobre o bloqueio, fechado ao desbloquear, apagar a tela ou responder;
 - serviço em primeiro plano opt-in e permissão explícita “Aparecer sobre outros apps”;
 - lembrete diário opcional às 8h, exibido como notificação e compatível com a tela bloqueada conforme as configurações do Android;
+- status editorial visível por cartão e relatório de correção compartilhável,
+  mantendo explícito que a validação especializada ainda está pendente;
+- navegação por ícones reconhecíveis, árabe em RTL com localidade informada a
+  leitores de tela e tipografia escalável;
 - 42.117 cartões offline no total e testes de integridade do conteúdo.
 
 ## Tecnologia
@@ -93,7 +106,12 @@ A seleção é persistida no aparelho e controla o estudo normal, a biblioteca, 
 
 ## Repetição espaçada e quiz
 
-A aba **Quiz** usa o mesmo conteúdo selecionado em **Tudo**, **Mais usadas** ou **Por sura**. Cada sessão contém até cinco palavras novas ou com revisão pendente, sem digitação, cronômetro, vidas ou punições. Depois de cada resposta, o aplicativo mostra a alternativa correta, a transliteração, a raiz, a referência corânica e quando a palavra voltará.
+A aba **Quiz** usa o caminho ativo, inclusive favoritos e a lista personalizada.
+Cada sessão contém até cinco palavras novas ou com revisão pendente, sem
+cronômetro, vidas ou punições. É possível concentrar a sessão em escuta,
+lacunas no versículo, raízes ou apenas cartões vencidos. Depois de cada
+resposta, o aplicativo mostra a alternativa correta, a transliteração, a raiz,
+a referência corânica e quando a palavra voltará.
 
 Cada palavra possui um registro local independente de repetições, intervalo,
 fator de facilidade, esquecimentos e próximo horário de revisão. **Acertei**
@@ -112,7 +130,9 @@ O corpus embutido combina 16 cartões editoriais iniciais com um snapshot compac
 2. o texto árabe deve ser importado sem alterações de uma fonte verificada;
 3. cada fonte e tradução deve ter licença e atribuição documentadas;
 4. significados devem permanecer vinculados ao contexto do versículo, evitando equivalências absolutas;
-5. testes automatizados devem garantir referência, forma textual e procedência de cada registro.
+5. testes automatizados devem garantir referência, forma textual e procedência de cada registro;
+6. o status visível no app deve permanecer como **rascunho editorial** até que
+   os campos de fonte, revisor e data sejam devolvidos e auditados.
 
 Fontes recomendadas para a etapa de produção:
 
@@ -138,8 +158,8 @@ Cada versão concluída deve ser preservada com commit, tag Git, APK e arquivo Z
 
 - revisão acadêmica/religiosa do conteúdo inicial;
 - revisão especializada e versionada dos glossários contextuais em português;
-- repetição espaçada baseada em intervalos e histórico, em vez de apenas estados;
 - áudio por palavra e por versículo com licença rastreável;
+- importação versionada das decisões do primeiro lote de revisão editorial;
 - widget de tela inicial e ações de resposta na notificação;
 - testes instrumentados de RTL, acessibilidade, modo escuro e tamanhos de fonte;
 - exportação/importação do progresso e sincronização opcional.

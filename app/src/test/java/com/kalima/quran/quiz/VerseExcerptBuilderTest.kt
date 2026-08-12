@@ -2,6 +2,7 @@ package com.kalima.quran.quiz
 
 import com.kalima.quran.data.WordRepository
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class VerseExcerptBuilderTest {
@@ -27,5 +28,15 @@ class VerseExcerptBuilderTest {
         assertTrue(excerpt.hasHighlight)
         assertTrue(excerpt.text.startsWith("…"))
         assertTrue(excerpt.text.endsWith("…"))
+    }
+
+    @Test
+    fun clozeReplacesTheTargetWithABlank() {
+        val word = WordRepository.words.first { it.id == "s108-v001-w001" }
+
+        val cloze = VerseExcerptBuilder.buildCloze(word)
+
+        assertTrue(cloze.contains("____"))
+        assertFalse(cloze.contains(word.arabic))
     }
 }

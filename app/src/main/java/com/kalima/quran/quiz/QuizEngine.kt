@@ -9,10 +9,10 @@ object QuizEngine {
 
     private val sessionTypes = listOf(
         QuizQuestionType.ArabicToPortuguese,
-        QuizQuestionType.ArabicToPortuguese,
         QuizQuestionType.PortugueseToArabic,
         QuizQuestionType.ContextualMeaning,
-        QuizQuestionType.ContextualMeaning,
+        QuizQuestionType.ListeningToPortuguese,
+        QuizQuestionType.ClozeToArabic,
     )
 
     private val lockScreenTypes = listOf(
@@ -28,11 +28,20 @@ object QuizEngine {
         statusFor: (String) -> WordStatus,
         random: Random = Random.Default,
         optionWords: List<QuranWord> = words,
+        mode: QuizMode = QuizMode.Mixed,
     ): List<QuizQuestion> {
         require(words.isNotEmpty()) { "O quiz precisa de palavras" }
         require(optionWords.isNotEmpty()) { "O quiz precisa de alternativas" }
         val targets = prioritized(words, statusFor, random).take(SESSION_SIZE)
-        val types = sessionTypes.shuffled(random).take(targets.size)
+        val types = when (mode) {
+            QuizMode.Mixed,
+            QuizMode.ReviewsOnly,
+            QuizMode.Difficult,
+            -> sessionTypes.shuffled(random).take(targets.size)
+            QuizMode.Listening -> List(targets.size) { QuizQuestionType.ListeningToPortuguese }
+            QuizMode.Cloze -> List(targets.size) { QuizQuestionType.ClozeToArabic }
+            QuizMode.Roots -> List(targets.size) { QuizQuestionType.RootToArabic }
+        }
         return targets.mapIndexed { index, word ->
             createQuestion(word, types[index], optionWords, random)
         }
@@ -91,9 +100,13 @@ object QuizEngine {
         when (type) {
             QuizQuestionType.ArabicToPortuguese,
             QuizQuestionType.ContextualMeaning,
+            QuizQuestionType.ListeningToPortuguese,
             -> word.meaning
 
-            QuizQuestionType.PortugueseToArabic -> word.arabic
+            QuizQuestionType.PortugueseToArabic,
+            QuizQuestionType.ClozeToArabic,
+            QuizQuestionType.RootToArabic,
+            -> word.arabic
         }
 
     private fun prioritized(

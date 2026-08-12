@@ -10,6 +10,7 @@ import com.kalima.quran.quiz.LockScreenQuizSchedule
 import com.kalima.quran.quiz.QuizEngine
 import java.time.Instant
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 const val QUIZ_MASTERY_DAYS = 3
 
@@ -39,6 +40,16 @@ data class StudyProgress(
     val advancedSettingsVisible: Boolean = false,
     val currentStudyWordId: String? = null,
     val reviewSchedules: Map<String, ReviewSchedule> = emptyMap(),
+    val favoriteIds: Set<String> = emptySet(),
+    val customStudyIds: Set<String> = emptySet(),
+    val onboardingComplete: Boolean = true,
+    val reviewEvents: List<ReviewEvent> = emptyList(),
+    val quietHoursEnabled: Boolean = true,
+    val quietStartHour: Int = 22,
+    val quietEndHour: Int = 7,
+    val lockScreenDailyLimit: Int = 20,
+    val lockScreenCardsToday: Int = 0,
+    val lockScreenPausedUntil: Instant? = null,
 ) {
     val todayCompleted: Int get() = todayAnsweredIds.size
 
@@ -54,6 +65,9 @@ data class StudyProgress(
 
     fun dueReviewCount(wordIds: Set<String>, now: Instant = Instant.now()): Int =
         wordIds.count { id -> reviewSchedules[id]?.isDue(now) == true }
+
+    fun accuracy(days: Long, now: Instant = Instant.now()): Int? =
+        ReviewHistory.accuracy(reviewEvents, days, now)
 }
 
 class ProgressStore(context: Context) {
@@ -68,9 +82,18 @@ class ProgressStore(context: Context) {
     val progress: StateFlow<StudyProgress> = _progress.asStateFlow()
 
     fun answer(wordId: String, learned: Boolean) {
+        recordAnswer(wordId, learned, ReviewSource.Study)
+    }
+
+    fun answerFromLockScreen(wordId: String, learned: Boolean) {
+        recordAnswer(wordId, learned, ReviewSource.LockScreen)
+    }
+
+    private fun recordAnswer(wordId: String, learned: Boolean, source: ReviewSource) {
         val moment = Instant.now()
         val date = today()
         val previous = refreshDayIfNeeded(_progress.value, date)
+        val wasNew = wordId !in previous.reviewSchedules
         val schedules = previous.reviewSchedules + (
             wordId to SpacedRepetition.review(
                 previous = previous.reviewSchedules[wordId],
@@ -89,15 +112,28 @@ class ProgressStore(context: Context) {
             todayAnsweredIds = answeredToday,
             streakDays = StreakCalculator.next(previous.streakDays, lastStudyDate, date),
             reviewSchedules = schedules,
+            reviewEvents = ReviewHistory.append(
+                previous.reviewEvents,
+                ReviewEvent(moment, wordId, learned, wasNew, source),
+            ),
         )
         preferences.edit { putString(KEY_LAST_STUDY_DATE, date.toString()) }
         persist(updated, date)
     }
 
     fun answerQuiz(wordId: String, correct: Boolean) {
+        recordQuizAnswer(wordId, correct, ReviewSource.Quiz)
+    }
+
+    fun answerQuizFromLockScreen(wordId: String, correct: Boolean) {
+        recordQuizAnswer(wordId, correct, ReviewSource.LockScreen)
+    }
+
+    private fun recordQuizAnswer(wordId: String, correct: Boolean, source: ReviewSource) {
         val moment = Instant.now()
         val date = today()
         val previous = refreshDayIfNeeded(_progress.value, date)
+        val wasNew = wordId !in previous.reviewSchedules
         val schedules = previous.reviewSchedules + (
             wordId to SpacedRepetition.review(
                 previous = previous.reviewSchedules[wordId],
@@ -115,7 +151,18 @@ class ProgressStore(context: Context) {
             streakDays = StreakCalculator.next(previous.streakDays, lastStudyDate, date),
             quizCorrectAnswers = previous.quizCorrectAnswers + if (correct) 1 else 0,
             quizTotalAnswers = previous.quizTotalAnswers + 1,
+            quizCorrectDays = if (correct) {
+                previous.quizCorrectDays + (
+                    wordId to (previous.quizCorrectDays[wordId].orEmpty() + date.toString())
+                )
+            } else {
+                previous.quizCorrectDays
+            },
             reviewSchedules = schedules,
+            reviewEvents = ReviewHistory.append(
+                previous.reviewEvents,
+                ReviewEvent(moment, wordId, correct, wasNew, source),
+            ),
         )
         preferences.edit { putString(KEY_LAST_STUDY_DATE, date.toString()) }
         persist(updated, date)
@@ -156,6 +203,33 @@ class ProgressStore(context: Context) {
         )
     }
 
+    fun toggleFavorite(wordId: String) {
+        if (WordRepository.words.none { it.id == wordId }) return
+        val ids = _progress.value.favoriteIds.toMutableSet().apply {
+            if (!add(wordId)) remove(wordId)
+        }
+        persist(_progress.value.copy(favoriteIds = ids), today())
+    }
+
+    fun toggleCustomStudy(wordId: String) {
+        if (WordRepository.words.none { it.id == wordId }) return
+        val ids = _progress.value.customStudyIds.toMutableSet().apply {
+            if (!add(wordId)) remove(wordId)
+        }
+        persist(_progress.value.copy(customStudyIds = ids), today())
+    }
+
+    fun completeOnboarding(scope: StudyScope, dailyGoal: Int) {
+        persist(
+            _progress.value.copy(
+                onboardingComplete = true,
+                studyScope = scope,
+                dailyGoal = dailyGoal.coerceIn(3, 20),
+            ),
+            today(),
+        )
+    }
+
     fun toggleSurah(surahNumber: Int) {
         if (surahNumber !in AVAILABLE_SURAHS) return
         val selected = _progress.value.selectedSurahs.toMutableSet().apply {
@@ -169,9 +243,32 @@ class ProgressStore(context: Context) {
         persist(updated, today())
     }
 
-    fun nextLockScreenContent(): LockScreenContent? {
+    fun canShowLockScreenCard(now: Instant = Instant.now()): Boolean =
+        lockScreenBlockReason(now) == null
+
+    fun lockScreenBlockReason(now: Instant = Instant.now()): LockScreenBlockReason? {
+        val current = refreshDayIfNeeded(_progress.value, today())
+        return LockScreenPolicy.blockReason(
+            enabled = current.lockScreenEnabled,
+            pausedUntil = current.lockScreenPausedUntil,
+            quietHoursEnabled = current.quietHoursEnabled,
+            quietStartHour = current.quietStartHour,
+            quietEndHour = current.quietEndHour,
+            dailyLimit = current.lockScreenDailyLimit,
+            shownToday = current.lockScreenCardsToday,
+            now = now,
+        )
+    }
+
+    fun nextLockScreenContent(preview: Boolean = false): LockScreenContent? {
         val current = _progress.value
-        val selectedSource = WordRepository.wordsFor(current.studyScope, current.selectedSurahs)
+        if (!preview && !canShowLockScreenCard()) return null
+        val selectedSource = WordRepository.wordsFor(
+            current.studyScope,
+            current.selectedSurahs,
+            current.favoriteIds,
+            current.customStudyIds,
+        )
         val available = current.limitNewWords(selectedSource)
         val moment = Instant.now()
         val dueWords = ReviewQueue.dueWords(available, current.reviewSchedules, moment)
@@ -205,6 +302,7 @@ class ProgressStore(context: Context) {
                     putInt(KEY_LOCK_SCREEN_QUIZ_SEQUENCE, quizSequence + 1)
                     putInt(KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ, 0)
                 }
+                if (!preview) recordLockScreenCardShown()
                 return LockScreenContent.QuizCard(question)
             }
         }
@@ -218,7 +316,49 @@ class ProgressStore(context: Context) {
                 LockScreenQuizSchedule.afterWord(current.lockScreenQuizEnabled, wordsSinceQuiz),
             )
         }
+        if (!preview) recordLockScreenCardShown()
         return LockScreenContent.WordCard(word)
+    }
+
+    private fun recordLockScreenCardShown() {
+        val current = refreshDayIfNeeded(_progress.value, today())
+        persist(current.copy(lockScreenCardsToday = current.lockScreenCardsToday + 1), today())
+    }
+
+    fun setQuietHoursEnabled(enabled: Boolean) {
+        persist(_progress.value.copy(quietHoursEnabled = enabled), today())
+    }
+
+    fun setQuietHours(startHour: Int, endHour: Int) {
+        persist(
+            _progress.value.copy(
+                quietStartHour = startHour.coerceIn(0, 23),
+                quietEndHour = endHour.coerceIn(0, 23),
+            ),
+            today(),
+        )
+    }
+
+    fun setLockScreenDailyLimit(limit: Int) {
+        persist(_progress.value.copy(lockScreenDailyLimit = limit.coerceIn(0, 100)), today())
+    }
+
+    fun pauseLockScreenForHour() {
+        persist(
+            _progress.value.copy(lockScreenPausedUntil = Instant.now().plus(1, ChronoUnit.HOURS)),
+            today(),
+        )
+    }
+
+    fun pauseLockScreenUntilTomorrow() {
+        persist(
+            _progress.value.copy(lockScreenPausedUntil = LockScreenPolicy.pauseUntilTomorrow()),
+            today(),
+        )
+    }
+
+    fun resumeLockScreen() {
+        persist(_progress.value.copy(lockScreenPausedUntil = null), today())
     }
 
     fun setDailyGoal(goal: Int) {
@@ -263,6 +403,11 @@ class ProgressStore(context: Context) {
             preferences.getStringSet(KEY_TODAY_ANSWERED, emptySet()).orEmpty()
         } else {
             emptySet()
+        }
+        val lockCardsToday = if (preferences.getString(KEY_LOCK_SCREEN_COUNT_DATE, null) == date.toString()) {
+            preferences.getInt(KEY_LOCK_SCREEN_CARDS_TODAY, 0)
+        } else {
+            0
         }
         val storedLearnedIds = preferences.getStringSet(KEY_LEARNED, emptySet()).orEmpty()
         val storedReviewingIds = preferences.getStringSet(KEY_REVIEWING, emptySet()).orEmpty()
@@ -317,12 +462,36 @@ class ProgressStore(context: Context) {
             currentStudyWordId = preferences.getString(KEY_CURRENT_STUDY_WORD_ID, null)
                 ?.takeIf { storedId -> WordRepository.words.any { it.id == storedId } },
             reviewSchedules = schedules,
+            favoriteIds = preferences.getStringSet(KEY_FAVORITE_IDS, emptySet()).orEmpty(),
+            customStudyIds = preferences.getStringSet(KEY_CUSTOM_STUDY_IDS, emptySet()).orEmpty(),
+            onboardingComplete = preferences.getBoolean(
+                KEY_ONBOARDING_COMPLETE,
+                preferences.contains(KEY_STUDY_SCOPE) ||
+                    preferences.contains(KEY_LEARNED) ||
+                    preferences.contains(KEY_REVIEW_SCHEDULES),
+            ),
+            reviewEvents = ReviewEventCodec.decode(
+                preferences.getStringSet(KEY_REVIEW_EVENTS, emptySet()).orEmpty(),
+            ),
+            quietHoursEnabled = preferences.getBoolean(KEY_QUIET_HOURS_ENABLED, true),
+            quietStartHour = preferences.getInt(KEY_QUIET_START_HOUR, 22).coerceIn(0, 23),
+            quietEndHour = preferences.getInt(KEY_QUIET_END_HOUR, 7).coerceIn(0, 23),
+            lockScreenDailyLimit = preferences.getInt(KEY_LOCK_SCREEN_DAILY_LIMIT, 20)
+                .coerceIn(0, 100),
+            lockScreenCardsToday = lockCardsToday,
+            lockScreenPausedUntil = preferences.getLong(KEY_LOCK_SCREEN_PAUSED_UNTIL, 0L)
+                .takeIf { it > 0L }
+                ?.let(Instant::ofEpochMilli),
         )
     }
 
     private fun refreshDayIfNeeded(progress: StudyProgress, date: LocalDate): StudyProgress {
         val storedDay = preferences.getString(KEY_TODAY, null)
-        return if (storedDay == date.toString()) progress else progress.copy(todayAnsweredIds = emptySet())
+        return if (storedDay == date.toString()) {
+            progress
+        } else {
+            progress.copy(todayAnsweredIds = emptySet(), lockScreenCardsToday = 0)
+        }
     }
 
     private fun persist(progress: StudyProgress, date: LocalDate) {
@@ -346,6 +515,19 @@ class ProgressStore(context: Context) {
             putString(KEY_THEME_MODE, progress.themeMode.name)
             putBoolean(KEY_ADVANCED_SETTINGS_VISIBLE, progress.advancedSettingsVisible)
             putStringSet(KEY_REVIEW_SCHEDULES, ReviewScheduleCodec.encode(progress.reviewSchedules))
+            putStringSet(KEY_FAVORITE_IDS, progress.favoriteIds)
+            putStringSet(KEY_CUSTOM_STUDY_IDS, progress.customStudyIds)
+            putBoolean(KEY_ONBOARDING_COMPLETE, progress.onboardingComplete)
+            putStringSet(KEY_REVIEW_EVENTS, ReviewEventCodec.encode(progress.reviewEvents))
+            putBoolean(KEY_QUIET_HOURS_ENABLED, progress.quietHoursEnabled)
+            putInt(KEY_QUIET_START_HOUR, progress.quietStartHour)
+            putInt(KEY_QUIET_END_HOUR, progress.quietEndHour)
+            putInt(KEY_LOCK_SCREEN_DAILY_LIMIT, progress.lockScreenDailyLimit)
+            putInt(KEY_LOCK_SCREEN_CARDS_TODAY, progress.lockScreenCardsToday)
+            putString(KEY_LOCK_SCREEN_COUNT_DATE, date.toString())
+            progress.lockScreenPausedUntil?.let {
+                putLong(KEY_LOCK_SCREEN_PAUSED_UNTIL, it.toEpochMilli())
+            } ?: remove(KEY_LOCK_SCREEN_PAUSED_UNTIL)
             progress.currentStudyWordId?.let {
                 putString(KEY_CURRENT_STUDY_WORD_ID, it)
             } ?: remove(KEY_CURRENT_STUDY_WORD_ID)
@@ -403,6 +585,17 @@ class ProgressStore(context: Context) {
         private const val KEY_ADVANCED_SETTINGS_VISIBLE = "advanced_settings_visible"
         private const val KEY_CURRENT_STUDY_WORD_ID = "current_study_word_id"
         private const val KEY_REVIEW_SCHEDULES = "review_schedules_v1"
+        private const val KEY_FAVORITE_IDS = "favorite_ids"
+        private const val KEY_CUSTOM_STUDY_IDS = "custom_study_ids"
+        private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
+        private const val KEY_REVIEW_EVENTS = "review_events_v1"
+        private const val KEY_QUIET_HOURS_ENABLED = "quiet_hours_enabled"
+        private const val KEY_QUIET_START_HOUR = "quiet_start_hour"
+        private const val KEY_QUIET_END_HOUR = "quiet_end_hour"
+        private const val KEY_LOCK_SCREEN_DAILY_LIMIT = "lock_screen_daily_limit"
+        private const val KEY_LOCK_SCREEN_CARDS_TODAY = "lock_screen_cards_today"
+        private const val KEY_LOCK_SCREEN_COUNT_DATE = "lock_screen_count_date"
+        private const val KEY_LOCK_SCREEN_PAUSED_UNTIL = "lock_screen_paused_until"
         private const val DEFAULT_SURAH = 114
         private val AVAILABLE_SURAHS = 1..114
     }

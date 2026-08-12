@@ -34,7 +34,10 @@ import com.kalima.quran.R
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.ReviewHistory
 import com.kalima.quran.data.limitNewWords
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Composable
 fun ProgressScreen(
@@ -43,8 +46,18 @@ fun ProgressScreen(
     onToggleSurah: (Int) -> Unit,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val activeWords = remember(progress.studyScope, selectionKey) {
-        WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs)
+    val activeWords = remember(
+        progress.studyScope,
+        selectionKey,
+        progress.favoriteIds,
+        progress.customStudyIds,
+    ) {
+        WordRepository.wordsFor(
+            progress.studyScope,
+            progress.selectedSurahs,
+            progress.favoriteIds,
+            progress.customStudyIds,
+        )
     }
     val learnedInScope = remember(activeWords, progress.learnedIds) {
         activeWords.count { it.id in progress.learnedIds }
@@ -58,7 +71,13 @@ fun ProgressScreen(
     ) {
         progress.limitNewWords(activeWords)
     }
-    val learnedFraction = learnedInScope.toFloat() / activeWords.size
+    val learnedFraction = if (activeWords.isEmpty()) 0f else learnedInScope.toFloat() / activeWords.size
+    val today = LocalDate.now()
+    val eventsToday = progress.reviewEvents.filter {
+        it.timestamp.atZone(ZoneId.systemDefault()).toLocalDate() == today
+    }
+    val newToday = eventsToday.count { it.wasNew }
+    val reviewedToday = eventsToday.size - newToday
     var showSurahDialog by rememberSaveable { mutableStateOf(false) }
 
     if (showSurahDialog) {
@@ -102,6 +121,24 @@ fun ProgressScreen(
                 modifier = Modifier.weight(1f),
             )
         }
+        Spacer(Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            StatBlock(
+                value = progress.accuracy(7)?.let { "$it%" } ?: "—",
+                label = stringResource(R.string.accuracy_7_days),
+                modifier = Modifier.weight(1f),
+            )
+            StatBlock(
+                value = progress.accuracy(30)?.let { "$it%" } ?: "—",
+                label = stringResource(R.string.accuracy_30_days),
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            StatBlock(newToday.toString(), stringResource(R.string.new_today), Modifier.weight(1f))
+            StatBlock(reviewedToday.toString(), stringResource(R.string.reviewed_today), Modifier.weight(1f))
+        }
         Spacer(Modifier.height(14.dp))
         Card(
             colors = CardDefaults.cardColors(
@@ -136,12 +173,12 @@ fun ProgressScreen(
         }
         Spacer(Modifier.height(24.dp))
         Text(
-            stringResource(R.string.choose_words),
+            stringResource(R.string.guided_paths),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
         )
         Text(
-            stringResource(R.string.choose_words_note),
+            stringResource(R.string.guided_paths_note),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall,
         )
@@ -156,25 +193,27 @@ fun ProgressScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    FilterChip(
-                        selected = progress.studyScope == StudyScope.All,
-                        onClick = { onStudyScopeChange(StudyScope.All) },
-                        label = { Text(stringResource(R.string.scope_all)) },
-                        modifier = Modifier.weight(1f),
-                    )
-                    FilterChip(
-                        selected = progress.studyScope == StudyScope.Frequent,
-                        onClick = { onStudyScopeChange(StudyScope.Frequent) },
-                        label = { Text(stringResource(R.string.scope_frequent)) },
-                        modifier = Modifier.weight(1f),
-                    )
-                    FilterChip(
-                        selected = progress.studyScope == StudyScope.Surahs,
-                        onClick = { onStudyScopeChange(StudyScope.Surahs) },
-                        label = { Text(stringResource(R.string.scope_surah)) },
-                        modifier = Modifier.weight(1f),
-                    )
+                    ProgressPathChip(progress.studyScope, StudyScope.Frequent50, R.string.scope_first_50, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScope, StudyScope.Frequent, R.string.scope_top_100, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScope, StudyScope.Frequent300, R.string.scope_top_300, onStudyScopeChange, Modifier.weight(1f))
                 }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    ProgressPathChip(progress.studyScope, StudyScope.Frequent500, R.string.scope_top_500, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScope, StudyScope.Prayer, R.string.scope_prayer, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScope, StudyScope.ShortSurahs, R.string.scope_short_surahs, onStudyScopeChange, Modifier.weight(1f))
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    ProgressPathChip(progress.studyScope, StudyScope.All, R.string.scope_all, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScope, StudyScope.Favorites, R.string.scope_favorites, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScope, StudyScope.Custom, R.string.scope_custom, onStudyScopeChange, Modifier.weight(1f))
+                }
+                ProgressPathChip(progress.studyScope, StudyScope.Surahs, R.string.scope_surah, onStudyScopeChange, Modifier.fillMaxWidth())
                 if (progress.studyScope == StudyScope.Surahs) {
                     Spacer(Modifier.height(10.dp))
                     Text(
@@ -223,5 +262,150 @@ fun ProgressScreen(
             }
         }
         Spacer(Modifier.height(24.dp))
+        ActivityCalendar(progress)
+        Spacer(Modifier.height(24.dp))
+        DifficultWords(progress)
+        Spacer(Modifier.height(24.dp))
+        RootMastery(activeWords, progress)
+        Spacer(Modifier.height(24.dp))
+        SurahMastery(activeWords, progress)
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun SurahMastery(words: List<com.kalima.quran.data.QuranWord>, progress: StudyProgress) {
+    val surahs = remember(words, progress.learnedIds, progress.reviewingIds) {
+        words.filter { it.surahNumber != null }
+            .groupBy { requireNotNull(it.surahNumber) }
+            .map { (surah, surahWords) ->
+                Triple(surah, surahWords.count { progress.statusFor(it.id) != com.kalima.quran.data.WordStatus.New }, surahWords.size)
+            }
+            .sortedWith(compareByDescending<Triple<Int, Int, Int>> { it.second }.thenBy { it.first })
+            .take(5)
+    }
+    Text(stringResource(R.string.surah_mastery), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Spacer(Modifier.height(10.dp))
+    if (surahs.isEmpty()) {
+        Text(stringResource(R.string.no_history_yet), color = MaterialTheme.colorScheme.onSurfaceVariant)
+    } else surahs.forEach { (surah, familiar, total) ->
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text("Surata $surah", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(stringResource(R.string.mastery_value, familiar, total), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun ProgressPathChip(
+    selectedScope: StudyScope,
+    scope: StudyScope,
+    labelRes: Int,
+    onSelect: (StudyScope) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FilterChip(
+        selected = selectedScope == scope,
+        onClick = { onSelect(scope) },
+        label = { Text(stringResource(labelRes)) },
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun ActivityCalendar(progress: StudyProgress) {
+    val today = LocalDate.now()
+    val counts = remember(progress.reviewEvents) { ReviewHistory.countByDay(progress.reviewEvents) }
+    val days = (13L downTo 0L).map(today::minusDays)
+    Text(
+        stringResource(R.string.activity_14_days),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+    )
+    Spacer(Modifier.height(10.dp))
+    days.chunked(7).forEach { week ->
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+        ) {
+            week.forEach { day ->
+                val count = counts[day] ?: 0
+                Surface(
+                    modifier = Modifier.weight(1f),
+                    color = if (count == 0) {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.primary.copy(alpha = (0.3f + count * 0.1f).coerceAtMost(1f))
+                    },
+                    shape = RoundedCornerShape(10.dp),
+                ) {
+                    Column(Modifier.padding(vertical = 8.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                        Text(day.dayOfMonth.toString(), style = MaterialTheme.typography.labelSmall)
+                        Text(count.toString(), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium)
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(7.dp))
+    }
+}
+
+@Composable
+private fun DifficultWords(progress: StudyProgress) {
+    val difficult = remember(progress.reviewSchedules) {
+        progress.reviewSchedules.entries
+            .sortedByDescending { it.value.lapses }
+            .filter { it.value.lapses > 0 }
+            .take(5)
+            .mapNotNull { entry -> WordRepository.words.firstOrNull { it.id == entry.key }?.let { it to entry.value.lapses } }
+    }
+    Text(stringResource(R.string.difficult_words), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text(stringResource(R.string.difficult_words_note), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+    Spacer(Modifier.height(10.dp))
+    if (difficult.isEmpty()) {
+        Text(stringResource(R.string.no_history_yet), color = MaterialTheme.colorScheme.onSurfaceVariant)
+    } else difficult.forEach { (word, lapses) ->
+        Surface(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(14.dp),
+        ) {
+            Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(Modifier.weight(1f)) {
+                    ArabicText(word.arabic, size = 25, align = androidx.compose.ui.text.style.TextAlign.Start)
+                    Text(word.meaning, style = MaterialTheme.typography.bodySmall)
+                }
+                Text("×$lapses", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RootMastery(words: List<com.kalima.quran.data.QuranWord>, progress: StudyProgress) {
+    val roots = remember(words, progress.learnedIds, progress.reviewingIds) {
+        words.filter { it.root.isNotBlank() && it.root != "—" }
+            .groupBy { it.root }
+            .map { (root, rootWords) ->
+                Triple(root, rootWords.count { progress.statusFor(it.id) != com.kalima.quran.data.WordStatus.New }, rootWords.size)
+            }
+            .sortedWith(compareByDescending<Triple<String, Int, Int>> { it.second }.thenByDescending { it.third })
+            .take(5)
+    }
+    Text(stringResource(R.string.root_mastery), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Spacer(Modifier.height(10.dp))
+    if (roots.isEmpty()) {
+        Text(stringResource(R.string.no_history_yet), color = MaterialTheme.colorScheme.onSurfaceVariant)
+    } else roots.forEach { (root, familiar, total) ->
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(root, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(stringResource(R.string.mastery_value, familiar, total), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }

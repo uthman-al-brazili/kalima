@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,6 +57,8 @@ fun StudyScreen(
     onAnswer: (String, Boolean) -> Unit,
     onCurrentWordChange: (String) -> Unit,
     onEnableLockScreen: () -> Unit,
+    onToggleFavorite: (String) -> Unit,
+    onToggleCustomList: (String) -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
 ) {
@@ -66,13 +69,24 @@ fun StudyScreen(
         progress.maximumWords,
         progress.learnedIds,
         progress.reviewingIds,
+        progress.favoriteIds,
+        progress.customStudyIds,
     ) {
         progress.limitNewWords(
-            WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs),
+            WordRepository.wordsFor(
+                progress.studyScope,
+                progress.selectedSurahs,
+                progress.favoriteIds,
+                progress.customStudyIds,
+            ),
         )
     }
     if (availableWords.isEmpty()) {
-        LearningLimitEmptyState()
+        if (progress.studyScope in setOf(StudyScope.Favorites, StudyScope.Custom)) {
+            EmptyCollectionState()
+        } else {
+            LearningLimitEmptyState()
+        }
         return
     }
     val words = remember(availableWords, progress.reviewSchedules) {
@@ -104,6 +118,7 @@ fun StudyScreen(
         launchTarget?.requestId,
     ) { mutableStateOf(session.first().id) }
     val word = session.firstOrNull { it.id == currentWordId } ?: session.first()
+    var meaningRevealed by rememberSaveable(word.id) { mutableStateOf(false) }
     val moveToNextWord = {
         val currentIndex = session.indexOfFirst { it.id == word.id }.coerceAtLeast(0)
         val nextWord = session[(currentIndex + 1) % session.size]
@@ -157,9 +172,25 @@ fun StudyScreen(
             }
         }
         Spacer(Modifier.height(20.dp))
-        WordCard(word, progress, pronouncer)
+        WordCard(
+            word = word,
+            progress = progress,
+            pronouncer = pronouncer,
+            meaningRevealed = meaningRevealed,
+            onRevealChange = { meaningRevealed = it },
+            onToggleFavorite = onToggleFavorite,
+            onToggleCustomList = onToggleCustomList,
+        )
         Spacer(Modifier.height(18.dp))
-        Row(Modifier.fillMaxWidth()) {
+        if (!meaningRevealed) {
+            Button(
+                onClick = { meaningRevealed = true },
+                modifier = Modifier.fillMaxWidth().height(54.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(stringResource(R.string.reveal_meaning), fontWeight = FontWeight.Bold)
+            }
+        } else Row(Modifier.fillMaxWidth()) {
             OutlinedButton(
                 onClick = {
                     onAnswer(word.id, false)
@@ -242,7 +273,14 @@ private fun StudyHeader(progress: StudyProgress, dueCount: Int) {
             Text(
                 when (progress.studyScope) {
                     StudyScope.All -> stringResource(R.string.scope_all_description)
+                    StudyScope.Frequent50 -> stringResource(R.string.scope_first_50_description)
                     StudyScope.Frequent -> stringResource(R.string.scope_frequent_description)
+                    StudyScope.Frequent300 -> stringResource(R.string.scope_top_300_description)
+                    StudyScope.Frequent500 -> stringResource(R.string.scope_top_500_description)
+                    StudyScope.Prayer -> stringResource(R.string.scope_prayer_description)
+                    StudyScope.ShortSurahs -> stringResource(R.string.scope_short_description)
+                    StudyScope.Favorites -> stringResource(R.string.scope_favorites_description)
+                    StudyScope.Custom -> stringResource(R.string.scope_custom_description)
                     StudyScope.Surahs -> if (progress.selectedSurahs.size <= 4) {
                         stringResource(
                             R.string.scope_surah_list,
@@ -306,6 +344,10 @@ private fun WordCard(
     word: QuranWord,
     progress: StudyProgress,
     pronouncer: ArabicPronouncer,
+    meaningRevealed: Boolean,
+    onRevealChange: (Boolean) -> Unit,
+    onToggleFavorite: (String) -> Unit,
+    onToggleCustomList: (String) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -341,47 +383,79 @@ private fun WordCard(
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.height(8.dp))
-            PronunciationButton(arabic = word.arabic, pronouncer = pronouncer)
-            Spacer(Modifier.height(14.dp))
-            Text(
-                word.meaning,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
+            PronunciationButton(
+                arabic = word.arabic,
+                pronouncer = pronouncer,
+                labelRes = R.string.device_voice_slow,
+                speechRate = ArabicPronouncer.SLOW_RATE,
             )
-            Spacer(Modifier.height(18.dp))
-            RootAndGrammar(word.root, word.grammar)
-            Spacer(Modifier.height(24.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
-            Spacer(Modifier.height(20.dp))
-            Box(Modifier.fillMaxWidth()) {
-                Column {
+            PronunciationButton(
+                arabic = word.arabic,
+                pronouncer = pronouncer,
+                labelRes = R.string.device_voice_repeat,
+                speechRate = ArabicPronouncer.SLOW_RATE,
+                repeatCount = 3,
+            )
+            Spacer(Modifier.height(14.dp))
+            WordCollectionActions(
+                word = word,
+                favorite = word.id in progress.favoriteIds,
+                inCustomList = word.id in progress.customStudyIds,
+                onToggleFavorite = onToggleFavorite,
+                onToggleCustomList = onToggleCustomList,
+            )
+            if (meaningRevealed) {
+                Text(
+                    word.meaning,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(Modifier.height(18.dp))
+                RootAndGrammar(word.root, word.grammar)
+                Spacer(Modifier.height(24.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
+                Spacer(Modifier.height(20.dp))
+                Box(Modifier.fillMaxWidth()) {
+                    Column {
+                        Text(
+                            word.reference,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        ArabicText(
+                            word.verseArabic,
+                            modifier = Modifier.fillMaxWidth(),
+                            size = 28,
+                            align = TextAlign.End,
+                        )
+                        PronunciationButton(
+                            arabic = word.verseArabic,
+                            pronouncer = pronouncer,
+                            modifier = Modifier.fillMaxWidth(),
+                            labelRes = R.string.device_voice_verse,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(18.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
                     Text(
-                        word.reference,
+                        "💡 ${word.insight}",
+                        modifier = Modifier.padding(14.dp),
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    ArabicText(
-                        word.verseArabic,
-                        modifier = Modifier.fillMaxWidth(),
-                        size = 25,
-                        align = TextAlign.End,
                     )
                 }
-            }
-            Spacer(Modifier.height(18.dp))
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                Text(
-                    "💡 ${word.insight}",
-                    modifier = Modifier.padding(14.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                Spacer(Modifier.height(14.dp))
+                EditorialReviewPanel(word)
+                TextButton(onClick = { onRevealChange(false) }) {
+                    Text(stringResource(R.string.hide_meaning))
+                }
             }
         }
     }

@@ -20,6 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
@@ -40,7 +42,10 @@ fun ArabicText(
         fontSize = size.sp,
         lineHeight = (size * 1.55).sp,
         textAlign = align,
-        style = MaterialTheme.typography.headlineLarge.copy(textDirection = TextDirection.Rtl),
+        style = MaterialTheme.typography.headlineLarge.copy(
+            textDirection = TextDirection.Rtl,
+            localeList = LocaleList(Locale("ar")),
+        ),
     )
 }
 
@@ -164,6 +169,21 @@ fun AllCaughtUpState(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(10.dp))
         Text(
             stringResource(R.string.all_caught_up_description),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+fun EmptyCollectionState(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxSize().padding(28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            stringResource(R.string.empty_collection),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )

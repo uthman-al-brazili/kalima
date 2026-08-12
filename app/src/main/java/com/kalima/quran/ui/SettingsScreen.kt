@@ -56,6 +56,12 @@ fun SettingsScreen(
     onMaximumWordsChange: (Int) -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
+    onQuietHoursEnabledChange: (Boolean) -> Unit,
+    onQuietHoursChange: (Int, Int) -> Unit,
+    onLockScreenDailyLimitChange: (Int) -> Unit,
+    onPauseLockScreenOneHour: () -> Unit,
+    onPauseLockScreenToday: () -> Unit,
+    onResumeLockScreen: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -186,6 +192,35 @@ fun SettingsScreen(
         }
         Spacer(Modifier.height(22.dp))
 
+        SettingsSectionTitle(R.string.audio_title)
+        Spacer(Modifier.height(8.dp))
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(20.dp),
+            tonalElevation = 1.dp,
+        ) {
+            Text(
+                stringResource(R.string.audio_disclosure),
+                modifier = Modifier.padding(18.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(Modifier.height(22.dp))
+
+        SettingsSectionTitle(R.string.privacy_title)
+        Spacer(Modifier.height(8.dp))
+        Surface(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(20.dp),
+        ) {
+            Text(
+                stringResource(R.string.privacy_summary),
+                modifier = Modifier.padding(18.dp),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+        Spacer(Modifier.height(22.dp))
+
         Surface(
             color = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -222,6 +257,12 @@ fun SettingsScreen(
                 onMaximumWordsChange = onMaximumWordsChange,
                 onOpenAppSettings = onOpenAppSettings,
                 onPreviewLockScreen = onPreviewLockScreen,
+                onQuietHoursEnabledChange = onQuietHoursEnabledChange,
+                onQuietHoursChange = onQuietHoursChange,
+                onLockScreenDailyLimitChange = onLockScreenDailyLimitChange,
+                onPauseLockScreenOneHour = onPauseLockScreenOneHour,
+                onPauseLockScreenToday = onPauseLockScreenToday,
+                onResumeLockScreen = onResumeLockScreen,
             )
         }
         Spacer(Modifier.height(24.dp))
@@ -237,6 +278,12 @@ private fun AdvancedSettings(
     onMaximumWordsChange: (Int) -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
+    onQuietHoursEnabledChange: (Boolean) -> Unit,
+    onQuietHoursChange: (Int, Int) -> Unit,
+    onLockScreenDailyLimitChange: (Int) -> Unit,
+    onPauseLockScreenOneHour: () -> Unit,
+    onPauseLockScreenToday: () -> Unit,
+    onResumeLockScreen: () -> Unit,
 ) {
     var maximumWordsText by rememberSaveable(progress.maximumWords) {
         mutableStateOf(
@@ -285,6 +332,88 @@ private fun AdvancedSettings(
                 }
                 TextButton(onClick = onOpenAppSettings) {
                     Text(stringResource(R.string.android_app_settings))
+                }
+            }
+            Text(
+                if (progress.lockScreenEnabled) {
+                    stringResource(
+                        R.string.lock_health_ok,
+                        progress.lockScreenCardsToday,
+                        progress.lockScreenDailyLimit,
+                    )
+                } else {
+                    stringResource(R.string.lock_health_off)
+                },
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.height(12.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.quiet_hours), fontWeight = FontWeight.Bold)
+                    Text(
+                        stringResource(
+                            R.string.quiet_hours_summary,
+                            progress.quietStartHour,
+                            progress.quietEndHour,
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                Switch(
+                    checked = progress.quietHoursEnabled,
+                    onCheckedChange = onQuietHoursEnabledChange,
+                )
+            }
+            if (progress.quietHoursEnabled) {
+                Text("${progress.quietStartHour}:00", style = MaterialTheme.typography.labelMedium)
+                Slider(
+                    value = progress.quietStartHour.toFloat(),
+                    onValueChange = { onQuietHoursChange(it.roundToInt(), progress.quietEndHour) },
+                    valueRange = 0f..23f,
+                    steps = 22,
+                )
+                Text("${progress.quietEndHour}:00", style = MaterialTheme.typography.labelMedium)
+                Slider(
+                    value = progress.quietEndHour.toFloat(),
+                    onValueChange = { onQuietHoursChange(progress.quietStartHour, it.roundToInt()) },
+                    valueRange = 0f..23f,
+                    steps = 22,
+                )
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(stringResource(R.string.daily_card_limit), fontWeight = FontWeight.Bold)
+                Text(
+                    stringResource(R.string.daily_card_limit_value, progress.lockScreenDailyLimit),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Slider(
+                value = progress.lockScreenDailyLimit.toFloat(),
+                onValueChange = { onLockScreenDailyLimitChange(it.roundToInt()) },
+                valueRange = 5f..50f,
+                steps = 44,
+            )
+            if (progress.lockScreenPausedUntil != null && progress.lockScreenPausedUntil > java.time.Instant.now()) {
+                Text(
+                    stringResource(R.string.cards_paused),
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontWeight = FontWeight.Bold,
+                )
+                TextButton(onClick = onResumeLockScreen) {
+                    Text(stringResource(R.string.resume_cards))
+                }
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TextButton(onClick = onPauseLockScreenOneHour) {
+                        Text(stringResource(R.string.pause_one_hour))
+                    }
+                    TextButton(onClick = onPauseLockScreenToday) {
+                        Text(stringResource(R.string.pause_today))
+                    }
                 }
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))

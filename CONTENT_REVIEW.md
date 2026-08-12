@@ -37,6 +37,21 @@ O snapshot atual cobre as 114 suras e contém 21 mil glossários contextuais em 
 - Não alterar o texto corânico para simplificar busca ou exibição; a busca pode usar uma cópia normalizada apenas no índice.
 - Permitir que o usuário reporte um problema em um cartão específico.
 
+O aplicativo aplica essas duas últimas regras diretamente: cada cartão
+expandido mostra o estado **rascunho editorial — validação especializada
+pendente** e oferece **Compartilhar correção**, preenchendo identificador,
+referência e forma árabe. Esse relatório pode ser devolvido junto da planilha
+de revisão do lote de 100 palavras sem alterar o texto corânico no aparelho.
+
+## Porta de publicação
+
+A presença do corpus no APK não constitui aprovação. Promoção pública que faça
+afirmações de autoridade editorial permanece bloqueada até que o lote-alvo
+tenha, para cada registro, decisão do revisor, fonte verificável, nome ou ID do
+revisor, data e resolução de todas as divergências. Áudio de recitação também
+permanece fora do APK até existir arquivo, licença e atribuição rastreáveis; a
+voz atual do Android é rotulada no app como áudio gerado pelo aparelho.
+
 ## Licenças
 
 Textos, traduções, análises morfológicas e áudios podem ter licenças diferentes. O produto deve manter um inventário de procedência por artefato e exibir os créditos exigidos. O fato de o texto ser religioso não torna automaticamente livre uma edição digital, tradução, recitação ou anotação.

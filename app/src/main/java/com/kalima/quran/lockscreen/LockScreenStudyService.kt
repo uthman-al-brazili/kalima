@@ -29,7 +29,7 @@ class LockScreenStudyService : Service() {
 
     private val showCard = Runnable {
         if (
-            ProgressStore(applicationContext).progress.value.lockScreenEnabled &&
+            ProgressStore(applicationContext).canShowLockScreenCard() &&
             Settings.canDrawOverlays(this)
         ) {
             try {

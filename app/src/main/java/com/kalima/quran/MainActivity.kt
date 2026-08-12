@@ -91,10 +91,19 @@ class MainActivity : ComponentActivity() {
                 onAdvancedSettingsVisibleChange = progressStore::setAdvancedSettingsVisible,
                 onStudyScopeChange = progressStore::setStudyScope,
                 onToggleSurah = progressStore::toggleSurah,
+                onToggleFavorite = progressStore::toggleFavorite,
+                onToggleCustomList = progressStore::toggleCustomStudy,
+                onCompleteOnboarding = progressStore::completeOnboarding,
                 onOpenAppSettings = ::openAppSettings,
                 onPreviewLockScreen = ::previewLockScreen,
                 currentLanguage = LanguageManager.selectedLanguage(this),
                 onLanguageChange = ::changeLanguage,
+                onQuietHoursEnabledChange = progressStore::setQuietHoursEnabled,
+                onQuietHoursChange = progressStore::setQuietHours,
+                onLockScreenDailyLimitChange = progressStore::setLockScreenDailyLimit,
+                onPauseLockScreenOneHour = progressStore::pauseLockScreenForHour,
+                onPauseLockScreenToday = progressStore::pauseLockScreenUntilTomorrow,
+                onResumeLockScreen = progressStore::resumeLockScreen,
                 studyLaunchTarget = studyLaunchTarget,
             )
         }
@@ -146,7 +155,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun previewLockScreen() {
-        startActivity(Intent(this, LockScreenStudyActivity::class.java))
+        startActivity(
+            Intent(this, LockScreenStudyActivity::class.java)
+                .putExtra(LockScreenStudyActivity.EXTRA_PREVIEW, true),
+        )
     }
 
     private fun changeReminder(enabled: Boolean) {

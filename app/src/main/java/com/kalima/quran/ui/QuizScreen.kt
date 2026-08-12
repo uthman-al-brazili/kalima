@@ -1,6 +1,7 @@
 package com.kalima.quran.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -47,6 +49,7 @@ import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.quiz.QuizEngine
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
+import com.kalima.quran.quiz.QuizMode
 import com.kalima.quran.quiz.VerseExcerptBuilder
 import java.time.Instant
 
@@ -57,8 +60,18 @@ fun QuizScreen(
     pronouncer: ArabicPronouncer,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val selectedWords = remember(progress.studyScope, selectionKey) {
-        WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs)
+    val selectedWords = remember(
+        progress.studyScope,
+        selectionKey,
+        progress.favoriteIds,
+        progress.customStudyIds,
+    ) {
+        WordRepository.wordsFor(
+            progress.studyScope,
+            progress.selectedSurahs,
+            progress.favoriteIds,
+            progress.customStudyIds,
+        )
     }
     val activeWords = remember(
         progress.studyScope,
@@ -70,22 +83,40 @@ fun QuizScreen(
         progress.limitNewWords(selectedWords)
     }
     if (activeWords.isEmpty()) {
-        LearningLimitEmptyState()
+        if (progress.studyScope in setOf(com.kalima.quran.data.StudyScope.Favorites, com.kalima.quran.data.StudyScope.Custom)) {
+            EmptyCollectionState()
+        } else {
+            LearningLimitEmptyState()
+        }
         return
     }
+    var modeName by rememberSaveable { mutableStateOf(QuizMode.Mixed.name) }
+    val mode = QuizMode.valueOf(modeName)
     var sessionVersion by rememberSaveable { mutableIntStateOf(0) }
     val session = remember(
         progress.studyScope,
         selectionKey,
         progress.maximumWords,
+        progress.reviewSchedules,
+        mode,
         sessionVersion,
     ) {
-        val targets = ReviewQueue.ordered(
+        val ordered = ReviewQueue.ordered(
             words = activeWords,
             schedules = progress.reviewSchedules,
             now = Instant.now(),
             newStartIndex = sessionVersion,
         )
+        val targets = when (mode) {
+            QuizMode.ReviewsOnly -> ReviewQueue.dueWords(
+                activeWords,
+                progress.reviewSchedules,
+                Instant.now(),
+            )
+            QuizMode.Roots -> ordered.filter { it.root.isNotBlank() && it.root != "—" }
+            QuizMode.Difficult -> ordered.filter { (progress.reviewSchedules[it.id]?.lapses ?: 0) > 0 }
+            else -> ordered
+        }
         if (targets.isEmpty()) {
             emptyList()
         } else {
@@ -99,11 +130,18 @@ fun QuizScreen(
                     }
                 },
                 optionWords = selectedWords,
+                mode = mode,
             )
         }
     }
     if (session.isEmpty()) {
-        AllCaughtUpState()
+        QuizModeEmptyScreen(
+            mode = mode,
+            onModeChange = {
+                modeName = it.name
+                sessionVersion += 1
+            },
+        )
         return
     }
     var currentIndex by rememberSaveable(
@@ -145,6 +183,14 @@ fun QuizScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodyMedium,
         )
+        Spacer(Modifier.height(12.dp))
+        QuizModeSelector(
+            mode = mode,
+            onModeChange = {
+                modeName = it.name
+                sessionVersion += 1
+            },
+        )
         Spacer(Modifier.height(14.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             LinearProgressIndicator(
@@ -159,12 +205,16 @@ fun QuizScreen(
             )
         }
         Spacer(Modifier.height(18.dp))
-        QuizQuestionCard(question)
+        QuizQuestionCard(question, pronouncer)
         Spacer(Modifier.height(14.dp))
         question.options.forEachIndexed { index, option ->
             QuizOption(
                 text = option,
-                arabic = question.type == QuizQuestionType.PortugueseToArabic,
+                arabic = question.type in setOf(
+                    QuizQuestionType.PortugueseToArabic,
+                    QuizQuestionType.ClozeToArabic,
+                    QuizQuestionType.RootToArabic,
+                ),
                 selected = selectedOption == index,
                 correct = index == question.correctOptionIndex,
                 answered = selectedOption != null,
@@ -195,7 +245,7 @@ fun QuizScreen(
 }
 
 @Composable
-private fun QuizQuestionCard(question: QuizQuestion) {
+private fun QuizQuestionCard(question: QuizQuestion, pronouncer: ArabicPronouncer) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -211,6 +261,9 @@ private fun QuizQuestionCard(question: QuizQuestion) {
                     QuizQuestionType.ArabicToPortuguese -> stringResource(R.string.quiz_arabic_to_meaning)
                     QuizQuestionType.PortugueseToArabic -> stringResource(R.string.quiz_meaning_to_arabic)
                     QuizQuestionType.ContextualMeaning -> stringResource(R.string.quiz_contextual_meaning)
+                    QuizQuestionType.ListeningToPortuguese -> stringResource(R.string.quiz_listening_prompt)
+                    QuizQuestionType.ClozeToArabic -> stringResource(R.string.quiz_cloze_prompt)
+                    QuizQuestionType.RootToArabic -> stringResource(R.string.quiz_root_prompt)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -242,8 +295,91 @@ private fun QuizQuestionCard(question: QuizQuestion) {
                 )
 
                 QuizQuestionType.ContextualMeaning -> ContextualVerse(question)
+
+                QuizQuestionType.ListeningToPortuguese -> {
+                    Text(
+                        stringResource(R.string.tap_to_listen),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    PronunciationButton(
+                        arabic = question.word.arabic,
+                        pronouncer = pronouncer,
+                        labelRes = R.string.device_voice_slow,
+                        speechRate = ArabicPronouncer.SLOW_RATE,
+                    )
+                }
+
+                QuizQuestionType.ClozeToArabic -> {
+                    ArabicText(
+                        VerseExcerptBuilder.buildCloze(question.word),
+                        modifier = Modifier.fillMaxWidth(),
+                        size = 28,
+                        align = TextAlign.End,
+                    )
+                    Text(
+                        question.word.reference,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
+
+                QuizQuestionType.RootToArabic -> {
+                    Text(
+                        question.word.root,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        question.word.grammar,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun QuizModeSelector(mode: QuizMode, onModeChange: (QuizMode) -> Unit) {
+    val labels = listOf(
+        QuizMode.Mixed to R.string.quiz_mode_mixed,
+        QuizMode.Listening to R.string.quiz_mode_listening,
+        QuizMode.Cloze to R.string.quiz_mode_cloze,
+        QuizMode.Roots to R.string.quiz_mode_roots,
+        QuizMode.ReviewsOnly to R.string.quiz_mode_due,
+        QuizMode.Difficult to R.string.quiz_mode_difficult,
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        labels.forEach { (option, label) ->
+            FilterChip(
+                selected = mode == option,
+                onClick = { onModeChange(option) },
+                label = { Text(stringResource(label)) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun QuizModeEmptyScreen(mode: QuizMode, onModeChange: (QuizMode) -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        QuizModeSelector(mode, onModeChange)
+        Spacer(Modifier.height(28.dp))
+        Text(
+            stringResource(if (mode == QuizMode.ReviewsOnly) R.string.no_due_reviews else R.string.no_words_found),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 

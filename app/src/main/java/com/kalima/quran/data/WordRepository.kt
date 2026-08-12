@@ -3,9 +3,12 @@ package com.kalima.quran.data
 import android.content.Context
 import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.localization.LanguageManager
+import java.text.Normalizer
 import java.time.LocalDate
 
 object WordRepository {
+    private val ARABIC_MARKS = Regex("[\\u0610-\\u061A\\u064B-\\u065F\\u0670\\u06D6-\\u06ED]")
+
     private val curatedPortugueseWords: List<QuranWord> = listOf(
         QuranWord(
             id = "allah",
@@ -367,6 +370,9 @@ object WordRepository {
     private var frequentIndex: List<QuranWord> = fallbackWords.filter(QuranWord::isFrequent)
 
     @Volatile
+    private var rankedFrequencyIndex: List<QuranWord> = buildRankedFrequencyIndex(fallbackWords)
+
+    @Volatile
     private var surahIndex: Map<Int, List<QuranWord>> =
         fallbackWords.filter { it.surahNumber != null }.groupBy { requireNotNull(it.surahNumber) }
 
@@ -386,6 +392,7 @@ object WordRepository {
         }
         corpusWords = curatedWords(language) + imported
         frequentIndex = imported.filter(QuranWord::isFrequent)
+        rankedFrequencyIndex = buildRankedFrequencyIndex(imported)
         surahIndex = imported
             .filter { it.surahNumber != null }
             .groupBy { requireNotNull(it.surahNumber) }
@@ -406,12 +413,59 @@ object WordRepository {
         }
     }
 
-    fun wordsFor(scope: StudyScope, selectedSurahs: Set<Int>): List<QuranWord> =
-        when (scope) {
+    fun wordsFor(
+        scope: StudyScope,
+        selectedSurahs: Set<Int>,
+        favoriteIds: Set<String> = emptySet(),
+        customStudyIds: Set<String> = emptySet(),
+    ): List<QuranWord> {
+        val selected = when (scope) {
             StudyScope.All -> words
-            StudyScope.Frequent -> frequentWords
+            StudyScope.Frequent50 -> rankedFrequencyIndex.take(50)
+            StudyScope.Frequent -> rankedFrequencyIndex.take(100)
+            StudyScope.Frequent300 -> rankedFrequencyIndex.take(300)
+            StudyScope.Frequent500 -> rankedFrequencyIndex.take(500)
+            StudyScope.Prayer -> distinctByLemma(
+                curatedWords(initializedLanguage ?: AppLanguage.Portuguese) +
+                    listOf(1, 112, 113, 114).flatMap { surahIndex[it].orEmpty() },
+            )
+            StudyScope.ShortSurahs -> distinctByLemma(
+                (101..114).flatMap { surahIndex[it].orEmpty() },
+            )
+            StudyScope.Favorites -> words.filter { it.id in favoriteIds }
+            StudyScope.Custom -> words.filter { it.id in customStudyIds }
             StudyScope.Surahs -> selectedSurahs.sorted().flatMap { surahIndex[it].orEmpty() }
-        }.ifEmpty { words }
+        }
+        return when (scope) {
+            StudyScope.Favorites, StudyScope.Custom -> selected
+            else -> selected.ifEmpty { words }
+        }
+    }
+
+    private fun buildRankedFrequencyIndex(source: List<QuranWord>): List<QuranWord> {
+        val frequent = source.filter(QuranWord::isFrequent)
+        val frequentKeys = frequent.mapTo(mutableSetOf(), ::lemmaKey)
+        val additional = source
+            .asSequence()
+            .filter { it.surahNumber != null && lemmaKey(it) !in frequentKeys }
+            .groupBy(::lemmaKey)
+            .mapNotNull { (_, forms) ->
+                forms.maxByOrNull(QuranWord::frequency)?.copy(
+                    frequency = forms.sumOf(QuranWord::frequency),
+                )
+            }
+            .sortedByDescending(QuranWord::frequency)
+        return distinctByLemma(frequent + additional)
+    }
+
+    private fun distinctByLemma(source: List<QuranWord>): List<QuranWord> =
+        source.distinctBy(::lemmaKey)
+
+    private fun lemmaKey(word: QuranWord): String =
+        Normalizer.normalize(word.lemma.ifBlank { word.arabic }, Normalizer.Form.NFD)
+            .replace(ARABIC_MARKS, "")
+            .replace('ٱ', 'ا')
+            .trim()
 
     fun wordFor(
         date: LocalDate = LocalDate.now(),
@@ -436,6 +490,7 @@ object WordRepository {
             ).any { it.lowercase().contains(term) }
         }
     }
+
 }
 
 data class QuranSurah(

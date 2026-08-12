@@ -48,7 +48,9 @@ class LockScreenStudyActivity : ComponentActivity() {
         configureWindowForLockScreen()
 
         val content = restoreContent(savedInstanceState)
-            ?: progressStore.nextLockScreenContent()
+            ?: progressStore.nextLockScreenContent(
+                preview = intent.getBooleanExtra(EXTRA_PREVIEW, false),
+            )
         if (content == null) {
             finish()
             return
@@ -60,11 +62,11 @@ class LockScreenStudyActivity : ComponentActivity() {
                 is LockScreenContent.WordCard -> LockScreenStudyScreen(
                     word = content.word,
                     onReview = {
-                        progressStore.answer(content.word.id, learned = false)
+                        progressStore.answerFromLockScreen(content.word.id, learned = false)
                         finish()
                     },
                     onLearned = {
-                        progressStore.answer(content.word.id, learned = true)
+                        progressStore.answerFromLockScreen(content.word.id, learned = true)
                         finish()
                     },
                     onDismiss = ::finish,
@@ -76,7 +78,7 @@ class LockScreenStudyActivity : ComponentActivity() {
                     initialSelectedOption = quizSelectedOption,
                     onAnswered = { option, correct ->
                         quizSelectedOption = option
-                        progressStore.answerQuiz(content.question.word.id, correct)
+                        progressStore.answerQuizFromLockScreen(content.question.word.id, correct)
                     },
                     onContinue = ::finish,
                     onDismiss = ::finish,
@@ -205,6 +207,7 @@ class LockScreenStudyActivity : ComponentActivity() {
     }
 
     companion object {
+        const val EXTRA_PREVIEW = "com.kalima.quran.extra.LOCK_SCREEN_PREVIEW"
         const val ACTION_CLOSE = "com.kalima.quran.action.CLOSE_LOCK_SCREEN_CARD"
         private const val STATE_CONTENT_TYPE = "content_type"
         private const val STATE_WORD_ID = "word_id"

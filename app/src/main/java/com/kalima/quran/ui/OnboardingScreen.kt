@@ -1,0 +1,131 @@
+package com.kalima.quran.ui
+
+import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.kalima.quran.R
+import com.kalima.quran.data.StudyScope
+import kotlin.math.roundToInt
+
+private data class StarterPath(
+    val scope: StudyScope,
+    @param:StringRes val titleRes: Int,
+    @param:StringRes val descriptionRes: Int,
+)
+
+private val starterPaths = listOf(
+    StarterPath(StudyScope.Frequent, R.string.path_top_100, R.string.path_top_100_desc),
+    StarterPath(StudyScope.Prayer, R.string.path_prayer, R.string.path_prayer_desc),
+    StarterPath(StudyScope.ShortSurahs, R.string.path_short_surahs, R.string.path_short_surahs_desc),
+    StarterPath(StudyScope.All, R.string.path_explore_all, R.string.path_explore_all_desc),
+)
+
+@Composable
+fun OnboardingScreen(onComplete: (StudyScope, Int) -> Unit) {
+    var selectedScope by rememberSaveable { mutableStateOf(StudyScope.Frequent) }
+    var dailyGoal by rememberSaveable { mutableIntStateOf(5) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+    ) {
+        ArabicText("كَلِمَة", size = 46, color = MaterialTheme.colorScheme.primary)
+        Spacer(Modifier.height(12.dp))
+        Text(
+            stringResource(R.string.onboarding_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            stringResource(R.string.onboarding_subtitle),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(24.dp))
+        Text(
+            stringResource(R.string.onboarding_path_title),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.height(10.dp))
+        starterPaths.forEach { path ->
+            val selected = path.scope == selectedScope
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { selectedScope = path.scope },
+                shape = RoundedCornerShape(18.dp),
+                color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                border = BorderStroke(
+                    1.dp,
+                    if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                ),
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = selected, onClick = { selectedScope = path.scope })
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(path.titleRes), fontWeight = FontWeight.Bold)
+                        Text(
+                            stringResource(path.descriptionRes),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(9.dp))
+        }
+        Spacer(Modifier.height(12.dp))
+        Text(
+            stringResource(R.string.onboarding_daily_goal, dailyGoal),
+            fontWeight = FontWeight.Bold,
+        )
+        Slider(
+            value = dailyGoal.toFloat(),
+            onValueChange = { dailyGoal = it.roundToInt() },
+            valueRange = 3f..15f,
+            steps = 11,
+        )
+        Spacer(Modifier.height(18.dp))
+        Button(
+            onClick = { onComplete(selectedScope, dailyGoal) },
+            modifier = Modifier.fillMaxWidth().height(54.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Text(stringResource(R.string.onboarding_start), fontWeight = FontWeight.Bold)
+        }
+        Spacer(Modifier.height(24.dp))
+    }
+}

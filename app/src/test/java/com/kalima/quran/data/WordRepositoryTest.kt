@@ -69,6 +69,30 @@ class WordRepositoryTest {
     }
 
     @Test
+    fun guidedPathsAndPersonalCollectionsSelectExpectedCards() {
+        assertEquals(50, WordRepository.wordsFor(StudyScope.Frequent50, emptySet()).size)
+        assertEquals(100, WordRepository.wordsFor(StudyScope.Frequent, emptySet()).size)
+        assertTrue(
+            WordRepository.wordsFor(StudyScope.Frequent300, emptySet()).size >= 100,
+        )
+        assertTrue(
+            WordRepository.wordsFor(StudyScope.ShortSurahs, emptySet())
+                .all { it.surahNumber in 101..114 },
+        )
+
+        val chosen = WordRepository.words.take(3).map(QuranWord::id).toSet()
+        assertEquals(
+            chosen,
+            WordRepository.wordsFor(
+                StudyScope.Favorites,
+                emptySet(),
+                favoriteIds = chosen,
+            ).map(QuranWord::id).toSet(),
+        )
+        assertTrue(WordRepository.wordsFor(StudyScope.Custom, emptySet()).isEmpty())
+    }
+
+    @Test
     fun requestedLockScreenWordStartsTheStudySession() {
         val words = WordRepository.words.take(4)
         val requested = words[2]

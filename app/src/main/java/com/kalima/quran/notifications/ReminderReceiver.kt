@@ -71,7 +71,12 @@ object NotificationHelper {
         createChannel(localized)
         val progress = ProgressStore(context).progress.value
         val activeWords = progress.limitNewWords(
-            WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs),
+            WordRepository.wordsFor(
+                progress.studyScope,
+                progress.selectedSurahs,
+                progress.favoriteIds,
+                progress.customStudyIds,
+            ),
         )
         if (activeWords.isEmpty()) return
         val word = WordRepository.wordFor(source = activeWords)

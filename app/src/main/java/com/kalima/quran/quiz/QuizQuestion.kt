@@ -6,6 +6,18 @@ enum class QuizQuestionType {
     ArabicToPortuguese,
     PortugueseToArabic,
     ContextualMeaning,
+    ListeningToPortuguese,
+    ClozeToArabic,
+    RootToArabic,
+}
+
+enum class QuizMode {
+    Mixed,
+    Listening,
+    Cloze,
+    Roots,
+    ReviewsOnly,
+    Difficult,
 }
 
 data class QuizQuestion(

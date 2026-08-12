@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -21,9 +22,10 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.painterResource
 import androidx.core.view.WindowCompat
 import androidx.annotation.StringRes
+import androidx.annotation.DrawableRes
 import com.kalima.quran.R
 import com.kalima.quran.data.AppThemeMode
 import com.kalima.quran.data.StudyProgress
@@ -31,12 +33,12 @@ import com.kalima.quran.data.StudyScope
 import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.ui.theme.KalimaTheme
 
-private enum class AppTab(@param:StringRes val labelRes: Int, val symbol: String) {
-    Study(R.string.tab_study, "ا"),
-    Library(R.string.tab_words, "ب"),
-    Quiz(R.string.tab_quiz, "؟"),
-    Progress(R.string.tab_progress, "ج"),
-    Settings(R.string.tab_settings, "⚙"),
+private enum class AppTab(@param:StringRes val labelRes: Int, @param:DrawableRes val iconRes: Int) {
+    Study(R.string.tab_study, R.drawable.ic_study),
+    Library(R.string.tab_words, R.drawable.ic_library),
+    Quiz(R.string.tab_quiz, R.drawable.ic_quiz),
+    Progress(R.string.tab_progress, R.drawable.ic_progress),
+    Settings(R.string.tab_settings, R.drawable.ic_settings),
 }
 
 data class StudyLaunchTarget(val wordId: String, val requestId: Long)
@@ -57,10 +59,19 @@ fun KalimaApp(
     onAdvancedSettingsVisibleChange: (Boolean) -> Unit,
     onStudyScopeChange: (StudyScope) -> Unit,
     onToggleSurah: (Int) -> Unit,
+    onToggleFavorite: (String) -> Unit,
+    onToggleCustomList: (String) -> Unit,
+    onCompleteOnboarding: (StudyScope, Int) -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
     currentLanguage: AppLanguage,
     onLanguageChange: (AppLanguage) -> Unit,
+    onQuietHoursEnabledChange: (Boolean) -> Unit,
+    onQuietHoursChange: (Int, Int) -> Unit,
+    onLockScreenDailyLimitChange: (Int) -> Unit,
+    onPauseLockScreenOneHour: () -> Unit,
+    onPauseLockScreenToday: () -> Unit,
+    onResumeLockScreen: () -> Unit,
     studyLaunchTarget: StudyLaunchTarget? = null,
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
@@ -93,6 +104,10 @@ fun KalimaApp(
                 }
             }
         }
+        if (!progress.onboardingComplete) {
+            OnboardingScreen(onComplete = onCompleteOnboarding)
+            return@KalimaTheme
+        }
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             bottomBar = {
@@ -102,10 +117,9 @@ fun KalimaApp(
                             selected = selected == tab,
                             onClick = { selectedName = tab.name },
                             icon = {
-                                Text(
-                                    tab.symbol,
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
+                                Icon(
+                                    painter = painterResource(tab.iconRes),
+                                    contentDescription = stringResource(tab.labelRes),
                                 )
                             },
                             label = { Text(stringResource(tab.labelRes)) },
@@ -122,9 +136,16 @@ fun KalimaApp(
                         onCurrentWordChange = onCurrentStudyWordChange,
                         onEnableLockScreen = { onLockScreenChange(true) },
                         pronouncer = pronouncer,
+                        onToggleFavorite = onToggleFavorite,
+                        onToggleCustomList = onToggleCustomList,
                         launchTarget = studyLaunchTarget,
                     )
-                    AppTab.Library -> LibraryScreen(progress = progress, pronouncer = pronouncer)
+                    AppTab.Library -> LibraryScreen(
+                        progress = progress,
+                        pronouncer = pronouncer,
+                        onToggleFavorite = onToggleFavorite,
+                        onToggleCustomList = onToggleCustomList,
+                    )
                     AppTab.Quiz -> QuizScreen(
                         progress = progress,
                         onAnswer = onQuizAnswer,
@@ -149,6 +170,12 @@ fun KalimaApp(
                         onMaximumWordsChange = onMaximumWordsChange,
                         onOpenAppSettings = onOpenAppSettings,
                         onPreviewLockScreen = onPreviewLockScreen,
+                        onQuietHoursEnabledChange = onQuietHoursEnabledChange,
+                        onQuietHoursChange = onQuietHoursChange,
+                        onLockScreenDailyLimitChange = onLockScreenDailyLimitChange,
+                        onPauseLockScreenOneHour = onPauseLockScreenOneHour,
+                        onPauseLockScreenToday = onPauseLockScreenToday,
+                        onResumeLockScreen = onResumeLockScreen,
                     )
                 }
             }

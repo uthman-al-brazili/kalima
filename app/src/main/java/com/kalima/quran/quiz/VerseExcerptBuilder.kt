@@ -40,6 +40,12 @@ object VerseExcerptBuilder {
         return VerseExcerpt(excerpt, highlightStart, highlightEnd)
     }
 
+    fun buildCloze(word: QuranWord, maxChars: Int = DEFAULT_MAX_CHARS): String {
+        val excerpt = build(word, maxChars)
+        if (!excerpt.hasHighlight) return excerpt.text
+        return excerpt.text.replaceRange(excerpt.highlightStart, excerpt.highlightEnd, "____")
+    }
+
     internal fun findRange(text: String, target: String): IntRange? {
         val normalizedText = normalizeWithIndexes(text)
         val normalizedTarget = normalizeWithIndexes(target).value

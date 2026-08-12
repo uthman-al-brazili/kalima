@@ -15,9 +15,11 @@ class QuizEngineTest {
         val session = QuizEngine.createSession(words, { WordStatus.New }, Random(17))
 
         assertEquals(5, session.size)
-        assertEquals(2, session.count { it.type == QuizQuestionType.ArabicToPortuguese })
+        assertEquals(1, session.count { it.type == QuizQuestionType.ArabicToPortuguese })
         assertEquals(1, session.count { it.type == QuizQuestionType.PortugueseToArabic })
-        assertEquals(2, session.count { it.type == QuizQuestionType.ContextualMeaning })
+        assertEquals(1, session.count { it.type == QuizQuestionType.ContextualMeaning })
+        assertEquals(1, session.count { it.type == QuizQuestionType.ListeningToPortuguese })
+        assertEquals(1, session.count { it.type == QuizQuestionType.ClozeToArabic })
     }
 
     @Test
@@ -72,5 +74,24 @@ class QuizEngineTest {
 
         assertEquals(2, session.size)
         assertEquals(targets.map { it.id }.toSet(), session.map { it.word.id }.toSet())
+    }
+
+    @Test
+    fun focusedModesUseOnlyTheirRequestedQuestionType() {
+        val modes = mapOf(
+            QuizMode.Listening to QuizQuestionType.ListeningToPortuguese,
+            QuizMode.Cloze to QuizQuestionType.ClozeToArabic,
+            QuizMode.Roots to QuizQuestionType.RootToArabic,
+        )
+
+        modes.forEach { (mode, expectedType) ->
+            val session = QuizEngine.createSession(
+                words = words,
+                statusFor = { WordStatus.New },
+                random = Random(71),
+                mode = mode,
+            )
+            assertTrue(session.all { it.type == expectedType })
+        }
     }
 }

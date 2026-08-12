@@ -91,6 +91,7 @@ fun LockScreenQuizScreen(
                             QuizQuestionType.ArabicToPortuguese -> stringResource(R.string.quiz_arabic_to_meaning)
                             QuizQuestionType.PortugueseToArabic -> stringResource(R.string.quiz_meaning_to_arabic)
                             QuizQuestionType.ContextualMeaning -> stringResource(R.string.quiz_contextual_meaning)
+                            else -> stringResource(R.string.quiz_arabic_to_meaning)
                         },
                         color = Color.White,
                         textAlign = TextAlign.Center,
@@ -228,6 +229,14 @@ private fun LockQuizPrompt(question: QuizQuestion) {
                 color = Forest,
             )
             Text(question.word.reference, color = Forest, style = MaterialTheme.typography.labelMedium)
+        }
+        else -> {
+            ArabicText(
+                question.word.arabic,
+                modifier = Modifier.fillMaxWidth(),
+                size = 46,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }

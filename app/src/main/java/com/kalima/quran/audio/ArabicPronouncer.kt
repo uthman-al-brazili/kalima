@@ -49,26 +49,38 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
         return true
     }
 
-    fun speak(text: String): PronunciationResult = when (state) {
+    fun speak(
+        text: String,
+        speechRate: Float = DEFAULT_RATE,
+        repeatCount: Int = 1,
+    ): PronunciationResult = when (state) {
         State.Initializing -> PronunciationResult.Initializing
         State.Unavailable -> {
             if (initialized && configureArabicVoice()) {
                 state = State.Ready
-                speakPrepared(text)
+                speakPrepared(text, speechRate, repeatCount)
             } else {
                 PronunciationResult.Unavailable
             }
         }
-        State.Ready -> speakPrepared(text)
+        State.Ready -> speakPrepared(text, speechRate, repeatCount)
     }
 
-    private fun speakPrepared(text: String): PronunciationResult {
-        val result = engine?.speak(
-            ArabicSpeechText.prepare(text),
-            TextToSpeech.QUEUE_FLUSH,
-            null,
-            "kalima-word-${System.nanoTime()}",
-        ) ?: TextToSpeech.ERROR
+    private fun speakPrepared(text: String, speechRate: Float, repeatCount: Int): PronunciationResult {
+        engine?.setSpeechRate(speechRate.coerceIn(0.4f, 1.2f))
+        val prepared = ArabicSpeechText.prepare(text)
+        var result = TextToSpeech.SUCCESS
+        repeatCount.coerceIn(1, 5).let { repeats ->
+            repeat(repeats) { index ->
+                result = engine?.speak(
+                    prepared,
+                    if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD,
+                    null,
+                    "kalima-word-${System.nanoTime()}-$index",
+                ) ?: TextToSpeech.ERROR
+                if (result == TextToSpeech.ERROR) return@let
+            }
+        }
         return if (result == TextToSpeech.ERROR) {
             PronunciationResult.Failed
         } else {
@@ -84,6 +96,11 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
         engine = null
         initialized = false
         state = State.Unavailable
+    }
+
+    companion object {
+        const val DEFAULT_RATE = 0.78f
+        const val SLOW_RATE = 0.58f
     }
 }
 
