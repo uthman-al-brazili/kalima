@@ -8,7 +8,12 @@ Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit,
 - pronúncia das palavras em árabe pelo mecanismo de voz do Android, disponível nos cartões, no vocabulário, nos quizzes e no estudo da tela bloqueada, com encaminhamento para instalar uma voz árabe quando necessário;
 - seletor de idioma em **Progresso**, com interface, significados, quizzes, notificações e cartões de tela bloqueada em português ou inglês;
 - trecho corânico contextualizado e paráfrase de estudo em português;
-- ações “Revisar de novo” e “Já aprendi”;
+- repetição espaçada persistente por palavra: erros voltam após 10 minutos;
+  acertos avançam para 1 dia, 3 dias e intervalos progressivamente maiores,
+  ajustados pelas falhas de memória;
+- fila de estudo que prioriza revisões vencidas, depois apresenta palavras
+  novas e não antecipa cartões programados para o futuro;
+- ações “De novo” e “Acertei” com prévia do próximo intervalo;
 - meta diária e sequência de dias;
 - biblioteca offline com busca em árabe, português, transliteração, raiz e referência;
 - 100 formas entre as mais frequentes no Alcorão;
@@ -19,7 +24,8 @@ Kalima é um MVP Android inspirado na ideia de aprendizado frequente do WordBit,
   o conjunto de aprendizado além do total escolhido;
 - aba **Quiz** com sessões tranquilas de cinco perguntas e quatro alternativas;
 - distribuição por sessão: duas perguntas árabe → português, uma português → árabe e duas com palavra destacada em uma ayah;
-- domínio automático após acertos em três dias diferentes, sem contar repetições no mesmo dia;
+- feedback do quiz com a data relativa da próxima revisão e sessões sem
+  repetição artificial quando há menos de cinco cartões pendentes;
 - quiz opcional ao ligar a tela, com intervalo configurável entre 1 e 10 palavras;
 - filtros de palavras novas, em revisão e aprendidas;
 - persistência local, sem conta e sem coleta de dados;
@@ -85,11 +91,16 @@ Na aba **Progresso**, abra **Escolher palavras**:
 
 A seleção é persistida no aparelho e controla o estudo normal, a biblioteca, o lembrete diário e os cartões apresentados ao ligar a tela. Se a última sura for desmarcada, o aplicativo retorna automaticamente para **Todo o conteúdo**.
 
-## Quiz
+## Repetição espaçada e quiz
 
-A aba **Quiz** usa o mesmo conteúdo selecionado em **Tudo**, **Mais usadas** ou **Por sura**. Cada sessão contém cinco perguntas, sem digitação, cronômetro, vidas ou punições. Depois de cada resposta, o aplicativo mostra a alternativa correta, a transliteração, a raiz e a referência corânica.
+A aba **Quiz** usa o mesmo conteúdo selecionado em **Tudo**, **Mais usadas** ou **Por sura**. Cada sessão contém até cinco palavras novas ou com revisão pendente, sem digitação, cronômetro, vidas ou punições. Depois de cada resposta, o aplicativo mostra a alternativa correta, a transliteração, a raiz, a referência corânica e quando a palavra voltará.
 
-Uma palavra alcança domínio automático no quiz depois de acertos em três datas diferentes. Respostas repetidas no mesmo dia contam como um único dia de domínio; erros enviam a palavra para revisão.
+Cada palavra possui um registro local independente de repetições, intervalo,
+fator de facilidade, esquecimentos e próximo horário de revisão. **Acertei**
+agenda inicialmente para o dia seguinte, depois para três dias, e então amplia
+o intervalo pelo fator de facilidade. **De novo** reduz esse fator, reinicia a
+graduação e agenda uma etapa de reaprendizado em dez minutos. Acertos antes do
+horário previsto não ampliam artificialmente o intervalo.
 
 Em **Progresso > Estudo ao ligar a tela**, o usuário pode ativar **Quiz ao ligar a tela** e escolher depois de quantas palavras — entre 1 e 10 — uma pergunta aparecerá. O valor inicial é três palavras.
 

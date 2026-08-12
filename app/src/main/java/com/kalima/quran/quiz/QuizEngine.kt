@@ -31,9 +31,8 @@ object QuizEngine {
     ): List<QuizQuestion> {
         require(words.isNotEmpty()) { "O quiz precisa de palavras" }
         require(optionWords.isNotEmpty()) { "O quiz precisa de alternativas" }
-        val targets = prioritized(words, statusFor, random)
-            .let { ordered -> List(SESSION_SIZE) { ordered[it % ordered.size] } }
-        val types = sessionTypes.shuffled(random)
+        val targets = prioritized(words, statusFor, random).take(SESSION_SIZE)
+        val types = sessionTypes.shuffled(random).take(targets.size)
         return targets.mapIndexed { index, word ->
             createQuestion(word, types[index], optionWords, random)
         }

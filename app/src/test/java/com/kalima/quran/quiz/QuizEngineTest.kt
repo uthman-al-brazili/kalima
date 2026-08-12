@@ -58,4 +58,19 @@ class QuizEngineTest {
         assertTrue(session.all { it.word.id == allowedTarget.id })
         assertTrue(session.all { it.options.size == QuizQuestion.OPTION_COUNT })
     }
+
+    @Test
+    fun sessionDoesNotRepeatTargetsWhenFewerThanFiveAreDue() {
+        val targets = words.take(2)
+
+        val session = QuizEngine.createSession(
+            words = targets,
+            statusFor = { WordStatus.Reviewing },
+            random = Random(61),
+            optionWords = words,
+        )
+
+        assertEquals(2, session.size)
+        assertEquals(targets.map { it.id }.toSet(), session.map { it.word.id }.toSet())
+    }
 }

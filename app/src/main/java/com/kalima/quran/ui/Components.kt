@@ -146,3 +146,26 @@ fun LearningLimitEmptyState(modifier: Modifier = Modifier) {
         )
     }
 }
+
+@Composable
+fun AllCaughtUpState(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxSize().padding(28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            stringResource(R.string.all_caught_up_title),
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(10.dp))
+        Text(
+            stringResource(R.string.all_caught_up_description),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}

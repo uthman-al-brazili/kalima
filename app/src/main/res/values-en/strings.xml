@@ -22,9 +22,18 @@
     <string name="study_lock_screen_title">Study whenever you turn on the screen</string>
     <string name="study_lock_screen_description">Enable Kalima’s main feature to receive a word each time you unlock your device.</string>
     <string name="enable">Enable</string>
-    <string name="review_again">Review again</string>
-    <string name="review_later">Review later</string>
-    <string name="already_learned">I learned it</string>
+    <string name="review_again">Again · 10 min</string>
+    <string name="review_later">Again · 10 min</string>
+    <string name="already_learned">Got it</string>
+    <string name="review_good_tomorrow">Got it · tomorrow</string>
+    <plurals name="review_good_days">
+        <item quantity="one">Got it · %1$d day</item>
+        <item quantity="other">Got it · %1$d days</item>
+    </plurals>
+    <plurals name="reviews_due">
+        <item quantity="one">%1$d review due</item>
+        <item quantity="other">%1$d reviews due</item>
+    </plurals>
     <string name="context_meaning_note">The meaning shown is specific to this context. The same word may have a different nuance in another verse.</string>
     <string name="today_word">Your word for today</string>
     <string name="scope_all_description">All available content</string>
@@ -61,6 +70,7 @@
     <string name="progress_subtitle">Small, consistent steps build lasting understanding.</string>
     <string name="stat_learned">learned</string>
     <string name="stat_reviewing">reviewing</string>
+    <string name="stat_due">due now</string>
     <string name="stat_days">days</string>
     <string name="selected_content">Selected content</string>
     <string name="selected_content_note">The progress above tracks only the set you have chosen to study now.</string>
@@ -81,6 +91,8 @@
     <string name="learning_limit_range">Choose a number from %1$d to %2$d.</string>
     <string name="learning_limit_reached_title">You have reached your word limit</string>
     <string name="learning_limit_reached_description">There are no previously seen words in the selected content. Increase the limit or choose different content on the Progress tab.</string>
+    <string name="all_caught_up_title">You’re all caught up</string>
+    <string name="all_caught_up_description">No cards are scheduled right now. Kalima will bring each word back when its next review is due.</string>
     <string name="routine">Routine</string>
     <string name="lock_screen_study">Study when the screen turns on</string>
     <string name="lock_screen_study_enabled">Active: a new word will open whenever the screen turns on.</string>
@@ -127,13 +139,19 @@
     <string name="surah_search_hint">Surah number or name</string>
     <string name="done">Done</string>
 
-    <string name="quiz_intro">Five questions, no timer, and no penalties.</string>
+    <string name="quiz_intro">Up to five new or due words, with no timer or penalties.</string>
     <string name="quiz_arabic_to_meaning">What does this word mean?</string>
     <string name="quiz_meaning_to_arabic">Which Arabic word corresponds to:</string>
     <string name="quiz_contextual_meaning">What does the highlighted word mean?</string>
     <string name="correct">Correct</string>
     <string name="correct_answer">Correct answer: %1$s</string>
-    <string name="quiz_mastery">Quiz mastery: %1$d/%2$d days</string>
+    <string name="review_due_now">Review available now</string>
+    <string name="review_in_minutes">Next review in %1$d min</string>
+    <string name="review_tomorrow">Next review tomorrow</string>
+    <plurals name="review_in_days">
+        <item quantity="one">Next review in %1$d day</item>
+        <item quantity="other">Next review in %1$d days</item>
+    </plurals>
     <string name="view_result">View result</string>
     <string name="next_question">Next question</string>
     <string name="quiz_completed">Quiz complete</string>

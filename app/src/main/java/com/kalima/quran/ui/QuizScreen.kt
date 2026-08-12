@@ -37,14 +37,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
-import com.kalima.quran.data.QUIZ_MASTERY_DAYS
+import com.kalima.quran.data.ReviewQueue
+import com.kalima.quran.data.ReviewSchedule
+import com.kalima.quran.data.SpacedRepetition
 import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.WordStatus
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.quiz.QuizEngine
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
 import com.kalima.quran.quiz.VerseExcerptBuilder
+import java.time.Instant
 
 @Composable
 fun QuizScreen(
@@ -70,22 +74,58 @@ fun QuizScreen(
         return
     }
     var sessionVersion by rememberSaveable { mutableIntStateOf(0) }
-    val session = remember(progress.studyScope, selectionKey, sessionVersion) {
-        QuizEngine.createSession(
+    val session = remember(
+        progress.studyScope,
+        selectionKey,
+        progress.maximumWords,
+        sessionVersion,
+    ) {
+        val targets = ReviewQueue.ordered(
             words = activeWords,
-            statusFor = progress::statusFor,
-            optionWords = selectedWords,
+            schedules = progress.reviewSchedules,
+            now = Instant.now(),
+            newStartIndex = sessionVersion,
         )
+        if (targets.isEmpty()) {
+            emptyList()
+        } else {
+            QuizEngine.createSession(
+                words = targets,
+                statusFor = { id ->
+                    if (progress.reviewSchedules.containsKey(id)) {
+                        WordStatus.Reviewing
+                    } else {
+                        WordStatus.New
+                    }
+                },
+                optionWords = selectedWords,
+            )
+        }
     }
-    var currentIndex by rememberSaveable(sessionVersion) { mutableIntStateOf(0) }
+    if (session.isEmpty()) {
+        AllCaughtUpState()
+        return
+    }
+    var currentIndex by rememberSaveable(
+        progress.studyScope.name,
+        selectionKey,
+        progress.maximumWords,
+        sessionVersion,
+    ) { mutableIntStateOf(0) }
     var selectedOption by rememberSaveable(sessionVersion, currentIndex) {
         mutableStateOf<Int?>(null)
     }
-    var score by rememberSaveable(sessionVersion) { mutableIntStateOf(0) }
+    var score by rememberSaveable(
+        progress.studyScope.name,
+        selectionKey,
+        progress.maximumWords,
+        sessionVersion,
+    ) { mutableIntStateOf(0) }
 
     if (currentIndex >= session.size) {
         QuizSummary(
             score = score,
+            total = session.size,
             progress = progress,
             onNewQuiz = { sessionVersion += 1 },
         )
@@ -144,7 +184,7 @@ fun QuizScreen(
             QuizFeedback(
                 question = question,
                 correct = selectedOption == question.correctOptionIndex,
-                correctDays = progress.quizCorrectDayCount(question.word.id),
+                schedule = progress.scheduleFor(question.word.id),
                 onNext = { currentIndex += 1 },
                 lastQuestion = currentIndex == session.lastIndex,
                 pronouncer = pronouncer,
@@ -289,7 +329,7 @@ private fun QuizOption(
 private fun QuizFeedback(
     question: QuizQuestion,
     correct: Boolean,
-    correctDays: Int,
+    schedule: ReviewSchedule?,
     onNext: () -> Unit,
     lastQuestion: Boolean,
     pronouncer: ArabicPronouncer,
@@ -348,11 +388,7 @@ private fun QuizFeedback(
             )
             Spacer(Modifier.height(7.dp))
             Text(
-                stringResource(
-                    R.string.quiz_mastery,
-                    correctDays.coerceAtMost(QUIZ_MASTERY_DAYS),
-                    QUIZ_MASTERY_DAYS,
-                ),
+                nextReviewLabel(schedule),
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.labelLarge,
             )
@@ -371,6 +407,7 @@ private fun QuizFeedback(
 @Composable
 private fun QuizSummary(
     score: Int,
+    total: Int,
     progress: StudyProgress,
     onNewQuiz: () -> Unit,
 ) {
@@ -387,15 +424,15 @@ private fun QuizSummary(
         Text(stringResource(R.string.quiz_completed), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp))
         Text(
-            "$score/${QuizEngine.SESSION_SIZE}",
+            "$score/$total",
             color = MaterialTheme.colorScheme.primary,
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
         )
         Text(
-            when (score) {
-                5 -> stringResource(R.string.quiz_excellent)
-                in 3..4 -> stringResource(R.string.quiz_good)
+            when {
+                score == total -> stringResource(R.string.quiz_excellent)
+                score * 2 >= total -> stringResource(R.string.quiz_good)
                 else -> stringResource(R.string.quiz_keep_practicing)
             },
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -414,4 +451,16 @@ private fun QuizSummary(
             Text(stringResource(R.string.start_another_quiz))
         }
     }
+}
+
+@Composable
+private fun nextReviewLabel(schedule: ReviewSchedule?): String = when (schedule?.intervalDays) {
+    null -> stringResource(R.string.review_due_now)
+    0 -> stringResource(R.string.review_in_minutes, SpacedRepetition.AGAIN_DELAY_MINUTES)
+    1 -> stringResource(R.string.review_tomorrow)
+    else -> androidx.compose.ui.res.pluralStringResource(
+        R.plurals.review_in_days,
+        schedule.intervalDays,
+        schedule.intervalDays,
+    )
 }

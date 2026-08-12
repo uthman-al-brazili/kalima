@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import com.kalima.quran.quiz.LockScreenContent
 import com.kalima.quran.quiz.LockScreenQuizSchedule
 import com.kalima.quran.quiz.QuizEngine
-import com.kalima.quran.quiz.QuizMastery
+import java.time.Instant
 import java.time.LocalDate
 
 const val QUIZ_MASTERY_DAYS = 3
@@ -38,6 +38,7 @@ data class StudyProgress(
     val themeMode: AppThemeMode = AppThemeMode.Auto,
     val advancedSettingsVisible: Boolean = false,
     val currentStudyWordId: String? = null,
+    val reviewSchedules: Map<String, ReviewSchedule> = emptyMap(),
 ) {
     val todayCompleted: Int get() = todayAnsweredIds.size
 
@@ -48,6 +49,11 @@ data class StudyProgress(
     }
 
     fun quizCorrectDayCount(id: String): Int = quizCorrectDays[id].orEmpty().size
+
+    fun scheduleFor(id: String): ReviewSchedule? = reviewSchedules[id]
+
+    fun dueReviewCount(wordIds: Set<String>, now: Instant = Instant.now()): Int =
+        wordIds.count { id -> reviewSchedules[id]?.isDue(now) == true }
 }
 
 class ProgressStore(context: Context) {
@@ -62,18 +68,17 @@ class ProgressStore(context: Context) {
     val progress: StateFlow<StudyProgress> = _progress.asStateFlow()
 
     fun answer(wordId: String, learned: Boolean) {
+        val moment = Instant.now()
         val date = today()
         val previous = refreshDayIfNeeded(_progress.value, date)
-        val learnedIds = previous.learnedIds.toMutableSet()
-        val reviewingIds = previous.reviewingIds.toMutableSet()
-
-        if (learned) {
-            learnedIds += wordId
-            reviewingIds -= wordId
-        } else {
-            reviewingIds += wordId
-            learnedIds -= wordId
-        }
+        val schedules = previous.reviewSchedules + (
+            wordId to SpacedRepetition.review(
+                previous = previous.reviewSchedules[wordId],
+                grade = if (learned) ReviewGrade.Good else ReviewGrade.Again,
+                now = moment,
+            )
+        )
+        val (learnedIds, reviewingIds) = statusSets(schedules)
 
         val answeredToday = previous.todayAnsweredIds + wordId
         val lastStudyDate = preferences.getString(KEY_LAST_STUDY_DATE, null)
@@ -83,34 +88,24 @@ class ProgressStore(context: Context) {
             reviewingIds = reviewingIds,
             todayAnsweredIds = answeredToday,
             streakDays = StreakCalculator.next(previous.streakDays, lastStudyDate, date),
+            reviewSchedules = schedules,
         )
         preferences.edit { putString(KEY_LAST_STUDY_DATE, date.toString()) }
         persist(updated, date)
     }
 
     fun answerQuiz(wordId: String, correct: Boolean) {
+        val moment = Instant.now()
         val date = today()
         val previous = refreshDayIfNeeded(_progress.value, date)
-        val learnedIds = previous.learnedIds.toMutableSet()
-        val reviewingIds = previous.reviewingIds.toMutableSet()
-        val correctDays = previous.quizCorrectDays
-            .mapValuesTo(mutableMapOf()) { (_, days) -> days.toMutableSet() }
-
-        if (correct) {
-            val wordDays = QuizMastery.recordCorrectDay(correctDays[wordId].orEmpty(), date)
-            correctDays[wordId] = wordDays.toMutableSet()
-            if (QuizMastery.isMastered(wordDays)) {
-                learnedIds += wordId
-                reviewingIds -= wordId
-            } else {
-                reviewingIds += wordId
-                learnedIds -= wordId
-            }
-        } else {
-            reviewingIds += wordId
-            learnedIds -= wordId
-        }
-
+        val schedules = previous.reviewSchedules + (
+            wordId to SpacedRepetition.review(
+                previous = previous.reviewSchedules[wordId],
+                grade = if (correct) ReviewGrade.Good else ReviewGrade.Again,
+                now = moment,
+            )
+        )
+        val (learnedIds, reviewingIds) = statusSets(schedules)
         val lastStudyDate = preferences.getString(KEY_LAST_STUDY_DATE, null)
             ?.let(LocalDate::parse)
         val updated = previous.copy(
@@ -118,9 +113,9 @@ class ProgressStore(context: Context) {
             reviewingIds = reviewingIds,
             todayAnsweredIds = previous.todayAnsweredIds + wordId,
             streakDays = StreakCalculator.next(previous.streakDays, lastStudyDate, date),
-            quizCorrectDays = correctDays,
             quizCorrectAnswers = previous.quizCorrectAnswers + if (correct) 1 else 0,
             quizTotalAnswers = previous.quizTotalAnswers + 1,
+            reviewSchedules = schedules,
         )
         preferences.edit { putString(KEY_LAST_STUDY_DATE, date.toString()) }
         persist(updated, date)
@@ -177,7 +172,10 @@ class ProgressStore(context: Context) {
     fun nextLockScreenContent(): LockScreenContent? {
         val current = _progress.value
         val selectedSource = WordRepository.wordsFor(current.studyScope, current.selectedSurahs)
-        val source = current.limitNewWords(selectedSource)
+        val available = current.limitNewWords(selectedSource)
+        val moment = Instant.now()
+        val dueWords = ReviewQueue.dueWords(available, current.reviewSchedules, moment)
+        val source = dueWords.ifEmpty { ReviewQueue.newWords(available, current.reviewSchedules) }
         if (source.isEmpty()) return null
         val wordsSinceQuiz = preferences.getInt(KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ, 0)
         if (
@@ -191,7 +189,13 @@ class ProgressStore(context: Context) {
             val question = runCatching {
                 QuizEngine.createLockScreenQuestion(
                     words = source,
-                    statusFor = current::statusFor,
+                    statusFor = { id ->
+                        if (current.reviewSchedules.containsKey(id)) {
+                            WordStatus.Reviewing
+                        } else {
+                            WordStatus.New
+                        }
+                    },
                     sequence = quizSequence,
                     optionWords = selectedSource,
                 )
@@ -253,15 +257,26 @@ class ProgressStore(context: Context) {
 
     private fun load(): StudyProgress {
         val date = today()
+        val moment = Instant.now()
         val storedDay = preferences.getString(KEY_TODAY, null)
         val answered = if (storedDay == date.toString()) {
             preferences.getStringSet(KEY_TODAY_ANSWERED, emptySet()).orEmpty()
         } else {
             emptySet()
         }
+        val storedLearnedIds = preferences.getStringSet(KEY_LEARNED, emptySet()).orEmpty()
+        val storedReviewingIds = preferences.getStringSet(KEY_REVIEWING, emptySet()).orEmpty()
+        val schedules = ReviewScheduleCodec.decode(
+            preferences.getStringSet(KEY_REVIEW_SCHEDULES, emptySet()).orEmpty(),
+        ).toMutableMap().apply {
+            (storedLearnedIds + storedReviewingIds).forEach { id ->
+                putIfAbsent(id, SpacedRepetition.migrated(id in storedLearnedIds, moment))
+            }
+        }
+        val (learnedIds, reviewingIds) = statusSets(schedules)
         return StudyProgress(
-            learnedIds = preferences.getStringSet(KEY_LEARNED, emptySet()).orEmpty(),
-            reviewingIds = preferences.getStringSet(KEY_REVIEWING, emptySet()).orEmpty(),
+            learnedIds = learnedIds,
+            reviewingIds = reviewingIds,
             todayAnsweredIds = answered,
             dailyGoal = preferences.getInt(KEY_DAILY_GOAL, 5),
             maximumWords = preferences.getInt(
@@ -301,6 +316,7 @@ class ProgressStore(context: Context) {
             ),
             currentStudyWordId = preferences.getString(KEY_CURRENT_STUDY_WORD_ID, null)
                 ?.takeIf { storedId -> WordRepository.words.any { it.id == storedId } },
+            reviewSchedules = schedules,
         )
     }
 
@@ -329,6 +345,7 @@ class ProgressStore(context: Context) {
             putInt(KEY_LOCK_SCREEN_QUIZ_INTERVAL, progress.lockScreenQuizInterval)
             putString(KEY_THEME_MODE, progress.themeMode.name)
             putBoolean(KEY_ADVANCED_SETTINGS_VISIBLE, progress.advancedSettingsVisible)
+            putStringSet(KEY_REVIEW_SCHEDULES, ReviewScheduleCodec.encode(progress.reviewSchedules))
             progress.currentStudyWordId?.let {
                 putString(KEY_CURRENT_STUDY_WORD_ID, it)
             } ?: remove(KEY_CURRENT_STUDY_WORD_ID)
@@ -352,6 +369,13 @@ class ProgressStore(context: Context) {
         daysByWord.mapTo(mutableSetOf()) { (id, days) ->
             "$id|${days.sorted().joinToString(",")}"
         }
+
+    private fun statusSets(
+        schedules: Map<String, ReviewSchedule>,
+    ): Pair<Set<String>, Set<String>> {
+        val learned = schedules.filterValues { it.isLearned }.keys
+        return learned to (schedules.keys - learned)
+    }
 
     companion object {
         private const val PREFERENCES = "kalima_progress"
@@ -378,6 +402,7 @@ class ProgressStore(context: Context) {
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_ADVANCED_SETTINGS_VISIBLE = "advanced_settings_visible"
         private const val KEY_CURRENT_STUDY_WORD_ID = "current_study_word_id"
+        private const val KEY_REVIEW_SCHEDULES = "review_schedules_v1"
         private const val DEFAULT_SURAH = 114
         private val AVAILABLE_SURAHS = 1..114
     }

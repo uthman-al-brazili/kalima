@@ -49,6 +49,7 @@ fun ProgressScreen(
     val learnedInScope = remember(activeWords, progress.learnedIds) {
         activeWords.count { it.id in progress.learnedIds }
     }
+    val dueInScope = progress.dueReviewCount(activeWords.mapTo(mutableSetOf()) { it.id })
     val learningWords = remember(
         activeWords,
         progress.maximumWords,
@@ -91,8 +92,8 @@ fun ProgressScreen(
                 modifier = Modifier.weight(1f),
             )
             StatBlock(
-                value = progress.reviewingIds.size.toString(),
-                label = stringResource(R.string.stat_reviewing),
+                value = dueInScope.toString(),
+                label = stringResource(R.string.stat_due),
                 modifier = Modifier.weight(1f),
             )
             StatBlock(

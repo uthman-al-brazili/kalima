@@ -3,6 +3,20 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.12.0 — 2026-08-12
+
+- Added persistent, per-word spaced-repetition schedules with a 10-minute
+  relearning step, one- and three-day graduation steps, and ease-adjusted
+  intervals that expand after successful recall.
+- Study, quiz, and lock-screen sessions now prioritize overdue cards, introduce
+  new cards only after pending reviews, and hold back cards until their due
+  time. Existing learned and reviewing progress is migrated into the schedule.
+- Study actions preview the resulting interval, quiz feedback shows the next
+  review, Progress reports the number currently due, and a new caught-up state
+  appears when no review or new card is available.
+- Quiz sessions no longer repeat a word merely to fill five questions when the
+  due queue contains fewer cards.
+
 ## 0.11.0 — 2026-08-11
 
 - Added light, dark, and automatic appearance modes, with a dark palette across

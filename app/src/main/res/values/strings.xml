@@ -22,9 +22,18 @@
     <string name="study_lock_screen_title">Estude sempre que ligar a tela</string>
     <string name="study_lock_screen_description">Ative a função principal do Kalima para receber uma palavra a cada desbloqueio.</string>
     <string name="enable">Ativar</string>
-    <string name="review_again">Revisar de novo</string>
-    <string name="review_later">Rever depois</string>
-    <string name="already_learned">Já aprendi</string>
+    <string name="review_again">De novo · 10 min</string>
+    <string name="review_later">De novo · 10 min</string>
+    <string name="already_learned">Acertei</string>
+    <string name="review_good_tomorrow">Acertei · amanhã</string>
+    <plurals name="review_good_days">
+        <item quantity="one">Acertei · %1$d dia</item>
+        <item quantity="other">Acertei · %1$d dias</item>
+    </plurals>
+    <plurals name="reviews_due">
+        <item quantity="one">%1$d revisão pendente</item>
+        <item quantity="other">%1$d revisões pendentes</item>
+    </plurals>
     <string name="context_meaning_note">O significado acompanha este contexto. Uma mesma palavra pode mudar de nuance em outro versículo.</string>
     <string name="today_word">Sua palavra de hoje</string>
     <string name="scope_all_description">Todo o conteúdo disponível</string>
@@ -61,6 +70,7 @@
     <string name="progress_subtitle">Consistência pequena, compreensão duradoura.</string>
     <string name="stat_learned">aprendidas</string>
     <string name="stat_reviewing">em revisão</string>
+    <string name="stat_due">pendentes</string>
     <string name="stat_days">dias</string>
     <string name="selected_content">Conteúdo selecionado</string>
     <string name="selected_content_note">O progresso acima acompanha apenas o conjunto que você escolheu estudar agora.</string>
@@ -81,6 +91,8 @@
     <string name="learning_limit_range">Escolha um número entre %1$d e %2$d.</string>
     <string name="learning_limit_reached_title">Seu limite de palavras foi alcançado</string>
     <string name="learning_limit_reached_description">Não há palavras já vistas no conteúdo selecionado. Aumente o limite ou escolha outro conteúdo na aba Progresso.</string>
+    <string name="all_caught_up_title">Revisões em dia</string>
+    <string name="all_caught_up_description">Não há cartões programados para agora. O Kalima mostrará cada palavra novamente quando chegar a hora da próxima revisão.</string>
     <string name="routine">Rotina</string>
     <string name="lock_screen_study">Estudo ao ligar a tela</string>
     <string name="lock_screen_study_enabled">Ativo: uma nova palavra será aberta sempre que a tela acender.</string>
@@ -127,13 +139,19 @@
     <string name="surah_search_hint">Número ou nome da sura</string>
     <string name="done">Concluir</string>
 
-    <string name="quiz_intro">Cinco perguntas, sem cronômetro e sem penalidades.</string>
+    <string name="quiz_intro">Até cinco palavras novas ou pendentes, sem cronômetro e sem penalidades.</string>
     <string name="quiz_arabic_to_meaning">Qual é o significado desta palavra?</string>
     <string name="quiz_meaning_to_arabic">Qual palavra árabe corresponde a:</string>
     <string name="quiz_contextual_meaning">Qual é o significado da palavra destacada?</string>
     <string name="correct">Correto</string>
     <string name="correct_answer">Resposta correta: %1$s</string>
-    <string name="quiz_mastery">Domínio no quiz: %1$d/%2$d dias</string>
+    <string name="review_due_now">Revisão disponível agora</string>
+    <string name="review_in_minutes">Próxima revisão em %1$d min</string>
+    <string name="review_tomorrow">Próxima revisão amanhã</string>
+    <plurals name="review_in_days">
+        <item quantity="one">Próxima revisão em %1$d dia</item>
+        <item quantity="other">Próxima revisão em %1$d dias</item>
+    </plurals>
     <string name="view_result">Ver resultado</string>
     <string name="next_question">Próxima pergunta</string>
     <string name="quiz_completed">Quiz concluído</string>

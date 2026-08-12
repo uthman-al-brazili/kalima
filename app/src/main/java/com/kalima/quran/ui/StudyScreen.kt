@@ -40,10 +40,14 @@ import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QuranWord
+import com.kalima.quran.data.ReviewQueue
+import com.kalima.quran.data.ReviewSchedule
+import com.kalima.quran.data.SpacedRepetition
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.limitNewWords
+import java.time.Instant
 import java.time.LocalDate
 
 @Composable
@@ -56,7 +60,7 @@ fun StudyScreen(
     launchTarget: StudyLaunchTarget? = null,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val words = remember(
+    val availableWords = remember(
         progress.studyScope,
         selectionKey,
         progress.maximumWords,
@@ -67,8 +71,20 @@ fun StudyScreen(
             WordRepository.wordsFor(progress.studyScope, progress.selectedSurahs),
         )
     }
-    if (words.isEmpty()) {
+    if (availableWords.isEmpty()) {
         LearningLimitEmptyState()
+        return
+    }
+    val words = remember(availableWords, progress.reviewSchedules) {
+        ReviewQueue.ordered(
+            words = availableWords,
+            schedules = progress.reviewSchedules,
+            now = Instant.now(),
+            newStartIndex = LocalDate.now().toEpochDay().toInt(),
+        )
+    }
+    if (words.isEmpty()) {
+        AllCaughtUpState()
         return
     }
     val session = remember(words, launchTarget?.wordId) {
@@ -78,7 +94,7 @@ fun StudyScreen(
             ?.let { currentId -> words.firstOrNull { it.id == currentId } }
         buildStudySession(
             words = words,
-            defaultWord = resumedWord ?: WordRepository.wordFor(LocalDate.now(), words),
+            defaultWord = resumedWord ?: words.first(),
             requestedWord = requestedWord,
         )
     }
@@ -107,7 +123,10 @@ fun StudyScreen(
             .verticalScroll(scrollState)
             .padding(horizontal = 20.dp, vertical = 18.dp),
     ) {
-        StudyHeader(progress)
+        StudyHeader(
+            progress = progress,
+            dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
+        )
         if (!progress.lockScreenEnabled) {
             Spacer(Modifier.height(16.dp))
             Surface(
@@ -163,7 +182,10 @@ fun StudyScreen(
                     containerColor = MaterialTheme.colorScheme.primary,
                 ),
             ) {
-                Text(stringResource(R.string.already_learned), fontWeight = FontWeight.SemiBold)
+                Text(
+                    goodReviewLabel(progress.scheduleFor(word.id)),
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
         }
         Spacer(Modifier.height(16.dp))
@@ -175,6 +197,20 @@ fun StudyScreen(
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun goodReviewLabel(schedule: ReviewSchedule?): String {
+    val intervalDays = SpacedRepetition.nextGoodIntervalDays(schedule)
+    return if (intervalDays == 1) {
+        stringResource(R.string.review_good_tomorrow)
+    } else {
+        pluralStringResource(
+            R.plurals.review_good_days,
+            intervalDays,
+            intervalDays,
+        )
     }
 }
 
@@ -193,7 +229,7 @@ internal fun buildStudySession(
 }
 
 @Composable
-private fun StudyHeader(progress: StudyProgress) {
+private fun StudyHeader(progress: StudyProgress, dueCount: Int) {
     val fraction = (progress.todayCompleted.toFloat() / progress.dailyGoal).coerceIn(0f, 1f)
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
@@ -223,6 +259,14 @@ private fun StudyHeader(progress: StudyProgress) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
             )
+            if (dueCount > 0) {
+                Text(
+                    pluralStringResource(R.plurals.reviews_due, dueCount, dueCount),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
         }
         Surface(
             color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.35f),
