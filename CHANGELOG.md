@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.16.1 — 2026-08-13
+
+- Improved the contrast of the “Selected content” heading on the Progress screen
+  in both light and dark themes.
+
 ## 0.16.0 — 2026-08-13
 
 - Decoupled the Quiz tab from spaced repetition: quizzes now use random words

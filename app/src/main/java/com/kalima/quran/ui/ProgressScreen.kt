@@ -151,7 +151,7 @@ fun ProgressScreen(
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
                         stringResource(R.string.selected_content),
-                        color = MaterialTheme.colorScheme.secondary,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold,
                     )
                     Text("$learnedInScope/${activeWords.size}")
