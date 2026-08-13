@@ -67,6 +67,11 @@ fun WordStatusPill(status: WordStatus) {
             MaterialTheme.colorScheme.primaryContainer,
             MaterialTheme.colorScheme.onPrimaryContainer,
         )
+        WordStatus.AlreadyKnown -> Triple(
+            stringResource(R.string.status_already_known),
+            MaterialTheme.colorScheme.tertiaryContainer,
+            MaterialTheme.colorScheme.onTertiaryContainer,
+        )
     }
     Surface(color = container, contentColor = content, shape = RoundedCornerShape(100.dp)) {
         Text(
@@ -169,6 +174,29 @@ fun AllCaughtUpState(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(10.dp))
         Text(
             stringResource(R.string.all_caught_up_description),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+fun AllWordsAlreadyKnownState(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxSize().padding(28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            stringResource(R.string.all_words_already_known_title),
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(10.dp))
+        Text(
+            stringResource(R.string.all_words_already_known_description),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )

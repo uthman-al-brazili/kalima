@@ -33,7 +33,9 @@ import com.kalima.quran.data.QuranWord
 fun WordCollectionActions(
     word: QuranWord,
     inCustomList: Boolean,
+    alreadyKnown: Boolean,
     onToggleCustomList: (String) -> Unit,
+    onToggleAlreadyKnown: (String) -> Unit,
 ) {
     val customListDescription = stringResource(
         if (inCustomList) R.string.remove_custom_list else R.string.add_custom_list,
@@ -46,6 +48,27 @@ fun WordCollectionActions(
         modifier = Modifier
             .fillMaxWidth()
             .semantics { contentDescription = customListDescription },
+    )
+    Spacer(Modifier.height(8.dp))
+    val alreadyKnownDescription = stringResource(
+        if (alreadyKnown) R.string.restore_to_practice_description
+        else R.string.mark_already_known_description,
+    )
+    FilterChip(
+        selected = alreadyKnown,
+        onClick = { onToggleAlreadyKnown(word.id) },
+        label = {
+            Text(
+                stringResource(
+                    if (alreadyKnown) R.string.restore_to_practice
+                    else R.string.mark_already_known,
+                ),
+            )
+        },
+        leadingIcon = { Text(if (alreadyKnown) "✓" else "−") },
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { contentDescription = alreadyKnownDescription },
     )
 }
 

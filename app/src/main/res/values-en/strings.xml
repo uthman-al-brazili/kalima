@@ -10,6 +10,7 @@
     <string name="status_new">New</string>
     <string name="status_reviewing">Reviewing</string>
     <string name="status_learned">Learned</string>
+    <string name="status_already_known">Already known</string>
     <string name="root_label">Root</string>
     <string name="root_value">Root  %1$s</string>
     <string name="reference_root">%1$s  •  root %2$s</string>
@@ -36,6 +37,12 @@
     <string name="review_good_no_schedule">Got it</string>
     <string name="review_without_schedule">Next word</string>
     <string name="review_good_tomorrow">Review tomorrow</string>
+    <string name="mark_already_known">I already know this</string>
+    <string name="mark_already_known_description">Mark as already known and remove from practice</string>
+    <string name="restore_to_practice">Add back to practice</string>
+    <string name="restore_to_practice_description">Restore this word to study, quiz, reminders, and unlock cards</string>
+    <string name="already_known_confirmation">Remove this word from study, quizzes, reminders, and unlock cards? You can restore it from the Already known filter in Vocabulary.</string>
+    <string name="remove_from_practice">Remove</string>
     <plurals name="review_good_days">
         <item quantity="one">Review in %1$d day</item>
         <item quantity="other">Review in %1$d days</item>
@@ -74,6 +81,7 @@
     <string name="filter_new">New</string>
     <string name="filter_reviewing">Reviewing</string>
     <string name="filter_learned">Learned</string>
+    <string name="filter_already_known">Already known</string>
     <string name="no_words_found">No words found.</string>
 
     <string name="progress_title">Your progress</string>
@@ -103,6 +111,8 @@
     <string name="learning_limit_reached_description">There are no previously seen words in the selected content. Increase the limit or choose different content on the Progress tab.</string>
     <string name="all_caught_up_title">You’re all caught up</string>
     <string name="all_caught_up_description">No cards are scheduled right now. Kalima will bring each word back when its next review is due.</string>
+    <string name="all_words_already_known_title">You already know this set</string>
+    <string name="all_words_already_known_description">These words will stay out of study, quizzes, reminders, and unlock cards. Use the Already known filter in Vocabulary to add any word back.</string>
     <string name="routine">Routine</string>
     <string name="lock_screen_study">Study when you return to your phone</string>
     <string name="lock_screen_study_enabled">Active: a new word will open when you return after the screen turns on.</string>
@@ -293,7 +303,7 @@
     <string name="import_backup">Import backup</string>
     <string name="restore_backup">Restore backup</string>
     <string name="backup_preview_title">Review backup</string>
-    <string name="backup_preview_summary">Created: %1$s\nKalima version: %2$s\n%3$d learned · %4$d reviewing · %5$d in my list\n\nRestoring replaces the current progress and settings after making a local recovery copy.</string>
+    <string name="backup_preview_summary">Created: %1$s\nKalima version: %2$s\n%3$d learned · %4$d reviewing · %5$d already known · %6$d in my list\n\nRestoring replaces the current progress and settings after making a local recovery copy.</string>
     <string name="backup_exported">Backup exported</string>
     <string name="backup_restored">Backup restored</string>
     <string name="backup_failed">Could not create or read the backup</string>

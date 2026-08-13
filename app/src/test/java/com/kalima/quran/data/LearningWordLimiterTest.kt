@@ -58,4 +58,24 @@ class LearningWordLimiterTest {
 
         assertTrue(result.isEmpty())
     }
+
+    @Test
+    fun alreadyKnownWordsAreExcludedWithoutUsingLearningSlots() {
+        val result = LearningWordLimiter.apply(
+            words = words,
+            learnedIds = emptySet(),
+            reviewingIds = emptySet(),
+            alreadyKnownIds = setOf(words[0].id, words[2].id),
+            maximumWords = 3,
+        )
+
+        assertEquals(listOf(words[1], words[3], words[4]), result)
+    }
+
+    @Test
+    fun alreadyKnownWordsAreExcludedWhenTheLimitIsUnlimited() {
+        val progress = StudyProgress(alreadyKnownIds = setOf(words[1].id))
+
+        assertEquals(words.filterNot { it.id == words[1].id }, progress.limitNewWords(words))
+    }
 }

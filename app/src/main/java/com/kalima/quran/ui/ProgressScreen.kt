@@ -63,15 +63,16 @@ fun ProgressScreen(
     val learnedInScope = remember(activeWords, progress.learnedIds) {
         activeWords.count { it.id in progress.learnedIds }
     }
-    val dueInScope = progress.dueReviewCount(activeWords.mapTo(mutableSetOf()) { it.id })
     val learningWords = remember(
         activeWords,
         progress.maximumWords,
         progress.learnedIds,
         progress.reviewingIds,
+        progress.alreadyKnownIds,
     ) {
         progress.limitNewWords(activeWords)
     }
+    val dueInScope = progress.dueReviewCount(learningWords.mapTo(mutableSetOf()) { it.id })
     val learnedFraction = if (activeWords.isEmpty()) 0f else learnedInScope.toFloat() / activeWords.size
     val today = LocalDate.now()
     val eventsToday = progress.reviewEvents.filter {

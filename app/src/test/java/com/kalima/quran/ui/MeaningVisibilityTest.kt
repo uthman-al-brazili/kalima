@@ -15,5 +15,6 @@ class MeaningVisibilityTest {
     fun `review words hide their meaning initially`() {
         assertFalse(shouldRevealMeaningInitially(WordStatus.Reviewing))
         assertFalse(shouldRevealMeaningInitially(WordStatus.Learned))
+        assertFalse(shouldRevealMeaningInitially(WordStatus.AlreadyKnown))
     }
 }

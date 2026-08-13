@@ -47,6 +47,7 @@ private enum class LibraryFilter(@param:StringRes val labelRes: Int) {
     New(R.string.filter_new),
     Reviewing(R.string.filter_reviewing),
     Learned(R.string.filter_learned),
+    AlreadyKnown(R.string.filter_already_known),
     MyList(R.string.my_list_filter),
 }
 
@@ -55,6 +56,7 @@ fun LibraryScreen(
     progress: StudyProgress,
     pronouncer: ArabicPronouncer,
     onToggleCustomList: (String) -> Unit,
+    onToggleAlreadyKnown: (String) -> Unit,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var filterName by rememberSaveable { mutableStateOf(LibraryFilter.All.name) }
@@ -78,6 +80,7 @@ fun LibraryScreen(
         activeWords,
         progress.learnedIds,
         progress.reviewingIds,
+        progress.alreadyKnownIds,
     ) {
         WordRepository.search(query, activeWords).filter { word ->
             when (filter) {
@@ -85,6 +88,7 @@ fun LibraryScreen(
                 LibraryFilter.New -> progress.statusFor(word.id) == WordStatus.New
                 LibraryFilter.Reviewing -> progress.statusFor(word.id) == WordStatus.Reviewing
                 LibraryFilter.Learned -> progress.statusFor(word.id) == WordStatus.Learned
+                LibraryFilter.AlreadyKnown -> progress.statusFor(word.id) == WordStatus.AlreadyKnown
                 LibraryFilter.MyList -> word.id in progress.customStudyIds
             }
         }
@@ -178,7 +182,9 @@ fun LibraryScreen(
                 onClick = { expandedId = if (expandedId == word.id) null else word.id },
                 pronouncer = pronouncer,
                 inCustomList = word.id in progress.customStudyIds,
+                alreadyKnown = word.id in progress.alreadyKnownIds,
                 onToggleCustomList = onToggleCustomList,
+                onToggleAlreadyKnown = onToggleAlreadyKnown,
             )
         }
     }
@@ -192,7 +198,9 @@ private fun LibraryWordCard(
     onClick: () -> Unit,
     pronouncer: ArabicPronouncer,
     inCustomList: Boolean,
+    alreadyKnown: Boolean,
     onToggleCustomList: (String) -> Unit,
+    onToggleAlreadyKnown: (String) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
@@ -247,7 +255,9 @@ private fun LibraryWordCard(
                 WordCollectionActions(
                     word = word,
                     inCustomList = inCustomList,
+                    alreadyKnown = alreadyKnown,
                     onToggleCustomList = onToggleCustomList,
+                    onToggleAlreadyKnown = onToggleAlreadyKnown,
                 )
                 CitationActions(word)
                 EditorialReviewPanel(word)

@@ -3,6 +3,16 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.19.0 — 2026-08-13
+
+- Added a reversible “I already know this” choice to study cards and unlock
+  cards so familiar words stop appearing in study, quizzes, reminders, and
+  unlock-card rotation.
+- Added an “Already known” status and Vocabulary filter for finding excluded
+  words and returning any of them to practice.
+- Included already-known words in local progress backups while preserving
+  compatibility with backups created by earlier Kalima versions.
+
 ## 0.18.0 — 2026-08-13
 
 - Merged Favorites and My List into one clear My List collection across study,

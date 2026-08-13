@@ -48,4 +48,5 @@ enum class WordStatus {
     New,
     Reviewing,
     Learned,
+    AlreadyKnown,
 }

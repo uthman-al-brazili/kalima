@@ -113,5 +113,6 @@ object QuizEngine {
         addAll(words.filter { statusFor(it.id) == WordStatus.Reviewing }.shuffled(random))
         addAll(words.filter { statusFor(it.id) == WordStatus.New }.shuffled(random))
         addAll(words.filter { statusFor(it.id) == WordStatus.Learned }.shuffled(random))
+        addAll(words.filter { statusFor(it.id) == WordStatus.AlreadyKnown }.shuffled(random))
     }
 }

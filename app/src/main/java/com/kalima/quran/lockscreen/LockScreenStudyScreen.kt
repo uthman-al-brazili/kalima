@@ -50,6 +50,7 @@ fun LockScreenStudyScreen(
     initialRememberedSelection: Boolean?,
     onSelect: (Boolean) -> Unit,
     onConfirm: () -> Unit,
+    onAlreadyKnown: () -> Unit,
     onDismiss: () -> Unit,
     onOpenApp: () -> Unit,
 ) {
@@ -57,6 +58,7 @@ fun LockScreenStudyScreen(
     var rememberedSelection by rememberSaveable(word.id) {
         mutableStateOf(initialRememberedSelection)
     }
+    var confirmingAlreadyKnown by rememberSaveable(word.id) { mutableStateOf(false) }
     KalimaTheme {
         Surface(color = Forest, modifier = Modifier.fillMaxSize()) {
             Column(
@@ -124,6 +126,50 @@ fun LockScreenStudyScreen(
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Bold,
                     )
+                    Spacer(Modifier.height(8.dp))
+                    if (confirmingAlreadyKnown) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(16.dp),
+                        ) {
+                            Column(Modifier.padding(14.dp)) {
+                                Text(
+                                    stringResource(R.string.already_known_confirmation),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    TextButton(
+                                        onClick = { confirmingAlreadyKnown = false },
+                                        modifier = Modifier.weight(1f),
+                                    ) {
+                                        Text(stringResource(R.string.cancel), color = Color.White)
+                                    }
+                                    Button(
+                                        onClick = onAlreadyKnown,
+                                        modifier = Modifier.weight(1f),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Gold,
+                                            contentColor = Forest,
+                                        ),
+                                    ) {
+                                        Text(stringResource(R.string.remove_from_practice))
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        TextButton(onClick = { confirmingAlreadyKnown = true }) {
+                            Text(stringResource(R.string.mark_already_known), color = Gold)
+                        }
+                    }
                     Spacer(Modifier.height(18.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Surface(color = Color.White.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {

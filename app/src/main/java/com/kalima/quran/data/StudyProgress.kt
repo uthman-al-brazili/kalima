@@ -13,6 +13,7 @@ enum class AppThemeMode {
 data class StudyProgress(
     val learnedIds: Set<String> = emptySet(),
     val reviewingIds: Set<String> = emptySet(),
+    val alreadyKnownIds: Set<String> = emptySet(),
     val todayAnsweredIds: Set<String> = emptySet(),
     val dailyGoal: Int = 5,
     val maximumWords: Int = LearningWordLimiter.UNLIMITED,
@@ -48,6 +49,7 @@ data class StudyProgress(
     val todayCompleted: Int get() = todayAnsweredIds.size
 
     fun statusFor(id: String): WordStatus = when (id) {
+        in alreadyKnownIds -> WordStatus.AlreadyKnown
         in learnedIds -> WordStatus.Learned
         in reviewingIds -> WordStatus.Reviewing
         else -> WordStatus.New

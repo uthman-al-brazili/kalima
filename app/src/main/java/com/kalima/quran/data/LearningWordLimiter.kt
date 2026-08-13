@@ -13,13 +13,15 @@ object LearningWordLimiter {
         words: List<QuranWord>,
         learnedIds: Set<String>,
         reviewingIds: Set<String>,
+        alreadyKnownIds: Set<String> = emptySet(),
         maximumWords: Int,
     ): List<QuranWord> {
-        if (maximumWords == UNLIMITED) return words
+        val practiceWords = words.filterNot { it.id in alreadyKnownIds }
+        if (maximumWords == UNLIMITED) return practiceWords
 
         val establishedIds = learnedIds + reviewingIds
         var newSlots = (maximumWords - establishedIds.size).coerceAtLeast(0)
-        return words.filter { word ->
+        return practiceWords.filter { word ->
             if (word.id in establishedIds) {
                 true
             } else if (newSlots > 0) {
@@ -37,5 +39,6 @@ fun StudyProgress.limitNewWords(words: List<QuranWord>): List<QuranWord> =
         words = words,
         learnedIds = learnedIds,
         reviewingIds = reviewingIds,
+        alreadyKnownIds = alreadyKnownIds,
         maximumWords = maximumWords,
     )

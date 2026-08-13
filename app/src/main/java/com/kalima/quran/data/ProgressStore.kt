@@ -193,6 +193,44 @@ class ProgressStore private constructor(context: Context) {
         persist(_progress.value.copy(customStudyIds = ids), today())
     }
 
+    fun toggleAlreadyKnown(wordId: String) {
+        if (WordRepository.words.none { it.id == wordId }) return
+        val current = _progress.value
+        val markingAsKnown = wordId !in current.alreadyKnownIds
+        val ids = current.alreadyKnownIds.toMutableSet().apply {
+            if (!add(wordId)) remove(wordId)
+        }
+        preferences.edit {
+            putInt(KEY_LOCK_SCREEN_SEQUENCE, 0)
+            putInt(KEY_LOCK_SCREEN_QUIZ_SEQUENCE, 0)
+        }
+        persist(
+            current.copy(
+                alreadyKnownIds = ids,
+                currentStudyWordId = current.currentStudyWordId
+                    ?.takeUnless { markingAsKnown && it == wordId },
+            ),
+            today(),
+            clearPendingLockScreenSession = markingAsKnown,
+        )
+    }
+
+    fun commitLockScreenAlreadyKnown(sessionId: String, wordId: String): Boolean {
+        if (!canCommitLockScreenSession(sessionId, wordId)) return false
+        if (WordRepository.words.none { it.id == wordId }) return false
+        val current = _progress.value
+        persist(
+            current.copy(
+                alreadyKnownIds = current.alreadyKnownIds + wordId,
+                currentStudyWordId = current.currentStudyWordId?.takeUnless { it == wordId },
+            ),
+            today(),
+            completedLockScreenSessionId = sessionId,
+            clearPendingLockScreenSession = true,
+        )
+        return true
+    }
+
     fun completeOnboarding(scope: StudyScope, dailyGoal: Int) {
         persist(
             _progress.value.copy(
@@ -263,6 +301,7 @@ class ProgressStore private constructor(context: Context) {
             current.customStudyIds,
         )
         val available = current.limitNewWords(selectedSource)
+        val quizOptions = selectedSource.filterNot { it.id in current.alreadyKnownIds }
         val source = if (current.spacedRepetitionEnabled) {
             val dueWords = ReviewQueue.dueWords(available, current.reviewSchedules, Instant.now())
             dueWords.ifEmpty { ReviewQueue.newWords(available, current.reviewSchedules) }
@@ -290,7 +329,7 @@ class ProgressStore private constructor(context: Context) {
                         }
                     },
                     sequence = quizSequence,
-                    optionWords = selectedSource,
+                    optionWords = quizOptions,
                 )
             }.getOrNull()
             if (question != null) {
@@ -417,6 +456,7 @@ class ProgressStore private constructor(context: Context) {
     @Synchronized
     fun restoreFromBackup(restored: StudyProgress) {
         val knownIds = WordRepository.words.mapTo(mutableSetOf(), QuranWord::id)
+        val alreadyKnownIds = restored.alreadyKnownIds.intersect(knownIds)
         val maximumWords = if (restored.maximumWords == LearningWordLimiter.UNLIMITED) {
             LearningWordLimiter.UNLIMITED
         } else {
@@ -428,11 +468,14 @@ class ProgressStore private constructor(context: Context) {
         val sanitized = restored.copy(
             learnedIds = restored.learnedIds.intersect(knownIds),
             reviewingIds = restored.reviewingIds.intersect(knownIds),
+            alreadyKnownIds = alreadyKnownIds,
             todayAnsweredIds = restored.todayAnsweredIds.intersect(knownIds),
             reviewSchedules = restored.reviewSchedules.filterKeys { it in knownIds },
             customStudyIds = restored.customStudyIds.intersect(knownIds),
             reviewEvents = restored.reviewEvents.filter { it.wordId in knownIds },
             quizCorrectDays = restored.quizCorrectDays.filterKeys { it in knownIds },
+            currentStudyWordId = restored.currentStudyWordId
+                ?.takeIf { it in knownIds && it !in alreadyKnownIds },
             maximumWords = maximumWords,
             lastLockScreenLatencyMs = null,
             lockScreenSafetySkips = 0,
@@ -509,6 +552,7 @@ class ProgressStore private constructor(context: Context) {
 
     fun setCurrentStudyWord(wordId: String) {
         if (_progress.value.currentStudyWordId == wordId) return
+        if (wordId in _progress.value.alreadyKnownIds) return
         if (WordRepository.words.none { it.id == wordId }) return
         persist(_progress.value.copy(currentStudyWordId = wordId), today())
     }
@@ -548,9 +592,14 @@ class ProgressStore private constructor(context: Context) {
             legacyFavoriteIds = preferences.getStringSet(KEY_FAVORITE_IDS, emptySet()).orEmpty(),
             customStudyIds = preferences.getStringSet(KEY_CUSTOM_STUDY_IDS, emptySet()).orEmpty(),
         )
+        val validWordIds = WordRepository.words.mapTo(mutableSetOf(), QuranWord::id)
+        val alreadyKnownIds = preferences.getStringSet(KEY_ALREADY_KNOWN_IDS, emptySet())
+            .orEmpty()
+            .intersect(validWordIds)
         return StudyProgress(
             learnedIds = learnedIds,
             reviewingIds = reviewingIds,
+            alreadyKnownIds = alreadyKnownIds,
             todayAnsweredIds = answered,
             dailyGoal = preferences.getInt(KEY_DAILY_GOAL, 5),
             maximumWords = preferences.getInt(
@@ -590,7 +639,7 @@ class ProgressStore private constructor(context: Context) {
             ),
             spacedRepetitionEnabled = spacedRepetitionEnabled,
             currentStudyWordId = preferences.getString(KEY_CURRENT_STUDY_WORD_ID, null)
-                ?.takeIf { storedId -> WordRepository.words.any { it.id == storedId } },
+                ?.takeIf { storedId -> storedId in validWordIds && storedId !in alreadyKnownIds },
             reviewSchedules = schedules,
             customStudyIds = customStudyIds,
             onboardingComplete = preferences.getBoolean(
@@ -641,6 +690,7 @@ class ProgressStore private constructor(context: Context) {
         preferences.edit {
             putStringSet(KEY_LEARNED, progress.learnedIds)
             putStringSet(KEY_REVIEWING, progress.reviewingIds)
+            putStringSet(KEY_ALREADY_KNOWN_IDS, progress.alreadyKnownIds)
             putStringSet(KEY_TODAY_ANSWERED, progress.todayAnsweredIds)
             putString(KEY_TODAY, date.toString())
             putInt(KEY_DAILY_GOAL, progress.dailyGoal)
@@ -743,6 +793,7 @@ class ProgressStore private constructor(context: Context) {
         private const val PREFERENCES = "kalima_progress"
         private const val KEY_LEARNED = "learned"
         private const val KEY_REVIEWING = "reviewing"
+        private const val KEY_ALREADY_KNOWN_IDS = "already_known_ids"
         private const val KEY_TODAY_ANSWERED = "today_answered"
         private const val KEY_TODAY = "today"
         private const val KEY_DAILY_GOAL = "daily_goal"

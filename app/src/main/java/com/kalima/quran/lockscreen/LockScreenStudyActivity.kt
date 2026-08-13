@@ -107,6 +107,19 @@ class LockScreenStudyActivity : ComponentActivity() {
                         }
                         if (answerCommitted) finish()
                     },
+                    onAlreadyKnown = {
+                        if (!answerCommitted) {
+                            answerCommitted = if (preview) {
+                                true
+                            } else {
+                                progressStore.commitLockScreenAlreadyKnown(
+                                    currentSession.id,
+                                    content.word.id,
+                                )
+                            }
+                        }
+                        if (answerCommitted) finish()
+                    },
                     onDismiss = ::finish,
                     onOpenApp = ::openMainApp,
                 )

@@ -59,31 +59,37 @@ fun StudyScreen(
     onCurrentWordChange: (String) -> Unit,
     onEnableLockScreen: () -> Unit,
     onToggleCustomList: (String) -> Unit,
+    onToggleAlreadyKnown: (String) -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val availableWords = remember(
+    val selectedWords = remember(
         progress.studyScope,
         selectionKey,
+        progress.customStudyIds,
+    ) {
+        WordRepository.wordsFor(
+            progress.studyScope,
+            progress.selectedSurahs,
+            progress.customStudyIds,
+        )
+    }
+    val availableWords = remember(
+        selectedWords,
         progress.maximumWords,
         progress.learnedIds,
         progress.reviewingIds,
-        progress.customStudyIds,
+        progress.alreadyKnownIds,
     ) {
-        progress.limitNewWords(
-            WordRepository.wordsFor(
-                progress.studyScope,
-                progress.selectedSurahs,
-                progress.customStudyIds,
-            ),
-        )
+        progress.limitNewWords(selectedWords)
     }
     if (availableWords.isEmpty()) {
-        if (progress.studyScope == StudyScope.Custom) {
-            EmptyCollectionState()
-        } else {
-            LearningLimitEmptyState()
+        when {
+            selectedWords.isNotEmpty() && selectedWords.all { it.id in progress.alreadyKnownIds } ->
+                AllWordsAlreadyKnownState()
+            progress.studyScope == StudyScope.Custom -> EmptyCollectionState()
+            else -> LearningLimitEmptyState()
         }
         return
     }
@@ -189,6 +195,11 @@ fun StudyScreen(
                 meaningRevealed = meaningRevealed,
                 onRevealChange = { meaningRevealed = it },
                 onToggleCustomList = onToggleCustomList,
+                onToggleAlreadyKnown = { wordId ->
+                    val markingAsKnown = wordId !in progress.alreadyKnownIds
+                    onToggleAlreadyKnown(wordId)
+                    if (markingAsKnown && wordId == word.id) moveToNextWord()
+                },
                 onOpenWord = { wordId ->
                     currentWordId = wordId
                     onCurrentWordChange(wordId)
@@ -430,6 +441,7 @@ private fun WordCard(
     meaningRevealed: Boolean,
     onRevealChange: (Boolean) -> Unit,
     onToggleCustomList: (String) -> Unit,
+    onToggleAlreadyKnown: (String) -> Unit,
     onOpenWord: (String) -> Unit,
 ) {
     Card(
@@ -492,7 +504,9 @@ private fun WordCard(
             WordCollectionActions(
                 word = word,
                 inCustomList = word.id in progress.customStudyIds,
+                alreadyKnown = word.id in progress.alreadyKnownIds,
                 onToggleCustomList = onToggleCustomList,
+                onToggleAlreadyKnown = onToggleAlreadyKnown,
             )
             if (meaningRevealed) {
                 Text(

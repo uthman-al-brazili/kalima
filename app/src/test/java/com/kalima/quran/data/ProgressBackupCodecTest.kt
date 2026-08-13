@@ -1,6 +1,9 @@
 package com.kalima.quran.data
 
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.time.Instant
+import java.util.Base64
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -15,6 +18,7 @@ class ProgressBackupCodecTest {
         val progress = StudyProgress(
             learnedIds = setOf("word-1"),
             reviewingIds = setOf("word-2"),
+            alreadyKnownIds = setOf("word-2"),
             reviewSchedules = mapOf("word-1" to schedule),
             customStudyIds = setOf("word-2"),
             reviewEvents = listOf(ReviewEvent(now, "word-1", true, false, ReviewSource.Study)),
@@ -25,6 +29,7 @@ class ProgressBackupCodecTest {
         assertEquals(now, decoded.metadata.createdAt)
         assertEquals("0.17.0", decoded.metadata.appVersion)
         assertEquals(progress.learnedIds, decoded.progress.learnedIds)
+        assertEquals(progress.alreadyKnownIds, decoded.progress.alreadyKnownIds)
         assertEquals(progress.reviewSchedules, decoded.progress.reviewSchedules)
         assertEquals(progress.customStudyIds, decoded.progress.customStudyIds)
         assertEquals(15, decoded.progress.lockScreenCooldownMinutes)
@@ -39,5 +44,34 @@ class ProgressBackupCodecTest {
         assertThrows(ProgressBackupValidationException::class.java) {
             ProgressBackupCodec.decode(encoded, "different", knownIds)
         }
+    }
+
+    @Test
+    fun backupsCreatedBeforeAlreadyKnownWordsRemainReadable() {
+        val current = ProgressBackupCodec.encode(StudyProgress(), "0.18.0", "corpus", now)
+        val encodedPayload = current.lineSequence().first { it.startsWith("payload=") }
+            .removePrefix("payload=")
+        val payload = String(
+            Base64.getUrlDecoder().decode(encodedPayload),
+            StandardCharsets.UTF_8,
+        )
+        val legacyPayload = payload.lineSequence()
+            .filterNot { it.startsWith("alreadyKnownIds\t") }
+            .joinToString("\n")
+        val legacyEncodedPayload = Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(legacyPayload.toByteArray(StandardCharsets.UTF_8))
+        val legacyChecksum = MessageDigest.getInstance("SHA-256")
+            .digest(legacyPayload.toByteArray(StandardCharsets.UTF_8))
+            .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        val legacy = listOf(
+            "#kalima-progress-backup-v1",
+            "sha256=$legacyChecksum",
+            "payload=$legacyEncodedPayload",
+        ).joinToString("\n")
+
+        assertEquals(
+            emptySet<String>(),
+            ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress.alreadyKnownIds,
+        )
     }
 }

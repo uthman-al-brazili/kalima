@@ -52,6 +52,7 @@ internal data class QuizSessionKey(
     val studyScope: StudyScope,
     val selectedSurahs: Set<Int>,
     val customStudyIds: Set<String>,
+    val alreadyKnownIds: Set<String>,
     val mode: QuizMode,
     val version: Int,
 )
@@ -60,6 +61,7 @@ internal fun StudyProgress.quizSessionKey(mode: QuizMode, version: Int) = QuizSe
     studyScope = studyScope,
     selectedSurahs = selectedSurahs,
     customStudyIds = customStudyIds,
+    alreadyKnownIds = alreadyKnownIds,
     mode = mode,
     version = version,
 )
@@ -71,7 +73,7 @@ fun QuizScreen(
     pronouncer: ArabicPronouncer,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val selectedWords = remember(
+    val selectedSource = remember(
         progress.studyScope,
         selectionKey,
         progress.customStudyIds,
@@ -82,11 +84,15 @@ fun QuizScreen(
             progress.customStudyIds,
         )
     }
+    val selectedWords = remember(selectedSource, progress.alreadyKnownIds) {
+        selectedSource.filterNot { it.id in progress.alreadyKnownIds }
+    }
     if (selectedWords.isEmpty()) {
-        if (progress.studyScope == StudyScope.Custom) {
-            EmptyCollectionState()
-        } else {
-            LearningLimitEmptyState()
+        when {
+            selectedSource.isNotEmpty() && selectedSource.all { it.id in progress.alreadyKnownIds } ->
+                AllWordsAlreadyKnownState()
+            progress.studyScope == StudyScope.Custom -> EmptyCollectionState()
+            else -> LearningLimitEmptyState()
         }
         return
     }

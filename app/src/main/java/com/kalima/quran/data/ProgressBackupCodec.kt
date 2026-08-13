@@ -36,6 +36,7 @@ object ProgressBackupCodec {
             "corpusIdentity" to corpusIdentity,
             "learnedIds" to encodeSet(progress.learnedIds),
             "reviewingIds" to encodeSet(progress.reviewingIds),
+            "alreadyKnownIds" to encodeSet(progress.alreadyKnownIds),
             "todayAnsweredIds" to encodeSet(progress.todayAnsweredIds),
             "dailyGoal" to progress.dailyGoal.toString(),
             "maximumWords" to progress.maximumWords.toString(),
@@ -116,6 +117,7 @@ object ProgressBackupCodec {
 
         val learned = values.idSet("learnedIds", knownWordIds)
         val reviewing = values.idSet("reviewingIds", knownWordIds)
+        val alreadyKnown = values.optionalIdSet("alreadyKnownIds", knownWordIds)
         val schedules = values.encodedSet("reviewSchedules").let { entries ->
             ReviewScheduleCodec.decode(entries).also { decoded ->
                 if (decoded.size != entries.size || decoded.keys.any { it !in knownWordIds }) {
@@ -148,6 +150,7 @@ object ProgressBackupCodec {
         val progress = StudyProgress(
             learnedIds = learned,
             reviewingIds = reviewing,
+            alreadyKnownIds = alreadyKnown,
             todayAnsweredIds = values.idSet("todayAnsweredIds", knownWordIds),
             dailyGoal = values.int("dailyGoal").coerceIn(3, 20),
             maximumWords = values.int("maximumWords"),
@@ -205,6 +208,13 @@ object ProgressBackupCodec {
         encodedSet(key).also { ids ->
             if (ids.any { it !in knownWordIds }) throw invalid("Backup references an unknown word")
         }
+
+    private fun Map<String, String>.optionalIdSet(
+        key: String,
+        knownWordIds: Set<String>,
+    ): Set<String> = this[key]?.let(::decodeSet).orEmpty().also { ids ->
+        if (ids.any { it !in knownWordIds }) throw invalid("Backup references an unknown word")
+    }
 
     private fun encodeSet(values: Set<String>): String =
         values.sorted().joinToString("\n", transform = ::encodeText)

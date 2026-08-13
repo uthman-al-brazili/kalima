@@ -10,6 +10,7 @@
     <string name="status_new">Nova</string>
     <string name="status_reviewing">Revisando</string>
     <string name="status_learned">Aprendida</string>
+    <string name="status_already_known">Já conhecida</string>
     <string name="root_label">Raiz</string>
     <string name="root_value">Raiz  %1$s</string>
     <string name="reference_root">%1$s  •  raiz %2$s</string>
@@ -36,6 +37,12 @@
     <string name="review_good_no_schedule">Entendi</string>
     <string name="review_without_schedule">Próxima palavra</string>
     <string name="review_good_tomorrow">Rever amanhã</string>
+    <string name="mark_already_known">Já conheço esta palavra</string>
+    <string name="mark_already_known_description">Marcar como já conhecida e retirar da prática</string>
+    <string name="restore_to_practice">Voltar à prática</string>
+    <string name="restore_to_practice_description">Devolver esta palavra ao estudo, quiz, lembretes e cartões de desbloqueio</string>
+    <string name="already_known_confirmation">Retirar esta palavra do estudo, quiz, lembretes e cartões de desbloqueio? Você poderá restaurá-la pelo filtro Já conhecidas no Vocabulário.</string>
+    <string name="remove_from_practice">Retirar</string>
     <plurals name="review_good_days">
         <item quantity="one">Rever em %1$d dia</item>
         <item quantity="other">Rever em %1$d dias</item>
@@ -74,6 +81,7 @@
     <string name="filter_new">Novas</string>
     <string name="filter_reviewing">Revisão</string>
     <string name="filter_learned">Aprendidas</string>
+    <string name="filter_already_known">Já conhecidas</string>
     <string name="no_words_found">Nenhuma palavra encontrada.</string>
 
     <string name="progress_title">Seu progresso</string>
@@ -103,6 +111,8 @@
     <string name="learning_limit_reached_description">Não há palavras já vistas no conteúdo selecionado. Aumente o limite ou escolha outro conteúdo na aba Progresso.</string>
     <string name="all_caught_up_title">Revisões em dia</string>
     <string name="all_caught_up_description">Não há cartões programados para agora. O Kalima mostrará cada palavra novamente quando chegar a hora da próxima revisão.</string>
+    <string name="all_words_already_known_title">Você já conhece este conjunto</string>
+    <string name="all_words_already_known_description">Estas palavras não aparecerão no estudo, quiz, lembretes nem nos cartões de desbloqueio. Use o filtro Já conhecidas no Vocabulário para devolver qualquer palavra à prática.</string>
     <string name="routine">Rotina</string>
     <string name="lock_screen_study">Estudar ao voltar ao celular</string>
     <string name="lock_screen_study_enabled">Ativo: uma nova palavra será aberta quando você voltar depois que a tela acender.</string>
@@ -293,7 +303,7 @@
     <string name="import_backup">Importar backup</string>
     <string name="restore_backup">Restaurar backup</string>
     <string name="backup_preview_title">Revisar backup</string>
-    <string name="backup_preview_summary">Criado: %1$s\nVersão do Kalima: %2$s\n%3$d aprendidas · %4$d em revisão · %5$d na minha lista\n\nA restauração substitui o progresso e os ajustes atuais depois de criar uma cópia local de recuperação.</string>
+    <string name="backup_preview_summary">Criado: %1$s\nVersão do Kalima: %2$s\n%3$d aprendidas · %4$d em revisão · %5$d já conhecidas · %6$d na minha lista\n\nA restauração substitui o progresso e os ajustes atuais depois de criar uma cópia local de recuperação.</string>
     <string name="backup_exported">Backup exportado</string>
     <string name="backup_restored">Backup restaurado</string>
     <string name="backup_failed">Não foi possível criar ou ler o backup</string>

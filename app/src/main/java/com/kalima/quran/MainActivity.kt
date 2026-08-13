@@ -117,6 +117,7 @@ class MainActivity : ComponentActivity() {
                 onStudyScopeChange = progressStore::setStudyScope,
                 onToggleSurah = progressStore::toggleSurah,
                 onToggleCustomList = progressStore::toggleCustomStudy,
+                onToggleAlreadyKnown = progressStore::toggleAlreadyKnown,
                 onCompleteOnboarding = progressStore::completeOnboarding,
                 onOpenAppSettings = ::openAppSettings,
                 onOpenTextToSpeechSettings = ::openTextToSpeechSettings,
