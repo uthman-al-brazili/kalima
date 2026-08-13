@@ -4,17 +4,27 @@ import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
@@ -28,30 +38,41 @@ fun WordCollectionActions(
     onToggleFavorite: (String) -> Unit,
     onToggleCustomList: (String) -> Unit,
 ) {
+    val favoriteDescription = stringResource(
+        if (favorite) R.string.remove_favorite else R.string.add_favorite,
+    )
+    val customListDescription = stringResource(
+        if (inCustomList) R.string.remove_custom_list else R.string.add_custom_list,
+    )
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        TextButton(onClick = { onToggleFavorite(word.id) }) {
-            Text(
-                (if (favorite) "★ " else "☆ ") + stringResource(
-                    if (favorite) R.string.remove_favorite else R.string.add_favorite,
-                ),
-            )
-        }
-        TextButton(onClick = { onToggleCustomList(word.id) }) {
-            Text(
-                (if (inCustomList) "✓ " else "+ ") + stringResource(
-                    if (inCustomList) R.string.remove_custom_list else R.string.add_custom_list,
-                ),
-            )
-        }
+        FilterChip(
+            selected = favorite,
+            onClick = { onToggleFavorite(word.id) },
+            label = { Text(stringResource(R.string.favorite_action)) },
+            leadingIcon = { Text(if (favorite) "★" else "☆") },
+            modifier = Modifier
+                .weight(1f)
+                .semantics { contentDescription = favoriteDescription },
+        )
+        FilterChip(
+            selected = inCustomList,
+            onClick = { onToggleCustomList(word.id) },
+            label = { Text(stringResource(R.string.custom_list_action)) },
+            leadingIcon = { Text(if (inCustomList) "✓" else "+") },
+            modifier = Modifier
+                .weight(1f)
+                .semantics { contentDescription = customListDescription },
+        )
     }
 }
 
 @Composable
 fun EditorialReviewPanel(word: QuranWord) {
     val context = LocalContext.current
+    var expanded by rememberSaveable(word.id) { mutableStateOf(false) }
     val chooserTitle = stringResource(R.string.report_card)
     val subject = stringResource(R.string.report_card_subject, word.id)
     val body = stringResource(
@@ -65,35 +86,59 @@ fun EditorialReviewPanel(word: QuranWord) {
         color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.55f),
         shape = RoundedCornerShape(16.dp),
     ) {
-        Column(Modifier.padding(14.dp)) {
-            Text(
-                stringResource(R.string.editorial_status),
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Text(
-                stringResource(R.string.editorial_details),
-                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.82f),
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Text(
-                stringResource(R.string.editorial_metadata, word.id, word.reference),
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-            TextButton(
-                onClick = {
-                    val report = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_SUBJECT, subject)
-                        putExtra(Intent.EXTRA_TEXT, body)
-                    }
-                    context.startActivity(Intent.createChooser(report, chooserTitle))
-                },
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(stringResource(R.string.report_card))
+                Text(
+                    stringResource(R.string.editorial_compact_title),
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                TextButton(onClick = { expanded = !expanded }) {
+                    Text(
+                        stringResource(
+                            if (expanded) R.string.editorial_hide_details
+                            else R.string.editorial_show_details,
+                        ),
+                    )
+                }
+            }
+            if (expanded) {
+                Text(
+                    stringResource(R.string.editorial_status),
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    stringResource(R.string.editorial_details),
+                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.82f),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    stringResource(R.string.editorial_metadata, word.id, word.reference),
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                TextButton(
+                    onClick = {
+                        val report = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_SUBJECT, subject)
+                            putExtra(Intent.EXTRA_TEXT, body)
+                        }
+                        context.startActivity(Intent.createChooser(report, chooserTitle))
+                    },
+                ) {
+                    Text(stringResource(R.string.report_card))
+                }
             }
         }
     }

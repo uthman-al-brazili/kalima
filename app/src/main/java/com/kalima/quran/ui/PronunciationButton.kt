@@ -2,6 +2,7 @@ package com.kalima.quran.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -67,6 +68,7 @@ fun PronunciationButton(
     pronouncer: ArabicPronouncer,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
+    dense: Boolean = false,
     @StringRes labelRes: Int = R.string.listen_pronunciation,
     speechRate: Float = ArabicPronouncer.DEFAULT_RATE,
     repeatCount: Int = 1,
@@ -161,6 +163,11 @@ fun PronunciationButton(
             modifier = modifier,
             colors = ButtonDefaults.outlinedButtonColors(contentColor = resolvedContentColor),
             border = BorderStroke(1.dp, resolvedBorderColor),
+            contentPadding = if (dense) {
+                PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+            } else {
+                ButtonDefaults.ContentPadding
+            },
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_volume_up),
@@ -168,7 +175,14 @@ fun PronunciationButton(
                 modifier = Modifier.size(20.dp),
             )
             Spacer(Modifier.width(8.dp))
-            Text(label)
+            Text(
+                label,
+                style = if (dense) {
+                    MaterialTheme.typography.labelMedium
+                } else {
+                    MaterialTheme.typography.labelLarge
+                },
+            )
         }
     }
 }

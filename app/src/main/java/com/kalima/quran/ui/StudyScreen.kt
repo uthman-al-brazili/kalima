@@ -208,18 +208,18 @@ fun StudyScreen(
                     onAnswer(word.id, false)
                     moveToNextWord()
                 },
-                modifier = Modifier.weight(1f).height(54.dp),
+                modifier = Modifier.weight(1f).height(68.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text(
-                    stringResource(
-                        if (progress.spacedRepetitionEnabled) {
-                            R.string.review_again
-                        } else {
-                            R.string.review_again_no_schedule
-                        },
+                ReviewActionContent(
+                    title = stringResource(
+                        if (progress.spacedRepetitionEnabled) R.string.review_again
+                        else R.string.review_again_no_schedule,
                     ),
-                    fontWeight = FontWeight.SemiBold,
+                    detail = stringResource(
+                        if (progress.spacedRepetitionEnabled) R.string.review_again_timing
+                        else R.string.review_without_schedule,
+                    ),
                 )
             }
             Spacer(Modifier.width(12.dp))
@@ -228,18 +228,18 @@ fun StudyScreen(
                     onAnswer(word.id, true)
                     moveToNextWord()
                 },
-                modifier = Modifier.weight(1f).height(54.dp),
+                modifier = Modifier.weight(1f).height(68.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                 ),
             ) {
-                Text(
-                    goodReviewLabel(
+                ReviewActionContent(
+                    title = stringResource(R.string.review_remembered),
+                    detail = goodReviewTiming(
                         spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
                         schedule = progress.scheduleFor(word.id),
                     ),
-                    fontWeight = FontWeight.SemiBold,
                 )
             }
         }
@@ -258,11 +258,28 @@ fun StudyScreen(
 internal fun shouldRevealMeaningInitially(status: WordStatus): Boolean = status == WordStatus.New
 
 @Composable
-private fun goodReviewLabel(
+private fun ReviewActionContent(title: String, detail: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            title,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.labelLarge,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            detail,
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun goodReviewTiming(
     spacedRepetitionEnabled: Boolean,
     schedule: ReviewSchedule?,
 ): String {
-    if (!spacedRepetitionEnabled) return stringResource(R.string.review_good_no_schedule)
+    if (!spacedRepetitionEnabled) return stringResource(R.string.review_without_schedule)
     val intervalDays = SpacedRepetition.nextGoodIntervalDays(schedule)
     return if (intervalDays == 1) {
         stringResource(R.string.review_good_tomorrow)
@@ -413,19 +430,28 @@ private fun WordCard(
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.height(8.dp))
-            PronunciationButton(
-                arabic = word.arabic,
-                pronouncer = pronouncer,
-                labelRes = R.string.device_voice_slow,
-                speechRate = ArabicPronouncer.SLOW_RATE,
-            )
-            PronunciationButton(
-                arabic = word.arabic,
-                pronouncer = pronouncer,
-                labelRes = R.string.device_voice_repeat,
-                speechRate = ArabicPronouncer.SLOW_RATE,
-                repeatCount = 3,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                PronunciationButton(
+                    arabic = word.arabic,
+                    pronouncer = pronouncer,
+                    modifier = Modifier.weight(1f).height(42.dp),
+                    dense = true,
+                    labelRes = R.string.device_voice_slow,
+                    speechRate = ArabicPronouncer.SLOW_RATE,
+                )
+                PronunciationButton(
+                    arabic = word.arabic,
+                    pronouncer = pronouncer,
+                    modifier = Modifier.weight(1f).height(42.dp),
+                    dense = true,
+                    labelRes = R.string.device_voice_repeat,
+                    speechRate = ArabicPronouncer.SLOW_RATE,
+                    repeatCount = 3,
+                )
+            }
             Spacer(Modifier.height(14.dp))
             WordCollectionActions(
                 word = word,

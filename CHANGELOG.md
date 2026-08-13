@@ -3,6 +3,17 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.16.2 — 2026-08-13
+
+- Made study-card audio and saved-word controls more compact, using short,
+  recognizable actions that stay on one row.
+- Reworded review choices to distinguish “didn’t remember” from “remembered”
+  and show when the word will return.
+- Clarified the 14-day activity chart, grouped study paths by purpose with
+  plain-language names and a current-selection summary, and marked today.
+- Reduced editorial notices to a compact “Content under review” row with
+  details and correction sharing available on demand.
+
 ## 0.16.1 — 2026-08-13
 
 - Improved the contrast of the “Selected content” heading on the Progress screen

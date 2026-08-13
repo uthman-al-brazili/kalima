@@ -1,5 +1,6 @@
 package com.kalima.quran.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
@@ -189,31 +192,49 @@ fun ProgressScreen(
             tonalElevation = 1.dp,
         ) {
             Column(Modifier.padding(18.dp)) {
+                PathGroupLabel(R.string.path_group_frequency)
+                Spacer(Modifier.height(6.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     ProgressPathChip(progress.studyScope, StudyScope.Frequent50, R.string.scope_first_50, onStudyScopeChange, Modifier.weight(1f))
                     ProgressPathChip(progress.studyScope, StudyScope.Frequent, R.string.scope_top_100, onStudyScopeChange, Modifier.weight(1f))
-                    ProgressPathChip(progress.studyScope, StudyScope.Frequent300, R.string.scope_top_300, onStudyScopeChange, Modifier.weight(1f))
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    ProgressPathChip(progress.studyScope, StudyScope.Frequent300, R.string.scope_top_300, onStudyScopeChange, Modifier.weight(1f))
                     ProgressPathChip(progress.studyScope, StudyScope.Frequent500, R.string.scope_top_500, onStudyScopeChange, Modifier.weight(1f))
+                }
+                Spacer(Modifier.height(10.dp))
+                PathGroupLabel(R.string.path_group_goal)
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     ProgressPathChip(progress.studyScope, StudyScope.Prayer, R.string.scope_prayer, onStudyScopeChange, Modifier.weight(1f))
                     ProgressPathChip(progress.studyScope, StudyScope.ShortSurahs, R.string.scope_short_surahs, onStudyScopeChange, Modifier.weight(1f))
                 }
+                Spacer(Modifier.height(10.dp))
+                PathGroupLabel(R.string.path_group_collection)
+                Spacer(Modifier.height(6.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     ProgressPathChip(progress.studyScope, StudyScope.All, R.string.scope_all, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScope, StudyScope.Surahs, R.string.scope_surah, onStudyScopeChange, Modifier.weight(1f))
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     ProgressPathChip(progress.studyScope, StudyScope.Favorites, R.string.scope_favorites, onStudyScopeChange, Modifier.weight(1f))
                     ProgressPathChip(progress.studyScope, StudyScope.Custom, R.string.scope_custom, onStudyScopeChange, Modifier.weight(1f))
                 }
-                ProgressPathChip(progress.studyScope, StudyScope.Surahs, R.string.scope_surah, onStudyScopeChange, Modifier.fillMaxWidth())
                 if (progress.studyScope == StudyScope.Surahs) {
                     Spacer(Modifier.height(10.dp))
                     Text(
@@ -249,6 +270,23 @@ fun ProgressScreen(
                     }
                 }
                 Spacer(Modifier.height(12.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text(
+                        stringResource(
+                            R.string.path_selected_summary,
+                            studyScopeDescription(progress.studyScope),
+                        ),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
                 Text(
                     pluralStringResource(
                         R.plurals.cards_in_current_study,
@@ -304,6 +342,30 @@ private fun SurahMastery(words: List<com.kalima.quran.data.QuranWord>, progress:
 }
 
 @Composable
+private fun PathGroupLabel(labelRes: Int) {
+    Text(
+        stringResource(labelRes),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Bold,
+    )
+}
+
+@Composable
+private fun studyScopeDescription(scope: StudyScope): String = when (scope) {
+    StudyScope.All -> stringResource(R.string.scope_all_description)
+    StudyScope.Frequent50 -> stringResource(R.string.scope_first_50_description)
+    StudyScope.Frequent -> stringResource(R.string.scope_frequent_description)
+    StudyScope.Frequent300 -> stringResource(R.string.scope_top_300_description)
+    StudyScope.Frequent500 -> stringResource(R.string.scope_top_500_description)
+    StudyScope.Prayer -> stringResource(R.string.scope_prayer_description)
+    StudyScope.ShortSurahs -> stringResource(R.string.scope_short_description)
+    StudyScope.Favorites -> stringResource(R.string.scope_favorites_description)
+    StudyScope.Custom -> stringResource(R.string.scope_custom_description)
+    StudyScope.Surahs -> stringResource(R.string.scope_surah_description)
+}
+
+@Composable
 private fun ProgressPathChip(
     selectedScope: StudyScope,
     scope: StudyScope,
@@ -329,6 +391,11 @@ private fun ActivityCalendar(progress: StudyProgress) {
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold,
     )
+    Text(
+        stringResource(R.string.activity_14_days_note),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.bodySmall,
+    )
     Spacer(Modifier.height(10.dp))
     days.chunked(7).forEach { week ->
         Row(
@@ -337,12 +404,26 @@ private fun ActivityCalendar(progress: StudyProgress) {
         ) {
             week.forEach { day ->
                 val count = counts[day] ?: 0
+                val dayDescription = pluralStringResource(
+                    R.plurals.activity_day_description,
+                    count,
+                    day.dayOfMonth,
+                    day.monthValue,
+                    count,
+                )
                 Surface(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .semantics { contentDescription = dayDescription },
                     color = if (count == 0) {
                         MaterialTheme.colorScheme.surfaceVariant
                     } else {
                         MaterialTheme.colorScheme.primary.copy(alpha = (0.3f + count * 0.1f).coerceAtMost(1f))
+                    },
+                    border = if (day == today) {
+                        BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
+                    } else {
+                        null
                     },
                     shape = RoundedCornerShape(10.dp),
                 ) {
@@ -355,6 +436,11 @@ private fun ActivityCalendar(progress: StudyProgress) {
         }
         Spacer(Modifier.height(7.dp))
     }
+    Text(
+        stringResource(R.string.activity_today_key),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.labelSmall,
+    )
 }
 
 @Composable
