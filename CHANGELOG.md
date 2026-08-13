@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.17.2 — 2026-08-13
+
+- Renamed the study choices to “Still learning” and “Got it” so they make
+  sense for both brand-new words and words returning for review.
+
 ## 0.17.1 — 2026-08-13
 
 - Kept the study reveal and review choices in a persistent, thumb-friendly
