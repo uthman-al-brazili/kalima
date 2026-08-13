@@ -515,12 +515,21 @@ private fun AdvancedSettings(
                     steps = 22,
                 )
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(stringResource(R.string.daily_card_limit), fontWeight = FontWeight.Bold)
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    stringResource(R.string.daily_card_limit),
+                    modifier = Modifier.weight(1f),
+                    fontWeight = FontWeight.Bold,
+                )
                 Text(
                     stringResource(R.string.daily_card_limit_value, progress.lockScreenDailyLimit),
+                    modifier = Modifier.padding(start = 16.dp),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
+                    maxLines = 1,
                 )
             }
             Slider(
@@ -529,16 +538,25 @@ private fun AdvancedSettings(
                 valueRange = 5f..50f,
                 steps = 44,
             )
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(stringResource(R.string.card_cooldown), fontWeight = FontWeight.Bold)
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    stringResource(R.string.card_cooldown),
+                    modifier = Modifier.weight(1f),
+                    fontWeight = FontWeight.Bold,
+                )
                 Text(
                     pluralStringResource(
                         R.plurals.minutes_count,
                         progress.lockScreenCooldownMinutes,
                         progress.lockScreenCooldownMinutes,
                     ),
+                    modifier = Modifier.padding(start = 16.dp),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
+                    maxLines = 1,
                 )
             }
             Slider(

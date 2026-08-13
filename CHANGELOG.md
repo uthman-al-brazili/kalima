@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.19.3 — 2026-08-13
+
+- Kept cooldown values such as “5 minutos” on one readable horizontal line in
+  advanced settings, including on narrow screens.
+- Restored study cards on the Android lock screen when the display turns on,
+  including Android 14 devices, without dismissing the system lock or biometrics.
+
 ## 0.19.2 — 2026-08-13
 
 - Made the app show its first screen immediately while the full Quran vocabulary

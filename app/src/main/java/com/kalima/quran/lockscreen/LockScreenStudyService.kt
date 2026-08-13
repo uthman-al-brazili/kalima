@@ -4,7 +4,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -34,11 +33,9 @@ class LockScreenStudyService : Service() {
     private val precomputeExecutor = Executors.newSingleThreadExecutor()
     private lateinit var progressStore: ProgressStore
     private lateinit var audioManager: AudioManager
-    private lateinit var keyguardManager: KeyguardManager
     private var receiverRegistered = false
     private var audioCallbackRegistered = false
     @Volatile private var criticalAudioActive = false
-    private var unlockCycleArmed = false
     private var requestedAtElapsed = 0L
 
     private val showCard = Runnable {
@@ -81,7 +78,6 @@ class LockScreenStudyService : Service() {
         override fun onReceive(context: Context, intent: Intent?) {
             when (intent?.action) {
                 Intent.ACTION_SCREEN_OFF -> {
-                    unlockCycleArmed = keyguardManager.isKeyguardSecure
                     mainHandler.removeCallbacks(showCard)
                     closeStudyCard()
                     if (progressStore.canShowLockScreenCard()) {
@@ -92,12 +88,10 @@ class LockScreenStudyService : Service() {
                     }
                 }
 
-                Intent.ACTION_USER_PRESENT -> {
-                    if (!unlockCycleArmed) return
-                    unlockCycleArmed = false
+                Intent.ACTION_SCREEN_ON -> {
                     requestedAtElapsed = SystemClock.elapsedRealtime()
                     mainHandler.removeCallbacks(showCard)
-                    mainHandler.postDelayed(showCard, USER_PRESENT_DELAY_MS)
+                    mainHandler.postDelayed(showCard, SCREEN_ON_DELAY_MS)
                 }
             }
         }
@@ -111,11 +105,10 @@ class LockScreenStudyService : Service() {
         super.onCreate()
         progressStore = ProgressStore.get(applicationContext)
         audioManager = getSystemService(AudioManager::class.java)
-        keyguardManager = getSystemService(KeyguardManager::class.java)
         createChannel()
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
-            addAction(Intent.ACTION_USER_PRESENT)
+            addAction(Intent.ACTION_SCREEN_ON)
         }
         ContextCompat.registerReceiver(
             this,
@@ -217,7 +210,7 @@ class LockScreenStudyService : Service() {
         private const val TAG = "KalimaLockScreen"
         private const val CHANNEL_ID = "lock_screen_study"
         private const val NOTIFICATION_ID = 1401
-        private const val USER_PRESENT_DELAY_MS = 450L
+        private const val SCREEN_ON_DELAY_MS = 200L
         private const val ACTION_START = "com.kalima.quran.action.START_LOCK_SCREEN"
         private const val ACTION_STOP = "com.kalima.quran.action.STOP_LOCK_SCREEN"
         private val CRITICAL_AUDIO_USAGES = setOf(

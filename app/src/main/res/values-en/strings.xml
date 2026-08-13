@@ -26,7 +26,7 @@
     <string name="not_now_plain">Not now</string>
 
     <string name="study_lock_screen_title">Study whenever you turn on the screen</string>
-    <string name="study_lock_screen_description">Enable Kalima’s main feature to receive a word each time you unlock your device.</string>
+    <string name="study_lock_screen_description">Enable Kalima’s main feature to receive a word whenever the screen turns on.</string>
     <string name="enable">Enable</string>
     <string name="review_again">Still learning</string>
     <string name="review_again_timing">Review in 10 min</string>
@@ -40,8 +40,8 @@
     <string name="mark_already_known">I already know this</string>
     <string name="mark_already_known_description">Mark as already known and remove from practice</string>
     <string name="restore_to_practice">Add back to practice</string>
-    <string name="restore_to_practice_description">Restore this word to study, quiz, reminders, and unlock cards</string>
-    <string name="already_known_confirmation">Remove this word from study, quizzes, reminders, and unlock cards? You can restore it from the Already known filter in Vocabulary.</string>
+    <string name="restore_to_practice_description">Restore this word to study, quiz, reminders, and lock-screen cards</string>
+    <string name="already_known_confirmation">Remove this word from study, quizzes, reminders, and lock-screen cards? You can restore it from the Already known filter in Vocabulary.</string>
     <string name="remove_from_practice">Remove</string>
     <plurals name="review_good_days">
         <item quantity="one">Review in %1$d day</item>
@@ -112,10 +112,10 @@
     <string name="all_caught_up_title">You’re all caught up</string>
     <string name="all_caught_up_description">No cards are scheduled right now. Kalima will bring each word back when its next review is due.</string>
     <string name="all_words_already_known_title">You already know this set</string>
-    <string name="all_words_already_known_description">These words will stay out of study, quizzes, reminders, and unlock cards. Use the Already known filter in Vocabulary to add any word back.</string>
+    <string name="all_words_already_known_description">These words will stay out of study, quizzes, reminders, and lock-screen cards. Use the Already known filter in Vocabulary to add any word back.</string>
     <string name="routine">Routine</string>
-    <string name="lock_screen_study">Study when you return to your phone</string>
-    <string name="lock_screen_study_enabled">Active: a new word will open when you return after the screen turns on.</string>
+    <string name="lock_screen_study">Study on the lock screen</string>
+    <string name="lock_screen_study_enabled">Active: a new card will appear when the screen turns on.</string>
     <string name="lock_screen_study_disabled">Requires the “Display over other apps” permission and keeps a service active.</string>
     <string name="preview_card">Preview card</string>
     <string name="lock_screen_quiz">Quiz when the screen turns on</string>
@@ -195,7 +195,7 @@
     <string name="daily_word_channel">Daily word</string>
     <string name="daily_word_channel_description">One short Quranic Arabic card each day</string>
     <string name="lock_screen_service_title">Lock-screen study is active</string>
-    <string name="lock_screen_service_text">A study card may appear after an intentional unlock.</string>
+    <string name="lock_screen_service_text">A study card may appear when the screen turns on.</string>
     <string name="disable">Disable</string>
     <string name="lock_screen_channel">Lock-screen study</string>
     <string name="lock_screen_channel_description">Keeps screen-on detection active</string>
@@ -311,7 +311,7 @@
     <string name="backup_recovery_failed">Restore stopped because the safety recovery copy could not be created</string>
     <string name="cancel">Cancel</string>
     <string name="close">Close</string>
-    <string name="card_cooldown">Minimum time between unlock cards</string>
+    <string name="card_cooldown">Minimum time between lock-screen cards</string>
     <plurals name="minutes_count">
         <item quantity="one">%1$d minute</item>
         <item quantity="other">%1$d minutes</item>

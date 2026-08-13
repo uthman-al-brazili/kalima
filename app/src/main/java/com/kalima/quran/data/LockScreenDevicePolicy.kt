@@ -2,7 +2,6 @@ package com.kalima.quran.data
 
 enum class LockScreenDeviceBlockReason {
     ScreenNotInteractive,
-    DeviceStillLocked,
     CallOrAlarm,
     MediaActive,
     CarMode,
@@ -23,7 +22,6 @@ data class LockScreenDeviceState(
 object LockScreenDevicePolicy {
     fun blockReason(state: LockScreenDeviceState): LockScreenDeviceBlockReason? = when {
         !state.screenInteractive -> LockScreenDeviceBlockReason.ScreenNotInteractive
-        state.deviceLocked -> LockScreenDeviceBlockReason.DeviceStillLocked
         state.callOrAlarmActive -> LockScreenDeviceBlockReason.CallOrAlarm
         state.mediaActive -> LockScreenDeviceBlockReason.MediaActive
         state.carMode -> LockScreenDeviceBlockReason.CarMode

@@ -18,6 +18,10 @@ class LockScreenDevicePolicyTest {
     @Test
     fun criticalSystemSurfacesTakePriority() {
         assertEquals(
+            LockScreenDeviceBlockReason.ScreenNotInteractive,
+            LockScreenDevicePolicy.blockReason(safe.copy(screenInteractive = false)),
+        )
+        assertEquals(
             LockScreenDeviceBlockReason.CallOrAlarm,
             LockScreenDevicePolicy.blockReason(safe.copy(callOrAlarmActive = true)),
         )
@@ -29,6 +33,7 @@ class LockScreenDevicePolicyTest {
             LockScreenDeviceBlockReason.PowerSaver,
             LockScreenDevicePolicy.blockReason(safe.copy(powerSaver = true)),
         )
+        assertNull(LockScreenDevicePolicy.blockReason(safe.copy(deviceLocked = true)))
         assertNull(LockScreenDevicePolicy.blockReason(safe))
     }
 }

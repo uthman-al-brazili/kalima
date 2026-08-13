@@ -26,7 +26,7 @@
     <string name="not_now_plain">Agora não</string>
 
     <string name="study_lock_screen_title">Estude sempre que ligar a tela</string>
-    <string name="study_lock_screen_description">Ative a função principal do Kalima para receber uma palavra a cada desbloqueio.</string>
+    <string name="study_lock_screen_description">Ative a função principal do Kalima para receber uma palavra sempre que a tela acender.</string>
     <string name="enable">Ativar</string>
     <string name="review_again">Ainda aprendendo</string>
     <string name="review_again_timing">Rever em 10 min</string>
@@ -40,8 +40,8 @@
     <string name="mark_already_known">Já conheço esta palavra</string>
     <string name="mark_already_known_description">Marcar como já conhecida e retirar da prática</string>
     <string name="restore_to_practice">Voltar à prática</string>
-    <string name="restore_to_practice_description">Devolver esta palavra ao estudo, quiz, lembretes e cartões de desbloqueio</string>
-    <string name="already_known_confirmation">Retirar esta palavra do estudo, quiz, lembretes e cartões de desbloqueio? Você poderá restaurá-la pelo filtro Já conhecidas no Vocabulário.</string>
+    <string name="restore_to_practice_description">Devolver esta palavra ao estudo, quiz, lembretes e cartões da tela de bloqueio</string>
+    <string name="already_known_confirmation">Retirar esta palavra do estudo, quiz, lembretes e cartões da tela de bloqueio? Você poderá restaurá-la pelo filtro Já conhecidas no Vocabulário.</string>
     <string name="remove_from_practice">Retirar</string>
     <plurals name="review_good_days">
         <item quantity="one">Rever em %1$d dia</item>
@@ -112,10 +112,10 @@
     <string name="all_caught_up_title">Revisões em dia</string>
     <string name="all_caught_up_description">Não há cartões programados para agora. O Kalima mostrará cada palavra novamente quando chegar a hora da próxima revisão.</string>
     <string name="all_words_already_known_title">Você já conhece este conjunto</string>
-    <string name="all_words_already_known_description">Estas palavras não aparecerão no estudo, quiz, lembretes nem nos cartões de desbloqueio. Use o filtro Já conhecidas no Vocabulário para devolver qualquer palavra à prática.</string>
+    <string name="all_words_already_known_description">Estas palavras não aparecerão no estudo, quiz, lembretes nem nos cartões da tela de bloqueio. Use o filtro Já conhecidas no Vocabulário para devolver qualquer palavra à prática.</string>
     <string name="routine">Rotina</string>
-    <string name="lock_screen_study">Estudar ao voltar ao celular</string>
-    <string name="lock_screen_study_enabled">Ativo: uma nova palavra será aberta quando você voltar depois que a tela acender.</string>
+    <string name="lock_screen_study">Estudar na tela de bloqueio</string>
+    <string name="lock_screen_study_enabled">Ativo: um novo cartão aparecerá quando a tela acender.</string>
     <string name="lock_screen_study_disabled">Requer a permissão “Aparecer sobre outros apps” e mantém um serviço ativo.</string>
     <string name="preview_card">Testar cartão</string>
     <string name="lock_screen_quiz">Quiz ao ligar a tela</string>
@@ -195,7 +195,7 @@
     <string name="daily_word_channel">Palavra diária</string>
     <string name="daily_word_channel_description">Um cartão curto de árabe corânico por dia</string>
     <string name="lock_screen_service_title">Estudo na tela de bloqueio ativo</string>
-    <string name="lock_screen_service_text">Um cartão de estudo pode aparecer após um desbloqueio intencional.</string>
+    <string name="lock_screen_service_text">Um cartão de estudo pode aparecer quando a tela acender.</string>
     <string name="disable">Desativar</string>
     <string name="lock_screen_channel">Estudo na tela de bloqueio</string>
     <string name="lock_screen_channel_description">Mantém ativa a detecção de tela ligada</string>
@@ -311,7 +311,7 @@
     <string name="backup_recovery_failed">A restauração foi interrompida porque não foi possível criar a cópia de segurança</string>
     <string name="cancel">Cancelar</string>
     <string name="close">Fechar</string>
-    <string name="card_cooldown">Tempo mínimo entre cartões de desbloqueio</string>
+    <string name="card_cooldown">Tempo mínimo entre cartões da tela de bloqueio</string>
     <plurals name="minutes_count">
         <item quantity="one">%1$d minuto</item>
         <item quantity="other">%1$d minutos</item>
