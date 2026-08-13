@@ -56,11 +56,13 @@ class LockScreenStudyActivity : ComponentActivity() {
             return
         }
         currentContent = content
+        val spacedRepetitionEnabled = progressStore.progress.value.spacedRepetitionEnabled
 
         setContent {
             when (val content = currentContent) {
                 is LockScreenContent.WordCard -> LockScreenStudyScreen(
                     word = content.word,
+                    spacedRepetitionEnabled = spacedRepetitionEnabled,
                     onReview = {
                         progressStore.answerFromLockScreen(content.word.id, learned = false)
                         finish()

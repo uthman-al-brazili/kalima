@@ -80,7 +80,6 @@ class VocabularyAssetLoaderTest {
             val words = corpus.filter { it.surahNumber == surah }
             val session = QuizEngine.createSession(
                 words = words,
-                statusFor = { WordStatus.New },
                 random = Random(surah),
             )
             assertEquals("Sura $surah", QuizEngine.SESSION_SIZE, session.size)

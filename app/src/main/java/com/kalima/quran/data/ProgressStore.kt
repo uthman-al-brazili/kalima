@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import com.kalima.quran.quiz.LockScreenContent
 import com.kalima.quran.quiz.LockScreenQuizSchedule
 import com.kalima.quran.quiz.QuizEngine
+import com.kalima.quran.quiz.QuizProgress
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -35,15 +36,23 @@ class ProgressStore(context: Context) {
         val moment = Instant.now()
         val date = today()
         val previous = refreshDayIfNeeded(_progress.value, date)
-        val wasNew = wordId !in previous.reviewSchedules
-        val schedules = previous.reviewSchedules + (
-            wordId to SpacedRepetition.review(
-                previous = previous.reviewSchedules[wordId],
-                grade = if (learned) ReviewGrade.Good else ReviewGrade.Again,
-                now = moment,
+        val wasNew = previous.statusFor(wordId) == WordStatus.New
+        val schedules = if (previous.spacedRepetitionEnabled) {
+            previous.reviewSchedules + (
+                wordId to SpacedRepetition.review(
+                    previous = previous.reviewSchedules[wordId],
+                    grade = if (learned) ReviewGrade.Good else ReviewGrade.Again,
+                    now = moment,
+                )
             )
-        )
-        val (learnedIds, reviewingIds) = statusSets(schedules)
+        } else {
+            previous.reviewSchedules
+        }
+        val (learnedIds, reviewingIds) = if (previous.spacedRepetitionEnabled) {
+            statusSets(schedules)
+        } else {
+            statusSetsAfterAnswer(previous, wordId, learned)
+        }
 
         val answeredToday = previous.todayAnsweredIds + wordId
         val lastStudyDate = preferences.getString(KEY_LAST_STUDY_DATE, null)
@@ -64,7 +73,9 @@ class ProgressStore(context: Context) {
     }
 
     fun answerQuiz(wordId: String, correct: Boolean) {
-        recordQuizAnswer(wordId, correct, ReviewSource.Quiz)
+        val date = today()
+        val previous = refreshDayIfNeeded(_progress.value, date)
+        persist(QuizProgress.record(previous, wordId, correct, date), date)
     }
 
     fun answerQuizFromLockScreen(wordId: String, correct: Boolean) {
@@ -75,31 +86,30 @@ class ProgressStore(context: Context) {
         val moment = Instant.now()
         val date = today()
         val previous = refreshDayIfNeeded(_progress.value, date)
-        val wasNew = wordId !in previous.reviewSchedules
-        val schedules = previous.reviewSchedules + (
-            wordId to SpacedRepetition.review(
-                previous = previous.reviewSchedules[wordId],
-                grade = if (correct) ReviewGrade.Good else ReviewGrade.Again,
-                now = moment,
+        val wasNew = previous.statusFor(wordId) == WordStatus.New
+        val schedules = if (previous.spacedRepetitionEnabled) {
+            previous.reviewSchedules + (
+                wordId to SpacedRepetition.review(
+                    previous = previous.reviewSchedules[wordId],
+                    grade = if (correct) ReviewGrade.Good else ReviewGrade.Again,
+                    now = moment,
+                )
             )
-        )
-        val (learnedIds, reviewingIds) = statusSets(schedules)
+        } else {
+            previous.reviewSchedules
+        }
+        val (learnedIds, reviewingIds) = if (previous.spacedRepetitionEnabled) {
+            statusSets(schedules)
+        } else {
+            statusSetsAfterAnswer(previous, wordId, correct)
+        }
         val lastStudyDate = preferences.getString(KEY_LAST_STUDY_DATE, null)
             ?.let(LocalDate::parse)
-        val updated = previous.copy(
+        val updated = QuizProgress.record(previous, wordId, correct, date).copy(
             learnedIds = learnedIds,
             reviewingIds = reviewingIds,
             todayAnsweredIds = previous.todayAnsweredIds + wordId,
             streakDays = StreakCalculator.next(previous.streakDays, lastStudyDate, date),
-            quizCorrectAnswers = previous.quizCorrectAnswers + if (correct) 1 else 0,
-            quizTotalAnswers = previous.quizTotalAnswers + 1,
-            quizCorrectDays = if (correct) {
-                previous.quizCorrectDays + (
-                    wordId to (previous.quizCorrectDays[wordId].orEmpty() + date.toString())
-                )
-            } else {
-                previous.quizCorrectDays
-            },
             reviewSchedules = schedules,
             reviewEvents = ReviewHistory.append(
                 previous.reviewEvents,
@@ -212,9 +222,12 @@ class ProgressStore(context: Context) {
             current.customStudyIds,
         )
         val available = current.limitNewWords(selectedSource)
-        val moment = Instant.now()
-        val dueWords = ReviewQueue.dueWords(available, current.reviewSchedules, moment)
-        val source = dueWords.ifEmpty { ReviewQueue.newWords(available, current.reviewSchedules) }
+        val source = if (current.spacedRepetitionEnabled) {
+            val dueWords = ReviewQueue.dueWords(available, current.reviewSchedules, Instant.now())
+            dueWords.ifEmpty { ReviewQueue.newWords(available, current.reviewSchedules) }
+        } else {
+            available
+        }
         if (source.isEmpty()) return null
         val wordsSinceQuiz = preferences.getInt(KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ, 0)
         if (
@@ -331,6 +344,34 @@ class ProgressStore(context: Context) {
         persist(_progress.value.copy(advancedSettingsVisible = visible), today())
     }
 
+    fun setSpacedRepetitionEnabled(enabled: Boolean) {
+        val current = _progress.value
+        if (current.spacedRepetitionEnabled == enabled) return
+        if (!enabled) {
+            persist(current.copy(spacedRepetitionEnabled = false), today())
+            return
+        }
+
+        val moment = Instant.now()
+        val schedules = current.reviewSchedules.toMutableMap()
+        (current.learnedIds + current.reviewingIds).forEach { id ->
+            val learned = id in current.learnedIds
+            if (schedules[id]?.isLearned != learned) {
+                schedules[id] = SpacedRepetition.migrated(learned, moment)
+            }
+        }
+        val (learnedIds, reviewingIds) = statusSets(schedules)
+        persist(
+            current.copy(
+                spacedRepetitionEnabled = true,
+                learnedIds = learnedIds,
+                reviewingIds = reviewingIds,
+                reviewSchedules = schedules,
+            ),
+            today(),
+        )
+    }
+
     fun setCurrentStudyWord(wordId: String) {
         if (_progress.value.currentStudyWordId == wordId) return
         if (WordRepository.words.none { it.id == wordId }) return
@@ -353,14 +394,21 @@ class ProgressStore(context: Context) {
         }
         val storedLearnedIds = preferences.getStringSet(KEY_LEARNED, emptySet()).orEmpty()
         val storedReviewingIds = preferences.getStringSet(KEY_REVIEWING, emptySet()).orEmpty()
+        val spacedRepetitionEnabled = preferences.getBoolean(KEY_SPACED_REPETITION_ENABLED, true)
         val schedules = ReviewScheduleCodec.decode(
             preferences.getStringSet(KEY_REVIEW_SCHEDULES, emptySet()).orEmpty(),
         ).toMutableMap().apply {
-            (storedLearnedIds + storedReviewingIds).forEach { id ->
-                putIfAbsent(id, SpacedRepetition.migrated(id in storedLearnedIds, moment))
+            if (spacedRepetitionEnabled) {
+                (storedLearnedIds + storedReviewingIds).forEach { id ->
+                    putIfAbsent(id, SpacedRepetition.migrated(id in storedLearnedIds, moment))
+                }
             }
         }
-        val (learnedIds, reviewingIds) = statusSets(schedules)
+        val (learnedIds, reviewingIds) = if (spacedRepetitionEnabled) {
+            statusSets(schedules)
+        } else {
+            storedLearnedIds to storedReviewingIds
+        }
         return StudyProgress(
             learnedIds = learnedIds,
             reviewingIds = reviewingIds,
@@ -401,6 +449,7 @@ class ProgressStore(context: Context) {
                 KEY_ADVANCED_SETTINGS_VISIBLE,
                 false,
             ),
+            spacedRepetitionEnabled = spacedRepetitionEnabled,
             currentStudyWordId = preferences.getString(KEY_CURRENT_STUDY_WORD_ID, null)
                 ?.takeIf { storedId -> WordRepository.words.any { it.id == storedId } },
             reviewSchedules = schedules,
@@ -456,6 +505,7 @@ class ProgressStore(context: Context) {
             putInt(KEY_LOCK_SCREEN_QUIZ_INTERVAL, progress.lockScreenQuizInterval)
             putString(KEY_THEME_MODE, progress.themeMode.name)
             putBoolean(KEY_ADVANCED_SETTINGS_VISIBLE, progress.advancedSettingsVisible)
+            putBoolean(KEY_SPACED_REPETITION_ENABLED, progress.spacedRepetitionEnabled)
             putStringSet(KEY_REVIEW_SCHEDULES, ReviewScheduleCodec.encode(progress.reviewSchedules))
             putStringSet(KEY_FAVORITE_IDS, progress.favoriteIds)
             putStringSet(KEY_CUSTOM_STUDY_IDS, progress.customStudyIds)
@@ -501,6 +551,16 @@ class ProgressStore(context: Context) {
         return learned to (schedules.keys - learned)
     }
 
+    private fun statusSetsAfterAnswer(
+        progress: StudyProgress,
+        wordId: String,
+        learned: Boolean,
+    ): Pair<Set<String>, Set<String>> = if (learned) {
+        (progress.learnedIds + wordId) to (progress.reviewingIds - wordId)
+    } else {
+        (progress.learnedIds - wordId) to (progress.reviewingIds + wordId)
+    }
+
     companion object {
         private const val PREFERENCES = "kalima_progress"
         private const val KEY_LEARNED = "learned"
@@ -525,6 +585,7 @@ class ProgressStore(context: Context) {
         private const val KEY_LOCK_SCREEN_QUIZ_SEQUENCE = "lock_screen_quiz_sequence"
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_ADVANCED_SETTINGS_VISIBLE = "advanced_settings_visible"
+        private const val KEY_SPACED_REPETITION_ENABLED = "spaced_repetition_enabled"
         private const val KEY_CURRENT_STUDY_WORD_ID = "current_study_word_id"
         private const val KEY_REVIEW_SCHEDULES = "review_schedules_v1"
         private const val KEY_FAVORITE_IDS = "favorite_ids"

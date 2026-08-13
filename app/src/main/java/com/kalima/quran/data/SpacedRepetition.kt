@@ -91,6 +91,15 @@ object SpacedRepetition {
 }
 
 object ReviewQueue {
+    fun rotated(
+        words: List<QuranWord>,
+        startIndex: Int,
+    ): List<QuranWord> {
+        if (words.isEmpty()) return emptyList()
+        val start = Math.floorMod(startIndex, words.size)
+        return words.drop(start) + words.take(start)
+    }
+
     fun ordered(
         words: List<QuranWord>,
         schedules: Map<String, ReviewSchedule>,
@@ -100,8 +109,7 @@ object ReviewQueue {
         val due = dueWords(words, schedules, now)
         val new = newWords(words, schedules)
         if (new.isEmpty()) return due
-        val start = Math.floorMod(newStartIndex, new.size)
-        return due + new.drop(start) + new.take(start)
+        return due + rotated(new, newStartIndex)
     }
 
     fun dueWords(

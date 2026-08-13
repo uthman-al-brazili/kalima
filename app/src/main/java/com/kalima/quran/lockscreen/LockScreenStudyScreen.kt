@@ -42,6 +42,7 @@ import com.kalima.quran.ui.theme.Muted
 @Composable
 fun LockScreenStudyScreen(
     word: QuranWord,
+    spacedRepetitionEnabled: Boolean,
     onReview: () -> Unit,
     onLearned: () -> Unit,
     onDismiss: () -> Unit,
@@ -185,7 +186,16 @@ fun LockScreenStudyScreen(
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
                     ) {
-                        Text(stringResource(R.string.review_later), fontWeight = FontWeight.SemiBold)
+                        Text(
+                            stringResource(
+                                if (spacedRepetitionEnabled) {
+                                    R.string.review_later
+                                } else {
+                                    R.string.review_again_no_schedule
+                                },
+                            ),
+                            fontWeight = FontWeight.SemiBold,
+                        )
                     }
                     Button(
                         onClick = onLearned,

@@ -59,6 +59,28 @@ class SpacedRepetitionTest {
     }
 
     @Test
+    fun disabledSchedulingCanRotateEveryWordWithoutDueFiltering() {
+        val words = WordRepository.words.take(4)
+
+        assertEquals(
+            listOf(words[2], words[3], words[0], words[1]),
+            ReviewQueue.rotated(words, startIndex = 2),
+        )
+    }
+
+    @Test
+    fun disabledSchedulingReportsNoDueReviewsWithoutDeletingSchedules() {
+        val word = WordRepository.words.first()
+        val progress = StudyProgress(
+            spacedRepetitionEnabled = false,
+            reviewSchedules = mapOf(word.id to scheduleDueAt(now.minusSeconds(60))),
+        )
+
+        assertEquals(0, progress.dueReviewCount(setOf(word.id), now))
+        assertTrue(progress.reviewSchedules.containsKey(word.id))
+    }
+
+    @Test
     fun scheduleCodecRoundTripsAndIgnoresMalformedRecords() {
         val schedules = mapOf("allah" to scheduleDueAt(now))
         val encoded = ReviewScheduleCodec.encode(schedules) + "broken"

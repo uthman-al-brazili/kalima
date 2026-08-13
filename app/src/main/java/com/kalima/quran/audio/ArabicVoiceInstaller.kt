@@ -8,18 +8,19 @@ import android.provider.Settings
 import android.speech.tts.TextToSpeech
 
 object ArabicVoiceInstaller {
+    const val GOOGLE_TTS_PACKAGE = "com.google.android.tts"
     private const val TTS_SETTINGS_ACTION = "com.android.settings.TTS_SETTINGS"
 
-    fun open(context: Context, preferredEnginePackage: String?): Boolean {
+    fun isGoogleEngine(enginePackage: String?): Boolean = enginePackage == GOOGLE_TTS_PACKAGE
+
+    fun open(context: Context): Boolean {
         val candidates = buildList {
-            if (preferredEnginePackage != null) {
-                add(
-                    Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
-                        .setPackage(preferredEnginePackage),
-                )
-            }
-            add(Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA))
             add(Intent(TTS_SETTINGS_ACTION))
+            add(
+                Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
+                    .setPackage(GOOGLE_TTS_PACKAGE),
+            )
+            add(Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA))
             add(Intent(Settings.ACTION_SETTINGS))
         }
 

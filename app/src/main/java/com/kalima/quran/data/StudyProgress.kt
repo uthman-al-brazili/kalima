@@ -28,6 +28,7 @@ data class StudyProgress(
     val lockScreenQuizInterval: Int = 3,
     val themeMode: AppThemeMode = AppThemeMode.Auto,
     val advancedSettingsVisible: Boolean = false,
+    val spacedRepetitionEnabled: Boolean = true,
     val currentStudyWordId: String? = null,
     val reviewSchedules: Map<String, ReviewSchedule> = emptyMap(),
     val favoriteIds: Set<String> = emptySet(),
@@ -54,7 +55,11 @@ data class StudyProgress(
     fun scheduleFor(id: String): ReviewSchedule? = reviewSchedules[id]
 
     fun dueReviewCount(wordIds: Set<String>, now: Instant = Instant.now()): Int =
-        wordIds.count { id -> reviewSchedules[id]?.isDue(now) == true }
+        if (spacedRepetitionEnabled) {
+            wordIds.count { id -> reviewSchedules[id]?.isDue(now) == true }
+        } else {
+            0
+        }
 
     fun accuracy(days: Long, now: Instant = Instant.now()): Int? =
         ReviewHistory.accuracy(reviewEvents, days, now)

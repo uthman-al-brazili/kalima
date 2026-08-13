@@ -18,13 +18,20 @@
     <string name="pronunciation_unavailable">Nenhuma voz árabe está instalada. Abrindo a instalação de vozes do Android.</string>
     <string name="pronunciation_installation_failed">Não foi possível abrir a instalação de vozes. Abra Configurações e procure por “Síntese de voz”.</string>
     <string name="pronunciation_failed">Não foi possível reproduzir a pronúncia. Tente novamente.</string>
+    <string name="arabic_voice_setup_title">Ativar a voz árabe</string>
+    <string name="arabic_voice_choose_google">O Kalima não encontrou uma voz árabe no mecanismo de síntese de voz atual deste celular. Nos ajustes de síntese de voz do Android, defina “Serviços de voz do Google” como mecanismo preferido; depois, abra os ajustes dele e instale os dados de voz em árabe. Se o Google não aparecer na lista, instale-o primeiro pela Google Play.</string>
+    <string name="arabic_voice_install_google">O Google já é o mecanismo de síntese de voz preferido, mas os dados da voz árabe não estão disponíveis. Abra os ajustes de síntese de voz, entre nos ajustes do mecanismo do Google e instale os dados de voz em árabe.</string>
+    <string name="open_tts_settings">Abrir ajustes de síntese de voz</string>
+    <string name="not_now_plain">Agora não</string>
 
     <string name="study_lock_screen_title">Estude sempre que ligar a tela</string>
     <string name="study_lock_screen_description">Ative a função principal do Kalima para receber uma palavra a cada desbloqueio.</string>
     <string name="enable">Ativar</string>
     <string name="review_again">De novo · 10 min</string>
     <string name="review_later">De novo · 10 min</string>
+    <string name="review_again_no_schedule">De novo</string>
     <string name="already_learned">Acertei</string>
+    <string name="review_good_no_schedule">Acertei</string>
     <string name="review_good_tomorrow">Acertei · amanhã</string>
     <plurals name="review_good_days">
         <item quantity="one">Acertei · %1$d dia</item>
@@ -125,7 +132,11 @@
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Escuro</string>
     <string name="show_advanced_settings">Mostrar ajustes avançados</string>
-    <string name="advanced_settings_description">Tela de bloqueio, intervalo do quiz e limites de palavras.</string>
+    <string name="advanced_settings_description">Programação do estudo, tela de bloqueio, intervalo do quiz e limites de palavras.</string>
+    <string name="study_scheduling">Programação do estudo</string>
+    <string name="spaced_repetition">Repetição espaçada</string>
+    <string name="spaced_repetition_enabled_description">Ativa (recomendado): programa cada revisão perto do momento em que você provavelmente esqueceria.</string>
+    <string name="spaced_repetition_disabled_observation">Desativada — não recomendado: as palavras se alternam sem revisões programadas, o que pode tornar o aprendizado menos eficiente e facilitar o esquecimento.</string>
     <string name="lock_screen_features">Recursos da tela de bloqueio</string>
     <string name="lock_screen_features_description">Ferramentas opcionais que podem aparecer quando a tela acender.</string>
     <string name="android_app_settings">Ajustes do Android</string>
@@ -139,7 +150,7 @@
     <string name="surah_search_hint">Número ou nome da sura</string>
     <string name="done">Concluir</string>
 
-    <string name="quiz_intro">Até cinco palavras novas ou pendentes, sem cronômetro e sem penalidades.</string>
+    <string name="quiz_intro">Cinco palavras aleatórias do conteúdo selecionado, sem cronômetro, penalidades nem efeito na programação do estudo.</string>
     <string name="quiz_arabic_to_meaning">Qual é o significado desta palavra?</string>
     <string name="quiz_meaning_to_arabic">Qual palavra árabe corresponde a:</string>
     <string name="quiz_contextual_meaning">Qual é o significado da palavra destacada?</string>
@@ -157,7 +168,7 @@
     <string name="quiz_completed">Quiz concluído</string>
     <string name="quiz_excellent">Excelente. Continue revisando com calma.</string>
     <string name="quiz_good">Bom trabalho. Cada contato fortalece a memória.</string>
-    <string name="quiz_keep_practicing">Tudo bem. Essas palavras voltarão para revisão.</string>
+    <string name="quiz_keep_practicing">Tudo bem. Pratique essas palavras novamente quando quiser.</string>
     <string name="overall_accuracy">Precisão geral: %1$d%%</string>
     <string name="start_another_quiz">Começar outro quiz</string>
 
@@ -214,6 +225,7 @@
     <string name="device_voice_repeat">Repetir palavra 3× · voz do aparelho</string>
     <string name="device_voice_verse">Ouvir verso · voz do aparelho</string>
     <string name="audio_disclosure">O áudio atual é gerado pela voz árabe do Android. Não é recitação certificada nem substitui um professor.</string>
+    <string name="arabic_voice_settings_observation">Se o árabe não estiver disponível, defina “Serviços de voz do Google” como mecanismo de síntese de voz preferido do Android e instale os dados da voz árabe.</string>
     <string name="editorial_status">Rascunho editorial · validação especializada pendente</string>
     <string name="editorial_details">Fontes estruturais: corpus do app e referência do versículo. Traduções, transliterações e notas devem ser validadas por revisor qualificado antes de promoção pública.</string>
     <string name="editorial_metadata">Cartão %1$s · %2$s · revisor pendente</string>

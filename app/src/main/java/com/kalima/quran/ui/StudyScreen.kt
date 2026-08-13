@@ -90,13 +90,22 @@ fun StudyScreen(
         }
         return
     }
-    val words = remember(availableWords, progress.reviewSchedules) {
-        ReviewQueue.ordered(
-            words = availableWords,
-            schedules = progress.reviewSchedules,
-            now = Instant.now(),
-            newStartIndex = LocalDate.now().toEpochDay().toInt(),
-        )
+    val words = remember(
+        availableWords,
+        progress.reviewSchedules,
+        progress.spacedRepetitionEnabled,
+    ) {
+        val dailyStart = LocalDate.now().toEpochDay().toInt()
+        if (progress.spacedRepetitionEnabled) {
+            ReviewQueue.ordered(
+                words = availableWords,
+                schedules = progress.reviewSchedules,
+                now = Instant.now(),
+                newStartIndex = dailyStart,
+            )
+        } else {
+            ReviewQueue.rotated(availableWords, dailyStart)
+        }
     }
     if (words.isEmpty()) {
         AllCaughtUpState()
@@ -202,7 +211,16 @@ fun StudyScreen(
                 modifier = Modifier.weight(1f).height(54.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text(stringResource(R.string.review_again), fontWeight = FontWeight.SemiBold)
+                Text(
+                    stringResource(
+                        if (progress.spacedRepetitionEnabled) {
+                            R.string.review_again
+                        } else {
+                            R.string.review_again_no_schedule
+                        },
+                    ),
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
             Spacer(Modifier.width(12.dp))
             Button(
@@ -217,7 +235,10 @@ fun StudyScreen(
                 ),
             ) {
                 Text(
-                    goodReviewLabel(progress.scheduleFor(word.id)),
+                    goodReviewLabel(
+                        spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
+                        schedule = progress.scheduleFor(word.id),
+                    ),
                     fontWeight = FontWeight.SemiBold,
                 )
             }
@@ -237,7 +258,11 @@ fun StudyScreen(
 internal fun shouldRevealMeaningInitially(status: WordStatus): Boolean = status == WordStatus.New
 
 @Composable
-private fun goodReviewLabel(schedule: ReviewSchedule?): String {
+private fun goodReviewLabel(
+    spacedRepetitionEnabled: Boolean,
+    schedule: ReviewSchedule?,
+): String {
+    if (!spacedRepetitionEnabled) return stringResource(R.string.review_good_no_schedule)
     val intervalDays = SpacedRepetition.nextGoodIntervalDays(schedule)
     return if (intervalDays == 1) {
         stringResource(R.string.review_good_tomorrow)

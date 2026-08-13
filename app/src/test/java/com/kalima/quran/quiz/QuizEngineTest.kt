@@ -1,7 +1,6 @@
 package com.kalima.quran.quiz
 
 import com.kalima.quran.data.WordRepository
-import com.kalima.quran.data.WordStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -12,7 +11,7 @@ class QuizEngineTest {
 
     @Test
     fun sessionUsesApprovedQuestionDistribution() {
-        val session = QuizEngine.createSession(words, { WordStatus.New }, Random(17))
+        val session = QuizEngine.createSession(words, random = Random(17))
 
         assertEquals(5, session.size)
         assertEquals(1, session.count { it.type == QuizQuestionType.ArabicToPortuguese })
@@ -24,7 +23,7 @@ class QuizEngineTest {
 
     @Test
     fun everyQuestionHasFourDistinctOptionsAndOneCorrectAnswer() {
-        val session = QuizEngine.createSession(words, { WordStatus.New }, Random(29))
+        val session = QuizEngine.createSession(words, random = Random(29))
 
         session.forEach { question ->
             assertEquals(4, question.options.size)
@@ -35,15 +34,11 @@ class QuizEngineTest {
     }
 
     @Test
-    fun reviewingWordsArePrioritized() {
-        val reviewingId = words.last().id
-        val session = QuizEngine.createSession(
-            words = words,
-            statusFor = { if (it == reviewingId) WordStatus.Reviewing else WordStatus.Learned },
-            random = Random(41),
-        )
+    fun sessionSelectionIsStableForTheSameRandomSeed() {
+        val first = QuizEngine.createSession(words = words, random = Random(41))
+        val second = QuizEngine.createSession(words = words, random = Random(41))
 
-        assertTrue(session.any { it.word.id == reviewingId })
+        assertEquals(first.map { it.word.id }, second.map { it.word.id })
     }
 
     @Test
@@ -52,7 +47,6 @@ class QuizEngineTest {
 
         val session = QuizEngine.createSession(
             words = listOf(allowedTarget),
-            statusFor = { WordStatus.New },
             random = Random(53),
             optionWords = words,
         )
@@ -67,7 +61,6 @@ class QuizEngineTest {
 
         val session = QuizEngine.createSession(
             words = targets,
-            statusFor = { WordStatus.Reviewing },
             random = Random(61),
             optionWords = words,
         )
@@ -87,7 +80,6 @@ class QuizEngineTest {
         modes.forEach { (mode, expectedType) ->
             val session = QuizEngine.createSession(
                 words = words,
-                statusFor = { WordStatus.New },
                 random = Random(71),
                 mode = mode,
             )

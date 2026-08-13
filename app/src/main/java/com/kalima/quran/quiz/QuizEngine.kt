@@ -25,19 +25,15 @@ object QuizEngine {
 
     fun createSession(
         words: List<QuranWord>,
-        statusFor: (String) -> WordStatus,
         random: Random = Random.Default,
         optionWords: List<QuranWord> = words,
         mode: QuizMode = QuizMode.Mixed,
     ): List<QuizQuestion> {
         require(words.isNotEmpty()) { "O quiz precisa de palavras" }
         require(optionWords.isNotEmpty()) { "O quiz precisa de alternativas" }
-        val targets = prioritized(words, statusFor, random).take(SESSION_SIZE)
+        val targets = words.shuffled(random).take(SESSION_SIZE)
         val types = when (mode) {
-            QuizMode.Mixed,
-            QuizMode.ReviewsOnly,
-            QuizMode.Difficult,
-            -> sessionTypes.shuffled(random).take(targets.size)
+            QuizMode.Mixed -> sessionTypes.shuffled(random).take(targets.size)
             QuizMode.Listening -> List(targets.size) { QuizQuestionType.ListeningToPortuguese }
             QuizMode.Cloze -> List(targets.size) { QuizQuestionType.ClozeToArabic }
             QuizMode.Roots -> List(targets.size) { QuizQuestionType.RootToArabic }

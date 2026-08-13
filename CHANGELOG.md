@@ -3,6 +3,18 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.16.0 — 2026-08-13
+
+- Decoupled the Quiz tab from spaced repetition: quizzes now use random words
+  from the selected content and keep quiz accuracy without changing study
+  schedules, daily study progress, or review timing.
+- Added an advanced setting to disable spaced repetition, with a visible warning
+  explaining why timed reviews remain recommended. Existing schedules are kept
+  so they can be resumed later.
+- Added clear Google text-to-speech guidance in Audio settings and when an
+  Arabic voice is unavailable, including a shortcut to Android's text-to-speech
+  settings and automatic voice-engine refresh after returning to Kalima.
+
 ## 0.15.1 — 2026-08-12
 
 - New words now show their meaning and learning details immediately the first

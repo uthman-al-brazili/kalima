@@ -22,7 +22,8 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     private var state = State.Initializing
     @Volatile
     private var initialized = false
-    private var engine: TextToSpeech? = TextToSpeech(context.applicationContext, this)
+    private val applicationContext = context.applicationContext
+    private var engine: TextToSpeech? = TextToSpeech(applicationContext, this)
 
     override fun onInit(status: Int) {
         if (status != TextToSpeech.SUCCESS) {
@@ -88,6 +89,14 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     }
 
     fun preferredEnginePackage(): String? = engine?.defaultEngine
+
+    fun refreshEngine() {
+        engine?.stop()
+        engine?.shutdown()
+        initialized = false
+        state = State.Initializing
+        engine = TextToSpeech(applicationContext, this)
+    }
 
     fun shutdown() {
         engine?.stop()

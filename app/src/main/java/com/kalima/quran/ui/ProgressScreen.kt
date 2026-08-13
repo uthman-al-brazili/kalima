@@ -264,7 +264,7 @@ fun ProgressScreen(
         Spacer(Modifier.height(24.dp))
         ActivityCalendar(progress)
         Spacer(Modifier.height(24.dp))
-        DifficultWords(progress)
+        if (progress.spacedRepetitionEnabled) DifficultWords(progress)
         Spacer(Modifier.height(24.dp))
         RootMastery(activeWords, progress)
         Spacer(Modifier.height(24.dp))

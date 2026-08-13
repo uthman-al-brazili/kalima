@@ -16,8 +16,6 @@ enum class QuizMode {
     Listening,
     Cloze,
     Roots,
-    ReviewsOnly,
-    Difficult,
 }
 
 data class QuizQuestion(

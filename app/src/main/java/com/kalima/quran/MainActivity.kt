@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +21,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.audio.ArabicVoiceInstaller
 import com.kalima.quran.lockscreen.LockScreenStudyService
 import com.kalima.quran.lockscreen.LockScreenStudyActivity
 import com.kalima.quran.localization.AppLanguage
@@ -89,12 +91,14 @@ class MainActivity : ComponentActivity() {
                 onMaximumWordsChange = progressStore::setMaximumWords,
                 onThemeModeChange = progressStore::setThemeMode,
                 onAdvancedSettingsVisibleChange = progressStore::setAdvancedSettingsVisible,
+                onSpacedRepetitionEnabledChange = progressStore::setSpacedRepetitionEnabled,
                 onStudyScopeChange = progressStore::setStudyScope,
                 onToggleSurah = progressStore::toggleSurah,
                 onToggleFavorite = progressStore::toggleFavorite,
                 onToggleCustomList = progressStore::toggleCustomStudy,
                 onCompleteOnboarding = progressStore::completeOnboarding,
                 onOpenAppSettings = ::openAppSettings,
+                onOpenTextToSpeechSettings = ::openTextToSpeechSettings,
                 onPreviewLockScreen = ::previewLockScreen,
                 currentLanguage = LanguageManager.selectedLanguage(this),
                 onLanguageChange = ::changeLanguage,
@@ -152,6 +156,16 @@ class MainActivity : ComponentActivity() {
                 "package:$packageName".toUri(),
             ),
         )
+    }
+
+    private fun openTextToSpeechSettings() {
+        if (!ArabicVoiceInstaller.open(this)) {
+            Toast.makeText(
+                this,
+                R.string.pronunciation_installation_failed,
+                Toast.LENGTH_LONG,
+            ).show()
+        }
     }
 
     private fun previewLockScreen() {

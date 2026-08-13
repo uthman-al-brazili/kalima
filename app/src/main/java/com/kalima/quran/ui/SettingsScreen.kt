@@ -50,11 +50,13 @@ fun SettingsScreen(
     onReminderChange: (Boolean) -> Unit,
     onDailyGoalChange: (Int) -> Unit,
     onAdvancedSettingsVisibleChange: (Boolean) -> Unit,
+    onSpacedRepetitionEnabledChange: (Boolean) -> Unit,
     onLockScreenChange: (Boolean) -> Unit,
     onLockScreenQuizChange: (Boolean) -> Unit,
     onLockScreenQuizIntervalChange: (Int) -> Unit,
     onMaximumWordsChange: (Int) -> Unit,
     onOpenAppSettings: () -> Unit,
+    onOpenTextToSpeechSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
     onQuietHoursEnabledChange: (Boolean) -> Unit,
     onQuietHoursChange: (Int, Int) -> Unit,
@@ -199,11 +201,21 @@ fun SettingsScreen(
             shape = RoundedCornerShape(20.dp),
             tonalElevation = 1.dp,
         ) {
-            Text(
-                stringResource(R.string.audio_disclosure),
-                modifier = Modifier.padding(18.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Column(Modifier.padding(18.dp)) {
+                Text(
+                    stringResource(R.string.audio_disclosure),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    stringResource(R.string.arabic_voice_settings_observation),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                TextButton(onClick = onOpenTextToSpeechSettings) {
+                    Text(stringResource(R.string.open_tts_settings))
+                }
+            }
         }
         Spacer(Modifier.height(22.dp))
 
@@ -252,6 +264,7 @@ fun SettingsScreen(
             AdvancedSettings(
                 progress = progress,
                 onLockScreenChange = onLockScreenChange,
+                onSpacedRepetitionEnabledChange = onSpacedRepetitionEnabledChange,
                 onLockScreenQuizChange = onLockScreenQuizChange,
                 onLockScreenQuizIntervalChange = onLockScreenQuizIntervalChange,
                 onMaximumWordsChange = onMaximumWordsChange,
@@ -273,6 +286,7 @@ fun SettingsScreen(
 private fun AdvancedSettings(
     progress: StudyProgress,
     onLockScreenChange: (Boolean) -> Unit,
+    onSpacedRepetitionEnabledChange: (Boolean) -> Unit,
     onLockScreenQuizChange: (Boolean) -> Unit,
     onLockScreenQuizIntervalChange: (Int) -> Unit,
     onMaximumWordsChange: (Int) -> Unit,
@@ -294,6 +308,43 @@ private fun AdvancedSettings(
     val enteredMaximum = maximumWordsText.toIntOrNull()
     val validMaximum = enteredMaximum != null &&
         enteredMaximum in LearningWordLimiter.MINIMUM_LIMIT..WordRepository.words.size
+
+    SettingsSectionTitle(R.string.study_scheduling)
+    Spacer(Modifier.height(10.dp))
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 1.dp,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.spaced_repetition), fontWeight = FontWeight.Bold)
+                Text(
+                    stringResource(
+                        if (progress.spacedRepetitionEnabled) {
+                            R.string.spaced_repetition_enabled_description
+                        } else {
+                            R.string.spaced_repetition_disabled_observation
+                        },
+                    ),
+                    color = if (progress.spacedRepetitionEnabled) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            Switch(
+                checked = progress.spacedRepetitionEnabled,
+                onCheckedChange = onSpacedRepetitionEnabledChange,
+            )
+        }
+    }
+    Spacer(Modifier.height(22.dp))
 
     SettingsSectionTitle(R.string.lock_screen_features)
     Text(

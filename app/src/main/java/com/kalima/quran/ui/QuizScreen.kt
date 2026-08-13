@@ -39,27 +39,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
-import com.kalima.quran.data.ReviewQueue
-import com.kalima.quran.data.ReviewSchedule
-import com.kalima.quran.data.SpacedRepetition
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
-import com.kalima.quran.data.WordStatus
 import com.kalima.quran.data.WordRepository
-import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.quiz.QuizEngine
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
 import com.kalima.quran.quiz.QuizMode
 import com.kalima.quran.quiz.VerseExcerptBuilder
-import java.time.Instant
 
 internal data class QuizSessionKey(
     val studyScope: StudyScope,
     val selectedSurahs: Set<Int>,
     val favoriteIds: Set<String>,
     val customStudyIds: Set<String>,
-    val maximumWords: Int,
     val mode: QuizMode,
     val version: Int,
 )
@@ -69,7 +62,6 @@ internal fun StudyProgress.quizSessionKey(mode: QuizMode, version: Int) = QuizSe
     selectedSurahs = selectedSurahs,
     favoriteIds = favoriteIds,
     customStudyIds = customStudyIds,
-    maximumWords = maximumWords,
     mode = mode,
     version = version,
 )
@@ -94,16 +86,7 @@ fun QuizScreen(
             progress.customStudyIds,
         )
     }
-    val activeWords = remember(
-        progress.studyScope,
-        selectionKey,
-        progress.maximumWords,
-        progress.learnedIds,
-        progress.reviewingIds,
-    ) {
-        progress.limitNewWords(selectedWords)
-    }
-    if (activeWords.isEmpty()) {
+    if (selectedWords.isEmpty()) {
         if (progress.studyScope in setOf(com.kalima.quran.data.StudyScope.Favorites, com.kalima.quran.data.StudyScope.Custom)) {
             EmptyCollectionState()
         } else {
@@ -112,38 +95,19 @@ fun QuizScreen(
         return
     }
     var modeName by rememberSaveable { mutableStateOf(QuizMode.Mixed.name) }
-    val mode = QuizMode.valueOf(modeName)
+    val mode = QuizMode.entries.firstOrNull { it.name == modeName } ?: QuizMode.Mixed
     var sessionVersion by rememberSaveable { mutableIntStateOf(0) }
     val sessionKey = progress.quizSessionKey(mode, sessionVersion)
     val session = remember(sessionKey) {
-        val ordered = ReviewQueue.ordered(
-            words = activeWords,
-            schedules = progress.reviewSchedules,
-            now = Instant.now(),
-            newStartIndex = sessionVersion,
-        )
         val targets = when (mode) {
-            QuizMode.ReviewsOnly -> ReviewQueue.dueWords(
-                activeWords,
-                progress.reviewSchedules,
-                Instant.now(),
-            )
-            QuizMode.Roots -> ordered.filter { it.root.isNotBlank() && it.root != "—" }
-            QuizMode.Difficult -> ordered.filter { (progress.reviewSchedules[it.id]?.lapses ?: 0) > 0 }
-            else -> ordered
+            QuizMode.Roots -> selectedWords.filter { it.root.isNotBlank() && it.root != "—" }
+            else -> selectedWords
         }
         if (targets.isEmpty()) {
             emptyList()
         } else {
             QuizEngine.createSession(
                 words = targets,
-                statusFor = { id ->
-                    if (progress.reviewSchedules.containsKey(id)) {
-                        WordStatus.Reviewing
-                    } else {
-                        WordStatus.New
-                    }
-                },
                 optionWords = selectedWords,
                 mode = mode,
             )
@@ -239,7 +203,6 @@ fun QuizScreen(
             QuizFeedback(
                 question = question,
                 correct = selectedOption == question.correctOptionIndex,
-                schedule = progress.scheduleFor(question.word.id),
                 onNext = { currentIndex += 1 },
                 lastQuestion = currentIndex == session.lastIndex,
                 pronouncer = pronouncer,
@@ -354,8 +317,6 @@ private fun QuizModeSelector(mode: QuizMode, onModeChange: (QuizMode) -> Unit) {
         QuizMode.Listening to R.string.quiz_mode_listening,
         QuizMode.Cloze to R.string.quiz_mode_cloze,
         QuizMode.Roots to R.string.quiz_mode_roots,
-        QuizMode.ReviewsOnly to R.string.quiz_mode_due,
-        QuizMode.Difficult to R.string.quiz_mode_difficult,
     )
     Row(
         modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -381,7 +342,7 @@ private fun QuizModeEmptyScreen(mode: QuizMode, onModeChange: (QuizMode) -> Unit
         QuizModeSelector(mode, onModeChange)
         Spacer(Modifier.height(28.dp))
         Text(
-            stringResource(if (mode == QuizMode.ReviewsOnly) R.string.no_due_reviews else R.string.no_words_found),
+            stringResource(R.string.no_words_found),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
@@ -470,7 +431,6 @@ private fun QuizOption(
 private fun QuizFeedback(
     question: QuizQuestion,
     correct: Boolean,
-    schedule: ReviewSchedule?,
     onNext: () -> Unit,
     lastQuestion: Boolean,
     pronouncer: ArabicPronouncer,
@@ -526,12 +486,6 @@ private fun QuizFeedback(
                 arabic = question.word.arabic,
                 pronouncer = pronouncer,
                 modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(Modifier.height(7.dp))
-            Text(
-                nextReviewLabel(schedule),
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelLarge,
             )
             Spacer(Modifier.height(12.dp))
             Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
@@ -592,16 +546,4 @@ private fun QuizSummary(
             Text(stringResource(R.string.start_another_quiz))
         }
     }
-}
-
-@Composable
-private fun nextReviewLabel(schedule: ReviewSchedule?): String = when (schedule?.intervalDays) {
-    null -> stringResource(R.string.review_due_now)
-    0 -> stringResource(R.string.review_in_minutes, SpacedRepetition.AGAIN_DELAY_MINUTES)
-    1 -> stringResource(R.string.review_tomorrow)
-    else -> androidx.compose.ui.res.pluralStringResource(
-        R.plurals.review_in_days,
-        schedule.intervalDays,
-        schedule.intervalDays,
-    )
 }
