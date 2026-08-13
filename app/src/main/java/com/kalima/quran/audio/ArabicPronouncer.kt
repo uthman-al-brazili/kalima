@@ -12,27 +12,42 @@ enum class PronunciationResult {
 }
 
 class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
+    private data class PendingSpeech(
+        val text: String,
+        val speechRate: Float,
+        val repeatCount: Int,
+    )
+
     private enum class State {
+        Idle,
         Initializing,
         Ready,
         Unavailable,
     }
 
     @Volatile
-    private var state = State.Initializing
+    private var state = State.Idle
     @Volatile
     private var initialized = false
     private val applicationContext = context.applicationContext
-    private var engine: TextToSpeech? = TextToSpeech(applicationContext, this)
+    private var engine: TextToSpeech? = null
+    private var pendingSpeech: PendingSpeech? = null
 
     override fun onInit(status: Int) {
         if (status != TextToSpeech.SUCCESS) {
             state = State.Unavailable
+            pendingSpeech = null
             return
         }
 
         initialized = true
         state = if (configureArabicVoice()) State.Ready else State.Unavailable
+        if (state == State.Ready) {
+            pendingSpeech?.let { request ->
+                speakPrepared(request.text, request.speechRate, request.repeatCount)
+            }
+        }
+        pendingSpeech = null
     }
 
     private fun configureArabicVoice(): Boolean {
@@ -54,7 +69,15 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
         speechRate: Float = DEFAULT_RATE,
         repeatCount: Int = 1,
     ): PronunciationResult = when (state) {
-        State.Initializing -> PronunciationResult.Initializing
+        State.Idle -> {
+            pendingSpeech = PendingSpeech(text, speechRate, repeatCount)
+            startEngine()
+            PronunciationResult.Initializing
+        }
+        State.Initializing -> {
+            pendingSpeech = PendingSpeech(text, speechRate, repeatCount)
+            PronunciationResult.Initializing
+        }
         State.Unavailable -> {
             if (initialized && configureArabicVoice()) {
                 state = State.Ready
@@ -91,11 +114,11 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     fun preferredEnginePackage(): String? = engine?.defaultEngine
 
     fun refreshEngine() {
+        if (state == State.Idle) return
         engine?.stop()
         engine?.shutdown()
         initialized = false
-        state = State.Initializing
-        engine = TextToSpeech(applicationContext, this)
+        startEngine()
     }
 
     fun shutdown() {
@@ -103,7 +126,13 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
         engine?.shutdown()
         engine = null
         initialized = false
-        state = State.Unavailable
+        pendingSpeech = null
+        state = State.Idle
+    }
+
+    private fun startEngine() {
+        state = State.Initializing
+        engine = TextToSpeech(applicationContext, this)
     }
 
     companion object {

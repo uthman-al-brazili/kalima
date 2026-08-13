@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.19.2 — 2026-08-13
+
+- Made the app show its first screen immediately while the full Quran vocabulary
+  and saved progress load away from the interface thread.
+- Deferred search and word-detail indexes, background-feature synchronization,
+  and text-to-speech startup so they no longer hold up opening the app.
+
 ## 0.19.1 — 2026-08-13
 
 - Fixed the word limit so words removed as already known no longer occupy

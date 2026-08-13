@@ -370,7 +370,7 @@ object WordRepository {
     private var corpusWords: List<QuranWord> = fallbackWords
 
     @Volatile
-    private var searchIndex: Map<String, SearchEntry> = buildSearchIndex(fallbackWords)
+    private var searchIndex: Map<String, SearchEntry>? = buildSearchIndex(fallbackWords)
 
     @Volatile
     private var frequentIndex: List<QuranWord> = fallbackWords.filter(QuranWord::isFrequent)
@@ -383,10 +383,10 @@ object WordRepository {
         fallbackWords.filter { it.surahNumber != null }.groupBy { requireNotNull(it.surahNumber) }
 
     @Volatile
-    private var referenceIndex: Map<String, List<QuranWord>> = fallbackWords.groupBy(QuranWord::reference)
+    private var referenceIndex: Map<String, List<QuranWord>>? = fallbackWords.groupBy(QuranWord::reference)
 
     @Volatile
-    private var lemmaIndex: Map<String, List<QuranWord>> = fallbackWords.groupBy(::lemmaKey)
+    private var lemmaIndex: Map<String, List<QuranWord>>? = fallbackWords.groupBy(::lemmaKey)
 
     @Volatile
     private var initializedLanguage: AppLanguage? = null
@@ -403,16 +403,31 @@ object WordRepository {
         }
         val imported = input.use { VocabularyAssetLoader.load(it, language) }
         val loadedWords = curatedWords(language) + imported
-        searchIndex = buildSearchIndex(loadedWords)
+        searchIndex = null
+        referenceIndex = null
+        lemmaIndex = null
         corpusWords = loadedWords
         frequentIndex = imported.filter(QuranWord::isFrequent)
         rankedFrequencyIndex = buildRankedFrequencyIndex(imported)
         surahIndex = imported
             .filter { it.surahNumber != null }
             .groupBy { requireNotNull(it.surahNumber) }
-        referenceIndex = loadedWords.groupBy(QuranWord::reference)
-        lemmaIndex = loadedWords.groupBy(::lemmaKey)
         initializedLanguage = language
+    }
+
+    fun prepareDeferredIndexes() {
+        val source = words
+        if (searchIndex != null && referenceIndex != null && lemmaIndex != null) return
+
+        val preparedSearchIndex = buildSearchIndex(source)
+        val preparedReferenceIndex = source.groupBy(QuranWord::reference)
+        val preparedLemmaIndex = source.groupBy(::lemmaKey)
+        synchronized(this) {
+            if (corpusWords !== source) return
+            searchIndex = preparedSearchIndex
+            referenceIndex = preparedReferenceIndex
+            lemmaIndex = preparedLemmaIndex
+        }
     }
 
     private fun curatedWords(language: AppLanguage): List<QuranWord> {
@@ -496,7 +511,7 @@ object WordRepository {
             .takeIf(::containsArabicLetter)
             ?.filterNot(Char::isWhitespace)
         return source.filter { word ->
-            val entry = searchIndex[word.id] ?: searchEntry(word)
+            val entry = searchIndex?.get(word.id) ?: searchEntry(word)
             entry.text.contains(term) ||
                 (compactArabicTerm != null && entry.compactRoot.contains(compactArabicTerm))
         }
@@ -504,11 +519,12 @@ object WordRepository {
 
     fun verseTokens(word: QuranWord): List<VerseToken> = VerseExplorer.buildTokens(
         word.verseArabic,
-        referenceIndex[word.reference].orEmpty().filter { it.verseArabic == word.verseArabic },
+        (referenceIndex?.get(word.reference) ?: words.filter { it.reference == word.reference })
+            .filter { it.verseArabic == word.verseArabic },
     )
 
     fun concordance(word: QuranWord, limit: Int = 8): List<QuranWord> =
-        lemmaIndex[lemmaKey(word)].orEmpty()
+        (lemmaIndex?.get(lemmaKey(word)) ?: words.filter { lemmaKey(it) == lemmaKey(word) })
             .asSequence()
             .filterNot { it.id == word.id }
             .distinctBy(QuranWord::reference)

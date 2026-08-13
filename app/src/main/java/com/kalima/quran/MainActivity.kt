@@ -33,15 +33,18 @@ import com.kalima.quran.localization.LanguageManager
 import com.kalima.quran.notifications.NotificationHelper
 import com.kalima.quran.notifications.ReminderScheduler
 import com.kalima.quran.ui.KalimaApp
+import com.kalima.quran.ui.StartupLoadingScreen
 import com.kalima.quran.ui.StudyLaunchTarget
 import java.time.Instant
 import java.time.LocalDate
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     private lateinit var progressStore: ProgressStore
+    private var loadedProgressStore by mutableStateOf<ProgressStore?>(null)
     private var studyLaunchTarget by mutableStateOf<StudyLaunchTarget?>(null)
     private var pendingBackupImport by mutableStateOf<DecodedProgressBackup?>(null)
 
@@ -61,7 +64,8 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
         if (granted) {
-            progressStore.setReminderEnabled(true)
+            val store = loadedProgressStore ?: return@registerForActivityResult
+            store.setReminderEnabled(true)
             ReminderScheduler.schedule(this)
         }
     }
@@ -69,11 +73,12 @@ class MainActivity : ComponentActivity() {
     private val overlayPermission = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) {
+        val store = loadedProgressStore ?: return@registerForActivityResult
         if (Settings.canDrawOverlays(this)) {
-            progressStore.setLockScreenEnabled(true)
+            store.setLockScreenEnabled(true)
             LockScreenStudyService.start(this)
         } else {
-            progressStore.setLockScreenEnabled(false)
+            store.setLockScreenEnabled(false)
             LockScreenStudyService.stop(this)
         }
     }
@@ -84,53 +89,45 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        progressStore = ProgressStore.get(applicationContext)
-        updateStudyLaunchTarget(intent)
-        NotificationHelper.createChannel(this)
-        if (progressStore.progress.value.reminderEnabled) {
-            ReminderScheduler.schedule(this)
-        }
-        if (progressStore.progress.value.lockScreenEnabled) {
-            if (Settings.canDrawOverlays(this)) {
-                LockScreenStudyService.start(this)
-            } else {
-                progressStore.setLockScreenEnabled(false)
-            }
-        }
-
         setContent {
-            val progress by progressStore.progress.collectAsStateWithLifecycle()
+            val store = loadedProgressStore
+            if (store == null) {
+                StartupLoadingScreen()
+                return@setContent
+            }
+
+            val progress by store.progress.collectAsStateWithLifecycle()
             KalimaApp(
                 progress = progress,
-                onAnswer = progressStore::answer,
-                onCurrentStudyWordChange = progressStore::setCurrentStudyWord,
-                onQuizAnswer = progressStore::answerQuiz,
+                onAnswer = store::answer,
+                onCurrentStudyWordChange = store::setCurrentStudyWord,
+                onQuizAnswer = store::answerQuiz,
                 onLockScreenChange = ::changeLockScreen,
-                onLockScreenQuizChange = progressStore::setLockScreenQuizEnabled,
-                onLockScreenQuizIntervalChange = progressStore::setLockScreenQuizInterval,
+                onLockScreenQuizChange = store::setLockScreenQuizEnabled,
+                onLockScreenQuizIntervalChange = store::setLockScreenQuizInterval,
                 onReminderChange = ::changeReminder,
-                onDailyGoalChange = progressStore::setDailyGoal,
-                onMaximumWordsChange = progressStore::setMaximumWords,
-                onThemeModeChange = progressStore::setThemeMode,
-                onAdvancedSettingsVisibleChange = progressStore::setAdvancedSettingsVisible,
-                onSpacedRepetitionEnabledChange = progressStore::setSpacedRepetitionEnabled,
-                onStudyScopeChange = progressStore::setStudyScope,
-                onToggleSurah = progressStore::toggleSurah,
-                onToggleCustomList = progressStore::toggleCustomStudy,
-                onToggleAlreadyKnown = progressStore::toggleAlreadyKnown,
-                onCompleteOnboarding = progressStore::completeOnboarding,
+                onDailyGoalChange = store::setDailyGoal,
+                onMaximumWordsChange = store::setMaximumWords,
+                onThemeModeChange = store::setThemeMode,
+                onAdvancedSettingsVisibleChange = store::setAdvancedSettingsVisible,
+                onSpacedRepetitionEnabledChange = store::setSpacedRepetitionEnabled,
+                onStudyScopeChange = store::setStudyScope,
+                onToggleSurah = store::toggleSurah,
+                onToggleCustomList = store::toggleCustomStudy,
+                onToggleAlreadyKnown = store::toggleAlreadyKnown,
+                onCompleteOnboarding = store::completeOnboarding,
                 onOpenAppSettings = ::openAppSettings,
                 onOpenTextToSpeechSettings = ::openTextToSpeechSettings,
                 onPreviewLockScreen = ::previewLockScreen,
                 currentLanguage = LanguageManager.selectedLanguage(this),
                 onLanguageChange = ::changeLanguage,
-                onQuietHoursEnabledChange = progressStore::setQuietHoursEnabled,
-                onQuietHoursChange = progressStore::setQuietHours,
-                onLockScreenDailyLimitChange = progressStore::setLockScreenDailyLimit,
-                onPauseLockScreenOneHour = progressStore::pauseLockScreenForHour,
-                onPauseLockScreenToday = progressStore::pauseLockScreenUntilTomorrow,
-                onResumeLockScreen = progressStore::resumeLockScreen,
-                onLockScreenCooldownChange = progressStore::setLockScreenCooldownMinutes,
+                onQuietHoursEnabledChange = store::setQuietHoursEnabled,
+                onQuietHoursChange = store::setQuietHours,
+                onLockScreenDailyLimitChange = store::setLockScreenDailyLimit,
+                onPauseLockScreenOneHour = store::pauseLockScreenForHour,
+                onPauseLockScreenToday = store::pauseLockScreenUntilTomorrow,
+                onResumeLockScreen = store::resumeLockScreen,
+                onLockScreenCooldownChange = store::setLockScreenCooldownMinutes,
                 onExportBackup = ::chooseBackupDestination,
                 onImportBackup = ::chooseBackupFile,
                 backupImportPreview = pendingBackupImport,
@@ -138,6 +135,24 @@ class MainActivity : ComponentActivity() {
                 onCancelBackupImport = { pendingBackupImport = null },
                 studyLaunchTarget = studyLaunchTarget,
             )
+        }
+
+        lifecycleScope.launch {
+            val store = withContext(Dispatchers.Default) {
+                ProgressStore.get(applicationContext)
+            }
+            progressStore = store
+            updateStudyLaunchTarget(intent)
+            loadedProgressStore = store
+
+            launch {
+                delay(POST_RENDER_WORK_DELAY_MS)
+                synchronizeBackgroundFeatures()
+            }
+            launch(Dispatchers.Default) {
+                delay(POST_RENDER_WORK_DELAY_MS)
+                WordRepository.prepareDeferredIndexes()
+            }
         }
     }
 
@@ -325,6 +340,7 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "KalimaMain"
+        private const val POST_RENDER_WORK_DELAY_MS = 500L
         private const val EXTRA_STUDY_WORD_ID = "com.kalima.quran.extra.STUDY_WORD_ID"
         private const val EXTRA_STUDY_REQUEST_ID = "com.kalima.quran.extra.STUDY_REQUEST_ID"
 
