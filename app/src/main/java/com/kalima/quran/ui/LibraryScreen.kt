@@ -239,12 +239,7 @@ private fun LibraryWordCard(
             }
             if (expanded) {
                 Spacer(Modifier.height(14.dp))
-                ArabicText(
-                    word.verseArabic,
-                    modifier = Modifier.fillMaxWidth(),
-                    size = 27,
-                    align = TextAlign.End,
-                )
+                VerseExplorerPanel(word)
                 PronunciationButton(
                     arabic = word.verseArabic,
                     pronouncer = pronouncer,
@@ -264,6 +259,7 @@ private fun LibraryWordCard(
                     onToggleFavorite = onToggleFavorite,
                     onToggleCustomList = onToggleCustomList,
                 )
+                CitationActions(word)
                 EditorialReviewPanel(word)
             }
         }

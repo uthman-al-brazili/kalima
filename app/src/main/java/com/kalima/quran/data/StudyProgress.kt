@@ -39,8 +39,12 @@ data class StudyProgress(
     val quietStartHour: Int = 22,
     val quietEndHour: Int = 7,
     val lockScreenDailyLimit: Int = 20,
+    val lockScreenCooldownMinutes: Int = 5,
     val lockScreenCardsToday: Int = 0,
     val lockScreenPausedUntil: Instant? = null,
+    val lastLockScreenShownAt: Instant? = null,
+    val lastLockScreenLatencyMs: Long? = null,
+    val lockScreenSafetySkips: Int = 0,
 ) {
     val todayCompleted: Int get() = todayAnsweredIds.size
 

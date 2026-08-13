@@ -4,15 +4,20 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.AudioPlaybackConfiguration
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -22,29 +27,52 @@ import com.kalima.quran.MainActivity
 import com.kalima.quran.R
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.localization.LanguageManager
+import java.util.concurrent.Executors
 
 class LockScreenStudyService : Service() {
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val precomputeExecutor = Executors.newSingleThreadExecutor()
+    private lateinit var progressStore: ProgressStore
+    private lateinit var audioManager: AudioManager
+    private lateinit var keyguardManager: KeyguardManager
     private var receiverRegistered = false
+    private var audioCallbackRegistered = false
+    @Volatile private var criticalAudioActive = false
+    private var unlockCycleArmed = false
+    private var requestedAtElapsed = 0L
 
     private val showCard = Runnable {
-        if (
-            ProgressStore(applicationContext).canShowLockScreenCard() &&
-            Settings.canDrawOverlays(this)
-        ) {
-            try {
-                startActivity(
-                    Intent(this, LockScreenStudyActivity::class.java).apply {
-                        addFlags(
-                            Intent.FLAG_ACTIVITY_NEW_TASK or
-                                Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                                Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
-                                Intent.FLAG_ACTIVITY_NO_ANIMATION,
-                        )
-                    },
-                )
-            } catch (error: RuntimeException) {
-                Log.e(TAG, "Não foi possível mostrar o estudo na tela bloqueada", error)
+        if (!progressStore.canShowLockScreenCard() || !Settings.canDrawOverlays(this)) return@Runnable
+        val systemBlock = LockScreenSystemSafety.blockReason(this, criticalAudioActive)
+        if (systemBlock != null) {
+            progressStore.recordLockScreenSafetySkip()
+            return@Runnable
+        }
+        try {
+            startActivity(
+                Intent(this, LockScreenStudyActivity::class.java).apply {
+                    putExtra(LockScreenStudyActivity.EXTRA_REQUESTED_AT_ELAPSED, requestedAtElapsed)
+                    addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                            Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
+                            Intent.FLAG_ACTIVITY_NO_ANIMATION,
+                    )
+                },
+            )
+        } catch (error: RuntimeException) {
+            Log.e(TAG, "Unable to show the return-to-phone study card", error)
+        }
+    }
+
+    private val audioCallback = object : AudioManager.AudioPlaybackCallback() {
+        override fun onPlaybackConfigChanged(configs: MutableList<AudioPlaybackConfiguration>?) {
+            criticalAudioActive = configs.orEmpty().any { configuration ->
+                configuration.audioAttributes.usage in CRITICAL_AUDIO_USAGES
+            }
+            if (criticalAudioActive) {
+                mainHandler.removeCallbacks(showCard)
+                closeStudyCard()
             }
         }
     }
@@ -52,13 +80,25 @@ class LockScreenStudyService : Service() {
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
             when (intent?.action) {
-                Intent.ACTION_SCREEN_ON -> {
+                Intent.ACTION_SCREEN_OFF -> {
+                    unlockCycleArmed = keyguardManager.isKeyguardSecure
                     mainHandler.removeCallbacks(showCard)
-                    mainHandler.postDelayed(showCard, SCREEN_ON_DELAY_MS)
+                    closeStudyCard()
+                    if (progressStore.canShowLockScreenCard()) {
+                        precomputeExecutor.execute {
+                            runCatching { progressStore.prepareNextLockScreenSession() }
+                                .onFailure { error -> Log.w(TAG, "Unable to precompute study card", error) }
+                        }
+                    }
                 }
-                Intent.ACTION_SCREEN_OFF,
-                Intent.ACTION_USER_PRESENT,
-                -> closeStudyCard()
+
+                Intent.ACTION_USER_PRESENT -> {
+                    if (!unlockCycleArmed) return
+                    unlockCycleArmed = false
+                    requestedAtElapsed = SystemClock.elapsedRealtime()
+                    mainHandler.removeCallbacks(showCard)
+                    mainHandler.postDelayed(showCard, USER_PRESENT_DELAY_MS)
+                }
             }
         }
     }
@@ -69,9 +109,11 @@ class LockScreenStudyService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        progressStore = ProgressStore.get(applicationContext)
+        audioManager = getSystemService(AudioManager::class.java)
+        keyguardManager = getSystemService(KeyguardManager::class.java)
         createChannel()
         val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_USER_PRESENT)
         }
@@ -82,11 +124,13 @@ class LockScreenStudyService : Service() {
             ContextCompat.RECEIVER_NOT_EXPORTED,
         )
         receiverRegistered = true
+        audioManager.registerAudioPlaybackCallback(audioCallback, mainHandler)
+        audioCallbackRegistered = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
-            ProgressStore(applicationContext).setLockScreenEnabled(false)
+            progressStore.setLockScreenEnabled(false)
             stopSelf()
             return START_NOT_STICKY
         }
@@ -109,10 +153,15 @@ class LockScreenStudyService : Service() {
     override fun onDestroy() {
         mainHandler.removeCallbacks(showCard)
         closeStudyCard()
+        if (audioCallbackRegistered) {
+            audioManager.unregisterAudioPlaybackCallback(audioCallback)
+            audioCallbackRegistered = false
+        }
         if (receiverRegistered) {
             unregisterReceiver(screenReceiver)
             receiverRegistered = false
         }
+        precomputeExecutor.shutdownNow()
         super.onDestroy()
     }
 
@@ -160,8 +209,7 @@ class LockScreenStudyService : Service() {
 
     private fun closeStudyCard() {
         sendBroadcast(
-            Intent(LockScreenStudyActivity.ACTION_CLOSE)
-                .setPackage(packageName),
+            Intent(LockScreenStudyActivity.ACTION_CLOSE).setPackage(packageName),
         )
     }
 
@@ -169,9 +217,14 @@ class LockScreenStudyService : Service() {
         private const val TAG = "KalimaLockScreen"
         private const val CHANNEL_ID = "lock_screen_study"
         private const val NOTIFICATION_ID = 1401
-        private const val SCREEN_ON_DELAY_MS = 300L
+        private const val USER_PRESENT_DELAY_MS = 450L
         private const val ACTION_START = "com.kalima.quran.action.START_LOCK_SCREEN"
         private const val ACTION_STOP = "com.kalima.quran.action.STOP_LOCK_SCREEN"
+        private val CRITICAL_AUDIO_USAGES = setOf(
+            AudioAttributes.USAGE_ALARM,
+            AudioAttributes.USAGE_NOTIFICATION_RINGTONE,
+            AudioAttributes.USAGE_VOICE_COMMUNICATION,
+        )
 
         fun start(context: Context) {
             ContextCompat.startForegroundService(

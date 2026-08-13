@@ -23,7 +23,7 @@ import com.kalima.quran.localization.LanguageManager
 
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        if (ProgressStore(context).progress.value.reminderEnabled) {
+        if (ProgressStore.get(context).progress.value.reminderEnabled) {
             NotificationHelper.showWordOfTheDay(context)
         }
     }
@@ -32,7 +32,7 @@ class ReminderReceiver : BroadcastReceiver() {
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent?.action != Intent.ACTION_BOOT_COMPLETED) return
-        val progress = ProgressStore(context).progress.value
+        val progress = ProgressStore.get(context).progress.value
         if (progress.reminderEnabled) {
             ReminderScheduler.schedule(context)
         }
@@ -69,7 +69,7 @@ object NotificationHelper {
 
         val localized = LanguageManager.localizedContext(context)
         createChannel(localized)
-        val progress = ProgressStore(context).progress.value
+        val progress = ProgressStore.get(context).progress.value
         val activeWords = progress.limitNewWords(
             WordRepository.wordsFor(
                 progress.studyScope,

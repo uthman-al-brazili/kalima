@@ -9,6 +9,7 @@ enum class LockScreenBlockReason {
     Paused,
     QuietHours,
     DailyLimit,
+    Cooldown,
 }
 
 object LockScreenPolicy {
@@ -22,6 +23,8 @@ object LockScreenPolicy {
         shownToday: Int,
         now: Instant = Instant.now(),
         zoneId: ZoneId = ZoneId.systemDefault(),
+        cooldownMinutes: Int = 0,
+        lastShownAt: Instant? = null,
     ): LockScreenBlockReason? {
         if (!enabled) return LockScreenBlockReason.Disabled
         if (pausedUntil != null && pausedUntil > now) return LockScreenBlockReason.Paused
@@ -30,6 +33,13 @@ object LockScreenPolicy {
             return LockScreenBlockReason.QuietHours
         }
         if (dailyLimit > 0 && shownToday >= dailyLimit) return LockScreenBlockReason.DailyLimit
+        if (
+            cooldownMinutes > 0 &&
+            lastShownAt != null &&
+            lastShownAt.plusSeconds(cooldownMinutes.coerceIn(0, 120) * 60L) > now
+        ) {
+            return LockScreenBlockReason.Cooldown
+        }
         return null
     }
 

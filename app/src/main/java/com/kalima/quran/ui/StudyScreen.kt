@@ -127,13 +127,13 @@ fun StudyScreen(
         selectionKey,
         launchTarget?.requestId,
     ) { mutableStateOf(session.first().id) }
-    val word = session.firstOrNull { it.id == currentWordId } ?: session.first()
+    val word = WordRepository.words.firstOrNull { it.id == currentWordId } ?: session.first()
     var meaningRevealed by rememberSaveable(word.id) {
         mutableStateOf(shouldRevealMeaningInitially(progress.statusFor(word.id)))
     }
     val moveToNextWord = {
-        val currentIndex = session.indexOfFirst { it.id == word.id }.coerceAtLeast(0)
-        val nextWord = session[(currentIndex + 1) % session.size]
+        val currentIndex = session.indexOfFirst { it.id == word.id }
+        val nextWord = if (currentIndex < 0) session.first() else session[(currentIndex + 1) % session.size]
         currentWordId = nextWord.id
         onCurrentWordChange(nextWord.id)
     }
@@ -192,6 +192,10 @@ fun StudyScreen(
             onRevealChange = { meaningRevealed = it },
             onToggleFavorite = onToggleFavorite,
             onToggleCustomList = onToggleCustomList,
+            onOpenWord = { wordId ->
+                currentWordId = wordId
+                onCurrentWordChange(wordId)
+            },
         )
         Spacer(Modifier.height(18.dp))
         if (!meaningRevealed) {
@@ -395,6 +399,7 @@ private fun WordCard(
     onRevealChange: (Boolean) -> Unit,
     onToggleFavorite: (String) -> Unit,
     onToggleCustomList: (String) -> Unit,
+    onOpenWord: (String) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -480,12 +485,7 @@ private fun WordCard(
                             fontWeight = FontWeight.Bold,
                         )
                         Spacer(Modifier.height(8.dp))
-                        ArabicText(
-                            word.verseArabic,
-                            modifier = Modifier.fillMaxWidth(),
-                            size = 28,
-                            align = TextAlign.End,
-                        )
+                        VerseExplorerPanel(word = word, onOpenWord = onOpenWord)
                         PronunciationButton(
                             arabic = word.verseArabic,
                             pronouncer = pronouncer,
@@ -508,6 +508,8 @@ private fun WordCard(
                     )
                 }
                 Spacer(Modifier.height(14.dp))
+                CitationActions(word)
+                Spacer(Modifier.height(8.dp))
                 EditorialReviewPanel(word)
                 TextButton(onClick = { onRevealChange(false) }) {
                     Text(stringResource(R.string.hide_meaning))

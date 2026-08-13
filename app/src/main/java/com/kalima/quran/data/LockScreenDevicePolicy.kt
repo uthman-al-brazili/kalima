@@ -1,0 +1,34 @@
+package com.kalima.quran.data
+
+enum class LockScreenDeviceBlockReason {
+    ScreenNotInteractive,
+    DeviceStillLocked,
+    CallOrAlarm,
+    MediaActive,
+    CarMode,
+    PowerSaver,
+    ThermalPressure,
+}
+
+data class LockScreenDeviceState(
+    val screenInteractive: Boolean,
+    val deviceLocked: Boolean,
+    val callOrAlarmActive: Boolean,
+    val mediaActive: Boolean,
+    val carMode: Boolean,
+    val powerSaver: Boolean,
+    val thermalPressure: Boolean,
+)
+
+object LockScreenDevicePolicy {
+    fun blockReason(state: LockScreenDeviceState): LockScreenDeviceBlockReason? = when {
+        !state.screenInteractive -> LockScreenDeviceBlockReason.ScreenNotInteractive
+        state.deviceLocked -> LockScreenDeviceBlockReason.DeviceStillLocked
+        state.callOrAlarmActive -> LockScreenDeviceBlockReason.CallOrAlarm
+        state.mediaActive -> LockScreenDeviceBlockReason.MediaActive
+        state.carMode -> LockScreenDeviceBlockReason.CarMode
+        state.powerSaver -> LockScreenDeviceBlockReason.PowerSaver
+        state.thermalPressure -> LockScreenDeviceBlockReason.ThermalPressure
+        else -> null
+    }
+}

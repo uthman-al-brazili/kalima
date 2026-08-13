@@ -21,6 +21,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,12 +47,16 @@ import com.kalima.quran.ui.theme.Muted
 fun LockScreenStudyScreen(
     word: QuranWord,
     spacedRepetitionEnabled: Boolean,
-    onReview: () -> Unit,
-    onLearned: () -> Unit,
+    initialRememberedSelection: Boolean?,
+    onSelect: (Boolean) -> Unit,
+    onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     onOpenApp: () -> Unit,
 ) {
     val pronouncer = rememberArabicPronouncer()
+    var rememberedSelection by rememberSaveable(word.id) {
+        mutableStateOf(initialRememberedSelection)
+    }
     KalimaTheme {
         Surface(color = Forest, modifier = Modifier.fillMaxSize()) {
             Column(
@@ -181,10 +189,20 @@ fun LockScreenStudyScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     OutlinedButton(
-                        onClick = onReview,
+                        onClick = {
+                            rememberedSelection = false
+                            onSelect(false)
+                        },
                         modifier = Modifier.weight(1f).height(54.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White,
+                            containerColor = if (rememberedSelection == false) {
+                                Color.White.copy(alpha = 0.16f)
+                            } else {
+                                Color.Transparent
+                            },
+                        ),
                     ) {
                         Text(
                             stringResource(
@@ -198,12 +216,32 @@ fun LockScreenStudyScreen(
                         )
                     }
                     Button(
-                        onClick = onLearned,
+                        onClick = {
+                            rememberedSelection = true
+                            onSelect(true)
+                        },
                         modifier = Modifier.weight(1f).height(54.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Gold, contentColor = Forest),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (rememberedSelection == true) Gold else Gold.copy(alpha = 0.62f),
+                            contentColor = Forest,
+                        ),
                     ) {
                         Text(stringResource(R.string.already_learned), fontWeight = FontWeight.Bold)
+                    }
+                }
+                if (rememberedSelection != null) {
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        onClick = onConfirm,
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Cream,
+                            contentColor = Forest,
+                        ),
+                    ) {
+                        Text(stringResource(R.string.confirm_and_continue), fontWeight = FontWeight.Bold)
                     }
                 }
             }

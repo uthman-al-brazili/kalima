@@ -30,4 +30,40 @@ class LockScreenPolicyTest {
         )
         assertNull(LockScreenPolicy.blockReason(true, null, true, 22, 7, 20, 2, noon, utc))
     }
+
+    @Test
+    fun cooldownBlocksCardsUntilTheConfiguredIntervalPasses() {
+        val now = Instant.parse("2026-08-12T12:00:00Z")
+        assertEquals(
+            LockScreenBlockReason.Cooldown,
+            LockScreenPolicy.blockReason(
+                enabled = true,
+                pausedUntil = null,
+                quietHoursEnabled = false,
+                quietStartHour = 22,
+                quietEndHour = 7,
+                dailyLimit = 20,
+                shownToday = 1,
+                cooldownMinutes = 5,
+                lastShownAt = now.minusSeconds(299),
+                now = now,
+                zoneId = utc,
+            ),
+        )
+        assertNull(
+            LockScreenPolicy.blockReason(
+                enabled = true,
+                pausedUntil = null,
+                quietHoursEnabled = false,
+                quietStartHour = 22,
+                quietEndHour = 7,
+                dailyLimit = 20,
+                shownToday = 1,
+                now = now,
+                zoneId = utc,
+                cooldownMinutes = 5,
+                lastShownAt = now.minusSeconds(300),
+            ),
+        )
+    }
 }

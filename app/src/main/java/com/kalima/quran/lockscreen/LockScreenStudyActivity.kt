@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,23 +18,25 @@ import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.localization.LanguageManager
 import com.kalima.quran.quiz.LockScreenContent
+import com.kalima.quran.quiz.LockScreenSession
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
 
 class LockScreenStudyActivity : ComponentActivity() {
     private lateinit var progressStore: ProgressStore
-    private lateinit var currentContent: LockScreenContent
+    private lateinit var currentSession: LockScreenSession
+    private var studyRememberedSelection: Boolean? = null
     private var quizSelectedOption: Int? = null
     private var receiverRegistered = false
     private var openingMainApp = false
+    private var answerCommitted = false
+    private var preview = false
 
     private val closeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
             when (intent?.action) {
                 Intent.ACTION_SCREEN_OFF -> finish()
-                ACTION_CLOSE,
-                Intent.ACTION_USER_PRESENT,
-                -> if (!openingMainApp) finish()
+                ACTION_CLOSE -> if (!openingMainApp) finish()
             }
         }
     }
@@ -44,32 +47,65 @@ class LockScreenStudyActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        progressStore = ProgressStore(applicationContext)
-        configureWindowForLockScreen()
-
-        val content = restoreContent(savedInstanceState)
-            ?: progressStore.nextLockScreenContent(
-                preview = intent.getBooleanExtra(EXTRA_PREVIEW, false),
-            )
-        if (content == null) {
+        progressStore = ProgressStore.get(applicationContext)
+        preview = intent.getBooleanExtra(EXTRA_PREVIEW, false)
+        if (!preview && LockScreenSystemSafety.blockReason(this) != null) {
+            progressStore.recordLockScreenSafetySkip()
             finish()
             return
         }
-        currentContent = content
+        configureWindowForLockScreen()
+
+        val session = if (preview) {
+            restoreContent(savedInstanceState)?.let { restored ->
+                LockScreenSession(
+                    id = savedInstanceState?.getString(STATE_SESSION_ID)
+                        ?: "preview-${SystemClock.elapsedRealtimeNanos()}",
+                    content = restored,
+                    shown = true,
+                )
+            } ?: progressStore.nextLockScreenSession(preview = true)
+        } else {
+            progressStore.nextLockScreenSession(preview = false)
+        }
+        if (session == null) {
+            finish()
+            return
+        }
+        currentSession = session
+        studyRememberedSelection = savedInstanceState
+            ?.takeIf { it.containsKey(STATE_STUDY_REMEMBERED) }
+            ?.getBoolean(STATE_STUDY_REMEMBERED)
+        quizSelectedOption = savedInstanceState?.getInt(STATE_SELECTED_OPTION, -1)
+            ?.takeIf { it in 0 until QuizQuestion.OPTION_COUNT }
+        intent.getLongExtra(EXTRA_REQUESTED_AT_ELAPSED, -1L)
+            .takeIf { it >= 0L && savedInstanceState == null }
+            ?.let { requestedAt ->
+                progressStore.recordLockScreenLatency(SystemClock.elapsedRealtime() - requestedAt)
+            }
         val spacedRepetitionEnabled = progressStore.progress.value.spacedRepetitionEnabled
 
         setContent {
-            when (val content = currentContent) {
+            when (val content = currentSession.content) {
                 is LockScreenContent.WordCard -> LockScreenStudyScreen(
                     word = content.word,
                     spacedRepetitionEnabled = spacedRepetitionEnabled,
-                    onReview = {
-                        progressStore.answerFromLockScreen(content.word.id, learned = false)
-                        finish()
-                    },
-                    onLearned = {
-                        progressStore.answerFromLockScreen(content.word.id, learned = true)
-                        finish()
+                    initialRememberedSelection = studyRememberedSelection,
+                    onSelect = { remembered -> studyRememberedSelection = remembered },
+                    onConfirm = confirm@{
+                        val remembered = studyRememberedSelection ?: return@confirm
+                        if (!answerCommitted) {
+                            answerCommitted = if (preview) {
+                                true
+                            } else {
+                                progressStore.commitLockScreenAnswer(
+                                    currentSession.id,
+                                    content.word.id,
+                                    remembered,
+                                )
+                            }
+                        }
+                        if (answerCommitted) finish()
                     },
                     onDismiss = ::finish,
                     onOpenApp = ::openMainApp,
@@ -78,11 +114,22 @@ class LockScreenStudyActivity : ComponentActivity() {
                 is LockScreenContent.QuizCard -> LockScreenQuizScreen(
                     question = content.question,
                     initialSelectedOption = quizSelectedOption,
-                    onAnswered = { option, correct ->
-                        quizSelectedOption = option
-                        progressStore.answerQuizFromLockScreen(content.question.word.id, correct)
+                    onAnswered = { option, _ -> quizSelectedOption = option },
+                    onContinue = continueQuiz@{
+                        val option = quizSelectedOption ?: return@continueQuiz
+                        if (!answerCommitted) {
+                            answerCommitted = if (preview) {
+                                true
+                            } else {
+                                progressStore.commitLockScreenQuizAnswer(
+                                    currentSession.id,
+                                    content.question.word.id,
+                                    option == content.question.correctOptionIndex,
+                                )
+                            }
+                        }
+                        if (answerCommitted) finish()
                     },
-                    onContinue = ::finish,
                     onDismiss = ::finish,
                     onOpenApp = ::openMainApp,
                 )
@@ -95,7 +142,6 @@ class LockScreenStudyActivity : ComponentActivity() {
         val filter = IntentFilter().apply {
             addAction(ACTION_CLOSE)
             addAction(Intent.ACTION_SCREEN_OFF)
-            addAction(Intent.ACTION_USER_PRESENT)
         }
         ContextCompat.registerReceiver(
             this,
@@ -104,6 +150,13 @@ class LockScreenStudyActivity : ComponentActivity() {
             ContextCompat.RECEIVER_NOT_EXPORTED,
         )
         receiverRegistered = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (!preview && !openingMainApp && !answerCommitted && !isChangingConfigurations) {
+            finish()
+        }
     }
 
     override fun onStop() {
@@ -115,7 +168,9 @@ class LockScreenStudyActivity : ComponentActivity() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        when (val content = currentContent) {
+        outState.putString(STATE_SESSION_ID, currentSession.id)
+        studyRememberedSelection?.let { outState.putBoolean(STATE_STUDY_REMEMBERED, it) }
+        when (val content = currentSession.content) {
             is LockScreenContent.WordCard -> {
                 outState.putString(STATE_CONTENT_TYPE, CONTENT_WORD)
                 outState.putString(STATE_WORD_ID, content.word.id)
@@ -146,7 +201,6 @@ class LockScreenStudyActivity : ComponentActivity() {
                 val options = state.getStringArrayList(STATE_OPTIONS)?.toList() ?: return null
                 val correctOption = state.getInt(STATE_CORRECT_OPTION, -1)
                 if (options.size != QuizQuestion.OPTION_COUNT || correctOption !in options.indices) return null
-                quizSelectedOption = state.getInt(STATE_SELECTED_OPTION, -1).takeIf { it in options.indices }
                 LockScreenContent.QuizCard(QuizQuestion(word, type, options, correctOption))
             }
 
@@ -192,7 +246,8 @@ class LockScreenStudyActivity : ComponentActivity() {
     }
 
     private fun launchMainActivity() {
-        val wordId = when (val content = currentContent) {
+        if (!preview) progressStore.clearPendingLockScreenSession()
+        val wordId = when (val content = currentSession.content) {
             is LockScreenContent.WordCard -> content.word.id
             is LockScreenContent.QuizCard -> content.question.word.id
         }
@@ -210,7 +265,10 @@ class LockScreenStudyActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_PREVIEW = "com.kalima.quran.extra.LOCK_SCREEN_PREVIEW"
+        const val EXTRA_REQUESTED_AT_ELAPSED = "com.kalima.quran.extra.LOCK_SCREEN_REQUESTED_AT"
         const val ACTION_CLOSE = "com.kalima.quran.action.CLOSE_LOCK_SCREEN_CARD"
+        private const val STATE_SESSION_ID = "session_id"
+        private const val STATE_STUDY_REMEMBERED = "study_remembered"
         private const val STATE_CONTENT_TYPE = "content_type"
         private const val STATE_WORD_ID = "word_id"
         private const val STATE_QUESTION_TYPE = "question_type"

@@ -177,7 +177,7 @@
 
     <string name="quick_study">QUICK STUDY</string>
     <string name="quick_quiz">QUICK QUIZ</string>
-    <string name="not_now">Not now  ✕</string>
+    <string name="not_now">Not now · no progress saved  ✕</string>
     <string name="open_app">Open Kalima</string>
     <string name="continue_action">Continue</string>
     <string name="lock_screen_security_note">Your lock screen and biometrics remain protected by Android.</string>
@@ -185,7 +185,7 @@
     <string name="daily_word_channel">Daily word</string>
     <string name="daily_word_channel_description">One short Quranic Arabic card each day</string>
     <string name="lock_screen_service_title">Lock-screen study is active</string>
-    <string name="lock_screen_service_text">A new word will appear whenever the screen turns on.</string>
+    <string name="lock_screen_service_text">A study card may appear after an intentional unlock.</string>
     <string name="disable">Disable</string>
     <string name="lock_screen_channel">Lock-screen study</string>
     <string name="lock_screen_channel_description">Keeps screen-on detection active</string>
@@ -290,4 +290,34 @@
     <string name="privacy_summary">No ads, account, or tracking. Study works offline and stays only on this device.</string>
     <string name="audio_title">Audio</string>
     <string name="empty_collection">This collection is empty. Mark words in the Library to fill it.</string>
+    <string name="confirm_and_continue">Confirm and continue</string>
+    <string name="backup_title">Backup and recovery</string>
+    <string name="backup_description">Export all learning progress and settings, or restore them on this device.</string>
+    <string name="backup_local_note">Backups are local files under your control. Kalima also creates a recovery copy before a restore.</string>
+    <string name="export_backup">Export backup</string>
+    <string name="import_backup">Import backup</string>
+    <string name="restore_backup">Restore backup</string>
+    <string name="backup_preview_title">Review backup</string>
+    <string name="backup_preview_summary">Created: %1$s\nKalima version: %2$s\n%3$d learned · %4$d reviewing · %5$d favorites\n\nRestoring replaces the current progress and settings after making a local recovery copy.</string>
+    <string name="backup_exported">Backup exported</string>
+    <string name="backup_restored">Backup restored</string>
+    <string name="backup_failed">Could not create or read the backup</string>
+    <string name="backup_invalid">This backup is damaged or belongs to a different Kalima corpus</string>
+    <string name="backup_recovery_failed">Restore stopped because the safety recovery copy could not be created</string>
+    <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
+    <string name="card_cooldown">Minimum time between unlock cards</string>
+    <plurals name="minutes_count">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <string name="lock_safety_status">Last launch: %1$s ms (budget ≤ %2$d ms) · %3$d safety skips</string>
+    <string name="tap_verse_word">Tap any word in the complete ayah</string>
+    <string name="word_details_not_indexed">This ayah token is available for cited copy and comparison, but its meaning and grammar are not yet indexed.</string>
+    <string name="open_word_for_study">Open word for study</string>
+    <string name="other_occurrences">Other occurrences</string>
+    <string name="other_occurrences_description">More indexed occurrences of this word form in Kalima’s offline corpus.</string>
+    <string name="copy_citation">Copy with citation</string>
+    <string name="share_citation">Share with citation</string>
+    <string name="citation_copied">Citation copied</string>
 </resources>

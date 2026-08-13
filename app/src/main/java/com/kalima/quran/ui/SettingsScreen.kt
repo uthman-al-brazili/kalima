@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -35,7 +37,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.data.AppThemeMode
+import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.LearningWordLimiter
+import com.kalima.quran.data.LockScreenPerformanceBudget
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.localization.AppLanguage
@@ -64,7 +68,42 @@ fun SettingsScreen(
     onPauseLockScreenOneHour: () -> Unit,
     onPauseLockScreenToday: () -> Unit,
     onResumeLockScreen: () -> Unit,
+    onLockScreenCooldownChange: (Int) -> Unit,
+    onExportBackup: () -> Unit,
+    onImportBackup: () -> Unit,
+    backupImportPreview: DecodedProgressBackup?,
+    onConfirmBackupImport: () -> Unit,
+    onCancelBackupImport: () -> Unit,
 ) {
+    if (backupImportPreview != null) {
+        val backupProgress = backupImportPreview.progress
+        AlertDialog(
+            onDismissRequest = onCancelBackupImport,
+            title = { Text(stringResource(R.string.backup_preview_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.backup_preview_summary,
+                        backupImportPreview.metadata.createdAt.toString(),
+                        backupImportPreview.metadata.appVersion,
+                        backupProgress.learnedIds.size,
+                        backupProgress.reviewingIds.size,
+                        backupProgress.favoriteIds.size,
+                    ),
+                )
+            },
+            confirmButton = {
+                Button(onClick = onConfirmBackupImport) {
+                    Text(stringResource(R.string.restore_backup))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onCancelBackupImport) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -219,6 +258,35 @@ fun SettingsScreen(
         }
         Spacer(Modifier.height(22.dp))
 
+        SettingsSectionTitle(R.string.backup_title)
+        Text(
+            stringResource(R.string.backup_description),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(Modifier.height(8.dp))
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(20.dp),
+            tonalElevation = 1.dp,
+        ) {
+            Column(Modifier.fillMaxWidth().padding(18.dp)) {
+                Text(
+                    stringResource(R.string.backup_local_note),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = onExportBackup) {
+                        Text(stringResource(R.string.export_backup))
+                    }
+                    TextButton(onClick = onImportBackup) {
+                        Text(stringResource(R.string.import_backup))
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(22.dp))
+
         SettingsSectionTitle(R.string.privacy_title)
         Spacer(Modifier.height(8.dp))
         Surface(
@@ -276,6 +344,7 @@ fun SettingsScreen(
                 onPauseLockScreenOneHour = onPauseLockScreenOneHour,
                 onPauseLockScreenToday = onPauseLockScreenToday,
                 onResumeLockScreen = onResumeLockScreen,
+                onLockScreenCooldownChange = onLockScreenCooldownChange,
             )
         }
         Spacer(Modifier.height(24.dp))
@@ -298,6 +367,7 @@ private fun AdvancedSettings(
     onPauseLockScreenOneHour: () -> Unit,
     onPauseLockScreenToday: () -> Unit,
     onResumeLockScreen: () -> Unit,
+    onLockScreenCooldownChange: (Int) -> Unit,
 ) {
     var maximumWordsText by rememberSaveable(progress.maximumWords) {
         mutableStateOf(
@@ -399,6 +469,16 @@ private fun AdvancedSettings(
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
             )
+            Text(
+                stringResource(
+                    R.string.lock_safety_status,
+                    progress.lastLockScreenLatencyMs?.toString() ?: "—",
+                    LockScreenPerformanceBudget.MAX_LAUNCH_LATENCY_MS,
+                    progress.lockScreenSafetySkips,
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -447,6 +527,24 @@ private fun AdvancedSettings(
                 onValueChange = { onLockScreenDailyLimitChange(it.roundToInt()) },
                 valueRange = 5f..50f,
                 steps = 44,
+            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(stringResource(R.string.card_cooldown), fontWeight = FontWeight.Bold)
+                Text(
+                    pluralStringResource(
+                        R.plurals.minutes_count,
+                        progress.lockScreenCooldownMinutes,
+                        progress.lockScreenCooldownMinutes,
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Slider(
+                value = progress.lockScreenCooldownMinutes.toFloat(),
+                onValueChange = { onLockScreenCooldownChange(it.roundToInt()) },
+                valueRange = 0f..60f,
+                steps = 59,
             )
             if (progress.lockScreenPausedUntil != null && progress.lockScreenPausedUntil > java.time.Instant.now()) {
                 Text(

@@ -3,6 +3,24 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.17.0 — 2026-08-13
+
+- Changed return-to-phone study cards to appear only after an intentional,
+  secure-device unlock, with configurable cooldowns and automatic deferral for
+  calls, alarms, media, car mode, battery saver, and thermal pressure.
+- Made unlock-card grading interruption-safe: choices require explicit
+  confirmation, duplicate commits are rejected, and interrupted cards resume
+  without silently changing progress.
+- Added precomputed unlock sessions, a measurable 700 ms launch budget, and
+  launch-latency and safety-skip diagnostics in advanced settings.
+- Added checksum-validated local progress export and restore, including a
+  restore preview and an automatic recovery backup before current data changes.
+- Turned the complete ayah into a tappable word explorer, with indexed word
+  details, other occurrences in the offline corpus, and graceful partial
+  details for tokens that are not yet indexed.
+- Added citation-safe copy and share actions that always include the Quran
+  reference, Kalima card identity, and corpus identity.
+
 ## 0.16.2 — 2026-08-13
 
 - Made study-card audio and saved-word controls more compact, using short,

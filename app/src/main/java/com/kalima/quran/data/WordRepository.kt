@@ -2,6 +2,7 @@ package com.kalima.quran.data
 
 import com.kalima.quran.localization.AppLanguage
 import java.io.InputStream
+import java.security.MessageDigest
 import java.text.Normalizer
 import java.time.LocalDate
 import java.util.Locale
@@ -382,6 +383,12 @@ object WordRepository {
         fallbackWords.filter { it.surahNumber != null }.groupBy { requireNotNull(it.surahNumber) }
 
     @Volatile
+    private var referenceIndex: Map<String, List<QuranWord>> = fallbackWords.groupBy(QuranWord::reference)
+
+    @Volatile
+    private var lemmaIndex: Map<String, List<QuranWord>> = fallbackWords.groupBy(::lemmaKey)
+
+    @Volatile
     private var initializedLanguage: AppLanguage? = null
 
     val words: List<QuranWord> get() = corpusWords
@@ -403,6 +410,8 @@ object WordRepository {
         surahIndex = imported
             .filter { it.surahNumber != null }
             .groupBy { requireNotNull(it.surahNumber) }
+        referenceIndex = loadedWords.groupBy(QuranWord::reference)
+        lemmaIndex = loadedWords.groupBy(::lemmaKey)
         initializedLanguage = language
     }
 
@@ -493,6 +502,31 @@ object WordRepository {
             entry.text.contains(term) ||
                 (compactArabicTerm != null && entry.compactRoot.contains(compactArabicTerm))
         }
+    }
+
+    fun verseTokens(word: QuranWord): List<VerseToken> = VerseExplorer.buildTokens(
+        word.verseArabic,
+        referenceIndex[word.reference].orEmpty().filter { it.verseArabic == word.verseArabic },
+    )
+
+    fun concordance(word: QuranWord, limit: Int = 8): List<QuranWord> =
+        lemmaIndex[lemmaKey(word)].orEmpty()
+            .asSequence()
+            .filterNot { it.id == word.id }
+            .distinctBy(QuranWord::reference)
+            .take(limit.coerceIn(1, 20))
+            .toList()
+
+    fun corpusIdentity(): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        words.forEach { word ->
+            digest.update(word.id.toByteArray(Charsets.UTF_8))
+            digest.update('\n'.code.toByte())
+        }
+        val shortHash = digest.digest().take(8).joinToString("") {
+            "%02x".format(it.toInt() and 0xff)
+        }
+        return "kalima-quran-v2-${words.size}-$shortHash"
     }
 
     private fun buildSearchIndex(source: List<QuranWord>): Map<String, SearchEntry> =

@@ -7,13 +7,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.kalima.quran.quiz.LockScreenContent
 import com.kalima.quran.quiz.LockScreenQuizSchedule
+import com.kalima.quran.quiz.LockScreenSession
+import com.kalima.quran.quiz.LockScreenSessionCodec
 import com.kalima.quran.quiz.QuizEngine
 import com.kalima.quran.quiz.QuizProgress
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import java.util.UUID
 
-class ProgressStore(context: Context) {
+class ProgressStore private constructor(context: Context) {
     private val preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
 
     init {
@@ -28,11 +31,18 @@ class ProgressStore(context: Context) {
         recordAnswer(wordId, learned, ReviewSource.Study)
     }
 
-    fun answerFromLockScreen(wordId: String, learned: Boolean) {
-        recordAnswer(wordId, learned, ReviewSource.LockScreen)
-    }
+    fun commitLockScreenAnswer(sessionId: String, wordId: String, learned: Boolean): Boolean =
+        recordAnswer(wordId, learned, ReviewSource.LockScreen, sessionId)
 
-    private fun recordAnswer(wordId: String, learned: Boolean, source: ReviewSource) {
+    private fun recordAnswer(
+        wordId: String,
+        learned: Boolean,
+        source: ReviewSource,
+        lockScreenSessionId: String? = null,
+    ): Boolean {
+        if (lockScreenSessionId != null && !canCommitLockScreenSession(lockScreenSessionId, wordId)) {
+            return false
+        }
         val moment = Instant.now()
         val date = today()
         val previous = refreshDayIfNeeded(_progress.value, date)
@@ -69,7 +79,13 @@ class ProgressStore(context: Context) {
             ),
         )
         preferences.edit { putString(KEY_LAST_STUDY_DATE, date.toString()) }
-        persist(updated, date)
+        persist(
+            updated,
+            date,
+            completedLockScreenSessionId = lockScreenSessionId,
+            clearPendingLockScreenSession = lockScreenSessionId != null,
+        )
+        return true
     }
 
     fun answerQuiz(wordId: String, correct: Boolean) {
@@ -78,11 +94,18 @@ class ProgressStore(context: Context) {
         persist(QuizProgress.record(previous, wordId, correct, date), date)
     }
 
-    fun answerQuizFromLockScreen(wordId: String, correct: Boolean) {
-        recordQuizAnswer(wordId, correct, ReviewSource.LockScreen)
-    }
+    fun commitLockScreenQuizAnswer(sessionId: String, wordId: String, correct: Boolean): Boolean =
+        recordQuizAnswer(wordId, correct, ReviewSource.LockScreen, sessionId)
 
-    private fun recordQuizAnswer(wordId: String, correct: Boolean, source: ReviewSource) {
+    private fun recordQuizAnswer(
+        wordId: String,
+        correct: Boolean,
+        source: ReviewSource,
+        lockScreenSessionId: String? = null,
+    ): Boolean {
+        if (lockScreenSessionId != null && !canCommitLockScreenSession(lockScreenSessionId, wordId)) {
+            return false
+        }
         val moment = Instant.now()
         val date = today()
         val previous = refreshDayIfNeeded(_progress.value, date)
@@ -117,7 +140,13 @@ class ProgressStore(context: Context) {
             ),
         )
         preferences.edit { putString(KEY_LAST_STUDY_DATE, date.toString()) }
-        persist(updated, date)
+        persist(
+            updated,
+            date,
+            completedLockScreenSessionId = lockScreenSessionId,
+            clearPendingLockScreenSession = lockScreenSessionId != null,
+        )
+        return true
     }
 
     fun setReminderEnabled(enabled: Boolean) {
@@ -126,6 +155,7 @@ class ProgressStore(context: Context) {
     }
 
     fun setLockScreenEnabled(enabled: Boolean) {
+        if (!enabled) clearPendingLockScreenSession()
         val updated = _progress.value.copy(lockScreenEnabled = enabled)
         persist(updated, today())
     }
@@ -208,13 +238,33 @@ class ProgressStore(context: Context) {
             quietEndHour = current.quietEndHour,
             dailyLimit = current.lockScreenDailyLimit,
             shownToday = current.lockScreenCardsToday,
+            cooldownMinutes = current.lockScreenCooldownMinutes,
+            lastShownAt = current.lastLockScreenShownAt,
             now = now,
         )
     }
 
-    fun nextLockScreenContent(preview: Boolean = false): LockScreenContent? {
-        val current = _progress.value
+    @Synchronized
+    fun prepareNextLockScreenSession(): LockScreenSession? =
+        existingPendingLockScreenSession() ?: createLockScreenSession(preview = false)
+
+    @Synchronized
+    fun nextLockScreenSession(preview: Boolean = false): LockScreenSession? {
         if (!preview && !canShowLockScreenCard()) return null
+        if (preview) return createLockScreenSession(preview = true)
+
+        val session = existingPendingLockScreenSession() ?: createLockScreenSession(preview = false)
+            ?: return null
+        if (session.shown) return session
+
+        val shownSession = session.copy(shown = true)
+        savePendingLockScreenSession(shownSession)
+        recordLockScreenCardShown()
+        return shownSession
+    }
+
+    private fun createLockScreenSession(preview: Boolean): LockScreenSession? {
+        val current = _progress.value
         val selectedSource = WordRepository.wordsFor(
             current.studyScope,
             current.selectedSurahs,
@@ -253,31 +303,86 @@ class ProgressStore(context: Context) {
                 )
             }.getOrNull()
             if (question != null) {
-                preferences.edit {
-                    putInt(KEY_LOCK_SCREEN_QUIZ_SEQUENCE, quizSequence + 1)
-                    putInt(KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ, 0)
+                if (!preview) {
+                    preferences.edit {
+                        putInt(KEY_LOCK_SCREEN_QUIZ_SEQUENCE, quizSequence + 1)
+                        putInt(KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ, 0)
+                    }
                 }
-                if (!preview) recordLockScreenCardShown()
-                return LockScreenContent.QuizCard(question)
+                return LockScreenSession(
+                    id = UUID.randomUUID().toString(),
+                    content = LockScreenContent.QuizCard(question),
+                ).also { if (!preview) savePendingLockScreenSession(it) }
             }
         }
 
         val sequence = preferences.getInt(KEY_LOCK_SCREEN_SEQUENCE, 0)
         val word = WordRepository.wordAtSequence(sequence, source)
-        preferences.edit {
-            putInt(KEY_LOCK_SCREEN_SEQUENCE, sequence + 1)
-            putInt(
-                KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ,
-                LockScreenQuizSchedule.afterWord(current.lockScreenQuizEnabled, wordsSinceQuiz),
-            )
+        if (!preview) {
+            preferences.edit {
+                putInt(KEY_LOCK_SCREEN_SEQUENCE, sequence + 1)
+                putInt(
+                    KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ,
+                    LockScreenQuizSchedule.afterWord(current.lockScreenQuizEnabled, wordsSinceQuiz),
+                )
+            }
         }
-        if (!preview) recordLockScreenCardShown()
-        return LockScreenContent.WordCard(word)
+        return LockScreenSession(
+            id = UUID.randomUUID().toString(),
+            content = LockScreenContent.WordCard(word),
+        ).also { if (!preview) savePendingLockScreenSession(it) }
     }
 
     private fun recordLockScreenCardShown() {
+        val moment = Instant.now()
         val current = refreshDayIfNeeded(_progress.value, today())
-        persist(current.copy(lockScreenCardsToday = current.lockScreenCardsToday + 1), today())
+        persist(
+            current.copy(
+                lockScreenCardsToday = current.lockScreenCardsToday + 1,
+                lastLockScreenShownAt = moment,
+            ),
+            today(),
+        )
+    }
+
+    fun setLockScreenCooldownMinutes(minutes: Int) {
+        persist(_progress.value.copy(lockScreenCooldownMinutes = minutes.coerceIn(0, 120)), today())
+    }
+
+    fun recordLockScreenSafetySkip() {
+        val current = _progress.value
+        persist(current.copy(lockScreenSafetySkips = current.lockScreenSafetySkips + 1), today())
+    }
+
+    fun recordLockScreenLatency(latencyMs: Long) {
+        persist(_progress.value.copy(lastLockScreenLatencyMs = latencyMs.coerceAtLeast(0)), today())
+    }
+
+    fun clearPendingLockScreenSession() {
+        preferences.edit { remove(KEY_PENDING_LOCK_SCREEN_SESSION) }
+    }
+
+    private fun existingPendingLockScreenSession(): LockScreenSession? =
+        LockScreenSessionCodec.decode(
+            preferences.getString(KEY_PENDING_LOCK_SCREEN_SESSION, null),
+        ) { id -> WordRepository.words.firstOrNull { it.id == id } }
+
+    private fun savePendingLockScreenSession(session: LockScreenSession) {
+        preferences.edit {
+            putString(KEY_PENDING_LOCK_SCREEN_SESSION, LockScreenSessionCodec.encode(session))
+        }
+    }
+
+    private fun canCommitLockScreenSession(sessionId: String, wordId: String): Boolean {
+        if (sessionId in preferences.getStringSet(KEY_COMPLETED_LOCK_SCREEN_SESSIONS, emptySet()).orEmpty()) {
+            return false
+        }
+        val pending = existingPendingLockScreenSession() ?: return false
+        val pendingWordId = when (val content = pending.content) {
+            is LockScreenContent.WordCard -> content.word.id
+            is LockScreenContent.QuizCard -> content.question.word.id
+        }
+        return pending.id == sessionId && pendingWordId == wordId
     }
 
     fun setQuietHoursEnabled(enabled: Boolean) {
@@ -314,6 +419,46 @@ class ProgressStore(context: Context) {
 
     fun resumeLockScreen() {
         persist(_progress.value.copy(lockScreenPausedUntil = null), today())
+    }
+
+    fun snapshotForBackup(): StudyProgress = refreshDayIfNeeded(_progress.value, today())
+
+    @Synchronized
+    fun restoreFromBackup(restored: StudyProgress) {
+        val knownIds = WordRepository.words.mapTo(mutableSetOf(), QuranWord::id)
+        val maximumWords = if (restored.maximumWords == LearningWordLimiter.UNLIMITED) {
+            LearningWordLimiter.UNLIMITED
+        } else {
+            restored.maximumWords.coerceIn(
+                LearningWordLimiter.MINIMUM_LIMIT,
+                WordRepository.words.size,
+            )
+        }
+        val sanitized = restored.copy(
+            learnedIds = restored.learnedIds.intersect(knownIds),
+            reviewingIds = restored.reviewingIds.intersect(knownIds),
+            todayAnsweredIds = restored.todayAnsweredIds.intersect(knownIds),
+            reviewSchedules = restored.reviewSchedules.filterKeys { it in knownIds },
+            favoriteIds = restored.favoriteIds.intersect(knownIds),
+            customStudyIds = restored.customStudyIds.intersect(knownIds),
+            reviewEvents = restored.reviewEvents.filter { it.wordId in knownIds },
+            quizCorrectDays = restored.quizCorrectDays.filterKeys { it in knownIds },
+            maximumWords = maximumWords,
+            lastLockScreenLatencyMs = null,
+            lockScreenSafetySkips = 0,
+        )
+        preferences.edit {
+            putInt(KEY_LOCK_SCREEN_SEQUENCE, 0)
+            putInt(KEY_LOCK_SCREEN_QUIZ_SEQUENCE, 0)
+            putInt(KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ, 0)
+            remove(KEY_PENDING_LOCK_SCREEN_SESSION)
+            if (sanitized.streakDays > 0) {
+                putString(KEY_LAST_STUDY_DATE, today().toString())
+            } else {
+                remove(KEY_LAST_STUDY_DATE)
+            }
+        }
+        persist(sanitized, today(), clearPendingLockScreenSession = true)
     }
 
     fun setDailyGoal(goal: Int) {
@@ -469,10 +614,19 @@ class ProgressStore(context: Context) {
             quietEndHour = preferences.getInt(KEY_QUIET_END_HOUR, 7).coerceIn(0, 23),
             lockScreenDailyLimit = preferences.getInt(KEY_LOCK_SCREEN_DAILY_LIMIT, 20)
                 .coerceIn(0, 100),
+            lockScreenCooldownMinutes = preferences.getInt(KEY_LOCK_SCREEN_COOLDOWN_MINUTES, 5)
+                .coerceIn(0, 120),
             lockScreenCardsToday = lockCardsToday,
             lockScreenPausedUntil = preferences.getLong(KEY_LOCK_SCREEN_PAUSED_UNTIL, 0L)
                 .takeIf { it > 0L }
                 ?.let(Instant::ofEpochMilli),
+            lastLockScreenShownAt = preferences.getLong(KEY_LAST_LOCK_SCREEN_SHOWN_AT, 0L)
+                .takeIf { it > 0L }
+                ?.let(Instant::ofEpochMilli),
+            lastLockScreenLatencyMs = preferences.getLong(KEY_LAST_LOCK_SCREEN_LATENCY_MS, -1L)
+                .takeIf { it >= 0L },
+            lockScreenSafetySkips = preferences.getInt(KEY_LOCK_SCREEN_SAFETY_SKIPS, 0)
+                .coerceAtLeast(0),
         )
     }
 
@@ -485,7 +639,12 @@ class ProgressStore(context: Context) {
         }
     }
 
-    private fun persist(progress: StudyProgress, date: LocalDate) {
+    private fun persist(
+        progress: StudyProgress,
+        date: LocalDate,
+        completedLockScreenSessionId: String? = null,
+        clearPendingLockScreenSession: Boolean = false,
+    ) {
         preferences.edit {
             putStringSet(KEY_LEARNED, progress.learnedIds)
             putStringSet(KEY_REVIEWING, progress.reviewingIds)
@@ -515,14 +674,33 @@ class ProgressStore(context: Context) {
             putInt(KEY_QUIET_START_HOUR, progress.quietStartHour)
             putInt(KEY_QUIET_END_HOUR, progress.quietEndHour)
             putInt(KEY_LOCK_SCREEN_DAILY_LIMIT, progress.lockScreenDailyLimit)
+            putInt(KEY_LOCK_SCREEN_COOLDOWN_MINUTES, progress.lockScreenCooldownMinutes)
             putInt(KEY_LOCK_SCREEN_CARDS_TODAY, progress.lockScreenCardsToday)
             putString(KEY_LOCK_SCREEN_COUNT_DATE, date.toString())
+            putInt(KEY_LOCK_SCREEN_SAFETY_SKIPS, progress.lockScreenSafetySkips)
+            progress.lastLockScreenShownAt?.let {
+                putLong(KEY_LAST_LOCK_SCREEN_SHOWN_AT, it.toEpochMilli())
+            } ?: remove(KEY_LAST_LOCK_SCREEN_SHOWN_AT)
+            progress.lastLockScreenLatencyMs?.let {
+                putLong(KEY_LAST_LOCK_SCREEN_LATENCY_MS, it)
+            } ?: remove(KEY_LAST_LOCK_SCREEN_LATENCY_MS)
             progress.lockScreenPausedUntil?.let {
                 putLong(KEY_LOCK_SCREEN_PAUSED_UNTIL, it.toEpochMilli())
             } ?: remove(KEY_LOCK_SCREEN_PAUSED_UNTIL)
             progress.currentStudyWordId?.let {
                 putString(KEY_CURRENT_STUDY_WORD_ID, it)
             } ?: remove(KEY_CURRENT_STUDY_WORD_ID)
+            if (completedLockScreenSessionId != null) {
+                val completed = preferences.getStringSet(
+                    KEY_COMPLETED_LOCK_SCREEN_SESSIONS,
+                    emptySet(),
+                ).orEmpty()
+                putStringSet(
+                    KEY_COMPLETED_LOCK_SCREEN_SESSIONS,
+                    LockScreenTransactionLedger.append(completed, completedLockScreenSessionId),
+                )
+            }
+            if (clearPendingLockScreenSession) remove(KEY_PENDING_LOCK_SCREEN_SESSION)
         }
         _progress.value = progress
     }
@@ -562,6 +740,13 @@ class ProgressStore(context: Context) {
     }
 
     companion object {
+        @Volatile
+        private var instance: ProgressStore? = null
+
+        fun get(context: Context): ProgressStore = instance ?: synchronized(this) {
+            instance ?: ProgressStore(context.applicationContext).also { instance = it }
+        }
+
         private const val PREFERENCES = "kalima_progress"
         private const val KEY_LEARNED = "learned"
         private const val KEY_REVIEWING = "reviewing"
@@ -596,9 +781,15 @@ class ProgressStore(context: Context) {
         private const val KEY_QUIET_START_HOUR = "quiet_start_hour"
         private const val KEY_QUIET_END_HOUR = "quiet_end_hour"
         private const val KEY_LOCK_SCREEN_DAILY_LIMIT = "lock_screen_daily_limit"
+        private const val KEY_LOCK_SCREEN_COOLDOWN_MINUTES = "lock_screen_cooldown_minutes"
         private const val KEY_LOCK_SCREEN_CARDS_TODAY = "lock_screen_cards_today"
         private const val KEY_LOCK_SCREEN_COUNT_DATE = "lock_screen_count_date"
         private const val KEY_LOCK_SCREEN_PAUSED_UNTIL = "lock_screen_paused_until"
+        private const val KEY_LAST_LOCK_SCREEN_SHOWN_AT = "last_lock_screen_shown_at"
+        private const val KEY_LAST_LOCK_SCREEN_LATENCY_MS = "last_lock_screen_latency_ms"
+        private const val KEY_LOCK_SCREEN_SAFETY_SKIPS = "lock_screen_safety_skips"
+        private const val KEY_PENDING_LOCK_SCREEN_SESSION = "pending_lock_screen_session_v1"
+        private const val KEY_COMPLETED_LOCK_SCREEN_SESSIONS = "completed_lock_screen_sessions_v1"
         private const val DEFAULT_SURAH = 114
         private val AVAILABLE_SURAHS = 1..114
     }

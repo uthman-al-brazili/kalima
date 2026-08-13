@@ -28,6 +28,7 @@ import androidx.annotation.StringRes
 import androidx.annotation.DrawableRes
 import com.kalima.quran.R
 import com.kalima.quran.data.AppThemeMode
+import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.localization.AppLanguage
@@ -74,6 +75,12 @@ fun KalimaApp(
     onPauseLockScreenOneHour: () -> Unit,
     onPauseLockScreenToday: () -> Unit,
     onResumeLockScreen: () -> Unit,
+    onLockScreenCooldownChange: (Int) -> Unit,
+    onExportBackup: () -> Unit,
+    onImportBackup: () -> Unit,
+    backupImportPreview: DecodedProgressBackup?,
+    onConfirmBackupImport: () -> Unit,
+    onCancelBackupImport: () -> Unit,
     studyLaunchTarget: StudyLaunchTarget? = null,
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
@@ -180,6 +187,12 @@ fun KalimaApp(
                         onPauseLockScreenOneHour = onPauseLockScreenOneHour,
                         onPauseLockScreenToday = onPauseLockScreenToday,
                         onResumeLockScreen = onResumeLockScreen,
+                        onLockScreenCooldownChange = onLockScreenCooldownChange,
+                        onExportBackup = onExportBackup,
+                        onImportBackup = onImportBackup,
+                        backupImportPreview = backupImportPreview,
+                        onConfirmBackupImport = onConfirmBackupImport,
+                        onCancelBackupImport = onCancelBackupImport,
                     )
                 }
             }

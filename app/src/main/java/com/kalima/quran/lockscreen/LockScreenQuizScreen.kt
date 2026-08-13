@@ -174,7 +174,7 @@ fun LockScreenQuizScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Gold, contentColor = Forest),
                         shape = RoundedCornerShape(16.dp),
                     ) {
-                        Text(stringResource(R.string.continue_action), fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.confirm_and_continue), fontWeight = FontWeight.Bold)
                     }
                     Spacer(Modifier.height(10.dp))
                 }
