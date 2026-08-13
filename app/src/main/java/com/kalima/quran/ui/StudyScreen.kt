@@ -144,118 +144,155 @@ fun StudyScreen(
         scrollState.scrollTo(0)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(horizontal = 20.dp, vertical = 18.dp),
-    ) {
-        StudyHeader(
-            progress = progress,
-            dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
-        )
-        if (!progress.lockScreenEnabled) {
-            Spacer(Modifier.height(16.dp))
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = RoundedCornerShape(20.dp),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+        ) {
+            StudyHeader(
+                progress = progress,
+                dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
+            )
+            if (!progress.lockScreenEnabled) {
+                Spacer(Modifier.height(16.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(20.dp),
                 ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            stringResource(R.string.study_lock_screen_title),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Text(
-                            stringResource(R.string.study_lock_screen_description),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Button(onClick = onEnableLockScreen) {
-                        Text(stringResource(R.string.enable))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.study_lock_screen_title),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Text(
+                                stringResource(R.string.study_lock_screen_description),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Button(onClick = onEnableLockScreen) {
+                            Text(stringResource(R.string.enable))
+                        }
                     }
                 }
             }
+            Spacer(Modifier.height(20.dp))
+            WordCard(
+                word = word,
+                progress = progress,
+                pronouncer = pronouncer,
+                meaningRevealed = meaningRevealed,
+                onRevealChange = { meaningRevealed = it },
+                onToggleFavorite = onToggleFavorite,
+                onToggleCustomList = onToggleCustomList,
+                onOpenWord = { wordId ->
+                    currentWordId = wordId
+                    onCurrentWordChange(wordId)
+                },
+            )
+            Spacer(Modifier.height(18.dp))
+            Text(
+                stringResource(R.string.context_meaning_note),
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(112.dp))
         }
-        Spacer(Modifier.height(20.dp))
-        WordCard(
-            word = word,
-            progress = progress,
-            pronouncer = pronouncer,
+
+        StudyActionBar(
             meaningRevealed = meaningRevealed,
-            onRevealChange = { meaningRevealed = it },
-            onToggleFavorite = onToggleFavorite,
-            onToggleCustomList = onToggleCustomList,
-            onOpenWord = { wordId ->
-                currentWordId = wordId
-                onCurrentWordChange(wordId)
+            spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
+            goodTiming = goodReviewTiming(
+                spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
+                schedule = progress.scheduleFor(word.id),
+            ),
+            onRevealMeaning = { meaningRevealed = true },
+            onAgain = {
+                onAnswer(word.id, false)
+                moveToNextWord()
             },
+            onRemembered = {
+                onAnswer(word.id, true)
+                moveToNextWord()
+            },
+            modifier = Modifier.align(Alignment.BottomCenter),
         )
-        Spacer(Modifier.height(18.dp))
+    }
+}
+
+@Composable
+private fun StudyActionBar(
+    meaningRevealed: Boolean,
+    spacedRepetitionEnabled: Boolean,
+    goodTiming: String,
+    onRevealMeaning: () -> Unit,
+    onAgain: () -> Unit,
+    onRemembered: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(22.dp),
+        tonalElevation = 3.dp,
+        shadowElevation = 8.dp,
+    ) {
         if (!meaningRevealed) {
             Button(
-                onClick = { meaningRevealed = true },
-                modifier = Modifier.fillMaxWidth().height(54.dp),
+                onClick = onRevealMeaning,
+                modifier = Modifier.padding(8.dp).fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
                 Text(stringResource(R.string.reveal_meaning), fontWeight = FontWeight.Bold)
             }
-        } else Row(Modifier.fillMaxWidth()) {
-            OutlinedButton(
-                onClick = {
-                    onAnswer(word.id, false)
-                    moveToNextWord()
-                },
-                modifier = Modifier.weight(1f).height(68.dp),
-                shape = RoundedCornerShape(16.dp),
+        } else {
+            Row(
+                modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                ReviewActionContent(
-                    title = stringResource(
-                        if (progress.spacedRepetitionEnabled) R.string.review_again
-                        else R.string.review_again_no_schedule,
+                OutlinedButton(
+                    onClick = onAgain,
+                    modifier = Modifier.weight(1f).height(68.dp),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    ReviewActionContent(
+                        title = stringResource(
+                            if (spacedRepetitionEnabled) R.string.review_again
+                            else R.string.review_again_no_schedule,
+                        ),
+                        detail = stringResource(
+                            if (spacedRepetitionEnabled) R.string.review_again_timing
+                            else R.string.review_without_schedule,
+                        ),
+                    )
+                }
+                Button(
+                    onClick = onRemembered,
+                    modifier = Modifier.weight(1f).height(68.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
                     ),
-                    detail = stringResource(
-                        if (progress.spacedRepetitionEnabled) R.string.review_again_timing
-                        else R.string.review_without_schedule,
-                    ),
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Button(
-                onClick = {
-                    onAnswer(word.id, true)
-                    moveToNextWord()
-                },
-                modifier = Modifier.weight(1f).height(68.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                ),
-            ) {
-                ReviewActionContent(
-                    title = stringResource(R.string.review_remembered),
-                    detail = goodReviewTiming(
-                        spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
-                        schedule = progress.scheduleFor(word.id),
-                    ),
-                )
+                ) {
+                    ReviewActionContent(
+                        title = stringResource(R.string.review_remembered),
+                        detail = goodTiming,
+                    )
+                }
             }
         }
-        Spacer(Modifier.height(16.dp))
-        Text(
-            stringResource(R.string.context_meaning_note),
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.height(24.dp))
     }
 }
 

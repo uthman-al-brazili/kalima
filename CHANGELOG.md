@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.17.1 — 2026-08-13
+
+- Kept the study reveal and review choices in a persistent, thumb-friendly
+  action area above the app navigation so they remain easy to reach while the
+  word card scrolls.
+
 ## 0.17.0 — 2026-08-13
 
 - Changed return-to-phone study cards to appear only after an intentional,
