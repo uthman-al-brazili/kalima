@@ -44,7 +44,7 @@ class QuizSessionKeyTest {
         assertNotEquals(original, progress.quizSessionKey(QuizMode.Mixed, version = 1))
         assertNotEquals(
             original,
-            progress.copy(studyScope = StudyScope.Favorites, favoriteIds = setOf("word-1"))
+            progress.copy(studyScope = StudyScope.Custom, customStudyIds = setOf("word-1"))
                 .quizSessionKey(QuizMode.Mixed, version = 0),
         )
     }

@@ -58,7 +58,8 @@ object ProgressBackupCodec {
             "spacedRepetitionEnabled" to progress.spacedRepetitionEnabled.toString(),
             "currentStudyWordId" to progress.currentStudyWordId.orEmpty(),
             "reviewSchedules" to encodeSet(ReviewScheduleCodec.encode(progress.reviewSchedules)),
-            "favoriteIds" to encodeSet(progress.favoriteIds),
+            // Retained as an empty field so v1 backups remain readable by older Kalima versions.
+            "favoriteIds" to encodeSet(emptySet()),
             "customStudyIds" to encodeSet(progress.customStudyIds),
             "onboardingComplete" to progress.onboardingComplete.toString(),
             "reviewEvents" to encodeSet(ReviewEventCodec.encode(progress.reviewEvents)),
@@ -140,6 +141,10 @@ object ProgressBackupCodec {
         if (currentWordId != null && currentWordId !in knownWordIds) {
             throw invalid("Backup references an unknown current word")
         }
+        val customStudyIds = mergePersonalCollections(
+            legacyFavoriteIds = values.idSet("favoriteIds", knownWordIds),
+            customStudyIds = values.idSet("customStudyIds", knownWordIds),
+        )
         val progress = StudyProgress(
             learnedIds = learned,
             reviewingIds = reviewing,
@@ -149,7 +154,7 @@ object ProgressBackupCodec {
             streakDays = values.int("streakDays").coerceAtLeast(0),
             reminderEnabled = values.boolean("reminderEnabled"),
             lockScreenEnabled = values.boolean("lockScreenEnabled"),
-            studyScope = StudyScope.entries.firstOrNull { it.name == values.required("studyScope") }
+            studyScope = StudyScope.fromPersistedName(values.required("studyScope"))
                 ?: throw invalid("Backup has an invalid study scope"),
             selectedSurahs = values.required("selectedSurahs").split(',')
                 .mapNotNull(String::toIntOrNull).filterTo(mutableSetOf()) { it in 1..114 },
@@ -164,8 +169,7 @@ object ProgressBackupCodec {
             spacedRepetitionEnabled = values.boolean("spacedRepetitionEnabled"),
             currentStudyWordId = currentWordId,
             reviewSchedules = schedules,
-            favoriteIds = values.idSet("favoriteIds", knownWordIds),
-            customStudyIds = values.idSet("customStudyIds", knownWordIds),
+            customStudyIds = customStudyIds,
             onboardingComplete = values.boolean("onboardingComplete"),
             reviewEvents = reviewEvents,
             quietHoursEnabled = values.boolean("quietHoursEnabled"),

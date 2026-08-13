@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.18.0 — 2026-08-13
+
+- Merged Favorites and My List into one clear My List collection across study,
+  quiz, progress, library filters, and saved-word actions.
+- Preserved every previously saved word by automatically combining existing
+  favorites and custom-list entries, including those restored from old backups.
+
 ## 0.17.2 — 2026-08-13
 
 - Renamed the study choices to “Still learning” and “Got it” so they make

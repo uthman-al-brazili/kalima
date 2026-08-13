@@ -61,7 +61,6 @@ fun KalimaApp(
     onSpacedRepetitionEnabledChange: (Boolean) -> Unit,
     onStudyScopeChange: (StudyScope) -> Unit,
     onToggleSurah: (Int) -> Unit,
-    onToggleFavorite: (String) -> Unit,
     onToggleCustomList: (String) -> Unit,
     onCompleteOnboarding: (StudyScope, Int) -> Unit,
     onOpenAppSettings: () -> Unit,
@@ -145,14 +144,12 @@ fun KalimaApp(
                         onCurrentWordChange = onCurrentStudyWordChange,
                         onEnableLockScreen = { onLockScreenChange(true) },
                         pronouncer = pronouncer,
-                        onToggleFavorite = onToggleFavorite,
                         onToggleCustomList = onToggleCustomList,
                         launchTarget = studyLaunchTarget,
                     )
                     AppTab.Library -> LibraryScreen(
                         progress = progress,
                         pronouncer = pronouncer,
-                        onToggleFavorite = onToggleFavorite,
                         onToggleCustomList = onToggleCustomList,
                     )
                     AppTab.Quiz -> QuizScreen(

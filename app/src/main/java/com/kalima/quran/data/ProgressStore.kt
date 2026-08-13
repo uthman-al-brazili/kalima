@@ -185,14 +185,6 @@ class ProgressStore private constructor(context: Context) {
         )
     }
 
-    fun toggleFavorite(wordId: String) {
-        if (WordRepository.words.none { it.id == wordId }) return
-        val ids = _progress.value.favoriteIds.toMutableSet().apply {
-            if (!add(wordId)) remove(wordId)
-        }
-        persist(_progress.value.copy(favoriteIds = ids), today())
-    }
-
     fun toggleCustomStudy(wordId: String) {
         if (WordRepository.words.none { it.id == wordId }) return
         val ids = _progress.value.customStudyIds.toMutableSet().apply {
@@ -268,7 +260,6 @@ class ProgressStore private constructor(context: Context) {
         val selectedSource = WordRepository.wordsFor(
             current.studyScope,
             current.selectedSurahs,
-            current.favoriteIds,
             current.customStudyIds,
         )
         val available = current.limitNewWords(selectedSource)
@@ -439,7 +430,6 @@ class ProgressStore private constructor(context: Context) {
             reviewingIds = restored.reviewingIds.intersect(knownIds),
             todayAnsweredIds = restored.todayAnsweredIds.intersect(knownIds),
             reviewSchedules = restored.reviewSchedules.filterKeys { it in knownIds },
-            favoriteIds = restored.favoriteIds.intersect(knownIds),
             customStudyIds = restored.customStudyIds.intersect(knownIds),
             reviewEvents = restored.reviewEvents.filter { it.wordId in knownIds },
             quizCorrectDays = restored.quizCorrectDays.filterKeys { it in knownIds },
@@ -554,6 +544,10 @@ class ProgressStore private constructor(context: Context) {
         } else {
             storedLearnedIds to storedReviewingIds
         }
+        val customStudyIds = mergePersonalCollections(
+            legacyFavoriteIds = preferences.getStringSet(KEY_FAVORITE_IDS, emptySet()).orEmpty(),
+            customStudyIds = preferences.getStringSet(KEY_CUSTOM_STUDY_IDS, emptySet()).orEmpty(),
+        )
         return StudyProgress(
             learnedIds = learnedIds,
             reviewingIds = reviewingIds,
@@ -572,9 +566,9 @@ class ProgressStore private constructor(context: Context) {
             streakDays = preferences.getInt(KEY_STREAK, 0),
             reminderEnabled = preferences.getBoolean(KEY_REMINDER, false),
             lockScreenEnabled = preferences.getBoolean(KEY_LOCK_SCREEN_ENABLED, false),
-            studyScope = preferences.getString(KEY_STUDY_SCOPE, null)
-                ?.let { stored -> StudyScope.entries.firstOrNull { it.name == stored } }
-                ?: StudyScope.All,
+            studyScope = StudyScope.fromPersistedName(
+                preferences.getString(KEY_STUDY_SCOPE, null),
+            ) ?: StudyScope.All,
             selectedSurahs = preferences.getStringSet(KEY_SELECTED_SURAHS, emptySet())
                 .orEmpty()
                 .mapNotNull(String::toIntOrNull)
@@ -598,8 +592,7 @@ class ProgressStore private constructor(context: Context) {
             currentStudyWordId = preferences.getString(KEY_CURRENT_STUDY_WORD_ID, null)
                 ?.takeIf { storedId -> WordRepository.words.any { it.id == storedId } },
             reviewSchedules = schedules,
-            favoriteIds = preferences.getStringSet(KEY_FAVORITE_IDS, emptySet()).orEmpty(),
-            customStudyIds = preferences.getStringSet(KEY_CUSTOM_STUDY_IDS, emptySet()).orEmpty(),
+            customStudyIds = customStudyIds,
             onboardingComplete = preferences.getBoolean(
                 KEY_ONBOARDING_COMPLETE,
                 preferences.contains(KEY_STUDY_SCOPE) ||
@@ -666,7 +659,7 @@ class ProgressStore private constructor(context: Context) {
             putBoolean(KEY_ADVANCED_SETTINGS_VISIBLE, progress.advancedSettingsVisible)
             putBoolean(KEY_SPACED_REPETITION_ENABLED, progress.spacedRepetitionEnabled)
             putStringSet(KEY_REVIEW_SCHEDULES, ReviewScheduleCodec.encode(progress.reviewSchedules))
-            putStringSet(KEY_FAVORITE_IDS, progress.favoriteIds)
+            putStringSet(KEY_FAVORITE_IDS, emptySet())
             putStringSet(KEY_CUSTOM_STUDY_IDS, progress.customStudyIds)
             putBoolean(KEY_ONBOARDING_COMPLETE, progress.onboardingComplete)
             putStringSet(KEY_REVIEW_EVENTS, ReviewEventCodec.encode(progress.reviewEvents))

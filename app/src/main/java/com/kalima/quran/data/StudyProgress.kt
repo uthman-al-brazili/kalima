@@ -31,7 +31,6 @@ data class StudyProgress(
     val spacedRepetitionEnabled: Boolean = true,
     val currentStudyWordId: String? = null,
     val reviewSchedules: Map<String, ReviewSchedule> = emptyMap(),
-    val favoriteIds: Set<String> = emptySet(),
     val customStudyIds: Set<String> = emptySet(),
     val onboardingComplete: Boolean = true,
     val reviewEvents: List<ReviewEvent> = emptyList(),

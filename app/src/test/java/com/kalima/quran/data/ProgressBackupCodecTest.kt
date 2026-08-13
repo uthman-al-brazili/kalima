@@ -16,7 +16,7 @@ class ProgressBackupCodecTest {
             learnedIds = setOf("word-1"),
             reviewingIds = setOf("word-2"),
             reviewSchedules = mapOf("word-1" to schedule),
-            favoriteIds = setOf("word-2"),
+            customStudyIds = setOf("word-2"),
             reviewEvents = listOf(ReviewEvent(now, "word-1", true, false, ReviewSource.Study)),
             lockScreenCooldownMinutes = 15,
         )
@@ -26,6 +26,7 @@ class ProgressBackupCodecTest {
         assertEquals("0.17.0", decoded.metadata.appVersion)
         assertEquals(progress.learnedIds, decoded.progress.learnedIds)
         assertEquals(progress.reviewSchedules, decoded.progress.reviewSchedules)
+        assertEquals(progress.customStudyIds, decoded.progress.customStudyIds)
         assertEquals(15, decoded.progress.lockScreenCooldownMinutes)
     }
 

@@ -51,7 +51,6 @@ import com.kalima.quran.quiz.VerseExcerptBuilder
 internal data class QuizSessionKey(
     val studyScope: StudyScope,
     val selectedSurahs: Set<Int>,
-    val favoriteIds: Set<String>,
     val customStudyIds: Set<String>,
     val mode: QuizMode,
     val version: Int,
@@ -60,7 +59,6 @@ internal data class QuizSessionKey(
 internal fun StudyProgress.quizSessionKey(mode: QuizMode, version: Int) = QuizSessionKey(
     studyScope = studyScope,
     selectedSurahs = selectedSurahs,
-    favoriteIds = favoriteIds,
     customStudyIds = customStudyIds,
     mode = mode,
     version = version,
@@ -76,18 +74,16 @@ fun QuizScreen(
     val selectedWords = remember(
         progress.studyScope,
         selectionKey,
-        progress.favoriteIds,
         progress.customStudyIds,
     ) {
         WordRepository.wordsFor(
             progress.studyScope,
             progress.selectedSurahs,
-            progress.favoriteIds,
             progress.customStudyIds,
         )
     }
     if (selectedWords.isEmpty()) {
-        if (progress.studyScope in setOf(com.kalima.quran.data.StudyScope.Favorites, com.kalima.quran.data.StudyScope.Custom)) {
+        if (progress.studyScope == StudyScope.Custom) {
             EmptyCollectionState()
         } else {
             LearningLimitEmptyState()

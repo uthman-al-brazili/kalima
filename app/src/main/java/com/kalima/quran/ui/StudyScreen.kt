@@ -58,7 +58,6 @@ fun StudyScreen(
     onAnswer: (String, Boolean) -> Unit,
     onCurrentWordChange: (String) -> Unit,
     onEnableLockScreen: () -> Unit,
-    onToggleFavorite: (String) -> Unit,
     onToggleCustomList: (String) -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
@@ -70,20 +69,18 @@ fun StudyScreen(
         progress.maximumWords,
         progress.learnedIds,
         progress.reviewingIds,
-        progress.favoriteIds,
         progress.customStudyIds,
     ) {
         progress.limitNewWords(
             WordRepository.wordsFor(
                 progress.studyScope,
                 progress.selectedSurahs,
-                progress.favoriteIds,
                 progress.customStudyIds,
             ),
         )
     }
     if (availableWords.isEmpty()) {
-        if (progress.studyScope in setOf(StudyScope.Favorites, StudyScope.Custom)) {
+        if (progress.studyScope == StudyScope.Custom) {
             EmptyCollectionState()
         } else {
             LearningLimitEmptyState()
@@ -191,7 +188,6 @@ fun StudyScreen(
                 pronouncer = pronouncer,
                 meaningRevealed = meaningRevealed,
                 onRevealChange = { meaningRevealed = it },
-                onToggleFavorite = onToggleFavorite,
                 onToggleCustomList = onToggleCustomList,
                 onOpenWord = { wordId ->
                     currentWordId = wordId
@@ -367,7 +363,6 @@ private fun StudyHeader(progress: StudyProgress, dueCount: Int) {
                     StudyScope.Frequent500 -> stringResource(R.string.scope_top_500_description)
                     StudyScope.Prayer -> stringResource(R.string.scope_prayer_description)
                     StudyScope.ShortSurahs -> stringResource(R.string.scope_short_description)
-                    StudyScope.Favorites -> stringResource(R.string.scope_favorites_description)
                     StudyScope.Custom -> stringResource(R.string.scope_custom_description)
                     StudyScope.Surahs -> if (progress.selectedSurahs.size <= 4) {
                         stringResource(
@@ -434,7 +429,6 @@ private fun WordCard(
     pronouncer: ArabicPronouncer,
     meaningRevealed: Boolean,
     onRevealChange: (Boolean) -> Unit,
-    onToggleFavorite: (String) -> Unit,
     onToggleCustomList: (String) -> Unit,
     onOpenWord: (String) -> Unit,
 ) {
@@ -497,9 +491,7 @@ private fun WordCard(
             Spacer(Modifier.height(14.dp))
             WordCollectionActions(
                 word = word,
-                favorite = word.id in progress.favoriteIds,
                 inCustomList = word.id in progress.customStudyIds,
-                onToggleFavorite = onToggleFavorite,
                 onToggleCustomList = onToggleCustomList,
             )
             if (meaningRevealed) {

@@ -47,14 +47,13 @@ private enum class LibraryFilter(@param:StringRes val labelRes: Int) {
     New(R.string.filter_new),
     Reviewing(R.string.filter_reviewing),
     Learned(R.string.filter_learned),
-    Favorites(R.string.favorites_filter),
+    MyList(R.string.my_list_filter),
 }
 
 @Composable
 fun LibraryScreen(
     progress: StudyProgress,
     pronouncer: ArabicPronouncer,
-    onToggleFavorite: (String) -> Unit,
     onToggleCustomList: (String) -> Unit,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -65,13 +64,11 @@ fun LibraryScreen(
     val activeWords = remember(
         progress.studyScope,
         selectionKey,
-        progress.favoriteIds,
         progress.customStudyIds,
     ) {
         WordRepository.wordsFor(
             progress.studyScope,
             progress.selectedSurahs,
-            progress.favoriteIds,
             progress.customStudyIds,
         )
     }
@@ -88,7 +85,7 @@ fun LibraryScreen(
                 LibraryFilter.New -> progress.statusFor(word.id) == WordStatus.New
                 LibraryFilter.Reviewing -> progress.statusFor(word.id) == WordStatus.Reviewing
                 LibraryFilter.Learned -> progress.statusFor(word.id) == WordStatus.Learned
-                LibraryFilter.Favorites -> word.id in progress.favoriteIds
+                LibraryFilter.MyList -> word.id in progress.customStudyIds
             }
         }
     }
@@ -117,7 +114,6 @@ fun LibraryScreen(
                     StudyScope.Frequent500,
                     StudyScope.Prayer,
                     StudyScope.ShortSurahs,
-                    StudyScope.Favorites,
                     StudyScope.Custom,
                     -> pluralStringResource(
                         R.plurals.library_available_cards,
@@ -181,9 +177,7 @@ fun LibraryScreen(
                 expanded = expandedId == word.id,
                 onClick = { expandedId = if (expandedId == word.id) null else word.id },
                 pronouncer = pronouncer,
-                favorite = word.id in progress.favoriteIds,
                 inCustomList = word.id in progress.customStudyIds,
-                onToggleFavorite = onToggleFavorite,
                 onToggleCustomList = onToggleCustomList,
             )
         }
@@ -197,9 +191,7 @@ private fun LibraryWordCard(
     expanded: Boolean,
     onClick: () -> Unit,
     pronouncer: ArabicPronouncer,
-    favorite: Boolean,
     inCustomList: Boolean,
-    onToggleFavorite: (String) -> Unit,
     onToggleCustomList: (String) -> Unit,
 ) {
     Card(
@@ -254,9 +246,7 @@ private fun LibraryWordCard(
                 )
                 WordCollectionActions(
                     word = word,
-                    favorite = favorite,
                     inCustomList = inCustomList,
-                    onToggleFavorite = onToggleFavorite,
                     onToggleCustomList = onToggleCustomList,
                 )
                 CitationActions(word)

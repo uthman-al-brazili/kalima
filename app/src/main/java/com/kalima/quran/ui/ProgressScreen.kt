@@ -52,13 +52,11 @@ fun ProgressScreen(
     val activeWords = remember(
         progress.studyScope,
         selectionKey,
-        progress.favoriteIds,
         progress.customStudyIds,
     ) {
         WordRepository.wordsFor(
             progress.studyScope,
             progress.selectedSurahs,
-            progress.favoriteIds,
             progress.customStudyIds,
         )
     }
@@ -228,13 +226,13 @@ fun ProgressScreen(
                     ProgressPathChip(progress.studyScope, StudyScope.All, R.string.scope_all, onStudyScopeChange, Modifier.weight(1f))
                     ProgressPathChip(progress.studyScope, StudyScope.Surahs, R.string.scope_surah, onStudyScopeChange, Modifier.weight(1f))
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    ProgressPathChip(progress.studyScope, StudyScope.Favorites, R.string.scope_favorites, onStudyScopeChange, Modifier.weight(1f))
-                    ProgressPathChip(progress.studyScope, StudyScope.Custom, R.string.scope_custom, onStudyScopeChange, Modifier.weight(1f))
-                }
+                ProgressPathChip(
+                    progress.studyScope,
+                    StudyScope.Custom,
+                    R.string.scope_custom,
+                    onStudyScopeChange,
+                    Modifier.fillMaxWidth(),
+                )
                 if (progress.studyScope == StudyScope.Surahs) {
                     Spacer(Modifier.height(10.dp))
                     Text(
@@ -360,7 +358,6 @@ private fun studyScopeDescription(scope: StudyScope): String = when (scope) {
     StudyScope.Frequent500 -> stringResource(R.string.scope_top_500_description)
     StudyScope.Prayer -> stringResource(R.string.scope_prayer_description)
     StudyScope.ShortSurahs -> stringResource(R.string.scope_short_description)
-    StudyScope.Favorites -> stringResource(R.string.scope_favorites_description)
     StudyScope.Custom -> stringResource(R.string.scope_custom_description)
     StudyScope.Surahs -> stringResource(R.string.scope_surah_description)
 }

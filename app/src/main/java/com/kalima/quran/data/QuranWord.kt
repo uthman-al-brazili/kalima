@@ -26,10 +26,23 @@ enum class StudyScope {
     Frequent500,
     Prayer,
     ShortSurahs,
-    Favorites,
     Custom,
-    Surahs,
+    Surahs;
+
+    companion object {
+        fun fromPersistedName(name: String?): StudyScope? = when (name) {
+            LEGACY_FAVORITES_SCOPE -> Custom
+            else -> entries.firstOrNull { it.name == name }
+        }
+
+        private const val LEGACY_FAVORITES_SCOPE = "Favorites"
+    }
 }
+
+internal fun mergePersonalCollections(
+    legacyFavoriteIds: Set<String>,
+    customStudyIds: Set<String>,
+): Set<String> = legacyFavoriteIds + customStudyIds
 
 enum class WordStatus {
     New,

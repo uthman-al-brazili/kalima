@@ -116,7 +116,6 @@ class MainActivity : ComponentActivity() {
                 onSpacedRepetitionEnabledChange = progressStore::setSpacedRepetitionEnabled,
                 onStudyScopeChange = progressStore::setStudyScope,
                 onToggleSurah = progressStore::toggleSurah,
-                onToggleFavorite = progressStore::toggleFavorite,
                 onToggleCustomList = progressStore::toggleCustomStudy,
                 onCompleteOnboarding = progressStore::completeOnboarding,
                 onOpenAppSettings = ::openAppSettings,

@@ -88,7 +88,7 @@ fun SettingsScreen(
                         backupImportPreview.metadata.appVersion,
                         backupProgress.learnedIds.size,
                         backupProgress.reviewingIds.size,
-                        backupProgress.favoriteIds.size,
+                        backupProgress.customStudyIds.size,
                     ),
                 )
             },

@@ -76,7 +76,7 @@ class WordRepositoryTest {
     }
 
     @Test
-    fun guidedPathsAndPersonalCollectionsSelectExpectedCards() {
+    fun guidedPathsAndMyListSelectExpectedCards() {
         assertEquals(50, WordRepository.wordsFor(StudyScope.Frequent50, emptySet()).size)
         assertEquals(100, WordRepository.wordsFor(StudyScope.Frequent, emptySet()).size)
         assertTrue(
@@ -91,9 +91,9 @@ class WordRepositoryTest {
         assertEquals(
             chosen,
             WordRepository.wordsFor(
-                StudyScope.Favorites,
+                StudyScope.Custom,
                 emptySet(),
-                favoriteIds = chosen,
+                customStudyIds = chosen,
             ).map(QuranWord::id).toSet(),
         )
         assertTrue(WordRepository.wordsFor(StudyScope.Custom, emptySet()).isEmpty())

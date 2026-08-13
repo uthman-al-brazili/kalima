@@ -1,7 +1,6 @@
 package com.kalima.quran.ui
 
 import android.content.Intent
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,40 +32,21 @@ import com.kalima.quran.data.QuranWord
 @Composable
 fun WordCollectionActions(
     word: QuranWord,
-    favorite: Boolean,
     inCustomList: Boolean,
-    onToggleFavorite: (String) -> Unit,
     onToggleCustomList: (String) -> Unit,
 ) {
-    val favoriteDescription = stringResource(
-        if (favorite) R.string.remove_favorite else R.string.add_favorite,
-    )
     val customListDescription = stringResource(
         if (inCustomList) R.string.remove_custom_list else R.string.add_custom_list,
     )
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        FilterChip(
-            selected = favorite,
-            onClick = { onToggleFavorite(word.id) },
-            label = { Text(stringResource(R.string.favorite_action)) },
-            leadingIcon = { Text(if (favorite) "★" else "☆") },
-            modifier = Modifier
-                .weight(1f)
-                .semantics { contentDescription = favoriteDescription },
-        )
-        FilterChip(
-            selected = inCustomList,
-            onClick = { onToggleCustomList(word.id) },
-            label = { Text(stringResource(R.string.custom_list_action)) },
-            leadingIcon = { Text(if (inCustomList) "✓" else "+") },
-            modifier = Modifier
-                .weight(1f)
-                .semantics { contentDescription = customListDescription },
-        )
-    }
+    FilterChip(
+        selected = inCustomList,
+        onClick = { onToggleCustomList(word.id) },
+        label = { Text(stringResource(R.string.custom_list_action)) },
+        leadingIcon = { Text(if (inCustomList) "✓" else "+") },
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { contentDescription = customListDescription },
+    )
 }
 
 @Composable

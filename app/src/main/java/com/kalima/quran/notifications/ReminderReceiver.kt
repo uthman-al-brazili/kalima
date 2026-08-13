@@ -74,7 +74,6 @@ object NotificationHelper {
             WordRepository.wordsFor(
                 progress.studyScope,
                 progress.selectedSurahs,
-                progress.favoriteIds,
                 progress.customStudyIds,
             ),
         )

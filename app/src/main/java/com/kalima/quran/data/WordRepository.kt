@@ -432,7 +432,6 @@ object WordRepository {
     fun wordsFor(
         scope: StudyScope,
         selectedSurahs: Set<Int>,
-        favoriteIds: Set<String> = emptySet(),
         customStudyIds: Set<String> = emptySet(),
     ): List<QuranWord> {
         val selected = when (scope) {
@@ -448,12 +447,11 @@ object WordRepository {
             StudyScope.ShortSurahs -> distinctByLemma(
                 (101..114).flatMap { surahIndex[it].orEmpty() },
             )
-            StudyScope.Favorites -> words.filter { it.id in favoriteIds }
             StudyScope.Custom -> words.filter { it.id in customStudyIds }
             StudyScope.Surahs -> selectedSurahs.sorted().flatMap { surahIndex[it].orEmpty() }
         }
         return when (scope) {
-            StudyScope.Favorites, StudyScope.Custom -> selected
+            StudyScope.Custom -> selected
             else -> selected.ifEmpty { words }
         }
     }
