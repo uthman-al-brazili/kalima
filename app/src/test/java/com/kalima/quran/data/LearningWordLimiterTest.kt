@@ -78,4 +78,17 @@ class LearningWordLimiterTest {
 
         assertEquals(words.filterNot { it.id == words[1].id }, progress.limitNewWords(words))
     }
+
+    @Test
+    fun excludedEstablishedWordsNoLongerUseLearningSlots() {
+        val result = LearningWordLimiter.apply(
+            words = words,
+            learnedIds = setOf(words[0].id),
+            reviewingIds = emptySet(),
+            alreadyKnownIds = setOf(words[0].id),
+            maximumWords = 2,
+        )
+
+        assertEquals(listOf(words[1], words[2]), result)
+    }
 }

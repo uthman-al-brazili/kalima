@@ -19,7 +19,7 @@ object LearningWordLimiter {
         val practiceWords = words.filterNot { it.id in alreadyKnownIds }
         if (maximumWords == UNLIMITED) return practiceWords
 
-        val establishedIds = learnedIds + reviewingIds
+        val establishedIds = (learnedIds + reviewingIds) - alreadyKnownIds
         var newSlots = (maximumWords - establishedIds.size).coerceAtLeast(0)
         return practiceWords.filter { word ->
             if (word.id in establishedIds) {

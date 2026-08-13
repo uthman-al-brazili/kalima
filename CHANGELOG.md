@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.19.1 — 2026-08-13
+
+- Fixed the word limit so words removed as already known no longer occupy
+  learning slots, including words that had earlier study or review history.
+
 ## 0.19.0 — 2026-08-13
 
 - Added a reversible “I already know this” choice to study cards and unlock
