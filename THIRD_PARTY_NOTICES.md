@@ -35,6 +35,19 @@ ou para o conteúdo de estudo selecionado. A voz sintetizada do Android não é 
 para palavras individuais. O uso em produção deve continuar respeitando os termos
 vigentes da Quran Foundation e do Quran.com.
 
+## Recitação de ayahs por Mahmoud Khalil Al-Hussary
+
+- Catálogo: [EveryAyah](https://everyayah.com/)
+- Coleção usada: `Husary_128kbps`
+- Formato público: `https://everyayah.com/data/Husary_128kbps/SSSAAA.mp3`
+
+O aplicativo Android transmite a recitação Murattal de Mahmoud Khalil
+Al-Hussary, ayah por ayah, sem incorporar os arquivos ao APK. Cada gravação
+ouvida pode ser mantida no aparelho, e as gravações dos ayahs do conteúdo de
+estudo selecionado podem ser baixadas para uso offline. O uso em produção deve
+continuar respeitando os termos vigentes do EveryAyah e dos titulares das
+gravações.
+
 ## Significados em português
 
 Os glossários em inglês foram convertidos em um primeiro rascunho em português e receberam correções editoriais pontuais. Eles são apresentados como apoio contextual, não como tradução oficial do Alcorão. O cache em `tools/pt_gloss_cache.json` e cada cartão devem passar por revisão linguística e religiosa antes da publicação.

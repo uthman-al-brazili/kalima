@@ -78,6 +78,35 @@ class VocabularyAssetLoaderTest {
     }
 
     @Test
+    fun everyReaderWordHasIndexedDetailsByOccurrenceOrSurahForm() {
+        val corpus = VocabularyAssetLoader.load(findCorpusAsset().inputStream())
+        val readerTokens = QuranTextAssetLoader.load(findQuranAsset().inputStream())
+            .filterNot(QuranPageToken::isAyahMarker)
+        val indexedLocations = corpus.mapNotNullTo(HashSet()) { word ->
+            word.audioLocation?.let { Triple(it.surah, it.ayah, it.word) }
+        }
+        val indexedForms = corpus.mapNotNullTo(HashSet()) { word ->
+            word.surahNumber?.let { surah ->
+                surah to VerseExplorer.normalizeArabic(word.arabic)
+            }
+        }
+        val indexedGlobalForms = corpus.mapTo(HashSet()) { word ->
+            VerseExplorer.normalizeArabic(word.arabic)
+        }
+
+        val missing = readerTokens.filter { token ->
+            Triple(token.surahNumber, token.ayahNumber, token.wordNumber) !in indexedLocations &&
+                (token.surahNumber to VerseExplorer.normalizeArabic(token.arabic)) !in indexedForms &&
+                VerseExplorer.normalizeArabic(token.arabic) !in indexedGlobalForms
+        }
+
+        assertTrue(
+            missing.take(20).joinToString { "${it.surahNumber}:${it.ayahNumber}:${it.wordNumber}" },
+            missing.isEmpty(),
+        )
+    }
+
+    @Test
     fun everySurahCanGenerateACompleteQuizSession() {
         val corpus = VocabularyAssetLoader.load(findCorpusAsset().inputStream())
 
@@ -96,4 +125,10 @@ class VocabularyAssetLoaderTest {
         File("app/src/main/assets/${VocabularyAssetLoader.ASSET_NAME}.gz"),
     ).firstOrNull(File::isFile)
         ?: error("Corpus asset not found from ${File(".").absolutePath}")
+
+    private fun findQuranAsset(): File = sequenceOf(
+        File("src/main/assets/${QuranTextAssetLoader.ASSET_NAME}.gz"),
+        File("app/src/main/assets/${QuranTextAssetLoader.ASSET_NAME}.gz"),
+    ).firstOrNull(File::isFile)
+        ?: error("Quran reader asset not found from ${File(".").absolutePath}")
 }

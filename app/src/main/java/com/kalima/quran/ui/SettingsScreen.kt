@@ -45,6 +45,7 @@ import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.LearningWordLimiter
 import com.kalima.quran.data.LockScreenPerformanceBudget
 import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.QuranVerseAudioLocation
 import com.kalima.quran.data.QuranWordAudioLocation
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.limitNewWords
@@ -66,7 +67,6 @@ fun SettingsScreen(
     onLockScreenQuizIntervalChange: (Int) -> Unit,
     onMaximumWordsChange: (Int) -> Unit,
     onOpenAppSettings: () -> Unit,
-    onOpenTextToSpeechSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
     onQuietHoursEnabledChange: (Boolean) -> Unit,
     onQuietHoursChange: (Int, Int) -> Unit,
@@ -81,11 +81,11 @@ fun SettingsScreen(
     onConfirmBackupImport: () -> Unit,
     onCancelBackupImport: () -> Unit,
     offlineWordAudioState: OfflineWordAudioDownloadState,
-    onDownloadOfflineWordAudio: (List<QuranWordAudioLocation>) -> Unit,
+    onDownloadOfflineWordAudio: (List<QuranWordAudioLocation>, List<QuranVerseAudioLocation>) -> Unit,
     onCancelOfflineWordAudio: () -> Unit,
 ) {
     val audioSelectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val offlineAudioLocations = remember(
+    val offlineWordAudioLocations = remember(
         progress.studyScope,
         audioSelectionKey,
         progress.customStudyIds,
@@ -103,8 +103,14 @@ fun SettingsScreen(
         ).mapNotNull { it.audioLocation }
             .distinctBy(QuranWordAudioLocation::fileName)
     }
+    val offlineVerseAudioLocations = remember(offlineWordAudioLocations) {
+        offlineWordAudioLocations
+            .map(QuranVerseAudioLocation::fromWord)
+            .distinctBy(QuranVerseAudioLocation::fileName)
+    }
     val estimatedAudioMegabytes = OfflineWordAudioManager.estimatedMegabytes(
-        offlineAudioLocations.size,
+        wordCount = offlineWordAudioLocations.size,
+        verseCount = offlineVerseAudioLocations.size,
     )
     var showAudioDownloadConfirmation by rememberSaveable { mutableStateOf(false) }
 
@@ -116,7 +122,8 @@ fun SettingsScreen(
                 Text(
                     stringResource(
                         R.string.offline_audio_download_confirmation,
-                        offlineAudioLocations.size,
+                        offlineWordAudioLocations.size,
+                        offlineVerseAudioLocations.size,
                         estimatedAudioMegabytes,
                     ),
                 )
@@ -125,7 +132,10 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         showAudioDownloadConfirmation = false
-                        onDownloadOfflineWordAudio(offlineAudioLocations)
+                        onDownloadOfflineWordAudio(
+                            offlineWordAudioLocations,
+                            offlineVerseAudioLocations,
+                        )
                     },
                 ) {
                     Text(stringResource(R.string.download))
@@ -336,14 +346,15 @@ fun SettingsScreen(
                 } else {
                     Button(
                         onClick = { showAudioDownloadConfirmation = true },
-                        enabled = offlineAudioLocations.isNotEmpty(),
+                        enabled = offlineWordAudioLocations.isNotEmpty(),
                     ) {
                         Text(stringResource(R.string.download_selected_audio))
                     }
                     Text(
                         stringResource(
                             R.string.offline_audio_download_estimate,
-                            offlineAudioLocations.size,
+                            offlineWordAudioLocations.size,
+                            offlineVerseAudioLocations.size,
                             estimatedAudioMegabytes,
                         ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -361,15 +372,6 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
-                }
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    stringResource(R.string.arabic_voice_settings_observation),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                TextButton(onClick = onOpenTextToSpeechSettings) {
-                    Text(stringResource(R.string.open_tts_settings))
                 }
             }
         }

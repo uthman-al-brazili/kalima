@@ -9,6 +9,9 @@ Kalima é um aplicativo para Android e Windows inspirado na ideia de aprendizado
 - gravação humana palavra por palavra do Quran.com, salva após a primeira
   reprodução e disponível por download para o conteúdo selecionado, sem usar
   voz sintetizada nas palavras individuais;
+- recitação Murattal de Mahmoud Khalil Al-Hussary para cada ayah, transmitida
+  sob demanda, salva após a primeira reprodução e incluída no download do
+  conteúdo selecionado, sem usar voz sintetizada para o Alcorão;
 - seletor de idioma em **Configurações**, com interface, significados, quizzes, notificações e cartões de tela bloqueada em português ou inglês;
 - trecho corânico contextualizado e paráfrase de estudo em português;
 - ayah completo oculto por padrão nos cartões, com uma escolha persistente para

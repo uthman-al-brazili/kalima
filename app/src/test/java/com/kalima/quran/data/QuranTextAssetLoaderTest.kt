@@ -2,22 +2,35 @@ package com.kalima.quran.data
 
 import java.io.File
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class QuranTextAssetLoaderTest {
     @Test
-    fun containsTheCompleteQuranInCanonicalOrder() {
-        val verses = QuranTextAssetLoader.load(findAsset().inputStream())
+    fun containsTheCompleteQuranInStandardPageAndWordOrder() {
+        val tokens = QuranTextAssetLoader.load(findAsset().inputStream())
+        val verses = tokens.groupBy { it.surahNumber to it.ayahNumber }
 
         assertEquals(6_236, verses.size)
-        assertEquals((1..114).toList(), verses.map(QuranVerse::surahNumber).distinct())
-        assertEquals(7, verses.count { it.surahNumber == 1 })
-        assertEquals(286, verses.count { it.surahNumber == 2 })
-        assertEquals(6, verses.count { it.surahNumber == 114 })
-        assertTrue(verses.all { it.arabic.isNotBlank() })
-        verses.groupBy(QuranVerse::surahNumber).values.forEach { surah ->
-            assertEquals((1..surah.size).toList(), surah.map(QuranVerse::ayahNumber))
+        assertEquals((1..114).toList(), tokens.map(QuranPageToken::surahNumber).distinct())
+        assertEquals((1..604).toList(), tokens.map(QuranPageToken::pageNumber).distinct())
+        assertEquals(7, verses.keys.count { it.first == 1 })
+        assertEquals(286, verses.keys.count { it.first == 2 })
+        assertEquals(6, verses.keys.count { it.first == 114 })
+        assertEquals(6_236, tokens.count(QuranPageToken::isAyahMarker))
+        assertTrue(tokens.all { it.arabic.isNotBlank() })
+        assertTrue(tokens.all { it.lineNumber in 1..15 })
+        assertTrue(tokens.first().surahNumber == 1 && tokens.first().pageNumber == 1)
+        assertTrue(tokens.last().surahNumber == 114 && tokens.last().pageNumber == 604)
+
+        verses.values.forEach { verseTokens ->
+            assertEquals(
+                (1..verseTokens.size).toList(),
+                verseTokens.map(QuranPageToken::wordNumber),
+            )
+            assertTrue(verseTokens.last().isAyahMarker)
+            assertFalse(verseTokens.dropLast(1).any(QuranPageToken::isAyahMarker))
         }
     }
 

@@ -3,7 +3,8 @@ package com.kalima.quran.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -11,191 +12,354 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
+import com.kalima.quran.data.QuranPageToken
 import com.kalima.quran.data.QuranReaderRepository
 import com.kalima.quran.data.QuranSurah
-import com.kalima.quran.data.QuranVerse
+import com.kalima.quran.data.QuranWordAudioLocation
+import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.WordRepository
+import kotlinx.coroutines.launch
 
 @Composable
 fun QuranReaderScreen() {
-    var selectedSurahNumber by rememberSaveable { mutableIntStateOf(1) }
-    var pickerVisible by rememberSaveable { mutableStateOf(false) }
-    val surahs = WordRepository.selectableSurahs
-    val selectedSurah = surahs.first { it.number == selectedSurahNumber }
-    val verses = remember(selectedSurahNumber) {
-        QuranReaderRepository.versesFor(selectedSurahNumber)
+    val pageCount = QuranReaderRepository.pageCount
+    if (pageCount == 0) {
+        QuranReaderUnavailable()
+        return
     }
-    val listState = rememberLazyListState()
 
-    LaunchedEffect(selectedSurahNumber) {
-        listState.scrollToItem(0)
+    val pagerState = rememberPagerState(pageCount = { pageCount })
+    val scope = rememberCoroutineScope()
+    var surahPickerVisible by rememberSaveable { mutableStateOf(false) }
+    var pagePickerVisible by rememberSaveable { mutableStateOf(false) }
+    var selectedToken by remember { mutableStateOf<QuranPageToken?>(null) }
+    val currentPageNumber = pagerState.currentPage + 1
+    val currentPage = remember(currentPageNumber) {
+        QuranReaderRepository.page(currentPageNumber)
+    }
+    val currentSurahs = remember(currentPage) {
+        currentPage.map(QuranPageToken::surahNumber).distinct()
     }
 
     Column(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 20.dp, vertical = 18.dp)) {
-            Text(
-                stringResource(R.string.quran_reader_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
+        ReaderHeader(
+            currentSurahs = currentSurahs,
+            onChooseSurah = { surahPickerVisible = true },
+        )
+
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            beyondViewportPageCount = 1,
+            key = { it },
+        ) { pageIndex ->
+            QuranPage(
+                pageNumber = pageIndex + 1,
+                tokens = QuranReaderRepository.page(pageIndex + 1),
+                onWordClick = { selectedToken = it },
             )
-            Text(
-                stringResource(R.string.quran_reader_subtitle),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Spacer(Modifier.height(14.dp))
-            OutlinedButton(
-                onClick = { pickerVisible = true },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                Text(
-                    stringResource(
-                        R.string.quran_selected_surah,
-                        selectedSurah.number,
-                        selectedSurah.transliteratedName,
-                        selectedSurah.arabicName,
-                    ),
-                    textAlign = TextAlign.Center,
-                )
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                OutlinedButton(
-                    onClick = { selectedSurahNumber-- },
-                    enabled = selectedSurahNumber > 1,
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("‹ ${stringResource(R.string.previous_surah)}")
-                }
-                OutlinedButton(
-                    onClick = { selectedSurahNumber++ },
-                    enabled = selectedSurahNumber < 114,
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("${stringResource(R.string.next_surah)} ›")
-                }
-            }
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            state = listState,
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
-        ) {
-            item(key = "surah-header") {
-                SurahReaderHeader(selectedSurah, verses.size)
-            }
-            if (selectedSurahNumber != 1 && selectedSurahNumber != 9) {
-                item(key = "basmala") {
-                    ArabicText(
-                        BASMALA,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp),
-                        size = 27,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
-            items(verses, key = QuranVerse::ayahNumber) { verse ->
-                QuranVerseRow(verse)
-            }
-            item { Spacer(Modifier.height(24.dp)) }
-        }
+        PageNavigation(
+            pageNumber = currentPageNumber,
+            pageCount = pageCount,
+            onPrevious = {
+                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+            },
+            onChoosePage = { pagePickerVisible = true },
+            onNext = {
+                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+            },
+        )
     }
 
-    if (pickerVisible) {
+    selectedToken?.let { token ->
+        val verseArabic = QuranReaderRepository.verseText(token.surahNumber, token.ayahNumber)
+        val indexedWord = remember(token, verseArabic) {
+            WordRepository.readerWordFor(token, verseArabic)
+        }
+        WordExplorerSheet(
+            word = indexedWord ?: token.asUnindexedWord(verseArabic),
+            indexed = indexedWord != null,
+            onDismiss = { selectedToken = null },
+            onOpenWord = null,
+        )
+    }
+
+    if (surahPickerVisible) {
         SurahPickerSheet(
-            surahs = surahs,
-            selectedSurahNumber = selectedSurahNumber,
-            onSelect = { number ->
-                selectedSurahNumber = number
-                pickerVisible = false
+            surahs = WordRepository.selectableSurahs,
+            selectedSurahNumber = currentSurahs.firstOrNull(),
+            onSelect = { surahNumber ->
+                surahPickerVisible = false
+                scope.launch {
+                    pagerState.scrollToPage(
+                        QuranReaderRepository.firstPageForSurah(surahNumber) - 1,
+                    )
+                }
             },
-            onDismiss = { pickerVisible = false },
+            onDismiss = { surahPickerVisible = false },
+        )
+    }
+
+    if (pagePickerVisible) {
+        PagePickerSheet(
+            currentPage = currentPageNumber,
+            pageCount = pageCount,
+            onSelect = { pageNumber ->
+                pagePickerVisible = false
+                scope.launch { pagerState.scrollToPage(pageNumber - 1) }
+            },
+            onDismiss = { pagePickerVisible = false },
         )
     }
 }
 
 @Composable
-private fun SurahReaderHeader(surah: QuranSurah, verseCount: Int) {
+private fun ReaderHeader(
+    currentSurahs: List<Int>,
+    onChooseSurah: () -> Unit,
+) {
+    val surahsByNumber = remember {
+        WordRepository.selectableSurahs.associateBy(QuranSurah::number)
+    }
+    val currentNames = currentSurahs.mapNotNull(surahsByNumber::get)
+    val surahLabel = when (currentNames.size) {
+        0 -> stringResource(R.string.quran_reader_title)
+        1 -> with(currentNames.first()) {
+            "$number  $transliteratedName  ·  $arabicName"
+        }
+        else -> "${currentNames.first().transliteratedName} – ${currentNames.last().transliteratedName}"
+    }
+
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                stringResource(R.string.quran_reader_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            TextButton(
+                onClick = onChooseSurah,
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(
+                    surahLabel,
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.End,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+        }
+        Text(
+            stringResource(R.string.quran_reader_page_hint),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun QuranPage(
+    pageNumber: Int,
+    tokens: List<QuranPageToken>,
+    onWordClick: (QuranPageToken) -> Unit,
+) {
+    val lines = remember(tokens) { tokens.groupBy(QuranPageToken::lineNumber).toSortedMap() }
     Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-        shape = RoundedCornerShape(22.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 4.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 1.dp,
     ) {
         Column(
-            modifier = Modifier.padding(18.dp),
+            modifier = Modifier.fillMaxHeight().verticalScroll(rememberScrollState())
+                .padding(horizontal = 12.dp, vertical = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            lines.values.forEach { lineTokens ->
+                lineTokens
+                    .filter { it.ayahNumber == 1 && it.wordNumber == 1 && !it.isAyahMarker }
+                    .map(QuranPageToken::surahNumber)
+                    .distinct()
+                    .forEach { surahNumber -> SurahPageHeader(surahNumber) }
+
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            1.dp,
+                            alignment = Alignment.CenterHorizontally,
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(0.dp),
+                    ) {
+                        lineTokens.forEach { token ->
+                            if (token.isAyahMarker) {
+                                AyahMarker(token.arabic)
+                            } else {
+                                QuranPageWord(token, onWordClick)
+                            }
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                pageNumber.toString(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SurahPageHeader(surahNumber: Int) {
+    val surah = WordRepository.selectableSurahs.first { it.number == surahNumber }
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 6.dp),
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+        shape = RoundedCornerShape(12.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             ArabicText(
                 surah.arabicName,
                 modifier = Modifier.fillMaxWidth(),
-                size = 34,
+                size = 24,
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
-                "${surah.number}. ${surah.transliteratedName}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                pluralStringResource(R.plurals.quran_ayah_count, verseCount, verseCount),
+                "${surah.number} · ${surah.transliteratedName}",
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
             )
         }
+    }
+    if (surahNumber != 1 && surahNumber != 9) {
+        ArabicText(
+            BASMALA,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+            size = 21,
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 }
 
 @Composable
-private fun QuranVerseRow(verse: QuranVerse) {
-    Column(Modifier.fillMaxWidth().padding(vertical = 14.dp)) {
-        ArabicText(
-            verse.arabic,
-            modifier = Modifier.fillMaxWidth(),
-            size = 28,
-            color = MaterialTheme.colorScheme.onSurface,
-            align = TextAlign.End,
-        )
-        Text(
-            "${verse.surahNumber}:${verse.ayahNumber}",
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-        )
-        Spacer(Modifier.height(10.dp))
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+private fun QuranPageWord(token: QuranPageToken, onClick: (QuranPageToken) -> Unit) {
+    Text(
+        text = token.arabic,
+        modifier = Modifier
+            .clickable(
+                onClickLabel = stringResource(R.string.quran_open_word_details),
+                onClick = { onClick(token) },
+            )
+            .padding(horizontal = 2.dp, vertical = 1.dp),
+        color = MaterialTheme.colorScheme.onSurface,
+        fontSize = 22.sp,
+        lineHeight = 32.sp,
+        style = MaterialTheme.typography.bodyLarge.copy(
+            textDirection = TextDirection.Rtl,
+            localeList = LocaleList(Locale("ar")),
+        ),
+    )
+}
+
+@Composable
+private fun AyahMarker(number: String) {
+    Text(
+        text = "۝$number",
+        modifier = Modifier.padding(horizontal = 1.dp, vertical = 1.dp),
+        color = MaterialTheme.colorScheme.primary,
+        fontSize = 18.sp,
+        lineHeight = 32.sp,
+        style = MaterialTheme.typography.bodyMedium.copy(textDirection = TextDirection.Rtl),
+    )
+}
+
+@Composable
+private fun PageNavigation(
+    pageNumber: Int,
+    pageCount: Int,
+    onPrevious: () -> Unit,
+    onChoosePage: () -> Unit,
+    onNext: () -> Unit,
+) {
+    val previousDescription = stringResource(R.string.previous_page)
+    val nextDescription = stringResource(R.string.next_page)
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TextButton(
+            onClick = onPrevious,
+            enabled = pageNumber > 1,
+            modifier = Modifier.semantics { contentDescription = previousDescription },
+        ) {
+            Text("‹", style = MaterialTheme.typography.headlineSmall)
+        }
+        TextButton(onClick = onChoosePage) {
+            Text(
+                stringResource(R.string.quran_page_indicator, pageNumber, pageCount),
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        TextButton(
+            onClick = onNext,
+            enabled = pageNumber < pageCount,
+            modifier = Modifier.semantics { contentDescription = nextDescription },
+        ) {
+            Text("›", style = MaterialTheme.typography.headlineSmall)
+        }
     }
 }
 
@@ -203,7 +367,7 @@ private fun QuranVerseRow(verse: QuranVerse) {
 @Composable
 private fun SurahPickerSheet(
     surahs: List<QuranSurah>,
-    selectedSurahNumber: Int,
+    selectedSurahNumber: Int?,
     onSelect: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -238,25 +402,26 @@ private fun SurahPickerSheet(
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(stringResource(R.string.quran_surah_search_hint)) },
                 singleLine = true,
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(14.dp),
             )
             Spacer(Modifier.height(10.dp))
-            LazyColumn(
+            androidx.compose.foundation.lazy.LazyColumn(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                items(filteredSurahs, key = QuranSurah::number) { surah ->
+                items(filteredSurahs.size, key = { filteredSurahs[it].number }) { index ->
+                    val surah = filteredSurahs[index]
                     Surface(
                         modifier = Modifier.fillMaxWidth().clickable { onSelect(surah.number) },
                         color = if (surah.number == selectedSurahNumber) {
-                            MaterialTheme.colorScheme.secondaryContainer
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
                         } else {
                             MaterialTheme.colorScheme.surface
                         },
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(12.dp),
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
@@ -264,21 +429,111 @@ private fun SurahPickerSheet(
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold,
                             )
-                            Column(Modifier.weight(1f).padding(horizontal = 14.dp)) {
-                                Text(surah.transliteratedName, fontWeight = FontWeight.SemiBold)
-                            }
                             Text(
-                                surah.arabicName,
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.primary,
+                                surah.transliteratedName,
+                                modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
+                                fontWeight = FontWeight.SemiBold,
                             )
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    surah.arabicName,
+                                    fontSize = 20.sp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                                Text(
+                                    stringResource(
+                                        R.string.quran_page_short,
+                                        QuranReaderRepository.firstPageForSurah(surah.number),
+                                    ),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
                     }
                 }
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(14.dp))
         }
     }
 }
 
-private const val BASMALA = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PagePickerSheet(
+    currentPage: Int,
+    pageCount: Int,
+    onSelect: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var pageText by rememberSaveable(currentPage) { mutableStateOf(currentPage.toString()) }
+    val pageNumber = pageText.toIntOrNull()
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
+            Text(
+                stringResource(R.string.choose_quran_page),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(10.dp))
+            OutlinedTextField(
+                value = pageText,
+                onValueChange = { value -> pageText = value.filter(Char::isDigit).take(3) },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.quran_page_range, pageCount)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                shape = RoundedCornerShape(14.dp),
+            )
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = { onSelect(requireNotNull(pageNumber)) },
+                enabled = pageNumber in 1..pageCount,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Text(stringResource(R.string.open_quran_page))
+            }
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun QuranReaderUnavailable() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            stringResource(R.string.quran_reader_unavailable),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+private fun QuranPageToken.asUnindexedWord(verseArabic: String): QuranWord {
+    val surahName = WordRepository.selectableSurahs.firstOrNull { it.number == surahNumber }
+        ?.transliteratedName
+        ?: "Surah $surahNumber"
+    return QuranWord(
+        id = "reader-$surahNumber-$ayahNumber-$wordNumber",
+        arabic = arabic,
+        lemma = arabic,
+        transliteration = "",
+        meaning = "",
+        root = "",
+        grammar = "",
+        category = "",
+        reference = "$surahName $surahNumber:$ayahNumber",
+        verseArabic = verseArabic,
+        verseMeaning = "",
+        insight = "",
+        surahNumber = surahNumber,
+        audioLocation = QuranWordAudioLocation(surahNumber, ayahNumber, wordNumber),
+    )
+}
+
+private const val BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"

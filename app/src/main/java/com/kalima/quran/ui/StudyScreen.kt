@@ -535,11 +535,11 @@ private fun WordCard(
                         Spacer(Modifier.height(8.dp))
                         if (showCompleteAyah) {
                             VerseExplorerPanel(word = word, onOpenWord = onOpenWord)
-                            TextPronunciationButton(
-                                arabic = word.verseArabic,
+                            VersePronunciationButton(
+                                word = word,
                                 pronouncer = pronouncer,
                                 modifier = Modifier.fillMaxWidth(),
-                                labelRes = R.string.device_voice_verse,
+                                labelRes = R.string.hussary_verse_recitation,
                             )
                             TextButton(
                                 onClick = { onShowCompleteAyahChange(false) },

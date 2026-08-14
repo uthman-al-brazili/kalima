@@ -20,7 +20,7 @@ import generate_quran_vocabulary as legacy
 ALL_SURAHS = range(1, 115)
 FREQUENT_LIMIT = 100
 FORMAT_HEADER = "#kalima-quran-v2"
-QURAN_TEXT_FORMAT_HEADER = "#kalima-quran-text-v1"
+QURAN_TEXT_FORMAT_HEADER = "#kalima-quran-pages-v2"
 
 
 @dataclass(frozen=True)
@@ -36,6 +36,16 @@ class QuranVerseRecord:
     surah: int
     ayah: int
     text_uthmani: str
+    words: tuple["QuranPageWordRecord", ...]
+
+
+@dataclass(frozen=True)
+class QuranPageWordRecord:
+    position: int
+    text_uthmani: str
+    page: int
+    line: int
+    is_ayah_marker: bool
 
 
 def cached_json(url: str, destination: Path) -> dict | list:
@@ -107,7 +117,9 @@ def fetch_quran_text(cache_dir: Path) -> list[QuranVerseRecord]:
         while True:
             query = urllib.parse.urlencode(
                 {
+                    "words": "true",
                     "fields": "text_uthmani",
+                    "word_fields": "text_uthmani",
                     "per_page": 50,
                     "page": page,
                 }
@@ -128,8 +140,23 @@ def fetch_quran_text(cache_dir: Path) -> list[QuranVerseRecord]:
                         surah=surah,
                         ayah=ayah,
                         text_uthmani=legacy.clean_text(verse["text_uthmani"]),
+                        words=tuple(
+                            QuranPageWordRecord(
+                                position=int(word["position"]),
+                                text_uthmani=legacy.clean_text(
+                                    word.get("text_uthmani") or word.get("text")
+                                ),
+                                page=int(word["page_number"]),
+                                line=int(word["line_number"]),
+                                is_ayah_marker=word.get("char_type_name") == "end",
+                            )
+                            for word in verse.get("words", [])
+                            if word.get("char_type_name") in {"word", "end"}
+                        ),
                     )
                 )
+                if not verses[-1].words or not verses[-1].words[-1].is_ayah_marker:
+                    raise RuntimeError(f"Missing word layout for ayah {surah}:{ayah}")
                 expected_ayah += 1
             pagination = payload.get("pagination") or {}
             total_pages = int(pagination.get("total_pages") or 1)
@@ -294,9 +321,19 @@ def write_quran_text(verses: list[QuranVerseRecord], destination: Path) -> None:
             with io.TextIOWrapper(compressed, encoding="utf-8", newline="\n") as output:
                 output.write(QURAN_TEXT_FORMAT_HEADER + "\n")
                 for verse in verses:
-                    output.write(
-                        f"{verse.surah}\t{verse.ayah}\t{safe_field(verse.text_uthmani)}\n"
-                    )
+                    for word in verse.words:
+                        fields = [
+                            str(word.page),
+                            str(word.line),
+                            str(verse.surah),
+                            str(verse.ayah),
+                            str(word.position),
+                            "end" if word.is_ayah_marker else "word",
+                            word.text_uthmani,
+                        ]
+                        output.write(
+                            "\t".join(safe_field(field) for field in fields) + "\n"
+                        )
 
 
 def kotlin_string(value: str) -> str:
@@ -366,7 +403,8 @@ def main() -> None:
     if args.reader_only:
         verses = fetch_quran_text(args.api_cache)
         write_quran_text(verses, args.quran_output)
-        print(f"Generated {len(verses)} Quran reader ayahs")
+        token_count = sum(len(verse.words) for verse in verses)
+        print(f"Generated {len(verses)} Quran reader ayahs with {token_count} layout tokens")
         print(f"Quran reader asset size: {args.quran_output.stat().st_size} bytes")
         return
 
@@ -395,7 +433,8 @@ def main() -> None:
 
     print(f"Generated {len(records)} corpus cards")
     print(f"Corpus asset size: {args.corpus_output.stat().st_size} bytes")
-    print(f"Generated {len(quran_verses)} Quran reader ayahs")
+    token_count = sum(len(verse.words) for verse in quran_verses)
+    print(f"Generated {len(quran_verses)} Quran reader ayahs with {token_count} layout tokens")
     print(f"Quran reader asset size: {args.quran_output.stat().st_size} bytes")
     print(f"Portuguese glosses in cache: {len(translations)}")
 

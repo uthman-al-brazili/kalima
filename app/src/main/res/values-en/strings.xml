@@ -10,6 +10,16 @@
 
     <string name="quran_reader_title">Quran</string>
     <string name="quran_reader_subtitle">Read all 114 surahs in Arabic, even without internet.</string>
+    <string name="quran_reader_page_hint">Tap a word for details · swipe to turn the page</string>
+    <string name="quran_open_word_details">Open word details</string>
+    <string name="quran_page_indicator">Page %1$d of %2$d</string>
+    <string name="quran_page_short">Page %1$d</string>
+    <string name="previous_page">Previous page</string>
+    <string name="next_page">Next page</string>
+    <string name="choose_quran_page">Go to page</string>
+    <string name="quran_page_range">Page number (1–%1$d)</string>
+    <string name="open_quran_page">Open page</string>
+    <string name="quran_reader_unavailable">The offline Quran pages could not be opened.</string>
     <string name="quran_selected_surah">%1$d. %2$s · %3$s</string>
     <string name="previous_surah">Previous</string>
     <string name="next_surah">Next</string>
@@ -30,17 +40,9 @@
     <string name="root_value">Root  %1$s</string>
     <string name="reference_root">%1$s  •  root %2$s</string>
     <string name="listen_pronunciation">Hear pronunciation</string>
-    <string name="pronunciation_loading">The Arabic voice is being prepared. Try again in a moment.</string>
-    <string name="pronunciation_unavailable">No Arabic voice is installed. Opening Android’s voice installation screen.</string>
-    <string name="pronunciation_installation_failed">The voice installer could not be opened. Open Settings and search for “Text-to-speech”.</string>
     <string name="pronunciation_failed">The pronunciation could not be played. Please try again.</string>
     <string name="offline_word_audio_missing">This real recording has not been saved yet. Connect once or download the selected audio in Settings.</string>
-    <string name="arabic_voice_setup_title">Enable the Arabic voice</string>
-    <string name="arabic_voice_choose_google">Kalima could not find an Arabic voice in this phone’s current text-to-speech engine. In Android’s Text-to-speech settings, set “Speech Recognition &amp; Synthesis from Google” as the Preferred engine, then open its settings and install Arabic voice data. If Google is not listed, install it from Google Play first.</string>
-    <string name="arabic_voice_install_google">Google is already the Preferred text-to-speech engine, but its Arabic voice data is unavailable. Open Text-to-speech settings, open the Google engine’s settings, and install Arabic voice data.</string>
-    <string name="open_tts_settings">Open Text-to-speech settings</string>
-    <string name="not_now_plain">Not now</string>
-
+    <string name="offline_verse_audio_missing">This Al-Hussary ayah recitation has not been saved yet. Connect once or download the selected audio in Settings.</string>
     <string name="study_lock_screen_title">Study whenever you turn on the screen</string>
     <string name="study_lock_screen_description">Enable Kalima’s main feature to receive a word whenever the screen turns on.</string>
     <string name="enable">Enable</string>
@@ -254,12 +256,11 @@
     <string name="my_list_filter">My list</string>
     <string name="device_voice_slow">Play slowly</string>
     <string name="device_voice_repeat">Repeat 3×</string>
-    <string name="device_voice_verse">Hear verse · device voice</string>
-    <string name="audio_disclosure">Individual words always use Quran.com’s exact human recording, never synthesized speech. Recordings played online are saved on this device; you can also download the selected study content’s audio at once.</string>
-    <string name="arabic_voice_settings_observation">Android’s synthesized voice is used only for complete verse excerpts, never for individual words.</string>
+    <string name="hussary_verse_recitation">Hear ayah · Al-Hussary</string>
+    <string name="audio_disclosure">Individual words use Quran.com’s human recordings. Complete ayahs use Mahmoud Khalil Al-Hussary’s Murattal recitation from EveryAyah. Quran audio is never synthesized. Recordings played online are saved on this device; you can also download the selected study content’s audio at once.</string>
     <string name="offline_audio_download_title">Download real recordings</string>
-    <string name="offline_audio_download_confirmation">Download %1$d Quran.com recordings (approximately %2$d MB) for the selected study content? Existing downloads will be reused. Wi-Fi is recommended.</string>
-    <string name="offline_audio_download_estimate">%1$d selected words · up to approximately %2$d MB</string>
+    <string name="offline_audio_download_confirmation">Download %1$d word recordings and %2$d Al-Hussary ayah recitations (approximately %3$d MB) for the selected study content? Existing downloads will be reused. Wi-Fi is recommended.</string>
+    <string name="offline_audio_download_estimate">%1$d words · %2$d ayahs · up to approximately %3$d MB</string>
     <string name="offline_audio_download_progress">Saving recording %1$d of %2$d</string>
     <string name="offline_audio_download_result">Downloaded: %1$d · already available: %2$d · failed: %3$d</string>
     <string name="download_selected_audio">Download selected audio</string>

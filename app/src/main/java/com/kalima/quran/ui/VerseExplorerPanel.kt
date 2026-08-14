@@ -106,13 +106,16 @@ fun VerseExplorerPanel(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WordExplorerSheet(
+internal fun WordExplorerSheet(
     word: QuranWord,
     indexed: Boolean,
     onDismiss: () -> Unit,
     onOpenWord: ((String) -> Unit)?,
 ) {
-    val occurrences = remember(word.id) { WordRepository.concordance(word) }
+    val pronouncer = rememberArabicPronouncer()
+    val occurrences = remember(word.id, indexed) {
+        if (indexed) WordRepository.concordance(word) else emptyList()
+    }
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
@@ -134,6 +137,11 @@ private fun WordExplorerSheet(
             if (indexed) RootAndGrammar(word.root, word.grammar)
             Text(word.reference, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             CitationActions(word)
+            VersePronunciationButton(
+                word = word,
+                pronouncer = pronouncer,
+                modifier = Modifier.fillMaxWidth(),
+            )
             if (onOpenWord != null) {
                 Button(
                     onClick = {

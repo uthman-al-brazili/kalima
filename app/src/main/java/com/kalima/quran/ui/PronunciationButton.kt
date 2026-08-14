@@ -1,64 +1,39 @@
 package com.kalima.quran.ui
 
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
-import com.kalima.quran.audio.ArabicVoiceInstaller
 import com.kalima.quran.audio.PronunciationResult
+import com.kalima.quran.data.QuranVerseAudioLocation
 import com.kalima.quran.data.QuranWord
-import androidx.annotation.StringRes
 
 @Composable
 fun rememberArabicPronouncer(): ArabicPronouncer {
     val applicationContext = LocalContext.current.applicationContext
-    val lifecycleOwner = LocalLifecycleOwner.current
     val pronouncer = remember(applicationContext) { ArabicPronouncer(applicationContext) }
-    DisposableEffect(pronouncer, lifecycleOwner) {
-        var refreshOnResume = false
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_PAUSE -> refreshOnResume = true
-                Lifecycle.Event.ON_RESUME -> if (refreshOnResume) {
-                    refreshOnResume = false
-                    pronouncer.refreshEngine()
-                }
-                else -> Unit
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-            pronouncer.shutdown()
-        }
+    DisposableEffect(pronouncer) {
+        onDispose(pronouncer::shutdown)
     }
     return pronouncer
 }
@@ -77,7 +52,6 @@ fun PronunciationButton(
     borderColor: Color = Color.Unspecified,
 ) {
     PronunciationControl(
-        pronouncer = pronouncer,
         play = { onPlaybackResult ->
             pronouncer.speakWord(
                 location = word.audioLocation,
@@ -90,38 +64,40 @@ fun PronunciationButton(
         compact = compact,
         dense = dense,
         labelRes = labelRes,
+        offlineMessageRes = R.string.offline_word_audio_missing,
         contentColor = contentColor,
         borderColor = borderColor,
     )
 }
 
 @Composable
-fun TextPronunciationButton(
-    arabic: String,
+fun VersePronunciationButton(
+    word: QuranWord,
     pronouncer: ArabicPronouncer,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
     dense: Boolean = false,
-    @StringRes labelRes: Int = R.string.listen_pronunciation,
-    speechRate: Float = ArabicPronouncer.DEFAULT_RATE,
+    @StringRes labelRes: Int = R.string.hussary_verse_recitation,
+    playbackRate: Float = ArabicPronouncer.VERSE_DEFAULT_RATE,
     repeatCount: Int = 1,
     contentColor: Color = Color.Unspecified,
     borderColor: Color = Color.Unspecified,
 ) {
+    val verseLocation = word.audioLocation?.let(QuranVerseAudioLocation::fromWord)
     PronunciationControl(
-        pronouncer = pronouncer,
-        play = { onDeferredResult ->
-            pronouncer.speak(
-                text = arabic,
-                speechRate = speechRate,
+        play = { onPlaybackResult ->
+            pronouncer.speakVerse(
+                location = verseLocation,
+                playbackRate = playbackRate,
                 repeatCount = repeatCount,
-                onDeferredResult = onDeferredResult,
+                onPlaybackResult = onPlaybackResult,
             )
         },
         modifier = modifier,
         compact = compact,
         dense = dense,
         labelRes = labelRes,
+        offlineMessageRes = R.string.offline_verse_audio_missing,
         contentColor = contentColor,
         borderColor = borderColor,
     )
@@ -129,12 +105,12 @@ fun TextPronunciationButton(
 
 @Composable
 private fun PronunciationControl(
-    pronouncer: ArabicPronouncer,
     play: ((PronunciationResult) -> Unit) -> PronunciationResult,
     modifier: Modifier,
     compact: Boolean,
     dense: Boolean,
     @StringRes labelRes: Int,
+    @StringRes offlineMessageRes: Int,
     contentColor: Color,
     borderColor: Color,
 ) {
@@ -149,21 +125,12 @@ private fun PronunciationControl(
         borderColor
     }
     val context = LocalContext.current
-    var showVoiceSetup by rememberSaveable { mutableStateOf(false) }
     val label = stringResource(labelRes)
-    val loadingMessage = stringResource(R.string.pronunciation_loading)
-    val installationFailedMessage = stringResource(R.string.pronunciation_installation_failed)
     val failedMessage = stringResource(R.string.pronunciation_failed)
-    val offlineAudioMissingMessage = stringResource(R.string.offline_word_audio_missing)
+    val offlineAudioMissingMessage = stringResource(offlineMessageRes)
     fun handleResult(result: PronunciationResult) {
         when (result) {
             PronunciationResult.Started -> Unit
-            PronunciationResult.Initializing -> {
-                Toast.makeText(context, loadingMessage, Toast.LENGTH_LONG).show()
-            }
-            PronunciationResult.Unavailable -> {
-                showVoiceSetup = true
-            }
             PronunciationResult.OfflineAudioMissing -> {
                 Toast.makeText(context, offlineAudioMissingMessage, Toast.LENGTH_LONG).show()
             }
@@ -172,51 +139,7 @@ private fun PronunciationControl(
             }
         }
     }
-    val onClick: () -> Unit = {
-        handleResult(play(::handleResult))
-    }
-
-    if (showVoiceSetup) {
-        val googleIsDefault = ArabicVoiceInstaller.isGoogleEngine(
-            pronouncer.preferredEnginePackage(),
-        )
-        AlertDialog(
-            onDismissRequest = { showVoiceSetup = false },
-            title = { Text(stringResource(R.string.arabic_voice_setup_title)) },
-            text = {
-                Text(
-                    stringResource(
-                        if (googleIsDefault) {
-                            R.string.arabic_voice_install_google
-                        } else {
-                            R.string.arabic_voice_choose_google
-                        },
-                    ),
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showVoiceSetup = false
-                        if (!ArabicVoiceInstaller.open(context)) {
-                            Toast.makeText(
-                                context,
-                                installationFailedMessage,
-                                Toast.LENGTH_LONG,
-                            ).show()
-                        }
-                    },
-                ) {
-                    Text(stringResource(R.string.open_tts_settings))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showVoiceSetup = false }) {
-                    Text(stringResource(R.string.not_now_plain))
-                }
-            },
-        )
-    }
+    val onClick: () -> Unit = { handleResult(play(::handleResult)) }
 
     if (compact) {
         IconButton(onClick = onClick, modifier = modifier) {

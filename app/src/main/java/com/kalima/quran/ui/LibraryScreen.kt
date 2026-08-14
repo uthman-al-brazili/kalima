@@ -247,11 +247,11 @@ private fun LibraryWordCard(
                 Spacer(Modifier.height(14.dp))
                 if (showCompleteAyah) {
                     VerseExplorerPanel(word)
-                    TextPronunciationButton(
-                        arabic = word.verseArabic,
+                    VersePronunciationButton(
+                        word = word,
                         pronouncer = pronouncer,
                         modifier = Modifier.fillMaxWidth(),
-                        labelRes = R.string.device_voice_verse,
+                        labelRes = R.string.hussary_verse_recitation,
                     )
                     OutlinedButton(
                         onClick = { onShowCompleteAyahChange(false) },

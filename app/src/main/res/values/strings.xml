@@ -10,6 +10,16 @@
 
     <string name="quran_reader_title">Alcorão</string>
     <string name="quran_reader_subtitle">Leia todas as 114 suras em árabe, mesmo sem internet.</string>
+    <string name="quran_reader_page_hint">Toque em uma palavra para ver detalhes · deslize para virar a página</string>
+    <string name="quran_open_word_details">Abrir detalhes da palavra</string>
+    <string name="quran_page_indicator">Página %1$d de %2$d</string>
+    <string name="quran_page_short">Página %1$d</string>
+    <string name="previous_page">Página anterior</string>
+    <string name="next_page">Próxima página</string>
+    <string name="choose_quran_page">Ir para a página</string>
+    <string name="quran_page_range">Número da página (1–%1$d)</string>
+    <string name="open_quran_page">Abrir página</string>
+    <string name="quran_reader_unavailable">Não foi possível abrir as páginas offline do Alcorão.</string>
     <string name="quran_selected_surah">%1$d. %2$s · %3$s</string>
     <string name="previous_surah">Anterior</string>
     <string name="next_surah">Próxima</string>
@@ -30,17 +40,9 @@
     <string name="root_value">Raiz  %1$s</string>
     <string name="reference_root">%1$s  •  raiz %2$s</string>
     <string name="listen_pronunciation">Ouvir pronúncia</string>
-    <string name="pronunciation_loading">A voz árabe está sendo preparada. Tente novamente em instantes.</string>
-    <string name="pronunciation_unavailable">Nenhuma voz árabe está instalada. Abrindo a instalação de vozes do Android.</string>
-    <string name="pronunciation_installation_failed">Não foi possível abrir a instalação de vozes. Abra Configurações e procure por “Síntese de voz”.</string>
     <string name="pronunciation_failed">Não foi possível reproduzir a pronúncia. Tente novamente.</string>
     <string name="offline_word_audio_missing">Esta gravação real ainda não está salva. Conecte-se uma vez ou baixe o áudio selecionado em Ajustes.</string>
-    <string name="arabic_voice_setup_title">Ativar a voz árabe</string>
-    <string name="arabic_voice_choose_google">O Kalima não encontrou uma voz árabe no mecanismo de síntese de voz atual deste celular. Nos ajustes de síntese de voz do Android, defina “Serviços de voz do Google” como mecanismo preferido; depois, abra os ajustes dele e instale os dados de voz em árabe. Se o Google não aparecer na lista, instale-o primeiro pela Google Play.</string>
-    <string name="arabic_voice_install_google">O Google já é o mecanismo de síntese de voz preferido, mas os dados da voz árabe não estão disponíveis. Abra os ajustes de síntese de voz, entre nos ajustes do mecanismo do Google e instale os dados de voz em árabe.</string>
-    <string name="open_tts_settings">Abrir ajustes de síntese de voz</string>
-    <string name="not_now_plain">Agora não</string>
-
+    <string name="offline_verse_audio_missing">Esta recitação do ayah por Al-Hussary ainda não está salva. Conecte-se uma vez ou baixe o áudio selecionado em Ajustes.</string>
     <string name="study_lock_screen_title">Estude sempre que ligar a tela</string>
     <string name="study_lock_screen_description">Ative a função principal do Kalima para receber uma palavra sempre que a tela acender.</string>
     <string name="enable">Ativar</string>
@@ -254,12 +256,11 @@
     <string name="my_list_filter">Minha lista</string>
     <string name="device_voice_slow">Ouvir devagar</string>
     <string name="device_voice_repeat">Repetir 3×</string>
-    <string name="device_voice_verse">Ouvir verso · voz do aparelho</string>
-    <string name="audio_disclosure">As palavras individuais sempre usam a gravação humana exata do Quran.com, nunca uma voz sintetizada. Quando reproduzidas com internet, elas ficam salvas neste aparelho; você também pode baixar de uma vez o áudio do conteúdo de estudo selecionado.</string>
-    <string name="arabic_voice_settings_observation">A voz sintetizada do Android é usada somente para trechos completos de versículos, nunca para palavras individuais.</string>
+    <string name="hussary_verse_recitation">Ouvir ayah · Al-Hussary</string>
+    <string name="audio_disclosure">As palavras individuais usam gravações humanas do Quran.com. Os ayahs completos usam a recitação Murattal de Mahmoud Khalil Al-Hussary, fornecida pelo EveryAyah. O áudio do Alcorão nunca é sintetizado. As gravações ouvidas com internet ficam salvas neste aparelho; você também pode baixar de uma vez o áudio do conteúdo de estudo selecionado.</string>
     <string name="offline_audio_download_title">Baixar gravações reais</string>
-    <string name="offline_audio_download_confirmation">Baixar %1$d gravações do Quran.com (aproximadamente %2$d MB) para o conteúdo de estudo selecionado? Downloads existentes serão reutilizados. Recomendamos Wi-Fi.</string>
-    <string name="offline_audio_download_estimate">%1$d palavras selecionadas · até aproximadamente %2$d MB</string>
+    <string name="offline_audio_download_confirmation">Baixar %1$d gravações de palavras e %2$d recitações de ayahs por Al-Hussary (aproximadamente %3$d MB) para o conteúdo de estudo selecionado? Downloads existentes serão reutilizados. Recomendamos Wi-Fi.</string>
+    <string name="offline_audio_download_estimate">%1$d palavras · %2$d ayahs · até aproximadamente %3$d MB</string>
     <string name="offline_audio_download_progress">Salvando gravação %1$d de %2$d</string>
     <string name="offline_audio_download_result">Baixadas: %1$d · já disponíveis: %2$d · falhas: %3$d</string>
     <string name="download_selected_audio">Baixar áudio selecionado</string>

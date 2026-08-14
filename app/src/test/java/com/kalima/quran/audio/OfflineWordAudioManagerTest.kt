@@ -10,4 +10,9 @@ class OfflineWordAudioManagerTest {
         assertEquals(7L, OfflineWordAudioManager.estimatedMegabytes(100))
         assertEquals(34L, OfflineWordAudioManager.estimatedMegabytes(500))
     }
+
+    @Test
+    fun `includes unique ayah recitations in the download estimate`() {
+        assertEquals(2L, OfflineWordAudioManager.estimatedMegabytes(wordCount = 10, verseCount = 2))
+    }
 }

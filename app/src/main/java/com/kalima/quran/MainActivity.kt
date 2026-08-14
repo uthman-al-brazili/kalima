@@ -25,7 +25,6 @@ import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.ProgressBackupCodec
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
-import com.kalima.quran.audio.ArabicVoiceInstaller
 import com.kalima.quran.audio.OfflineWordAudioManager
 import com.kalima.quran.lockscreen.LockScreenStudyService
 import com.kalima.quran.lockscreen.LockScreenStudyActivity
@@ -123,7 +122,6 @@ class MainActivity : ComponentActivity() {
                 onToggleAlreadyKnown = store::toggleAlreadyKnown,
                 onCompleteOnboarding = store::completeOnboarding,
                 onOpenAppSettings = ::openAppSettings,
-                onOpenTextToSpeechSettings = ::openTextToSpeechSettings,
                 onPreviewLockScreen = ::previewLockScreen,
                 currentLanguage = LanguageManager.selectedLanguage(this),
                 onLanguageChange = ::changeLanguage,
@@ -140,10 +138,10 @@ class MainActivity : ComponentActivity() {
                 onConfirmBackupImport = ::confirmBackupImport,
                 onCancelBackupImport = { pendingBackupImport = null },
                 offlineWordAudioState = offlineWordAudioState,
-                onDownloadOfflineWordAudio = { locations ->
+                onDownloadOfflineWordAudio = { wordLocations, verseLocations ->
                     if (offlineWordAudioJob?.isActive != true) {
                         offlineWordAudioJob = lifecycleScope.launch {
-                            offlineWordAudioManager.download(locations)
+                            offlineWordAudioManager.download(wordLocations, verseLocations)
                         }
                     }
                 },
@@ -214,16 +212,6 @@ class MainActivity : ComponentActivity() {
                 "package:$packageName".toUri(),
             ),
         )
-    }
-
-    private fun openTextToSpeechSettings() {
-        if (!ArabicVoiceInstaller.open(this)) {
-            Toast.makeText(
-                this,
-                R.string.pronunciation_installation_failed,
-                Toast.LENGTH_LONG,
-            ).show()
-        }
     }
 
     private fun previewLockScreen() {

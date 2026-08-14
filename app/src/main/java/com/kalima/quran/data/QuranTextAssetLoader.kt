@@ -4,34 +4,43 @@ import java.io.BufferedInputStream
 import java.io.InputStream
 import java.util.zip.GZIPInputStream
 
-data class QuranVerse(
+data class QuranPageToken(
+    val pageNumber: Int,
+    val lineNumber: Int,
     val surahNumber: Int,
     val ayahNumber: Int,
+    val wordNumber: Int,
     val arabic: String,
+    val isAyahMarker: Boolean,
 )
 
 internal object QuranTextAssetLoader {
     // Android expands .gz assets and exposes them without the compression suffix.
     const val ASSET_NAME = "quran_arabic.tsv"
-    private const val FORMAT_HEADER = "#kalima-quran-text-v1"
+    private const val FORMAT_HEADER = "#kalima-quran-pages-v2"
+    private const val FIELD_COUNT = 7
 
-    fun load(input: InputStream): List<QuranVerse> {
-        val verses = ArrayList<QuranVerse>(6_236)
+    fun load(input: InputStream): List<QuranPageToken> {
+        val tokens = ArrayList<QuranPageToken>(84_000)
         decoded(input).bufferedReader(Charsets.UTF_8).use { reader ->
             require(reader.readLine() == FORMAT_HEADER) { "Unrecognized Quran text format" }
             reader.lineSequence().forEachIndexed { index, line ->
-                val fields = line.split('\t', limit = 3)
-                require(fields.size == 3) {
+                val fields = line.split('\t', limit = FIELD_COUNT)
+                require(fields.size == FIELD_COUNT) {
                     "Invalid Quran text record on line ${index + 2}: ${fields.size} fields"
                 }
-                verses += QuranVerse(
-                    surahNumber = fields[0].toInt(),
-                    ayahNumber = fields[1].toInt(),
-                    arabic = fields[2],
+                tokens += QuranPageToken(
+                    pageNumber = fields[0].toInt(),
+                    lineNumber = fields[1].toInt(),
+                    surahNumber = fields[2].toInt(),
+                    ayahNumber = fields[3].toInt(),
+                    wordNumber = fields[4].toInt(),
+                    isAyahMarker = fields[5] == "end",
+                    arabic = fields[6],
                 )
             }
         }
-        return verses
+        return tokens
     }
 
     private fun decoded(input: InputStream): InputStream {

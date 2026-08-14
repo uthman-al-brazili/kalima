@@ -48,6 +48,29 @@ class WordRepositoryTest {
     }
 
     @Test
+    fun readerWordUsesTheTappedOccurrenceForItsCitation() {
+        val token = QuranPageToken(
+            pageNumber = 1,
+            lineNumber = 2,
+            surahNumber = 1,
+            ayahNumber = 1,
+            wordNumber = 2,
+            arabic = "ٱللَّهِ",
+            isAyahMarker = false,
+        )
+
+        val word = requireNotNull(
+            WordRepository.readerWordFor(
+                token,
+                "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+            ),
+        )
+
+        assertEquals("Al-Fatihah 1:1", word.reference)
+        assertEquals(QuranWordAudioLocation(1, 1, 2), word.audioLocation)
+    }
+
+    @Test
     fun generatedCorpusContainsFrequentWordsAndEveryLastSurah() {
         assertEquals((1..114).toList(), WordRepository.selectableSurahs.map(QuranSurah::number))
         assertEquals(100, WordRepository.frequentWords.size)

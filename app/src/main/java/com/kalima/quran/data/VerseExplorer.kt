@@ -29,5 +29,6 @@ object VerseExplorer {
         .replace('أ', 'ا')
         .replace('إ', 'ا')
         .replace('آ', 'ا')
+        .replace("ـ", "")
         .trim()
 }

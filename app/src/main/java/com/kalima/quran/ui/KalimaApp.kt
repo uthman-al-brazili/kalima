@@ -33,6 +33,7 @@ import com.kalima.quran.data.AppThemeMode
 import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.QuranWordAudioLocation
+import com.kalima.quran.data.QuranVerseAudioLocation
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.ui.theme.KalimaTheme
@@ -70,7 +71,6 @@ fun KalimaApp(
     onToggleAlreadyKnown: (String) -> Unit,
     onCompleteOnboarding: (StudyScope, Int) -> Unit,
     onOpenAppSettings: () -> Unit,
-    onOpenTextToSpeechSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
     currentLanguage: AppLanguage,
     onLanguageChange: (AppLanguage) -> Unit,
@@ -87,7 +87,7 @@ fun KalimaApp(
     onConfirmBackupImport: () -> Unit,
     onCancelBackupImport: () -> Unit,
     offlineWordAudioState: OfflineWordAudioDownloadState,
-    onDownloadOfflineWordAudio: (List<QuranWordAudioLocation>) -> Unit,
+    onDownloadOfflineWordAudio: (List<QuranWordAudioLocation>, List<QuranVerseAudioLocation>) -> Unit,
     onCancelOfflineWordAudio: () -> Unit,
     studyLaunchTarget: StudyLaunchTarget? = null,
 ) {
@@ -193,7 +193,6 @@ fun KalimaApp(
                             onLockScreenQuizIntervalChange = onLockScreenQuizIntervalChange,
                             onMaximumWordsChange = onMaximumWordsChange,
                             onOpenAppSettings = onOpenAppSettings,
-                            onOpenTextToSpeechSettings = onOpenTextToSpeechSettings,
                             onPreviewLockScreen = onPreviewLockScreen,
                             onQuietHoursEnabledChange = onQuietHoursEnabledChange,
                             onQuietHoursChange = onQuietHoursChange,

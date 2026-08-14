@@ -3,6 +3,22 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.24.0 — 2026-08-14
+
+- Replaced synthesized full-ayah speech with Mahmoud Khalil Al-Hussary’s
+  verse-by-verse Murattal recitation throughout study cards and Quran word
+  details.
+- Cached Al-Hussary recitations after online playback and added each selected
+  ayah to the existing offline audio download, with no synthesized Quran audio
+  fallback.
+- Rebuilt the Quran tab as a calm 604-page reader that follows the bundled
+  Mushaf page and line layout, with swipe navigation and direct jumps by page
+  or surah.
+- Made every Quran word tappable for offline transliteration, meaning, grammar,
+  verse context, and citation details.
+- Reduced visual clutter in the reader to keep attention on the Arabic page,
+  while leaving navigation and word details available only when needed.
+
 ## 0.23.1 — 2026-08-14
 
 - Fixed the startup crash introduced in 0.23.0 by opening the offline Quran
