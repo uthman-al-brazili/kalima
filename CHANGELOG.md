@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.24.2 — 2026-08-14
+
+- Kept Quran text at a comfortably readable size instead of shrinking long
+  Mushaf rows to fit narrow screens.
+- Wrapped long Arabic rows within the page margins so letters and words are no
+  longer clipped, while preserving tap-for-details and vertical scrolling.
+
 ## 0.24.1 — 2026-08-14
 
 - Made Quran pages turn in right-to-left reading order, including swipe gestures

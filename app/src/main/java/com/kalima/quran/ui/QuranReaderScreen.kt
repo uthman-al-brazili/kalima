@@ -3,7 +3,6 @@ package com.kalima.quran.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -34,7 +33,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -42,7 +40,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.ui.text.buildAnnotatedString
@@ -309,52 +306,31 @@ private fun QuranPageLine(
     }
     val baseStyle = MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.onSurface,
-        fontSize = QURAN_LINE_MAX_FONT_SIZE.sp,
+        fontSize = QURAN_LINE_FONT_SIZE.sp,
         lineHeight = QURAN_LINE_HEIGHT.sp,
         textAlign = TextAlign.Center,
         textDirection = TextDirection.Rtl,
         localeList = LocaleList(Locale("ar")),
     )
-    val textMeasurer = rememberTextMeasurer()
-    val density = LocalDensity.current
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            val availableWidthPx = with(density) { maxWidth.toPx() }
-            val naturalWidthPx = remember(line, baseStyle) {
-                textMeasurer.measure(
-                    text = line,
-                    style = baseStyle,
-                    softWrap = false,
-                    maxLines = 1,
-                ).size.width.toFloat()
-            }
-            val fittedFontSize = remember(availableWidthPx, naturalWidthPx) {
-                if (naturalWidthPx <= availableWidthPx || naturalWidthPx == 0f) {
-                    QURAN_LINE_MAX_FONT_SIZE
-                } else {
-                    (QURAN_LINE_MAX_FONT_SIZE * availableWidthPx / naturalWidthPx)
-                        .coerceAtLeast(QURAN_LINE_MIN_FONT_SIZE)
-                }
-            }
-            @Suppress("DEPRECATION")
-            ClickableText(
-                text = line,
-                modifier = Modifier.fillMaxWidth(),
-                style = baseStyle.copy(fontSize = fittedFontSize.sp),
-                softWrap = false,
-                maxLines = 1,
-                overflow = TextOverflow.Clip,
-                onClick = { offset ->
-                    line.getStringAnnotations(QURAN_WORD_ANNOTATION, offset, offset)
-                        .firstOrNull()
-                        ?.item
-                        ?.toIntOrNull()
-                        ?.let(content.words::getOrNull)
-                        ?.let(onWordClick)
-                },
-            )
-        }
+        @Suppress("DEPRECATION")
+        ClickableText(
+            text = line,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+            style = baseStyle,
+            softWrap = true,
+            maxLines = Int.MAX_VALUE,
+            overflow = TextOverflow.Clip,
+            onClick = { offset ->
+                line.getStringAnnotations(QURAN_WORD_ANNOTATION, offset, offset)
+                    .firstOrNull()
+                    ?.item
+                    ?.toIntOrNull()
+                    ?.let(content.words::getOrNull)
+                    ?.let(onWordClick)
+            },
+        )
     }
 }
 
@@ -571,6 +547,5 @@ private fun QuranPageToken.asUnindexedWord(verseArabic: String): QuranWord {
 
 private const val BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"
 private const val QURAN_WORD_ANNOTATION = "quran-word"
-private const val QURAN_LINE_MAX_FONT_SIZE = 22f
-private const val QURAN_LINE_MIN_FONT_SIZE = 10f
-private const val QURAN_LINE_HEIGHT = 30f
+private const val QURAN_LINE_FONT_SIZE = 22f
+private const val QURAN_LINE_HEIGHT = 34f
