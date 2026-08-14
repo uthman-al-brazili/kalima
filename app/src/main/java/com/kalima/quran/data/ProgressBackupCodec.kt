@@ -56,6 +56,7 @@ object ProgressBackupCodec {
             "lockScreenQuizInterval" to progress.lockScreenQuizInterval.toString(),
             "themeMode" to progress.themeMode.name,
             "advancedSettingsVisible" to progress.advancedSettingsVisible.toString(),
+            "showCompleteAyah" to progress.showCompleteAyah.toString(),
             "spacedRepetitionEnabled" to progress.spacedRepetitionEnabled.toString(),
             "currentStudyWordId" to progress.currentStudyWordId.orEmpty(),
             "reviewSchedules" to encodeSet(ReviewScheduleCodec.encode(progress.reviewSchedules)),
@@ -169,6 +170,7 @@ object ProgressBackupCodec {
             themeMode = AppThemeMode.entries.firstOrNull { it.name == values.required("themeMode") }
                 ?: throw invalid("Backup has an invalid theme"),
             advancedSettingsVisible = values.boolean("advancedSettingsVisible"),
+            showCompleteAyah = values.optionalBoolean("showCompleteAyah", false),
             spacedRepetitionEnabled = values.boolean("spacedRepetitionEnabled"),
             currentStudyWordId = currentWordId,
             reviewSchedules = schedules,
@@ -200,6 +202,15 @@ object ProgressBackupCodec {
         "false" -> false
         else -> throw invalid("Backup field '$key' is invalid: $value")
     }
+
+    private fun Map<String, String>.optionalBoolean(key: String, default: Boolean): Boolean =
+        this[key]?.let { value ->
+            when (value) {
+                "true" -> true
+                "false" -> false
+                else -> throw invalid("Backup field '$key' is invalid: $value")
+            }
+        } ?: default
 
     private fun Map<String, String>.encodedSet(key: String): Set<String> =
         decodeSet(required(key))

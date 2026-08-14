@@ -115,6 +115,7 @@ class MainActivity : ComponentActivity() {
                 onMaximumWordsChange = store::setMaximumWords,
                 onThemeModeChange = store::setThemeMode,
                 onAdvancedSettingsVisibleChange = store::setAdvancedSettingsVisible,
+                onShowCompleteAyahChange = store::setShowCompleteAyah,
                 onSpacedRepetitionEnabledChange = store::setSpacedRepetitionEnabled,
                 onStudyScopeChange = store::setStudyScope,
                 onToggleSurah = store::toggleSurah,

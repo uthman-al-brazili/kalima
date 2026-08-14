@@ -23,6 +23,7 @@ class ProgressBackupCodecTest {
             customStudyIds = setOf("word-2"),
             reviewEvents = listOf(ReviewEvent(now, "word-1", true, false, ReviewSource.Study)),
             lockScreenCooldownMinutes = 15,
+            showCompleteAyah = true,
         )
         val encoded = ProgressBackupCodec.encode(progress, "0.17.0", "corpus", now)
         val decoded = ProgressBackupCodec.decode(encoded, "corpus", knownIds)
@@ -33,6 +34,7 @@ class ProgressBackupCodecTest {
         assertEquals(progress.reviewSchedules, decoded.progress.reviewSchedules)
         assertEquals(progress.customStudyIds, decoded.progress.customStudyIds)
         assertEquals(15, decoded.progress.lockScreenCooldownMinutes)
+        assertEquals(true, decoded.progress.showCompleteAyah)
     }
 
     @Test
@@ -72,6 +74,35 @@ class ProgressBackupCodecTest {
         assertEquals(
             emptySet<String>(),
             ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress.alreadyKnownIds,
+        )
+    }
+
+    @Test
+    fun backupsCreatedBeforeTheAyahPreferenceDefaultToHidden() {
+        val current = ProgressBackupCodec.encode(StudyProgress(), "0.22.0", "corpus", now)
+        val encodedPayload = current.lineSequence().first { it.startsWith("payload=") }
+            .removePrefix("payload=")
+        val payload = String(
+            Base64.getUrlDecoder().decode(encodedPayload),
+            StandardCharsets.UTF_8,
+        )
+        val legacyPayload = payload.lineSequence()
+            .filterNot { it.startsWith("showCompleteAyah\t") }
+            .joinToString("\n")
+        val legacyEncodedPayload = Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(legacyPayload.toByteArray(StandardCharsets.UTF_8))
+        val legacyChecksum = MessageDigest.getInstance("SHA-256")
+            .digest(legacyPayload.toByteArray(StandardCharsets.UTF_8))
+            .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        val legacy = listOf(
+            "#kalima-progress-backup-v1",
+            "sha256=$legacyChecksum",
+            "payload=$legacyEncodedPayload",
+        ).joinToString("\n")
+
+        assertEquals(
+            false,
+            ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress.showCompleteAyah,
         )
     }
 }

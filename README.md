@@ -11,6 +11,10 @@ Kalima é um aplicativo para Android e Windows inspirado na ideia de aprendizado
   voz sintetizada nas palavras individuais;
 - seletor de idioma em **Configurações**, com interface, significados, quizzes, notificações e cartões de tela bloqueada em português ou inglês;
 - trecho corânico contextualizado e paráfrase de estudo em português;
+- ayah completo oculto por padrão nos cartões, com uma escolha persistente para
+  mostrar ou ocultar o texto em cartões seguintes;
+- aba **Alcorão** com as 114 suras e 6.236 ayahs em árabe para leitura offline,
+  seleção pesquisável e navegação entre suras;
 - repetição espaçada persistente por palavra: erros voltam após 10 minutos;
   acertos avançam para 1 dia, 3 dias e intervalos progressivamente maiores,
   ajustados pelas falhas de memória;
@@ -157,7 +161,7 @@ Em **Progresso > Estudo ao ligar a tela**, o usuário pode ativar **Quiz ao liga
 O corpus embutido combina 16 cartões editoriais iniciais com um snapshot compactado de 42.101 cartões gerados. Antes de publicação:
 
 1. um especialista em árabe corânico deve revisar raízes, lemas, morfologia e paráfrases;
-2. o texto árabe deve ser importado sem alterações de uma fonte verificada;
+2. o texto árabe deve ser verificado contra uma fonte publicada e auditável;
 3. cada fonte e tradução deve ter licença e atribuição documentadas;
 4. significados devem permanecer vinculados ao contexto do versículo, evitando equivalências absolutas;
 5. testes automatizados devem garantir referência, forma textual e procedência de cada registro;
@@ -174,7 +178,9 @@ Veja também [CONTENT_REVIEW.md](CONTENT_REVIEW.md).
 
 ### Regenerar o snapshot
 
-O gerador reproduz as frequências, as 114 suras, os metadados e o corpus offline compactado. Na primeira execução ele baixa a morfologia e cria um cache editorial de glossários em português:
+O gerador reproduz as frequências, as 114 suras, os metadados, o corpus de
+vocabulário e o texto árabe completo para leitura offline. Na primeira execução
+ele baixa a morfologia e cria um cache editorial de glossários em português:
 
     C:\caminho\para\python.exe tools\generate_full_quran_corpus.py
 

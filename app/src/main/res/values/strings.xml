@@ -2,10 +2,25 @@
     <string name="app_name">Kalima</string>
 
     <string name="tab_study">Estudar</string>
+    <string name="tab_quran">Alcorão</string>
     <string name="tab_words">Palavras</string>
     <string name="tab_quiz">Quiz</string>
     <string name="tab_progress">Progresso</string>
     <string name="tab_settings">Ajustes</string>
+
+    <string name="quran_reader_title">Alcorão</string>
+    <string name="quran_reader_subtitle">Leia todas as 114 suras em árabe, mesmo sem internet.</string>
+    <string name="quran_selected_surah">%1$d. %2$s · %3$s</string>
+    <string name="previous_surah">Anterior</string>
+    <string name="next_surah">Próxima</string>
+    <string name="choose_surah_to_read">Escolha uma sura</string>
+    <string name="quran_surah_search_hint">Número ou nome da sura</string>
+    <plurals name="quran_ayah_count">
+        <item quantity="one">%1$d ayah</item>
+        <item quantity="other">%1$d ayahs</item>
+    </plurals>
+    <string name="show_complete_ayah">Mostrar ayah completo</string>
+    <string name="hide_complete_ayah">Ocultar ayah completo</string>
 
     <string name="status_new">Nova</string>
     <string name="status_reviewing">Revisando</string>

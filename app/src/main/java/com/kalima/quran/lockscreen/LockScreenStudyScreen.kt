@@ -48,6 +48,8 @@ fun LockScreenStudyScreen(
     word: QuranWord,
     spacedRepetitionEnabled: Boolean,
     initialRememberedSelection: Boolean?,
+    showCompleteAyah: Boolean,
+    onShowCompleteAyahChange: (Boolean) -> Unit,
     onSelect: (Boolean) -> Unit,
     onConfirm: () -> Unit,
     onAlreadyKnown: () -> Unit,
@@ -59,6 +61,7 @@ fun LockScreenStudyScreen(
         mutableStateOf(initialRememberedSelection)
     }
     var confirmingAlreadyKnown by rememberSaveable(word.id) { mutableStateOf(false) }
+    var completeAyahVisible by rememberSaveable { mutableStateOf(showCompleteAyah) }
     KalimaTheme {
         Surface(color = Forest, modifier = Modifier.fillMaxSize()) {
             Column(
@@ -198,13 +201,34 @@ fun LockScreenStudyScreen(
                         Column(Modifier.padding(20.dp)) {
                             Text(word.reference, color = Forest, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(8.dp))
-                            ArabicText(
-                                word.verseArabic,
-                                modifier = Modifier.fillMaxWidth(),
-                                size = 25,
-                                color = Forest,
-                                align = TextAlign.End,
-                            )
+                            if (completeAyahVisible) {
+                                ArabicText(
+                                    word.verseArabic,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    size = 25,
+                                    color = Forest,
+                                    align = TextAlign.End,
+                                )
+                                TextButton(
+                                    onClick = {
+                                        completeAyahVisible = false
+                                        onShowCompleteAyahChange(false)
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text(stringResource(R.string.hide_complete_ayah))
+                                }
+                            } else {
+                                OutlinedButton(
+                                    onClick = {
+                                        completeAyahVisible = true
+                                        onShowCompleteAyahChange(true)
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text(stringResource(R.string.show_complete_ayah))
+                                }
+                            }
                             Spacer(Modifier.height(14.dp))
                             HorizontalDivider(color = Muted.copy(alpha = 0.2f))
                             Spacer(Modifier.height(12.dp))

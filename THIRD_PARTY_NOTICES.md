@@ -1,6 +1,9 @@
 # Fontes e avisos de terceiros
 
-O snapshot de vocabulário em `quran_vocabulary.tsv.gz` e os metadados em `GeneratedQuranSurahs.kt` usam dados e serviços externos. Este arquivo registra a procedência técnica; ele não substitui uma análise jurídica antes da publicação do aplicativo.
+Os snapshots em `quran_vocabulary.tsv.gz` e `quran_arabic.tsv.gz`, além dos
+metadados em `GeneratedQuranSurahs.kt`, usam dados e serviços externos. Este
+arquivo registra a procedência técnica; ele não substitui uma análise jurídica
+antes da publicação do aplicativo.
 
 ## Quranic Arabic Corpus
 
@@ -15,7 +18,10 @@ A análise morfológica é distribuída sob a GNU GPL e requer atribuição à f
 - [Documentação da Content API v4](https://api-docs.quran.com/docs/category/content-apis/)
 - [Referência dos campos](https://api-docs.quran.com/docs/api/field-reference/)
 
-O gerador consulta a API para obter a forma Uthmani, a transliteração, o contexto do versículo e o glossário palavra por palavra em inglês. O uso em produção deve respeitar os termos e o fluxo de autenticação vigentes da Quran Foundation.
+O gerador consulta a API para obter a forma Uthmani, a transliteração, o
+contexto do versículo, o glossário palavra por palavra em inglês e os 6.236
+ayahs em árabe usados na aba de leitura offline. O uso em produção deve
+respeitar os termos e o fluxo de autenticação vigentes da Quran Foundation.
 
 ## Áudio palavra por palavra do Quran.com
 

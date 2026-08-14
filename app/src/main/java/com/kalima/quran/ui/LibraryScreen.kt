@@ -20,6 +20,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,6 +58,7 @@ fun LibraryScreen(
     pronouncer: ArabicPronouncer,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
+    onShowCompleteAyahChange: (Boolean) -> Unit,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var filterName by rememberSaveable { mutableStateOf(LibraryFilter.All.name) }
@@ -185,6 +187,8 @@ fun LibraryScreen(
                 alreadyKnown = word.id in progress.alreadyKnownIds,
                 onToggleCustomList = onToggleCustomList,
                 onToggleAlreadyKnown = onToggleAlreadyKnown,
+                showCompleteAyah = progress.showCompleteAyah,
+                onShowCompleteAyahChange = onShowCompleteAyahChange,
             )
         }
     }
@@ -201,6 +205,8 @@ private fun LibraryWordCard(
     alreadyKnown: Boolean,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
+    showCompleteAyah: Boolean,
+    onShowCompleteAyahChange: (Boolean) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
@@ -239,13 +245,28 @@ private fun LibraryWordCard(
             }
             if (expanded) {
                 Spacer(Modifier.height(14.dp))
-                VerseExplorerPanel(word)
-                TextPronunciationButton(
-                    arabic = word.verseArabic,
-                    pronouncer = pronouncer,
-                    modifier = Modifier.fillMaxWidth(),
-                    labelRes = R.string.device_voice_verse,
-                )
+                if (showCompleteAyah) {
+                    VerseExplorerPanel(word)
+                    TextPronunciationButton(
+                        arabic = word.verseArabic,
+                        pronouncer = pronouncer,
+                        modifier = Modifier.fillMaxWidth(),
+                        labelRes = R.string.device_voice_verse,
+                    )
+                    OutlinedButton(
+                        onClick = { onShowCompleteAyahChange(false) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.hide_complete_ayah))
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = { onShowCompleteAyahChange(true) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.show_complete_ayah))
+                    }
+                }
                 Spacer(Modifier.height(8.dp))
                 Text(
                     word.insight,

@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
@@ -38,6 +39,7 @@ import com.kalima.quran.ui.theme.KalimaTheme
 
 private enum class AppTab(@param:StringRes val labelRes: Int, @param:DrawableRes val iconRes: Int) {
     Study(R.string.tab_study, R.drawable.ic_study),
+    Quran(R.string.tab_quran, R.drawable.ic_quran),
     Library(R.string.tab_words, R.drawable.ic_library),
     Quiz(R.string.tab_quiz, R.drawable.ic_quiz),
     Progress(R.string.tab_progress, R.drawable.ic_progress),
@@ -60,6 +62,7 @@ fun KalimaApp(
     onMaximumWordsChange: (Int) -> Unit,
     onThemeModeChange: (AppThemeMode) -> Unit,
     onAdvancedSettingsVisibleChange: (Boolean) -> Unit,
+    onShowCompleteAyahChange: (Boolean) -> Unit,
     onSpacedRepetitionEnabledChange: (Boolean) -> Unit,
     onStudyScopeChange: (StudyScope) -> Unit,
     onToggleSurah: (Int) -> Unit,
@@ -94,6 +97,7 @@ fun KalimaApp(
         studyLaunchTarget.requestId != handledStudyRequestId
     val selected = if (hasPendingStudyRequest) AppTab.Study else AppTab.valueOf(selectedName)
     val pronouncer = rememberArabicPronouncer()
+    val screenStateHolder = rememberSaveableStateHolder()
 
     LaunchedEffect(studyLaunchTarget?.requestId) {
         val target = studyLaunchTarget ?: return@LaunchedEffect
@@ -137,71 +141,77 @@ fun KalimaApp(
                                 )
                             },
                             label = { Text(stringResource(tab.labelRes)) },
+                            alwaysShowLabel = false,
                         )
                     }
                 }
             },
         ) { padding ->
             Box(Modifier.padding(padding)) {
-                when (selected) {
-                    AppTab.Study -> StudyScreen(
-                        progress = progress,
-                        onAnswer = onAnswer,
-                        onCurrentWordChange = onCurrentStudyWordChange,
-                        onEnableLockScreen = { onLockScreenChange(true) },
-                        pronouncer = pronouncer,
-                        onToggleCustomList = onToggleCustomList,
-                        onToggleAlreadyKnown = onToggleAlreadyKnown,
-                        launchTarget = studyLaunchTarget,
-                    )
-                    AppTab.Library -> LibraryScreen(
-                        progress = progress,
-                        pronouncer = pronouncer,
-                        onToggleCustomList = onToggleCustomList,
-                        onToggleAlreadyKnown = onToggleAlreadyKnown,
-                    )
-                    AppTab.Quiz -> QuizScreen(
-                        progress = progress,
-                        onAnswer = onQuizAnswer,
-                        pronouncer = pronouncer,
-                    )
-                    AppTab.Progress -> ProgressScreen(
-                        progress = progress,
-                        onStudyScopeChange = onStudyScopeChange,
-                        onToggleSurah = onToggleSurah,
-                    )
-                    AppTab.Settings -> SettingsScreen(
-                        progress = progress,
-                        currentLanguage = currentLanguage,
-                        onThemeModeChange = onThemeModeChange,
-                        onLanguageChange = onLanguageChange,
-                        onReminderChange = onReminderChange,
-                        onDailyGoalChange = onDailyGoalChange,
-                        onAdvancedSettingsVisibleChange = onAdvancedSettingsVisibleChange,
-                        onSpacedRepetitionEnabledChange = onSpacedRepetitionEnabledChange,
-                        onLockScreenChange = onLockScreenChange,
-                        onLockScreenQuizChange = onLockScreenQuizChange,
-                        onLockScreenQuizIntervalChange = onLockScreenQuizIntervalChange,
-                        onMaximumWordsChange = onMaximumWordsChange,
-                        onOpenAppSettings = onOpenAppSettings,
-                        onOpenTextToSpeechSettings = onOpenTextToSpeechSettings,
-                        onPreviewLockScreen = onPreviewLockScreen,
-                        onQuietHoursEnabledChange = onQuietHoursEnabledChange,
-                        onQuietHoursChange = onQuietHoursChange,
-                        onLockScreenDailyLimitChange = onLockScreenDailyLimitChange,
-                        onPauseLockScreenOneHour = onPauseLockScreenOneHour,
-                        onPauseLockScreenToday = onPauseLockScreenToday,
-                        onResumeLockScreen = onResumeLockScreen,
-                        onLockScreenCooldownChange = onLockScreenCooldownChange,
-                        onExportBackup = onExportBackup,
-                        onImportBackup = onImportBackup,
-                        backupImportPreview = backupImportPreview,
-                        onConfirmBackupImport = onConfirmBackupImport,
-                        onCancelBackupImport = onCancelBackupImport,
-                        offlineWordAudioState = offlineWordAudioState,
-                        onDownloadOfflineWordAudio = onDownloadOfflineWordAudio,
-                        onCancelOfflineWordAudio = onCancelOfflineWordAudio,
-                    )
+                screenStateHolder.SaveableStateProvider(selected.name) {
+                    when (selected) {
+                        AppTab.Study -> StudyScreen(
+                            progress = progress,
+                            onAnswer = onAnswer,
+                            onCurrentWordChange = onCurrentStudyWordChange,
+                            onEnableLockScreen = { onLockScreenChange(true) },
+                            pronouncer = pronouncer,
+                            onToggleCustomList = onToggleCustomList,
+                            onToggleAlreadyKnown = onToggleAlreadyKnown,
+                            onShowCompleteAyahChange = onShowCompleteAyahChange,
+                            launchTarget = studyLaunchTarget,
+                        )
+                        AppTab.Quran -> QuranReaderScreen()
+                        AppTab.Library -> LibraryScreen(
+                            progress = progress,
+                            pronouncer = pronouncer,
+                            onToggleCustomList = onToggleCustomList,
+                            onToggleAlreadyKnown = onToggleAlreadyKnown,
+                            onShowCompleteAyahChange = onShowCompleteAyahChange,
+                        )
+                        AppTab.Quiz -> QuizScreen(
+                            progress = progress,
+                            onAnswer = onQuizAnswer,
+                            pronouncer = pronouncer,
+                        )
+                        AppTab.Progress -> ProgressScreen(
+                            progress = progress,
+                            onStudyScopeChange = onStudyScopeChange,
+                            onToggleSurah = onToggleSurah,
+                        )
+                        AppTab.Settings -> SettingsScreen(
+                            progress = progress,
+                            currentLanguage = currentLanguage,
+                            onThemeModeChange = onThemeModeChange,
+                            onLanguageChange = onLanguageChange,
+                            onReminderChange = onReminderChange,
+                            onDailyGoalChange = onDailyGoalChange,
+                            onAdvancedSettingsVisibleChange = onAdvancedSettingsVisibleChange,
+                            onSpacedRepetitionEnabledChange = onSpacedRepetitionEnabledChange,
+                            onLockScreenChange = onLockScreenChange,
+                            onLockScreenQuizChange = onLockScreenQuizChange,
+                            onLockScreenQuizIntervalChange = onLockScreenQuizIntervalChange,
+                            onMaximumWordsChange = onMaximumWordsChange,
+                            onOpenAppSettings = onOpenAppSettings,
+                            onOpenTextToSpeechSettings = onOpenTextToSpeechSettings,
+                            onPreviewLockScreen = onPreviewLockScreen,
+                            onQuietHoursEnabledChange = onQuietHoursEnabledChange,
+                            onQuietHoursChange = onQuietHoursChange,
+                            onLockScreenDailyLimitChange = onLockScreenDailyLimitChange,
+                            onPauseLockScreenOneHour = onPauseLockScreenOneHour,
+                            onPauseLockScreenToday = onPauseLockScreenToday,
+                            onResumeLockScreen = onResumeLockScreen,
+                            onLockScreenCooldownChange = onLockScreenCooldownChange,
+                            onExportBackup = onExportBackup,
+                            onImportBackup = onImportBackup,
+                            backupImportPreview = backupImportPreview,
+                            onConfirmBackupImport = onConfirmBackupImport,
+                            onCancelBackupImport = onCancelBackupImport,
+                            offlineWordAudioState = offlineWordAudioState,
+                            onDownloadOfflineWordAudio = onDownloadOfflineWordAudio,
+                            onCancelOfflineWordAudio = onCancelOfflineWordAudio,
+                        )
+                    }
                 }
             }
         }

@@ -21,6 +21,7 @@ class ProgressStore private constructor(context: Context) {
 
     init {
         WordRepository.initialize(context.applicationContext)
+        QuranReaderRepository.initialize(context.applicationContext)
     }
 
     private val today = { LocalDate.now() }
@@ -522,6 +523,11 @@ class ProgressStore private constructor(context: Context) {
         persist(_progress.value.copy(advancedSettingsVisible = visible), today())
     }
 
+    fun setShowCompleteAyah(show: Boolean) {
+        if (_progress.value.showCompleteAyah == show) return
+        persist(_progress.value.copy(showCompleteAyah = show), today())
+    }
+
     fun setSpacedRepetitionEnabled(enabled: Boolean) {
         val current = _progress.value
         if (current.spacedRepetitionEnabled == enabled) return
@@ -637,6 +643,7 @@ class ProgressStore private constructor(context: Context) {
                 KEY_ADVANCED_SETTINGS_VISIBLE,
                 false,
             ),
+            showCompleteAyah = preferences.getBoolean(KEY_SHOW_COMPLETE_AYAH, false),
             spacedRepetitionEnabled = spacedRepetitionEnabled,
             currentStudyWordId = preferences.getString(KEY_CURRENT_STUDY_WORD_ID, null)
                 ?.takeIf { storedId -> storedId in validWordIds && storedId !in alreadyKnownIds },
@@ -707,6 +714,7 @@ class ProgressStore private constructor(context: Context) {
             putInt(KEY_LOCK_SCREEN_QUIZ_INTERVAL, progress.lockScreenQuizInterval)
             putString(KEY_THEME_MODE, progress.themeMode.name)
             putBoolean(KEY_ADVANCED_SETTINGS_VISIBLE, progress.advancedSettingsVisible)
+            putBoolean(KEY_SHOW_COMPLETE_AYAH, progress.showCompleteAyah)
             putBoolean(KEY_SPACED_REPETITION_ENABLED, progress.spacedRepetitionEnabled)
             putStringSet(KEY_REVIEW_SCHEDULES, ReviewScheduleCodec.encode(progress.reviewSchedules))
             putStringSet(KEY_FAVORITE_IDS, emptySet())
@@ -814,6 +822,7 @@ class ProgressStore private constructor(context: Context) {
         private const val KEY_LOCK_SCREEN_QUIZ_SEQUENCE = "lock_screen_quiz_sequence"
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_ADVANCED_SETTINGS_VISIBLE = "advanced_settings_visible"
+        private const val KEY_SHOW_COMPLETE_AYAH = "show_complete_ayah"
         private const val KEY_SPACED_REPETITION_ENABLED = "spaced_repetition_enabled"
         private const val KEY_CURRENT_STUDY_WORD_ID = "current_study_word_id"
         private const val KEY_REVIEW_SCHEDULES = "review_schedules_v1"

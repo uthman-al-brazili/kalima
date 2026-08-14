@@ -83,14 +83,16 @@ class LockScreenStudyActivity : ComponentActivity() {
             ?.let { requestedAt ->
                 progressStore.recordLockScreenLatency(SystemClock.elapsedRealtime() - requestedAt)
             }
-        val spacedRepetitionEnabled = progressStore.progress.value.spacedRepetitionEnabled
+        val progress = progressStore.progress.value
 
         setContent {
             when (val content = currentSession.content) {
                 is LockScreenContent.WordCard -> LockScreenStudyScreen(
                     word = content.word,
-                    spacedRepetitionEnabled = spacedRepetitionEnabled,
+                    spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
                     initialRememberedSelection = studyRememberedSelection,
+                    showCompleteAyah = progress.showCompleteAyah,
+                    onShowCompleteAyahChange = progressStore::setShowCompleteAyah,
                     onSelect = { remembered -> studyRememberedSelection = remembered },
                     onConfirm = confirm@{
                         val remembered = studyRememberedSelection ?: return@confirm

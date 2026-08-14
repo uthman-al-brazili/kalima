@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.23.0 — 2026-08-14
+
+- Hid the complete ayah on word cards by default and added a show/hide control
+  whose choice persists across study, vocabulary, and lock-screen cards.
+- Added an offline Quran tab with all 114 surahs and 6,236 Arabic ayahs,
+  searchable surah selection, and previous/next navigation.
+
 ## 0.22.0 — 2026-08-14
 
 - Made individual words use only Quran.com’s real human recordings, including

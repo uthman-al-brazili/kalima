@@ -29,6 +29,7 @@ data class StudyProgress(
     val lockScreenQuizInterval: Int = 3,
     val themeMode: AppThemeMode = AppThemeMode.Auto,
     val advancedSettingsVisible: Boolean = false,
+    val showCompleteAyah: Boolean = false,
     val spacedRepetitionEnabled: Boolean = true,
     val currentStudyWordId: String? = null,
     val reviewSchedules: Map<String, ReviewSchedule> = emptyMap(),

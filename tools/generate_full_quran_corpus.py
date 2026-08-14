@@ -20,6 +20,7 @@ import generate_quran_vocabulary as legacy
 ALL_SURAHS = range(1, 115)
 FREQUENT_LIMIT = 100
 FORMAT_HEADER = "#kalima-quran-v2"
+QURAN_TEXT_FORMAT_HEADER = "#kalima-quran-text-v1"
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,13 @@ class CardRecord:
     frequency: int
     study_surah: int
     is_frequent: bool
+
+
+@dataclass(frozen=True)
+class QuranVerseRecord:
+    surah: int
+    ayah: int
+    text_uthmani: str
 
 
 def cached_json(url: str, destination: Path) -> dict | list:
@@ -89,6 +97,52 @@ def fetch_required_contexts(
         sample = ", ".join(":".join(map(str, item)) for item in absent[:10])
         raise RuntimeError(f"Missing {len(absent)} API word contexts: {sample}")
     return contexts
+
+
+def fetch_quran_text(cache_dir: Path) -> list[QuranVerseRecord]:
+    verses: list[QuranVerseRecord] = []
+    for surah in ALL_SURAHS:
+        page = 1
+        expected_ayah = 1
+        while True:
+            query = urllib.parse.urlencode(
+                {
+                    "fields": "text_uthmani",
+                    "per_page": 50,
+                    "page": page,
+                }
+            )
+            payload = cached_json(
+                f"{legacy.API_ROOT}/verses/by_chapter/{surah}?{query}",
+                cache_dir / f"chapter-{surah:03d}-page-{page:02d}.json",
+            )
+            for verse in payload["verses"]:
+                ayah = int(verse["verse_number"])
+                if ayah != expected_ayah:
+                    raise RuntimeError(
+                        f"Unexpected ayah sequence in surah {surah}: "
+                        f"expected {expected_ayah}, found {ayah}"
+                    )
+                verses.append(
+                    QuranVerseRecord(
+                        surah=surah,
+                        ayah=ayah,
+                        text_uthmani=legacy.clean_text(verse["text_uthmani"]),
+                    )
+                )
+                expected_ayah += 1
+            pagination = payload.get("pagination") or {}
+            total_pages = int(pagination.get("total_pages") or 1)
+            if page >= total_pages:
+                expected_total = int(pagination.get("total_records") or expected_ayah - 1)
+                if expected_ayah - 1 != expected_total:
+                    raise RuntimeError(
+                        f"Incomplete surah {surah}: found {expected_ayah - 1} "
+                        f"of {expected_total} ayahs"
+                    )
+                break
+            page += 1
+    return verses
 
 
 def build_card_records(morph_words: list[legacy.MorphWord]) -> list[CardRecord]:
@@ -233,6 +287,18 @@ def write_corpus(
                     output.write("\t".join(safe_field(field) for field in fields) + "\n")
 
 
+def write_quran_text(verses: list[QuranVerseRecord], destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with destination.open("wb") as raw_file:
+        with gzip.GzipFile(fileobj=raw_file, mode="wb", mtime=0) as compressed:
+            with io.TextIOWrapper(compressed, encoding="utf-8", newline="\n") as output:
+                output.write(QURAN_TEXT_FORMAT_HEADER + "\n")
+                for verse in verses:
+                    output.write(
+                        f"{verse.surah}\t{verse.ayah}\t{safe_field(verse.text_uthmani)}\n"
+                    )
+
+
 def kotlin_string(value: str) -> str:
     return legacy.kotlin_string(value)
 
@@ -275,6 +341,11 @@ def main() -> None:
         default=Path("app/src/main/java/com/kalima/quran/data/GeneratedQuranSurahs.kt"),
     )
     parser.add_argument(
+        "--quran-output",
+        type=Path,
+        default=Path("app/src/main/assets/quran_arabic.tsv.gz"),
+    )
+    parser.add_argument(
         "--translation-cache",
         type=Path,
         default=Path("tools/pt_gloss_cache.json"),
@@ -285,7 +356,19 @@ def main() -> None:
         default=Path("tools/cache/quran-api"),
     )
     parser.add_argument("--translation-batch-size", type=int, default=30)
+    parser.add_argument(
+        "--reader-only",
+        action="store_true",
+        help="Generate only the compact full-Quran reader asset.",
+    )
     args = parser.parse_args()
+
+    if args.reader_only:
+        verses = fetch_quran_text(args.api_cache)
+        write_quran_text(verses, args.quran_output)
+        print(f"Generated {len(verses)} Quran reader ayahs")
+        print(f"Quran reader asset size: {args.quran_output.stat().st_size} bytes")
+        return
 
     morphology_path = args.morphology or Path("tools/cache/quran-morphology.txt")
     if not morphology_path.exists():
@@ -306,10 +389,14 @@ def main() -> None:
         args.translation_batch_size,
     )
     write_corpus(records, contexts, translations, args.corpus_output)
+    quran_verses = fetch_quran_text(args.api_cache)
+    write_quran_text(quran_verses, args.quran_output)
     write_surah_metadata(chapters, args.surahs_output)
 
     print(f"Generated {len(records)} corpus cards")
     print(f"Corpus asset size: {args.corpus_output.stat().st_size} bytes")
+    print(f"Generated {len(quran_verses)} Quran reader ayahs")
+    print(f"Quran reader asset size: {args.quran_output.stat().st_size} bytes")
     print(f"Portuguese glosses in cache: {len(translations)}")
 
 

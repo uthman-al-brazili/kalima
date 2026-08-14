@@ -60,6 +60,7 @@ fun StudyScreen(
     onEnableLockScreen: () -> Unit,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
+    onShowCompleteAyahChange: (Boolean) -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
 ) {
@@ -200,6 +201,8 @@ fun StudyScreen(
                     onToggleAlreadyKnown(wordId)
                     if (markingAsKnown && wordId == word.id) moveToNextWord()
                 },
+                showCompleteAyah = progress.showCompleteAyah,
+                onShowCompleteAyahChange = onShowCompleteAyahChange,
                 onOpenWord = { wordId ->
                     currentWordId = wordId
                     onCurrentWordChange(wordId)
@@ -442,6 +445,8 @@ private fun WordCard(
     onRevealChange: (Boolean) -> Unit,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
+    showCompleteAyah: Boolean,
+    onShowCompleteAyahChange: (Boolean) -> Unit,
     onOpenWord: (String) -> Unit,
 ) {
     Card(
@@ -528,13 +533,28 @@ private fun WordCard(
                             fontWeight = FontWeight.Bold,
                         )
                         Spacer(Modifier.height(8.dp))
-                        VerseExplorerPanel(word = word, onOpenWord = onOpenWord)
-                        TextPronunciationButton(
-                            arabic = word.verseArabic,
-                            pronouncer = pronouncer,
-                            modifier = Modifier.fillMaxWidth(),
-                            labelRes = R.string.device_voice_verse,
-                        )
+                        if (showCompleteAyah) {
+                            VerseExplorerPanel(word = word, onOpenWord = onOpenWord)
+                            TextPronunciationButton(
+                                arabic = word.verseArabic,
+                                pronouncer = pronouncer,
+                                modifier = Modifier.fillMaxWidth(),
+                                labelRes = R.string.device_voice_verse,
+                            )
+                            TextButton(
+                                onClick = { onShowCompleteAyahChange(false) },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(stringResource(R.string.hide_complete_ayah))
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = { onShowCompleteAyahChange(true) },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(stringResource(R.string.show_complete_ayah))
+                            }
+                        }
                     }
                 }
                 Spacer(Modifier.height(18.dp))
