@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.24.3 — 2026-08-14
+
+- Fixed the Quiz tab restoring the previously selected second answer when it
+  was reopened; every newly opened quiz now starts unanswered.
+
 ## 0.24.2 — 2026-08-14
 
 - Kept Quran text at a comfortably readable size instead of shrinking long

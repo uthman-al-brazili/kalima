@@ -15,6 +15,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
@@ -148,7 +149,7 @@ fun KalimaApp(
             },
         ) { padding ->
             Box(Modifier.padding(padding)) {
-                screenStateHolder.SaveableStateProvider(selected.name) {
+                TabStateProvider(selected, screenStateHolder) {
                     when (selected) {
                         AppTab.Study -> StudyScreen(
                             progress = progress,
@@ -214,6 +215,20 @@ fun KalimaApp(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TabStateProvider(
+    selected: AppTab,
+    stateHolder: SaveableStateHolder,
+    content: @Composable () -> Unit,
+) {
+    if (selected == AppTab.Quiz) {
+        // A reopened quiz must start unanswered instead of restoring the last tapped option.
+        content()
+    } else {
+        stateHolder.SaveableStateProvider(selected.name, content)
     }
 }
 
