@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.24.5 — 2026-08-14
+
+- Fixed Quran word details occasionally showing an unindexed fallback instead
+  of the available meaning and grammar, including وَإِذْ in Al-Baqarah 2:34.
+
 ## 0.24.4 — 2026-08-14
 
 - Reflowed Quran page text across the bundled Mushaf row boundaries, keeping

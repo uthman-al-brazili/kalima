@@ -1,5 +1,6 @@
 package com.kalima.quran.data
 
+import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.ui.buildStudySession
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -7,6 +8,29 @@ import org.junit.Test
 import java.time.LocalDate
 
 class WordRepositoryTest {
+    @Test
+    fun readerIndexFindsMeaningForAlBaqarahVerse34FirstToken() {
+        val corpusAsset = sequenceOf(
+            java.io.File("src/main/assets/${VocabularyAssetLoader.ASSET_NAME}.gz"),
+            java.io.File("app/src/main/assets/${VocabularyAssetLoader.ASSET_NAME}.gz"),
+        ).first(java.io.File::isFile)
+        val corpus = VocabularyAssetLoader.load(corpusAsset.inputStream(), AppLanguage.English)
+        val token = QuranPageToken(
+            pageNumber = 6,
+            lineNumber = 9,
+            surahNumber = 2,
+            ayahNumber = 34,
+            wordNumber = 1,
+            arabic = "وَإِذْ",
+            isAyahMarker = false,
+        )
+
+        val word = requireNotNull(QuranReaderWordIndex(corpus).find(token))
+
+        assertEquals("And when", word.meaning)
+        assertEquals("Al-Baqarah 2:30", word.reference)
+    }
+
     @Test
     fun wordIdsAreUniqueAndRequiredFieldsArePresent() {
         val words = WordRepository.words

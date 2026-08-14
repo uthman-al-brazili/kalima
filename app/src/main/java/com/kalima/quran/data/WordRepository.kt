@@ -410,13 +410,7 @@ object WordRepository {
     private var lemmaIndex: Map<String, List<QuranWord>>? = fallbackWords.groupBy(::lemmaKey)
 
     @Volatile
-    private var readerLocationIndex: Map<ReaderLocation, QuranWord>? = null
-
-    @Volatile
-    private var readerFormIndex: Map<ReaderForm, QuranWord>? = null
-
-    @Volatile
-    private var readerGlobalFormIndex: Map<String, QuranWord>? = null
+    private var readerIndex: QuranReaderWordIndex? = null
 
     @Volatile
     private var initializedLanguage: AppLanguage? = null
@@ -436,9 +430,7 @@ object WordRepository {
         searchIndex = null
         referenceIndex = null
         lemmaIndex = null
-        readerLocationIndex = null
-        readerFormIndex = null
-        readerGlobalFormIndex = null
+        readerIndex = null
         corpusWords = loadedWords
         frequentIndex = imported.filter(QuranWord::isFrequent)
         rankedFrequencyIndex = buildRankedFrequencyIndex(imported)
@@ -448,42 +440,23 @@ object WordRepository {
         initializedLanguage = language
     }
 
+    @Synchronized
     fun prepareDeferredIndexes() {
         val source = words
         if (
             searchIndex != null && referenceIndex != null && lemmaIndex != null &&
-            readerLocationIndex != null && readerFormIndex != null && readerGlobalFormIndex != null
+            readerIndex != null
         ) return
 
         val preparedSearchIndex = buildSearchIndex(source)
         val preparedReferenceIndex = source.groupBy(QuranWord::reference)
         val preparedLemmaIndex = source.groupBy(::lemmaKey)
-        val preparedReaderLocationIndex = source
-            .mapNotNull { word ->
-                word.audioLocation?.let { location ->
-                    ReaderLocation(location.surah, location.ayah, location.word) to word
-                }
-            }
-            .toMap()
-        val preparedReaderFormIndex = source
-            .mapNotNull { word ->
-                word.surahNumber?.let { surah ->
-                    ReaderForm(surah, VerseExplorer.normalizeArabic(word.arabic)) to word
-                }
-            }
-            .toMap()
-        val preparedReaderGlobalFormIndex = source.associateBy { word ->
-            VerseExplorer.normalizeArabic(word.arabic)
-        }
-        synchronized(this) {
-            if (corpusWords !== source) return
-            searchIndex = preparedSearchIndex
-            referenceIndex = preparedReferenceIndex
-            lemmaIndex = preparedLemmaIndex
-            readerLocationIndex = preparedReaderLocationIndex
-            readerFormIndex = preparedReaderFormIndex
-            readerGlobalFormIndex = preparedReaderGlobalFormIndex
-        }
+        val preparedReaderIndex = QuranReaderWordIndex(source)
+        if (corpusWords !== source) return
+        searchIndex = preparedSearchIndex
+        referenceIndex = preparedReferenceIndex
+        lemmaIndex = preparedLemmaIndex
+        readerIndex = preparedReaderIndex
     }
 
     private fun curatedWords(language: AppLanguage): List<QuranWord> {
@@ -611,18 +584,8 @@ object WordRepository {
 
     fun readerWordFor(token: QuranPageToken, verseArabic: String): QuranWord? {
         if (token.isAyahMarker) return null
-        if (
-            readerLocationIndex == null || readerFormIndex == null || readerGlobalFormIndex == null
-        ) prepareDeferredIndexes()
-        val location = ReaderLocation(token.surahNumber, token.ayahNumber, token.wordNumber)
-        val form = ReaderForm(
-            token.surahNumber,
-            VerseExplorer.normalizeArabic(token.arabic),
-        )
-        val match = readerLocationIndex?.get(location)
-            ?: readerFormIndex?.get(form)
-            ?: readerGlobalFormIndex?.get(form.arabic)
-            ?: return null
+        if (readerIndex == null) prepareDeferredIndexes()
+        val match = readerIndex?.find(token) ?: return null
         val surahName = selectableSurahs.firstOrNull { it.number == token.surahNumber }
             ?.transliteratedName
             ?: "Surah ${token.surahNumber}"
@@ -699,6 +662,36 @@ object WordRepository {
         val compactRoot: String,
     )
 
+}
+
+internal class QuranReaderWordIndex(source: List<QuranWord>) {
+    private val byLocation = source
+        .mapNotNull { word ->
+            word.audioLocation?.let { location ->
+                ReaderLocation(location.surah, location.ayah, location.word) to word
+            }
+        }
+        .toMap()
+    private val bySurahForm = source
+        .mapNotNull { word ->
+            word.surahNumber?.let { surah ->
+                ReaderForm(surah, VerseExplorer.normalizeArabic(word.arabic)) to word
+            }
+        }
+        .toMap()
+    private val byGlobalForm = source.associateBy { word ->
+        VerseExplorer.normalizeArabic(word.arabic)
+    }
+
+    fun find(token: QuranPageToken): QuranWord? {
+        val location = ReaderLocation(token.surahNumber, token.ayahNumber, token.wordNumber)
+        val form = ReaderForm(
+            token.surahNumber,
+            VerseExplorer.normalizeArabic(token.arabic),
+        )
+        return byLocation[location] ?: bySurahForm[form] ?: byGlobalForm[form.arabic]
+    }
+
     private data class ReaderLocation(
         val surah: Int,
         val ayah: Int,
@@ -709,7 +702,6 @@ object WordRepository {
         val surah: Int,
         val arabic: String,
     )
-
 }
 
 data class QuranSurah(
