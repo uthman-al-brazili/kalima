@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.21.0 — 2026-08-14
+
+- Made every individual word playable without an internet connection by
+  automatically using the Android Arabic voice while offline.
+- Preserved Quran.com’s exact word-by-word recording when connected and added
+  clearer guidance for installing Arabic voice data for offline playback.
+
 ## 0.20.0 — 2026-08-14
 
 - Replaced Android-generated speech for individual words with the exact

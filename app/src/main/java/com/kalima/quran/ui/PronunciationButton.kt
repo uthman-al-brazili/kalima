@@ -78,12 +78,13 @@ fun PronunciationButton(
 ) {
     PronunciationControl(
         pronouncer = pronouncer,
-        play = { onFailure ->
+        play = { onFallbackResult ->
             pronouncer.speakWord(
+                text = word.arabic,
                 location = word.audioLocation,
                 playbackRate = playbackRate,
                 repeatCount = repeatCount,
-                onFailure = onFailure,
+                onFallbackResult = onFallbackResult,
             )
         },
         modifier = modifier,
@@ -92,7 +93,6 @@ fun PronunciationButton(
         labelRes = labelRes,
         contentColor = contentColor,
         borderColor = borderColor,
-        usesDeviceVoice = false,
     )
 }
 
@@ -111,28 +111,33 @@ fun TextPronunciationButton(
 ) {
     PronunciationControl(
         pronouncer = pronouncer,
-        play = { _ -> pronouncer.speak(arabic, speechRate, repeatCount) },
+        play = { onDeferredResult ->
+            pronouncer.speak(
+                text = arabic,
+                speechRate = speechRate,
+                repeatCount = repeatCount,
+                onDeferredResult = onDeferredResult,
+            )
+        },
         modifier = modifier,
         compact = compact,
         dense = dense,
         labelRes = labelRes,
         contentColor = contentColor,
         borderColor = borderColor,
-        usesDeviceVoice = true,
     )
 }
 
 @Composable
 private fun PronunciationControl(
     pronouncer: ArabicPronouncer,
-    play: (() -> Unit) -> PronunciationResult,
+    play: ((PronunciationResult) -> Unit) -> PronunciationResult,
     modifier: Modifier,
     compact: Boolean,
     dense: Boolean,
     @StringRes labelRes: Int,
     contentColor: Color,
     borderColor: Color,
-    usesDeviceVoice: Boolean,
 ) {
     val resolvedContentColor = if (contentColor == Color.Unspecified) {
         MaterialTheme.colorScheme.primary
@@ -150,22 +155,22 @@ private fun PronunciationControl(
     val loadingMessage = stringResource(R.string.pronunciation_loading)
     val installationFailedMessage = stringResource(R.string.pronunciation_installation_failed)
     val failedMessage = stringResource(R.string.pronunciation_failed)
-    val onClick: () -> Unit = {
-        val showPlaybackFailure = {
-            Toast.makeText(context, failedMessage, Toast.LENGTH_LONG).show()
-        }
-        when (play(showPlaybackFailure)) {
+    fun handleResult(result: PronunciationResult) {
+        when (result) {
             PronunciationResult.Started -> Unit
             PronunciationResult.Initializing -> {
                 Toast.makeText(context, loadingMessage, Toast.LENGTH_LONG).show()
             }
             PronunciationResult.Unavailable -> {
-                if (usesDeviceVoice) showVoiceSetup = true else showPlaybackFailure()
+                showVoiceSetup = true
             }
             PronunciationResult.Failed -> {
                 Toast.makeText(context, failedMessage, Toast.LENGTH_LONG).show()
             }
         }
+    }
+    val onClick: () -> Unit = {
+        handleResult(play(::handleResult))
     }
 
     if (showVoiceSetup) {

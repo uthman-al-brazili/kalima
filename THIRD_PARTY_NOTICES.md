@@ -22,10 +22,11 @@ O gerador consulta a API para obter a forma Uthmani, a transliteração, o conte
 - [Documentação de áudio da Quran Foundation](https://api-docs.quran.foundation/docs/sdk/javascript/audio/)
 - CDN público: `https://audio.qurancdn.com/wbw/`
 
-O aplicativo Android transmite, sem incorporar ao APK, o mesmo arquivo de áudio
-palavra por palavra servido quando uma palavra é selecionada no Quran.com. A
-reprodução exige internet e o uso em produção deve continuar respeitando os
-termos vigentes da Quran Foundation e do Quran.com.
+Quando há internet, o aplicativo Android transmite, sem incorporar ao APK, o
+mesmo arquivo de áudio palavra por palavra servido quando uma palavra é
+selecionada no Quran.com. Sem conexão, ele usa a voz árabe instalada no Android;
+o uso em produção deve continuar respeitando os termos vigentes da Quran
+Foundation, do Quran.com e do mecanismo de síntese de voz escolhido pelo usuário.
 
 ## Significados em português
 

@@ -1,6 +1,8 @@
 package com.kalima.quran.audio
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.speech.tts.TextToSpeech
 import com.kalima.quran.data.QuranWordAudioLocation
 import java.util.Locale
@@ -17,6 +19,7 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
         val text: String,
         val speechRate: Float,
         val repeatCount: Int,
+        val onDeferredResult: (PronunciationResult) -> Unit,
     )
 
     private enum class State {
@@ -34,20 +37,28 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     private var engine: TextToSpeech? = null
     private var pendingSpeech: PendingSpeech? = null
     private val wordAudioPlayer = QuranComWordAudioPlayer()
+    private val connectivityManager = applicationContext.getSystemService(ConnectivityManager::class.java)
 
     override fun onInit(status: Int) {
+        val pending = pendingSpeech
         if (status != TextToSpeech.SUCCESS) {
             state = State.Unavailable
             pendingSpeech = null
+            pending?.onDeferredResult?.invoke(PronunciationResult.Unavailable)
             return
         }
 
         initialized = true
         state = if (configureArabicVoice()) State.Ready else State.Unavailable
         if (state == State.Ready) {
-            pendingSpeech?.let { request ->
-                speakPrepared(request.text, request.speechRate, request.repeatCount)
+            pending?.let { request ->
+                val result = speakPrepared(request.text, request.speechRate, request.repeatCount)
+                if (result != PronunciationResult.Started) {
+                    request.onDeferredResult(result)
+                }
             }
+        } else {
+            pending?.onDeferredResult?.invoke(PronunciationResult.Unavailable)
         }
         pendingSpeech = null
     }
@@ -70,16 +81,17 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
         text: String,
         speechRate: Float = DEFAULT_RATE,
         repeatCount: Int = 1,
+        onDeferredResult: (PronunciationResult) -> Unit = {},
     ): PronunciationResult {
         wordAudioPlayer.stop()
         return when (state) {
         State.Idle -> {
-            pendingSpeech = PendingSpeech(text, speechRate, repeatCount)
+            pendingSpeech = PendingSpeech(text, speechRate, repeatCount, onDeferredResult)
             startEngine()
             PronunciationResult.Initializing
         }
         State.Initializing -> {
-            pendingSpeech = PendingSpeech(text, speechRate, repeatCount)
+            pendingSpeech = PendingSpeech(text, speechRate, repeatCount, onDeferredResult)
             PronunciationResult.Initializing
         }
         State.Unavailable -> {
@@ -95,21 +107,54 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     }
 
     fun speakWord(
+        text: String,
         location: QuranWordAudioLocation?,
         playbackRate: Float = WORD_DEFAULT_RATE,
         repeatCount: Int = 1,
-        onFailure: () -> Unit = {},
+        onFallbackResult: (PronunciationResult) -> Unit = {},
     ): PronunciationResult {
-        val resolvedLocation = location ?: return PronunciationResult.Failed
+        val source = selectWordAudioSource(
+            hasQuranComLocation = location != null,
+            hasValidatedInternet = hasValidatedInternet(),
+        )
+        if (source == WordAudioSource.AndroidArabicVoice) {
+            return speak(
+                text = text,
+                speechRate = offlineWordSpeechRate(playbackRate),
+                repeatCount = repeatCount,
+                onDeferredResult = onFallbackResult,
+            )
+        }
+
         engine?.stop()
         pendingSpeech = null
         return wordAudioPlayer.play(
-            location = resolvedLocation,
+            location = requireNotNull(location),
             playbackRate = playbackRate,
             repeatCount = repeatCount,
-            onFailure = onFailure,
+            onFailure = {
+                val fallbackResult = speak(
+                    text = text,
+                    speechRate = offlineWordSpeechRate(playbackRate),
+                    repeatCount = repeatCount,
+                    onDeferredResult = onFallbackResult,
+                )
+                if (fallbackResult != PronunciationResult.Started) {
+                    onFallbackResult(fallbackResult)
+                }
+            },
         )
     }
+
+    private fun hasValidatedInternet(): Boolean {
+        val activeNetwork = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+    private fun offlineWordSpeechRate(playbackRate: Float): Float =
+        (DEFAULT_RATE * playbackRate).coerceIn(0.4f, 1.2f)
 
     private fun speakPrepared(text: String, speechRate: Float, repeatCount: Int): PronunciationResult {
         engine?.setSpeechRate(speechRate.coerceIn(0.4f, 1.2f))
