@@ -22,8 +22,8 @@ class QuranTextAssetLoaderTest {
     }
 
     private fun findAsset(): File = sequenceOf(
-        File("src/main/assets/${QuranTextAssetLoader.ASSET_NAME}"),
-        File("app/src/main/assets/${QuranTextAssetLoader.ASSET_NAME}"),
+        File("src/main/assets/${QuranTextAssetLoader.ASSET_NAME}.gz"),
+        File("app/src/main/assets/${QuranTextAssetLoader.ASSET_NAME}.gz"),
     ).firstOrNull(File::isFile)
         ?: error("Quran reader asset not found from ${File(".").absolutePath}")
 }

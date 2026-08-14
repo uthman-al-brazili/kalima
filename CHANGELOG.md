@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.23.1 — 2026-08-14
+
+- Fixed the startup crash introduced in 0.23.0 by opening the offline Quran
+  text under the filename Android assigns to the packaged asset.
+- Kept the rest of the app available if a bundled Quran text asset cannot be
+  opened or decoded.
+
 ## 0.23.0 — 2026-08-14
 
 - Hid the complete ayah on word cards by default and added a show/hide control

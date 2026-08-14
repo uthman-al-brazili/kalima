@@ -11,7 +11,8 @@ data class QuranVerse(
 )
 
 internal object QuranTextAssetLoader {
-    const val ASSET_NAME = "quran_arabic.tsv.gz"
+    // Android expands .gz assets and exposes them without the compression suffix.
+    const val ASSET_NAME = "quran_arabic.tsv"
     private const val FORMAT_HEADER = "#kalima-quran-text-v1"
 
     fun load(input: InputStream): List<QuranVerse> {
