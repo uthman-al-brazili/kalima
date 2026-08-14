@@ -3,6 +3,14 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.24.1 — 2026-08-14
+
+- Made Quran pages turn in right-to-left reading order, including swipe gestures
+  and the previous/next controls.
+- Kept every bundled Mushaf source line together and fitted it to the available
+  width, preventing overflow words from appearing alone on extra lines.
+- Preserved word-by-word details when tapping the newly composed Quran lines.
+
 ## 0.24.0 — 2026-08-14
 
 - Replaced synthesized full-ayah speech with Mahmoud Khalil Al-Hussary’s

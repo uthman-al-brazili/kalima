@@ -3,8 +3,7 @@ package com.kalima.quran.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -35,13 +34,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.style.TextAlign
@@ -90,6 +94,7 @@ fun QuranReaderScreen() {
             state = pagerState,
             modifier = Modifier.fillMaxWidth().weight(1f),
             beyondViewportPageCount = 1,
+            reverseLayout = true,
             key = { it },
         ) { pageIndex ->
             QuranPage(
@@ -203,7 +208,6 @@ private fun ReaderHeader(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun QuranPage(
     pageNumber: Int,
@@ -229,24 +233,7 @@ private fun QuranPage(
                     .distinct()
                     .forEach { surahNumber -> SurahPageHeader(surahNumber) }
 
-                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(
-                            1.dp,
-                            alignment = Alignment.CenterHorizontally,
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(0.dp),
-                    ) {
-                        lineTokens.forEach { token ->
-                            if (token.isAyahMarker) {
-                                AyahMarker(token.arabic)
-                            } else {
-                                QuranPageWord(token, onWordClick)
-                            }
-                        }
-                    }
-                }
+                QuranPageLine(lineTokens, onWordClick)
             }
             Spacer(Modifier.height(8.dp))
             Text(
@@ -294,35 +281,81 @@ private fun SurahPageHeader(surahNumber: Int) {
 }
 
 @Composable
-private fun QuranPageWord(token: QuranPageToken, onClick: (QuranPageToken) -> Unit) {
-    Text(
-        text = token.arabic,
-        modifier = Modifier
-            .clickable(
-                onClickLabel = stringResource(R.string.quran_open_word_details),
-                onClick = { onClick(token) },
-            )
-            .padding(horizontal = 2.dp, vertical = 1.dp),
+private fun QuranPageLine(
+    tokens: List<QuranPageToken>,
+    onWordClick: (QuranPageToken) -> Unit,
+) {
+    val content = remember(tokens) { quranPageLineContent(tokens) }
+    val markerColor = MaterialTheme.colorScheme.primary
+    val line = remember(content, markerColor) {
+        buildAnnotatedString {
+            append(content.text)
+            content.segments.filter { it.token.isAyahMarker }.forEach { segment ->
+                addStyle(
+                    style = SpanStyle(color = markerColor),
+                    start = segment.start,
+                    end = segment.endExclusive,
+                )
+            }
+            content.segments.filterNot { it.token.isAyahMarker }.forEachIndexed { index, segment ->
+                addStringAnnotation(
+                    tag = QURAN_WORD_ANNOTATION,
+                    annotation = index.toString(),
+                    start = segment.start,
+                    end = segment.endExclusive,
+                )
+            }
+        }
+    }
+    val baseStyle = MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.onSurface,
-        fontSize = 22.sp,
-        lineHeight = 32.sp,
-        style = MaterialTheme.typography.bodyLarge.copy(
-            textDirection = TextDirection.Rtl,
-            localeList = LocaleList(Locale("ar")),
-        ),
+        fontSize = QURAN_LINE_MAX_FONT_SIZE.sp,
+        lineHeight = QURAN_LINE_HEIGHT.sp,
+        textAlign = TextAlign.Center,
+        textDirection = TextDirection.Rtl,
+        localeList = LocaleList(Locale("ar")),
     )
-}
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
 
-@Composable
-private fun AyahMarker(number: String) {
-    Text(
-        text = "۝$number",
-        modifier = Modifier.padding(horizontal = 1.dp, vertical = 1.dp),
-        color = MaterialTheme.colorScheme.primary,
-        fontSize = 18.sp,
-        lineHeight = 32.sp,
-        style = MaterialTheme.typography.bodyMedium.copy(textDirection = TextDirection.Rtl),
-    )
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val availableWidthPx = with(density) { maxWidth.toPx() }
+            val naturalWidthPx = remember(line, baseStyle) {
+                textMeasurer.measure(
+                    text = line,
+                    style = baseStyle,
+                    softWrap = false,
+                    maxLines = 1,
+                ).size.width.toFloat()
+            }
+            val fittedFontSize = remember(availableWidthPx, naturalWidthPx) {
+                if (naturalWidthPx <= availableWidthPx || naturalWidthPx == 0f) {
+                    QURAN_LINE_MAX_FONT_SIZE
+                } else {
+                    (QURAN_LINE_MAX_FONT_SIZE * availableWidthPx / naturalWidthPx)
+                        .coerceAtLeast(QURAN_LINE_MIN_FONT_SIZE)
+                }
+            }
+            @Suppress("DEPRECATION")
+            ClickableText(
+                text = line,
+                modifier = Modifier.fillMaxWidth(),
+                style = baseStyle.copy(fontSize = fittedFontSize.sp),
+                softWrap = false,
+                maxLines = 1,
+                overflow = TextOverflow.Clip,
+                onClick = { offset ->
+                    line.getStringAnnotations(QURAN_WORD_ANNOTATION, offset, offset)
+                        .firstOrNull()
+                        ?.item
+                        ?.toIntOrNull()
+                        ?.let(content.words::getOrNull)
+                        ?.let(onWordClick)
+                },
+            )
+        }
+    }
 }
 
 @Composable
@@ -341,9 +374,9 @@ private fun PageNavigation(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TextButton(
-            onClick = onPrevious,
-            enabled = pageNumber > 1,
-            modifier = Modifier.semantics { contentDescription = previousDescription },
+            onClick = onNext,
+            enabled = pageNumber < pageCount,
+            modifier = Modifier.semantics { contentDescription = nextDescription },
         ) {
             Text("‹", style = MaterialTheme.typography.headlineSmall)
         }
@@ -354,9 +387,9 @@ private fun PageNavigation(
             )
         }
         TextButton(
-            onClick = onNext,
-            enabled = pageNumber < pageCount,
-            modifier = Modifier.semantics { contentDescription = nextDescription },
+            onClick = onPrevious,
+            enabled = pageNumber > 1,
+            modifier = Modifier.semantics { contentDescription = previousDescription },
         ) {
             Text("›", style = MaterialTheme.typography.headlineSmall)
         }
@@ -537,3 +570,7 @@ private fun QuranPageToken.asUnindexedWord(verseArabic: String): QuranWord {
 }
 
 private const val BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"
+private const val QURAN_WORD_ANNOTATION = "quran-word"
+private const val QURAN_LINE_MAX_FONT_SIZE = 22f
+private const val QURAN_LINE_MIN_FONT_SIZE = 10f
+private const val QURAN_LINE_HEIGHT = 30f
