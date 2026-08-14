@@ -239,8 +239,8 @@
     <string name="device_voice_slow">Ouvir devagar</string>
     <string name="device_voice_repeat">Repetir 3×</string>
     <string name="device_voice_verse">Ouvir verso · voz do aparelho</string>
-    <string name="audio_disclosure">O áudio atual é gerado pela voz árabe do Android. Não é recitação certificada nem substitui um professor.</string>
-    <string name="arabic_voice_settings_observation">Se o árabe não estiver disponível, defina “Serviços de voz do Google” como mecanismo de síntese de voz preferido do Android e instale os dados da voz árabe.</string>
+    <string name="audio_disclosure">As palavras individuais usam o áudio palavra por palavra exato do Quran.com e exigem internet. A reprodução do versículo usa a voz árabe do Android.</string>
+    <string name="arabic_voice_settings_observation">O ajuste de síntese de voz do Android afeta apenas a reprodução do versículo. Se o árabe não estiver disponível, defina “Serviços de voz do Google” como mecanismo de síntese de voz preferido do Android e instale os dados da voz árabe.</string>
     <string name="editorial_status">Rascunho editorial · validação especializada pendente</string>
     <string name="editorial_compact_title">Conteúdo em revisão</string>
     <string name="editorial_show_details">Ver detalhes</string>

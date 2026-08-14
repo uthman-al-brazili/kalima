@@ -34,6 +34,7 @@ import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.audio.ArabicVoiceInstaller
 import com.kalima.quran.audio.PronunciationResult
+import com.kalima.quran.data.QuranWord
 import androidx.annotation.StringRes
 
 @Composable
@@ -64,6 +65,39 @@ fun rememberArabicPronouncer(): ArabicPronouncer {
 
 @Composable
 fun PronunciationButton(
+    word: QuranWord,
+    pronouncer: ArabicPronouncer,
+    modifier: Modifier = Modifier,
+    compact: Boolean = false,
+    dense: Boolean = false,
+    @StringRes labelRes: Int = R.string.listen_pronunciation,
+    playbackRate: Float = ArabicPronouncer.WORD_DEFAULT_RATE,
+    repeatCount: Int = 1,
+    contentColor: Color = Color.Unspecified,
+    borderColor: Color = Color.Unspecified,
+) {
+    PronunciationControl(
+        pronouncer = pronouncer,
+        play = { onFailure ->
+            pronouncer.speakWord(
+                location = word.audioLocation,
+                playbackRate = playbackRate,
+                repeatCount = repeatCount,
+                onFailure = onFailure,
+            )
+        },
+        modifier = modifier,
+        compact = compact,
+        dense = dense,
+        labelRes = labelRes,
+        contentColor = contentColor,
+        borderColor = borderColor,
+        usesDeviceVoice = false,
+    )
+}
+
+@Composable
+fun TextPronunciationButton(
     arabic: String,
     pronouncer: ArabicPronouncer,
     modifier: Modifier = Modifier,
@@ -74,6 +108,31 @@ fun PronunciationButton(
     repeatCount: Int = 1,
     contentColor: Color = Color.Unspecified,
     borderColor: Color = Color.Unspecified,
+) {
+    PronunciationControl(
+        pronouncer = pronouncer,
+        play = { _ -> pronouncer.speak(arabic, speechRate, repeatCount) },
+        modifier = modifier,
+        compact = compact,
+        dense = dense,
+        labelRes = labelRes,
+        contentColor = contentColor,
+        borderColor = borderColor,
+        usesDeviceVoice = true,
+    )
+}
+
+@Composable
+private fun PronunciationControl(
+    pronouncer: ArabicPronouncer,
+    play: (() -> Unit) -> PronunciationResult,
+    modifier: Modifier,
+    compact: Boolean,
+    dense: Boolean,
+    @StringRes labelRes: Int,
+    contentColor: Color,
+    borderColor: Color,
+    usesDeviceVoice: Boolean,
 ) {
     val resolvedContentColor = if (contentColor == Color.Unspecified) {
         MaterialTheme.colorScheme.primary
@@ -92,13 +151,16 @@ fun PronunciationButton(
     val installationFailedMessage = stringResource(R.string.pronunciation_installation_failed)
     val failedMessage = stringResource(R.string.pronunciation_failed)
     val onClick: () -> Unit = {
-        when (pronouncer.speak(arabic, speechRate, repeatCount)) {
+        val showPlaybackFailure = {
+            Toast.makeText(context, failedMessage, Toast.LENGTH_LONG).show()
+        }
+        when (play(showPlaybackFailure)) {
             PronunciationResult.Started -> Unit
             PronunciationResult.Initializing -> {
                 Toast.makeText(context, loadingMessage, Toast.LENGTH_LONG).show()
             }
             PronunciationResult.Unavailable -> {
-                showVoiceSetup = true
+                if (usesDeviceVoice) showVoiceSetup = true else showPlaybackFailure()
             }
             PronunciationResult.Failed -> {
                 Toast.makeText(context, failedMessage, Toast.LENGTH_LONG).show()

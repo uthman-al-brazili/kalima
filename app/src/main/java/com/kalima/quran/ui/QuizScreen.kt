@@ -274,10 +274,10 @@ private fun QuizQuestionCard(question: QuizQuestion, pronouncer: ArabicPronounce
                     )
                     Spacer(Modifier.height(10.dp))
                     PronunciationButton(
-                        arabic = question.word.arabic,
+                        word = question.word,
                         pronouncer = pronouncer,
                         labelRes = R.string.device_voice_slow,
-                        speechRate = ArabicPronouncer.SLOW_RATE,
+                        playbackRate = ArabicPronouncer.WORD_SLOW_RATE,
                     )
                 }
 
@@ -485,7 +485,7 @@ private fun QuizFeedback(
             )
             Spacer(Modifier.height(10.dp))
             PronunciationButton(
-                arabic = question.word.arabic,
+                word = question.word,
                 pronouncer = pronouncer,
                 modifier = Modifier.fillMaxWidth(),
             )

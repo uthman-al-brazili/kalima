@@ -113,7 +113,7 @@ fun LockScreenStudyScreen(
                     )
                     Spacer(Modifier.height(8.dp))
                     PronunciationButton(
-                        arabic = word.arabic,
+                        word = word,
                         pronouncer = pronouncer,
                         contentColor = Gold,
                         borderColor = Gold.copy(alpha = 0.65f),

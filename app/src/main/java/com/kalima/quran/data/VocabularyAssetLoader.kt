@@ -36,6 +36,15 @@ internal object VocabularyAssetLoader {
                 val lemma = fields[2].pooled(stringPool)
                 val surahName = surahNames[referenceSurah] ?: "Surah $referenceSurah"
                 val grammar = localizedGrammar(fields[7], language).pooled(stringPool)
+                val audioLocation = requireNotNull(
+                    QuranWordAudioLocationResolver.resolve(
+                        id = fields[0],
+                        arabic = fields[1],
+                        referenceSurah = referenceSurah,
+                        referenceAyah = referenceVerse,
+                        verseArabic = fields[13],
+                    ),
+                ) { "No Quran.com word-audio location for ${fields[0]}" }
 
                 result += QuranWord(
                     id = fields[0],
@@ -75,6 +84,7 @@ internal object VocabularyAssetLoader {
                     frequency = frequency,
                     surahNumber = studySurah.takeIf { it > 0 },
                     isFrequent = isFrequent,
+                    audioLocation = audioLocation,
                 )
             }
         }

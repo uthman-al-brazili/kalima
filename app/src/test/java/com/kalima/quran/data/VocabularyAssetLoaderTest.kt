@@ -32,6 +32,11 @@ class VocabularyAssetLoaderTest {
         assertTrue(corpus.all { it.meaning.isNotBlank() })
         assertTrue(corpus.all { it.verseArabic.isNotBlank() })
         assertTrue(corpus.all { it.reference.matches(Regex(".+ \\d+:\\d+")) })
+        assertTrue(corpus.all { it.audioLocation != null })
+        assertEquals(
+            "https://audio.qurancdn.com/wbw/001_001_001.mp3",
+            corpus.first { it.id == "s1-v001-w001" }.audioLocation?.quranComUrl,
+        )
     }
 
     @Test

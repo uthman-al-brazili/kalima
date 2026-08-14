@@ -483,20 +483,20 @@ private fun WordCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 PronunciationButton(
-                    arabic = word.arabic,
+                    word = word,
                     pronouncer = pronouncer,
                     modifier = Modifier.weight(1f).height(42.dp),
                     dense = true,
                     labelRes = R.string.device_voice_slow,
-                    speechRate = ArabicPronouncer.SLOW_RATE,
+                    playbackRate = ArabicPronouncer.WORD_SLOW_RATE,
                 )
                 PronunciationButton(
-                    arabic = word.arabic,
+                    word = word,
                     pronouncer = pronouncer,
                     modifier = Modifier.weight(1f).height(42.dp),
                     dense = true,
                     labelRes = R.string.device_voice_repeat,
-                    speechRate = ArabicPronouncer.SLOW_RATE,
+                    playbackRate = ArabicPronouncer.WORD_SLOW_RATE,
                     repeatCount = 3,
                 )
             }
@@ -529,7 +529,7 @@ private fun WordCard(
                         )
                         Spacer(Modifier.height(8.dp))
                         VerseExplorerPanel(word = word, onOpenWord = onOpenWord)
-                        PronunciationButton(
+                        TextPronunciationButton(
                             arabic = word.verseArabic,
                             pronouncer = pronouncer,
                             modifier = Modifier.fillMaxWidth(),

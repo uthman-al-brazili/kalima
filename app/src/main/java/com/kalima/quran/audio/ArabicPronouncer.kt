@@ -2,6 +2,7 @@ package com.kalima.quran.audio
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
+import com.kalima.quran.data.QuranWordAudioLocation
 import java.util.Locale
 
 enum class PronunciationResult {
@@ -32,6 +33,7 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     private val applicationContext = context.applicationContext
     private var engine: TextToSpeech? = null
     private var pendingSpeech: PendingSpeech? = null
+    private val wordAudioPlayer = QuranComWordAudioPlayer()
 
     override fun onInit(status: Int) {
         if (status != TextToSpeech.SUCCESS) {
@@ -68,7 +70,9 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
         text: String,
         speechRate: Float = DEFAULT_RATE,
         repeatCount: Int = 1,
-    ): PronunciationResult = when (state) {
+    ): PronunciationResult {
+        wordAudioPlayer.stop()
+        return when (state) {
         State.Idle -> {
             pendingSpeech = PendingSpeech(text, speechRate, repeatCount)
             startEngine()
@@ -87,6 +91,24 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
             }
         }
         State.Ready -> speakPrepared(text, speechRate, repeatCount)
+        }
+    }
+
+    fun speakWord(
+        location: QuranWordAudioLocation?,
+        playbackRate: Float = WORD_DEFAULT_RATE,
+        repeatCount: Int = 1,
+        onFailure: () -> Unit = {},
+    ): PronunciationResult {
+        val resolvedLocation = location ?: return PronunciationResult.Failed
+        engine?.stop()
+        pendingSpeech = null
+        return wordAudioPlayer.play(
+            location = resolvedLocation,
+            playbackRate = playbackRate,
+            repeatCount = repeatCount,
+            onFailure = onFailure,
+        )
     }
 
     private fun speakPrepared(text: String, speechRate: Float, repeatCount: Int): PronunciationResult {
@@ -114,6 +136,7 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     fun preferredEnginePackage(): String? = engine?.defaultEngine
 
     fun refreshEngine() {
+        wordAudioPlayer.stop()
         if (state == State.Idle) return
         engine?.stop()
         engine?.shutdown()
@@ -122,6 +145,7 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     }
 
     fun shutdown() {
+        wordAudioPlayer.stop()
         engine?.stop()
         engine?.shutdown()
         engine = null
@@ -138,5 +162,7 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     companion object {
         const val DEFAULT_RATE = 0.78f
         const val SLOW_RATE = 0.58f
+        const val WORD_DEFAULT_RATE = 1f
+        const val WORD_SLOW_RATE = 0.7f
     }
 }

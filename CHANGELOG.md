@@ -3,6 +3,14 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.20.0 — 2026-08-14
+
+- Replaced Android-generated speech for individual words with the exact
+  word-by-word audio stream used when clicking a word on Quran.com, across
+  study, vocabulary, quiz, and return-to-phone cards.
+- Kept full-verse previews on the Android Arabic voice and clarified that word
+  audio requires an internet connection.
+
 ## 0.19.3 — 2026-08-13
 
 - Kept cooldown values such as “5 minutos” on one readable horizontal line in

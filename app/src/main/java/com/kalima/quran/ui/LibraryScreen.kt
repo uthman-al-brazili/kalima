@@ -219,7 +219,7 @@ private fun LibraryWordCard(
                     Text(word.meaning, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                 }
                 PronunciationButton(
-                    arabic = word.arabic,
+                    word = word,
                     pronouncer = pronouncer,
                     compact = true,
                 )
@@ -240,7 +240,7 @@ private fun LibraryWordCard(
             if (expanded) {
                 Spacer(Modifier.height(14.dp))
                 VerseExplorerPanel(word)
-                PronunciationButton(
+                TextPronunciationButton(
                     arabic = word.verseArabic,
                     pronouncer = pronouncer,
                     modifier = Modifier.fillMaxWidth(),

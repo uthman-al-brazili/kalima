@@ -364,7 +364,28 @@ object WordRepository {
 
     val selectableSurahs: List<QuranSurah> = GeneratedQuranSurahs.all
 
-    private val fallbackWords = curatedPortugueseWords + GeneratedQuranVocabulary.words
+    private val curatedAudioLocations = mapOf(
+        "allah" to QuranWordAudioLocation(1, 1, 2),
+        "rabb" to QuranWordAudioLocation(1, 2, 3),
+        "rahman" to QuranWordAudioLocation(1, 3, 1),
+        "din" to QuranWordAudioLocation(1, 4, 3),
+        "nabudu" to QuranWordAudioLocation(1, 5, 2),
+        "kitab" to QuranWordAudioLocation(2, 2, 2),
+        "huda" to QuranWordAudioLocation(2, 2, 6),
+        "muttaqin" to QuranWordAudioLocation(2, 2, 7),
+        "ghayb" to QuranWordAudioLocation(2, 3, 3),
+        "salah" to QuranWordAudioLocation(2, 3, 5),
+        "razaqna" to QuranWordAudioLocation(2, 3, 7),
+        "yuminun" to QuranWordAudioLocation(2, 3, 2),
+        "akhirah" to QuranWordAudioLocation(2, 4, 10),
+        "muflihun" to QuranWordAudioLocation(2, 5, 8),
+        "haqq" to QuranWordAudioLocation(2, 147, 1),
+        "sabirin" to QuranWordAudioLocation(2, 153, 10),
+    )
+
+    private val fallbackWords = withAudioLocations(
+        curatedPortugueseWords + GeneratedQuranVocabulary.words,
+    )
 
     @Volatile
     private var corpusWords: List<QuranWord> = fallbackWords
@@ -431,15 +452,37 @@ object WordRepository {
     }
 
     private fun curatedWords(language: AppLanguage): List<QuranWord> {
-        if (language == AppLanguage.Portuguese) return curatedPortugueseWords
-        return curatedPortugueseWords.map { word ->
-            val text = requireNotNull(englishCuratedText[word.id])
+        val localized = if (language == AppLanguage.Portuguese) {
+            curatedPortugueseWords
+        } else {
+            curatedPortugueseWords.map { word ->
+                val text = requireNotNull(englishCuratedText[word.id])
+                word.copy(
+                    meaning = text.meaning,
+                    grammar = text.grammar,
+                    category = text.category,
+                    verseMeaning = text.verseMeaning,
+                    insight = text.insight,
+                )
+            }
+        }
+        return withAudioLocations(localized)
+    }
+
+    private fun withAudioLocations(words: List<QuranWord>): List<QuranWord> = words.map { word ->
+        if (word.audioLocation != null) {
+            word
+        } else {
             word.copy(
-                meaning = text.meaning,
-                grammar = text.grammar,
-                category = text.category,
-                verseMeaning = text.verseMeaning,
-                insight = text.insight,
+                audioLocation = requireNotNull(
+                    curatedAudioLocations[word.id]
+                        ?: QuranWordAudioLocationResolver.resolve(
+                            id = word.id,
+                            arabic = word.arabic,
+                            reference = word.reference,
+                            verseArabic = word.verseArabic,
+                        ),
+                ) { "No Quran.com word-audio location for fallback card ${word.id}" },
             )
         }
     }

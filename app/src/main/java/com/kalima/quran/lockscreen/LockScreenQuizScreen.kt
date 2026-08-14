@@ -157,7 +157,7 @@ fun LockScreenQuizScreen(
                                 Text(question.word.reference, color = Forest, style = MaterialTheme.typography.bodySmall)
                                 Spacer(Modifier.height(10.dp))
                                 PronunciationButton(
-                                    arabic = question.word.arabic,
+                                    word = question.word,
                                     pronouncer = pronouncer,
                                     modifier = Modifier.fillMaxWidth(),
                                 )

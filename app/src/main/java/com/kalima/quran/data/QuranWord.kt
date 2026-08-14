@@ -16,6 +16,7 @@ data class QuranWord(
     val frequency: Int = 1,
     val surahNumber: Int? = null,
     val isFrequent: Boolean = false,
+    val audioLocation: QuranWordAudioLocation? = null,
 )
 
 enum class StudyScope {

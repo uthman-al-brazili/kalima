@@ -17,6 +17,16 @@ A análise morfológica é distribuída sob a GNU GPL e requer atribuição à f
 
 O gerador consulta a API para obter a forma Uthmani, a transliteração, o contexto do versículo e o glossário palavra por palavra em inglês. O uso em produção deve respeitar os termos e o fluxo de autenticação vigentes da Quran Foundation.
 
+## Áudio palavra por palavra do Quran.com
+
+- [Documentação de áudio da Quran Foundation](https://api-docs.quran.foundation/docs/sdk/javascript/audio/)
+- CDN público: `https://audio.qurancdn.com/wbw/`
+
+O aplicativo Android transmite, sem incorporar ao APK, o mesmo arquivo de áudio
+palavra por palavra servido quando uma palavra é selecionada no Quran.com. A
+reprodução exige internet e o uso em produção deve continuar respeitando os
+termos vigentes da Quran Foundation e do Quran.com.
+
 ## Significados em português
 
 Os glossários em inglês foram convertidos em um primeiro rascunho em português e receberam correções editoriais pontuais. Eles são apresentados como apoio contextual, não como tradução oficial do Alcorão. O cache em `tools/pt_gloss_cache.json` e cada cartão devem passar por revisão linguística e religiosa antes da publicação.
