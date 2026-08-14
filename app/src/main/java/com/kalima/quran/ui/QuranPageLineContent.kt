@@ -19,6 +19,33 @@ internal data class QuranPageLineContent(
         .toList()
 }
 
+internal data class QuranPageSection(
+    val startingSurahNumber: Int?,
+    val tokens: List<QuranPageToken>,
+)
+
+internal fun quranPageSections(tokens: List<QuranPageToken>): List<QuranPageSection> = buildList {
+    var startingSurahNumber: Int? = null
+    var sectionStart = 0
+
+    tokens.forEachIndexed { index, token ->
+        val startsSurah = token.ayahNumber == 1 &&
+            token.wordNumber == 1 &&
+            !token.isAyahMarker
+        if (startsSurah) {
+            if (index > sectionStart) {
+                add(QuranPageSection(startingSurahNumber, tokens.subList(sectionStart, index)))
+            }
+            startingSurahNumber = token.surahNumber
+            sectionStart = index
+        }
+    }
+
+    if (sectionStart < tokens.size) {
+        add(QuranPageSection(startingSurahNumber, tokens.subList(sectionStart, tokens.size)))
+    }
+}
+
 internal fun quranPageLineContent(tokens: List<QuranPageToken>): QuranPageLineContent {
     val segments = ArrayList<QuranPageLineSegment>(tokens.size)
     val text = buildString {

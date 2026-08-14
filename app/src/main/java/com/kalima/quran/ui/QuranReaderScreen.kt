@@ -211,7 +211,7 @@ private fun QuranPage(
     tokens: List<QuranPageToken>,
     onWordClick: (QuranPageToken) -> Unit,
 ) {
-    val lines = remember(tokens) { tokens.groupBy(QuranPageToken::lineNumber).toSortedMap() }
+    val sections = remember(tokens) { quranPageSections(tokens) }
     Surface(
         modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 4.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -223,14 +223,11 @@ private fun QuranPage(
                 .padding(horizontal = 12.dp, vertical = 14.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            lines.values.forEach { lineTokens ->
-                lineTokens
-                    .filter { it.ayahNumber == 1 && it.wordNumber == 1 && !it.isAyahMarker }
-                    .map(QuranPageToken::surahNumber)
-                    .distinct()
-                    .forEach { surahNumber -> SurahPageHeader(surahNumber) }
-
-                QuranPageLine(lineTokens, onWordClick)
+            sections.forEach { section ->
+                section.startingSurahNumber?.let { surahNumber ->
+                    SurahPageHeader(surahNumber)
+                }
+                QuranPageTextBlock(section.tokens, onWordClick)
             }
             Spacer(Modifier.height(8.dp))
             Text(
@@ -278,7 +275,7 @@ private fun SurahPageHeader(surahNumber: Int) {
 }
 
 @Composable
-private fun QuranPageLine(
+private fun QuranPageTextBlock(
     tokens: List<QuranPageToken>,
     onWordClick: (QuranPageToken) -> Unit,
 ) {

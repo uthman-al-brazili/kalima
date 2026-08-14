@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.24.4 — 2026-08-14
+
+- Reflowed Quran page text across the bundled Mushaf row boundaries, keeping
+  the larger readable type without producing isolated one-word lines.
+- Preserved surah headings and tap-for-word-details while the page text reflows.
+
 ## 0.24.3 — 2026-08-14
 
 - Fixed the Quiz tab restoring the previously selected second answer when it
