@@ -26,6 +26,7 @@ import com.kalima.quran.data.ProgressBackupCodec
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.audio.ArabicVoiceInstaller
+import com.kalima.quran.audio.OfflineWordAudioManager
 import com.kalima.quran.lockscreen.LockScreenStudyService
 import com.kalima.quran.lockscreen.LockScreenStudyActivity
 import com.kalima.quran.localization.AppLanguage
@@ -39,6 +40,7 @@ import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -47,6 +49,8 @@ class MainActivity : ComponentActivity() {
     private var loadedProgressStore by mutableStateOf<ProgressStore?>(null)
     private var studyLaunchTarget by mutableStateOf<StudyLaunchTarget?>(null)
     private var pendingBackupImport by mutableStateOf<DecodedProgressBackup?>(null)
+    private val offlineWordAudioManager by lazy { OfflineWordAudioManager(applicationContext) }
+    private var offlineWordAudioJob: Job? = null
 
     private val createBackupDocument = registerForActivityResult(
         ActivityResultContracts.CreateDocument("application/octet-stream"),
@@ -97,6 +101,7 @@ class MainActivity : ComponentActivity() {
             }
 
             val progress by store.progress.collectAsStateWithLifecycle()
+            val offlineWordAudioState by offlineWordAudioManager.state.collectAsStateWithLifecycle()
             KalimaApp(
                 progress = progress,
                 onAnswer = store::answer,
@@ -133,6 +138,15 @@ class MainActivity : ComponentActivity() {
                 backupImportPreview = pendingBackupImport,
                 onConfirmBackupImport = ::confirmBackupImport,
                 onCancelBackupImport = { pendingBackupImport = null },
+                offlineWordAudioState = offlineWordAudioState,
+                onDownloadOfflineWordAudio = { locations ->
+                    if (offlineWordAudioJob?.isActive != true) {
+                        offlineWordAudioJob = lifecycleScope.launch {
+                            offlineWordAudioManager.download(locations)
+                        }
+                    }
+                },
+                onCancelOfflineWordAudio = { offlineWordAudioJob?.cancel() },
                 studyLaunchTarget = studyLaunchTarget,
             )
         }

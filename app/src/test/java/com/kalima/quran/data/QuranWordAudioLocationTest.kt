@@ -9,6 +9,7 @@ class QuranWordAudioLocationTest {
     fun `builds the exact Quran com word audio URL`() {
         val location = QuranWordAudioLocation(surah = 1, ayah = 1, word = 1)
 
+        assertEquals("001_001_001.mp3", location.fileName)
         assertEquals(
             "https://audio.qurancdn.com/wbw/001_001_001.mp3",
             location.quranComUrl,

@@ -14,14 +14,17 @@ data class QuranWordAudioLocation(
         require(word > 0) { "Invalid word position: $word" }
     }
 
-    val quranComUrl: String
+    val fileName: String
         get() = String.format(
             Locale.ROOT,
-            "https://audio.qurancdn.com/wbw/%03d_%03d_%03d.mp3",
+            "%03d_%03d_%03d.mp3",
             surah,
             ayah,
             word,
         )
+
+    val quranComUrl: String
+        get() = "https://audio.qurancdn.com/wbw/$fileName"
 }
 
 internal object QuranWordAudioLocationResolver {

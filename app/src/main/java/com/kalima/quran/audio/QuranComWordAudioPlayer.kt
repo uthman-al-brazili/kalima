@@ -1,21 +1,29 @@
 package com.kalima.quran.audio
 
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.PlaybackParams
 import com.kalima.quran.data.QuranWordAudioLocation
 
-internal class QuranComWordAudioPlayer {
+internal class QuranComWordAudioPlayer(context: Context) {
     private var player: MediaPlayer? = null
     private var playsRemaining = 0
+    private val offlineStore = OfflineWordAudioStore.get(context)
+
+    fun hasOfflineAudio(location: QuranWordAudioLocation): Boolean =
+        offlineStore.cachedFile(location) != null
 
     fun play(
         location: QuranWordAudioLocation,
         playbackRate: Float,
         repeatCount: Int,
+        allowStreaming: Boolean,
         onFailure: () -> Unit,
     ): PronunciationResult {
         stop()
+        val cachedFile = offlineStore.cachedFile(location)
+        if (cachedFile == null && !allowStreaming) return PronunciationResult.OfflineAudioMissing
         val newPlayer = MediaPlayer()
         player = newPlayer
         playsRemaining = repeatCount.coerceIn(1, 5)
@@ -27,7 +35,8 @@ internal class QuranComWordAudioPlayer {
                     .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                     .build(),
             )
-            newPlayer.setDataSource(location.quranComUrl)
+            newPlayer.setDataSource(cachedFile?.absolutePath ?: location.quranComUrl)
+            if (cachedFile == null) offlineStore.cacheInBackground(location)
             newPlayer.setOnPreparedListener { preparedPlayer ->
                 if (player !== preparedPlayer) {
                     preparedPlayer.release()

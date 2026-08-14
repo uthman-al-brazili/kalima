@@ -5,33 +5,48 @@ import org.junit.Test
 
 class WordAudioSourceTest {
     @Test
-    fun `uses exact recording when a location and internet are available`() {
+    fun `uses cached recording offline when it is available`() {
         assertEquals(
-            WordAudioSource.QuranComRecording,
+            WordAudioSource.CachedQuranComRecording,
             selectWordAudioSource(
                 hasQuranComLocation = true,
-                hasValidatedInternet = true,
-            ),
-        )
-    }
-
-    @Test
-    fun `uses Android Arabic voice while offline`() {
-        assertEquals(
-            WordAudioSource.AndroidArabicVoice,
-            selectWordAudioSource(
-                hasQuranComLocation = true,
+                hasOfflineAudio = true,
                 hasValidatedInternet = false,
             ),
         )
     }
 
     @Test
-    fun `uses Android Arabic voice when a recording location is missing`() {
+    fun `streams real recording when online and not cached`() {
         assertEquals(
-            WordAudioSource.AndroidArabicVoice,
+            WordAudioSource.StreamingQuranComRecording,
+            selectWordAudioSource(
+                hasQuranComLocation = true,
+                hasOfflineAudio = false,
+                hasValidatedInternet = true,
+            ),
+        )
+    }
+
+    @Test
+    fun `does not substitute synthesized speech while offline`() {
+        assertEquals(
+            WordAudioSource.Unavailable,
+            selectWordAudioSource(
+                hasQuranComLocation = true,
+                hasOfflineAudio = false,
+                hasValidatedInternet = false,
+            ),
+        )
+    }
+
+    @Test
+    fun `reports unavailable when a recording location is missing`() {
+        assertEquals(
+            WordAudioSource.Unavailable,
             selectWordAudioSource(
                 hasQuranComLocation = false,
+                hasOfflineAudio = false,
                 hasValidatedInternet = true,
             ),
         )

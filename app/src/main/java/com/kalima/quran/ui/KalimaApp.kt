@@ -27,9 +27,11 @@ import androidx.core.view.WindowCompat
 import androidx.annotation.StringRes
 import androidx.annotation.DrawableRes
 import com.kalima.quran.R
+import com.kalima.quran.audio.OfflineWordAudioDownloadState
 import com.kalima.quran.data.AppThemeMode
 import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.QuranWordAudioLocation
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.ui.theme.KalimaTheme
@@ -81,6 +83,9 @@ fun KalimaApp(
     backupImportPreview: DecodedProgressBackup?,
     onConfirmBackupImport: () -> Unit,
     onCancelBackupImport: () -> Unit,
+    offlineWordAudioState: OfflineWordAudioDownloadState,
+    onDownloadOfflineWordAudio: (List<QuranWordAudioLocation>) -> Unit,
+    onCancelOfflineWordAudio: () -> Unit,
     studyLaunchTarget: StudyLaunchTarget? = null,
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
@@ -193,6 +198,9 @@ fun KalimaApp(
                         backupImportPreview = backupImportPreview,
                         onConfirmBackupImport = onConfirmBackupImport,
                         onCancelBackupImport = onCancelBackupImport,
+                        offlineWordAudioState = offlineWordAudioState,
+                        onDownloadOfflineWordAudio = onDownloadOfflineWordAudio,
+                        onCancelOfflineWordAudio = onCancelOfflineWordAudio,
                     )
                 }
             }

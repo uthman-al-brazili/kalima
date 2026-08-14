@@ -1,15 +1,18 @@
 package com.kalima.quran.audio
 
 internal enum class WordAudioSource {
-    QuranComRecording,
-    AndroidArabicVoice,
+    CachedQuranComRecording,
+    StreamingQuranComRecording,
+    Unavailable,
 }
 
 internal fun selectWordAudioSource(
     hasQuranComLocation: Boolean,
+    hasOfflineAudio: Boolean,
     hasValidatedInternet: Boolean,
-): WordAudioSource = if (hasQuranComLocation && hasValidatedInternet) {
-    WordAudioSource.QuranComRecording
-} else {
-    WordAudioSource.AndroidArabicVoice
+): WordAudioSource = when {
+    !hasQuranComLocation -> WordAudioSource.Unavailable
+    hasOfflineAudio -> WordAudioSource.CachedQuranComRecording
+    hasValidatedInternet -> WordAudioSource.StreamingQuranComRecording
+    else -> WordAudioSource.Unavailable
 }

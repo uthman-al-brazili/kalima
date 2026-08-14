@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.22.0 — 2026-08-14
+
+- Made individual words use only Quran.com’s real human recordings, including
+  offline playback, with no synthesized word-audio fallback.
+- Added resumable downloads for the selected study content and automatically
+  preserved every recording played online for later offline use.
+- Added download-size confirmation, progress, cancellation, and retry-friendly
+  reuse of recordings already saved on the device.
+
 ## 0.21.0 — 2026-08-14
 
 - Made every individual word playable without an internet connection by

@@ -19,6 +19,7 @@
     <string name="pronunciation_unavailable">Nenhuma voz árabe está instalada. Abrindo a instalação de vozes do Android.</string>
     <string name="pronunciation_installation_failed">Não foi possível abrir a instalação de vozes. Abra Configurações e procure por “Síntese de voz”.</string>
     <string name="pronunciation_failed">Não foi possível reproduzir a pronúncia. Tente novamente.</string>
+    <string name="offline_word_audio_missing">Esta gravação real ainda não está salva. Conecte-se uma vez ou baixe o áudio selecionado em Ajustes.</string>
     <string name="arabic_voice_setup_title">Ativar a voz árabe</string>
     <string name="arabic_voice_choose_google">O Kalima não encontrou uma voz árabe no mecanismo de síntese de voz atual deste celular. Nos ajustes de síntese de voz do Android, defina “Serviços de voz do Google” como mecanismo preferido; depois, abra os ajustes dele e instale os dados de voz em árabe. Se o Google não aparecer na lista, instale-o primeiro pela Google Play.</string>
     <string name="arabic_voice_install_google">O Google já é o mecanismo de síntese de voz preferido, mas os dados da voz árabe não estão disponíveis. Abra os ajustes de síntese de voz, entre nos ajustes do mecanismo do Google e instale os dados de voz em árabe.</string>
@@ -239,8 +240,16 @@
     <string name="device_voice_slow">Ouvir devagar</string>
     <string name="device_voice_repeat">Repetir 3×</string>
     <string name="device_voice_verse">Ouvir verso · voz do aparelho</string>
-    <string name="audio_disclosure">As palavras individuais usam a gravação exata do Quran.com quando há internet e mudam automaticamente para a voz árabe offline do Android sem conexão. A reprodução do versículo também usa a voz árabe do Android.</string>
-    <string name="arabic_voice_settings_observation">Para garantir o áudio offline de palavras e versículos, defina “Serviços de voz do Google” como mecanismo de síntese de voz preferido do Android e instale os dados da voz árabe.</string>
+    <string name="audio_disclosure">As palavras individuais sempre usam a gravação humana exata do Quran.com, nunca uma voz sintetizada. Quando reproduzidas com internet, elas ficam salvas neste aparelho; você também pode baixar de uma vez o áudio do conteúdo de estudo selecionado.</string>
+    <string name="arabic_voice_settings_observation">A voz sintetizada do Android é usada somente para trechos completos de versículos, nunca para palavras individuais.</string>
+    <string name="offline_audio_download_title">Baixar gravações reais</string>
+    <string name="offline_audio_download_confirmation">Baixar %1$d gravações do Quran.com (aproximadamente %2$d MB) para o conteúdo de estudo selecionado? Downloads existentes serão reutilizados. Recomendamos Wi-Fi.</string>
+    <string name="offline_audio_download_estimate">%1$d palavras selecionadas · até aproximadamente %2$d MB</string>
+    <string name="offline_audio_download_progress">Salvando gravação %1$d de %2$d</string>
+    <string name="offline_audio_download_result">Baixadas: %1$d · já disponíveis: %2$d · falhas: %3$d</string>
+    <string name="download_selected_audio">Baixar áudio selecionado</string>
+    <string name="cancel_download">Cancelar download</string>
+    <string name="download">Baixar</string>
     <string name="editorial_status">Rascunho editorial · validação especializada pendente</string>
     <string name="editorial_compact_title">Conteúdo em revisão</string>
     <string name="editorial_show_details">Ver detalhes</string>

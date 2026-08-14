@@ -6,9 +6,9 @@ Kalima é um aplicativo para Android e Windows inspirado na ideia de aprendizado
 
 - cartão de recordação que apresenta imediatamente o significado de palavras
   novas e o oculta primeiro nas revisões para testar a memória;
-- gravação palavra por palavra do Quran.com quando há internet, com pronúncia
-  offline automática pela voz árabe do Android, identificada como voz gerada —
-  não como recitação;
+- gravação humana palavra por palavra do Quran.com, salva após a primeira
+  reprodução e disponível por download para o conteúdo selecionado, sem usar
+  voz sintetizada nas palavras individuais;
 - seletor de idioma em **Configurações**, com interface, significados, quizzes, notificações e cartões de tela bloqueada em português ou inglês;
 - trecho corânico contextualizado e paráfrase de estudo em português;
 - repetição espaçada persistente por palavra: erros voltam após 10 minutos;

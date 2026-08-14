@@ -19,6 +19,7 @@
     <string name="pronunciation_unavailable">No Arabic voice is installed. Opening Android’s voice installation screen.</string>
     <string name="pronunciation_installation_failed">The voice installer could not be opened. Open Settings and search for “Text-to-speech”.</string>
     <string name="pronunciation_failed">The pronunciation could not be played. Please try again.</string>
+    <string name="offline_word_audio_missing">This real recording has not been saved yet. Connect once or download the selected audio in Settings.</string>
     <string name="arabic_voice_setup_title">Enable the Arabic voice</string>
     <string name="arabic_voice_choose_google">Kalima could not find an Arabic voice in this phone’s current text-to-speech engine. In Android’s Text-to-speech settings, set “Speech Recognition &amp; Synthesis from Google” as the Preferred engine, then open its settings and install Arabic voice data. If Google is not listed, install it from Google Play first.</string>
     <string name="arabic_voice_install_google">Google is already the Preferred text-to-speech engine, but its Arabic voice data is unavailable. Open Text-to-speech settings, open the Google engine’s settings, and install Arabic voice data.</string>
@@ -239,8 +240,16 @@
     <string name="device_voice_slow">Play slowly</string>
     <string name="device_voice_repeat">Repeat 3×</string>
     <string name="device_voice_verse">Hear verse · device voice</string>
-    <string name="audio_disclosure">Individual words use Quran.com’s exact recording when online and automatically switch to Android’s offline Arabic voice without a connection. Verse playback also uses Android’s Arabic voice.</string>
-    <string name="arabic_voice_settings_observation">To ensure offline audio for words and verses, set “Speech Recognition &amp; Synthesis from Google” as Android’s preferred text-to-speech engine, then install its Arabic voice data.</string>
+    <string name="audio_disclosure">Individual words always use Quran.com’s exact human recording, never synthesized speech. Recordings played online are saved on this device; you can also download the selected study content’s audio at once.</string>
+    <string name="arabic_voice_settings_observation">Android’s synthesized voice is used only for complete verse excerpts, never for individual words.</string>
+    <string name="offline_audio_download_title">Download real recordings</string>
+    <string name="offline_audio_download_confirmation">Download %1$d Quran.com recordings (approximately %2$d MB) for the selected study content? Existing downloads will be reused. Wi-Fi is recommended.</string>
+    <string name="offline_audio_download_estimate">%1$d selected words · up to approximately %2$d MB</string>
+    <string name="offline_audio_download_progress">Saving recording %1$d of %2$d</string>
+    <string name="offline_audio_download_result">Downloaded: %1$d · already available: %2$d · failed: %3$d</string>
+    <string name="download_selected_audio">Download selected audio</string>
+    <string name="cancel_download">Cancel download</string>
+    <string name="download">Download</string>
     <string name="editorial_status">Editorial draft · specialist validation pending</string>
     <string name="editorial_compact_title">Content under review</string>
     <string name="editorial_show_details">View details</string>

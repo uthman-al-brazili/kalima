@@ -78,13 +78,12 @@ fun PronunciationButton(
 ) {
     PronunciationControl(
         pronouncer = pronouncer,
-        play = { onFallbackResult ->
+        play = { onPlaybackResult ->
             pronouncer.speakWord(
-                text = word.arabic,
                 location = word.audioLocation,
                 playbackRate = playbackRate,
                 repeatCount = repeatCount,
-                onFallbackResult = onFallbackResult,
+                onPlaybackResult = onPlaybackResult,
             )
         },
         modifier = modifier,
@@ -155,6 +154,7 @@ private fun PronunciationControl(
     val loadingMessage = stringResource(R.string.pronunciation_loading)
     val installationFailedMessage = stringResource(R.string.pronunciation_installation_failed)
     val failedMessage = stringResource(R.string.pronunciation_failed)
+    val offlineAudioMissingMessage = stringResource(R.string.offline_word_audio_missing)
     fun handleResult(result: PronunciationResult) {
         when (result) {
             PronunciationResult.Started -> Unit
@@ -163,6 +163,9 @@ private fun PronunciationControl(
             }
             PronunciationResult.Unavailable -> {
                 showVoiceSetup = true
+            }
+            PronunciationResult.OfflineAudioMissing -> {
+                Toast.makeText(context, offlineAudioMissingMessage, Toast.LENGTH_LONG).show()
             }
             PronunciationResult.Failed -> {
                 Toast.makeText(context, failedMessage, Toast.LENGTH_LONG).show()

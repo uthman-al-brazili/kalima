@@ -16,6 +16,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -26,6 +27,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,12 +38,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
+import com.kalima.quran.audio.OfflineWordAudioDownloadState
+import com.kalima.quran.audio.OfflineWordAudioManager
 import com.kalima.quran.data.AppThemeMode
 import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.LearningWordLimiter
 import com.kalima.quran.data.LockScreenPerformanceBudget
 import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.QuranWordAudioLocation
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.localization.AppLanguage
 import kotlin.math.roundToInt
 
@@ -74,7 +80,65 @@ fun SettingsScreen(
     backupImportPreview: DecodedProgressBackup?,
     onConfirmBackupImport: () -> Unit,
     onCancelBackupImport: () -> Unit,
+    offlineWordAudioState: OfflineWordAudioDownloadState,
+    onDownloadOfflineWordAudio: (List<QuranWordAudioLocation>) -> Unit,
+    onCancelOfflineWordAudio: () -> Unit,
 ) {
+    val audioSelectionKey = progress.selectedSurahs.sorted().joinToString(",")
+    val offlineAudioLocations = remember(
+        progress.studyScope,
+        audioSelectionKey,
+        progress.customStudyIds,
+        progress.maximumWords,
+        progress.learnedIds,
+        progress.reviewingIds,
+        progress.alreadyKnownIds,
+    ) {
+        progress.limitNewWords(
+            WordRepository.wordsFor(
+                scope = progress.studyScope,
+                selectedSurahs = progress.selectedSurahs,
+                customStudyIds = progress.customStudyIds,
+            ),
+        ).mapNotNull { it.audioLocation }
+            .distinctBy(QuranWordAudioLocation::fileName)
+    }
+    val estimatedAudioMegabytes = OfflineWordAudioManager.estimatedMegabytes(
+        offlineAudioLocations.size,
+    )
+    var showAudioDownloadConfirmation by rememberSaveable { mutableStateOf(false) }
+
+    if (showAudioDownloadConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showAudioDownloadConfirmation = false },
+            title = { Text(stringResource(R.string.offline_audio_download_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.offline_audio_download_confirmation,
+                        offlineAudioLocations.size,
+                        estimatedAudioMegabytes,
+                    ),
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showAudioDownloadConfirmation = false
+                        onDownloadOfflineWordAudio(offlineAudioLocations)
+                    },
+                ) {
+                    Text(stringResource(R.string.download))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAudioDownloadConfirmation = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
     if (backupImportPreview != null) {
         val backupProgress = backupImportPreview.progress
         AlertDialog(
@@ -246,6 +310,58 @@ fun SettingsScreen(
                     stringResource(R.string.audio_disclosure),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Spacer(Modifier.height(10.dp))
+                if (offlineWordAudioState.running) {
+                    val progressFraction = if (offlineWordAudioState.total == 0) {
+                        0f
+                    } else {
+                        offlineWordAudioState.completed.toFloat() / offlineWordAudioState.total
+                    }
+                    LinearProgressIndicator(
+                        progress = { progressFraction },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        stringResource(
+                            R.string.offline_audio_download_progress,
+                            offlineWordAudioState.completed,
+                            offlineWordAudioState.total,
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    TextButton(onClick = onCancelOfflineWordAudio) {
+                        Text(stringResource(R.string.cancel_download))
+                    }
+                } else {
+                    Button(
+                        onClick = { showAudioDownloadConfirmation = true },
+                        enabled = offlineAudioLocations.isNotEmpty(),
+                    ) {
+                        Text(stringResource(R.string.download_selected_audio))
+                    }
+                    Text(
+                        stringResource(
+                            R.string.offline_audio_download_estimate,
+                            offlineAudioLocations.size,
+                            estimatedAudioMegabytes,
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    if (offlineWordAudioState.total > 0) {
+                        Text(
+                            stringResource(
+                                R.string.offline_audio_download_result,
+                                offlineWordAudioState.downloaded,
+                                offlineWordAudioState.alreadyAvailable,
+                                offlineWordAudioState.failed,
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
                 Spacer(Modifier.height(10.dp))
                 Text(
                     stringResource(R.string.arabic_voice_settings_observation),

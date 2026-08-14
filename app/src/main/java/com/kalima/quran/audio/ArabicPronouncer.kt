@@ -11,6 +11,7 @@ enum class PronunciationResult {
     Started,
     Initializing,
     Unavailable,
+    OfflineAudioMissing,
     Failed,
 }
 
@@ -36,7 +37,7 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     private val applicationContext = context.applicationContext
     private var engine: TextToSpeech? = null
     private var pendingSpeech: PendingSpeech? = null
-    private val wordAudioPlayer = QuranComWordAudioPlayer()
+    private val wordAudioPlayer = QuranComWordAudioPlayer(applicationContext)
     private val connectivityManager = applicationContext.getSystemService(ConnectivityManager::class.java)
 
     override fun onInit(status: Int) {
@@ -107,24 +108,17 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
     }
 
     fun speakWord(
-        text: String,
         location: QuranWordAudioLocation?,
         playbackRate: Float = WORD_DEFAULT_RATE,
         repeatCount: Int = 1,
-        onFallbackResult: (PronunciationResult) -> Unit = {},
+        onPlaybackResult: (PronunciationResult) -> Unit = {},
     ): PronunciationResult {
         val source = selectWordAudioSource(
             hasQuranComLocation = location != null,
+            hasOfflineAudio = location?.let(wordAudioPlayer::hasOfflineAudio) == true,
             hasValidatedInternet = hasValidatedInternet(),
         )
-        if (source == WordAudioSource.AndroidArabicVoice) {
-            return speak(
-                text = text,
-                speechRate = offlineWordSpeechRate(playbackRate),
-                repeatCount = repeatCount,
-                onDeferredResult = onFallbackResult,
-            )
-        }
+        if (source == WordAudioSource.Unavailable) return PronunciationResult.OfflineAudioMissing
 
         engine?.stop()
         pendingSpeech = null
@@ -132,16 +126,9 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
             location = requireNotNull(location),
             playbackRate = playbackRate,
             repeatCount = repeatCount,
+            allowStreaming = source == WordAudioSource.StreamingQuranComRecording,
             onFailure = {
-                val fallbackResult = speak(
-                    text = text,
-                    speechRate = offlineWordSpeechRate(playbackRate),
-                    repeatCount = repeatCount,
-                    onDeferredResult = onFallbackResult,
-                )
-                if (fallbackResult != PronunciationResult.Started) {
-                    onFallbackResult(fallbackResult)
-                }
+                onPlaybackResult(PronunciationResult.Failed)
             },
         )
     }
@@ -152,9 +139,6 @@ class ArabicPronouncer(context: Context) : TextToSpeech.OnInitListener {
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
             capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
-
-    private fun offlineWordSpeechRate(playbackRate: Float): Float =
-        (DEFAULT_RATE * playbackRate).coerceIn(0.4f, 1.2f)
 
     private fun speakPrepared(text: String, speechRate: Float, repeatCount: Int): PronunciationResult {
         engine?.setSpeechRate(speechRate.coerceIn(0.4f, 1.2f))
