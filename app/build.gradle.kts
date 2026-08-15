@@ -12,8 +12,8 @@ android {
         applicationId = "com.kalima.quran"
         minSdk = 26
         targetSdk = 36
-        versionCode = 51
-        versionName = "0.24.5"
+        versionCode = 52
+        versionName = "0.24.6"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

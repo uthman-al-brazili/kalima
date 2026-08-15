@@ -427,11 +427,12 @@ object WordRepository {
         }
         val imported = input.use { VocabularyAssetLoader.load(it, language) }
         val loadedWords = curatedWords(language) + imported
+        val loadedReaderIndex = QuranReaderWordIndex(loadedWords)
         searchIndex = null
         referenceIndex = null
         lemmaIndex = null
-        readerIndex = null
         corpusWords = loadedWords
+        readerIndex = loadedReaderIndex
         frequentIndex = imported.filter(QuranWord::isFrequent)
         rankedFrequencyIndex = buildRankedFrequencyIndex(imported)
         surahIndex = imported
@@ -451,7 +452,7 @@ object WordRepository {
         val preparedSearchIndex = buildSearchIndex(source)
         val preparedReferenceIndex = source.groupBy(QuranWord::reference)
         val preparedLemmaIndex = source.groupBy(::lemmaKey)
-        val preparedReaderIndex = QuranReaderWordIndex(source)
+        val preparedReaderIndex = readerIndex ?: QuranReaderWordIndex(source)
         if (corpusWords !== source) return
         searchIndex = preparedSearchIndex
         referenceIndex = preparedReferenceIndex

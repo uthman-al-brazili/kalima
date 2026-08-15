@@ -78,32 +78,32 @@ class VocabularyAssetLoaderTest {
     }
 
     @Test
-    fun everyReaderWordHasIndexedDetailsByOccurrenceOrSurahForm() {
-        val corpus = VocabularyAssetLoader.load(findCorpusAsset().inputStream())
+    fun everyReaderWordResolvesToMatchingCompleteDetailsInEveryLanguage() {
         val readerTokens = QuranTextAssetLoader.load(findQuranAsset().inputStream())
             .filterNot(QuranPageToken::isAyahMarker)
-        val indexedLocations = corpus.mapNotNullTo(HashSet()) { word ->
-            word.audioLocation?.let { Triple(it.surah, it.ayah, it.word) }
-        }
-        val indexedForms = corpus.mapNotNullTo(HashSet()) { word ->
-            word.surahNumber?.let { surah ->
-                surah to VerseExplorer.normalizeArabic(word.arabic)
+
+        AppLanguage.entries.forEach { language ->
+            val corpus = VocabularyAssetLoader.load(findCorpusAsset().inputStream(), language)
+            val index = QuranReaderWordIndex(corpus)
+            val failures = readerTokens.mapNotNull { token ->
+                val location = "${token.surahNumber}:${token.ayahNumber}:${token.wordNumber}"
+                val word = index.find(token) ?: return@mapNotNull "$location missing"
+                when {
+                    VerseExplorer.normalizeArabic(word.arabic) !=
+                        VerseExplorer.normalizeArabic(token.arabic) ->
+                        "$location resolved ${word.id} with a different Arabic form"
+                    word.transliteration.isBlank() -> "$location has no transliteration"
+                    word.meaning.isBlank() -> "$location has no meaning"
+                    word.grammar.isBlank() -> "$location has no grammar"
+                    else -> null
+                }
             }
-        }
-        val indexedGlobalForms = corpus.mapTo(HashSet()) { word ->
-            VerseExplorer.normalizeArabic(word.arabic)
-        }
 
-        val missing = readerTokens.filter { token ->
-            Triple(token.surahNumber, token.ayahNumber, token.wordNumber) !in indexedLocations &&
-                (token.surahNumber to VerseExplorer.normalizeArabic(token.arabic)) !in indexedForms &&
-                VerseExplorer.normalizeArabic(token.arabic) !in indexedGlobalForms
+            assertTrue(
+                "$language: ${failures.take(20)}",
+                failures.isEmpty(),
+            )
         }
-
-        assertTrue(
-            missing.take(20).joinToString { "${it.surahNumber}:${it.ayahNumber}:${it.wordNumber}" },
-            missing.isEmpty(),
-        )
     }
 
     @Test

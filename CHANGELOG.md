@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.24.6 — 2026-08-14
+
+- Made meanings and grammar ready for every Quran word before the reader can be
+  used, instead of waiting for a deferred word-detail index.
+- Added full Arabic-form and detail coverage checks for every tappable Quran
+  token in both English and Portuguese.
+
 ## 0.24.5 — 2026-08-14
 
 - Fixed Quran word details occasionally showing an unindexed fallback instead
