@@ -23,6 +23,26 @@ object VerseExplorer {
         }
     }
 
+    internal fun buildIndexedTokens(
+        tokens: List<QuranPageToken>,
+        selectedWord: QuranWord,
+        resolve: (QuranPageToken) -> QuranWord?,
+    ): List<VerseToken> = tokens
+        .asSequence()
+        .filterNot(QuranPageToken::isAyahMarker)
+        .mapIndexed { index, token ->
+            val linkedWord = if (
+                selectedWord.audioLocation.matches(token) &&
+                normalizeArabic(selectedWord.arabic) == normalizeArabic(token.arabic)
+            ) {
+                selectedWord
+            } else {
+                resolve(token)
+            }
+            VerseToken(index, token.arabic, linkedWord)
+        }
+        .toList()
+
     fun normalizeArabic(value: String): String = Normalizer.normalize(value, Normalizer.Form.NFD)
         .replace(arabicMarks, "")
         .replace('ٱ', 'ا')
@@ -31,4 +51,10 @@ object VerseExplorer {
         .replace('آ', 'ا')
         .replace("ـ", "")
         .trim()
+
+    private fun QuranWordAudioLocation?.matches(token: QuranPageToken): Boolean =
+        this != null &&
+            surah == token.surahNumber &&
+            ayah == token.ayahNumber &&
+            word == token.wordNumber
 }

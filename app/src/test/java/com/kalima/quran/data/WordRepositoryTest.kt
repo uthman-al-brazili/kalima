@@ -9,26 +9,33 @@ import java.time.LocalDate
 
 class WordRepositoryTest {
     @Test
-    fun readerIndexFindsMeaningForAlBaqarahVerse34FirstToken() {
+    fun completeAyahFindsMeaningForAlBaqarahVerse34FirstToken() {
         val corpusAsset = sequenceOf(
             java.io.File("src/main/assets/${VocabularyAssetLoader.ASSET_NAME}.gz"),
             java.io.File("app/src/main/assets/${VocabularyAssetLoader.ASSET_NAME}.gz"),
         ).first(java.io.File::isFile)
+        val quranAsset = sequenceOf(
+            java.io.File("src/main/assets/${QuranTextAssetLoader.ASSET_NAME}.gz"),
+            java.io.File("app/src/main/assets/${QuranTextAssetLoader.ASSET_NAME}.gz"),
+        ).first(java.io.File::isFile)
         val corpus = VocabularyAssetLoader.load(corpusAsset.inputStream(), AppLanguage.English)
-        val token = QuranPageToken(
-            pageNumber = 6,
-            lineNumber = 9,
-            surahNumber = 2,
-            ayahNumber = 34,
-            wordNumber = 1,
-            arabic = "وَإِذْ",
-            isAyahMarker = false,
+        val verseTokens = QuranTextAssetLoader.load(quranAsset.inputStream())
+            .filter { it.surahNumber == 2 && it.ayahNumber == 34 }
+        val selectedWord = corpus.first { it.id == "s2-v034-w013" }
+        val index = QuranReaderWordIndex(corpus)
+
+        val exploredTokens = VerseExplorer.buildIndexedTokens(
+            verseTokens,
+            selectedWord,
+            index::find,
         )
+        val firstWord = requireNotNull(exploredTokens.first().word)
 
-        val word = requireNotNull(QuranReaderWordIndex(corpus).find(token))
-
-        assertEquals("And when", word.meaning)
-        assertEquals("Al-Baqarah 2:30", word.reference)
+        assertEquals(13, exploredTokens.size)
+        assertTrue(exploredTokens.all { it.word != null })
+        assertEquals("وَإِذْ", exploredTokens.first().text)
+        assertEquals("And when", firstWord.meaning)
+        assertEquals(selectedWord.id, exploredTokens.last().word?.id)
     }
 
     @Test

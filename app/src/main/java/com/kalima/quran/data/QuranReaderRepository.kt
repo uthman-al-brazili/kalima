@@ -9,6 +9,9 @@ object QuranReaderRepository {
     @Volatile
     private var verseTextByLocation: Map<Pair<Int, Int>, String> = emptyMap()
 
+    @Volatile
+    private var verseTokensByLocation: Map<Pair<Int, Int>, List<QuranPageToken>> = emptyMap()
+
     @Synchronized
     fun initialize(input: InputStream) {
         if (pages.isNotEmpty()) {
@@ -21,11 +24,14 @@ object QuranReaderRepository {
             "Quran reader must contain all $TOTAL_PAGES pages"
         }
         pages = (1..TOTAL_PAGES).map { pageNumber -> groupedPages.getValue(pageNumber) }
-        verseTextByLocation = tokens
+        val groupedVerseTokens = tokens
             .asSequence()
             .filterNot(QuranPageToken::isAyahMarker)
             .groupBy { it.surahNumber to it.ayahNumber }
-            .mapValues { (_, words) -> words.joinToString(" ", transform = QuranPageToken::arabic) }
+        verseTokensByLocation = groupedVerseTokens
+        verseTextByLocation = groupedVerseTokens.mapValues { (_, words) ->
+            words.joinToString(" ", transform = QuranPageToken::arabic)
+        }
     }
 
     fun page(pageNumber: Int): List<QuranPageToken> = pages.getOrNull(pageNumber - 1).orEmpty()
@@ -36,6 +42,9 @@ object QuranReaderRepository {
 
     fun verseText(surahNumber: Int, ayahNumber: Int): String =
         verseTextByLocation[surahNumber to ayahNumber].orEmpty()
+
+    fun verseTokens(surahNumber: Int, ayahNumber: Int): List<QuranPageToken> =
+        verseTokensByLocation[surahNumber to ayahNumber].orEmpty()
 
     val pageCount: Int get() = pages.size
 

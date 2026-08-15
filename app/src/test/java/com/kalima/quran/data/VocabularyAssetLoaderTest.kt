@@ -78,24 +78,46 @@ class VocabularyAssetLoaderTest {
     }
 
     @Test
-    fun everyReaderWordResolvesToMatchingCompleteDetailsInEveryLanguage() {
-        val readerTokens = QuranTextAssetLoader.load(findQuranAsset().inputStream())
-            .filterNot(QuranPageToken::isAyahMarker)
+    fun everyCompleteAyahTokenResolvesToMatchingDetailsInEveryLanguage() {
+        val readerVerses = QuranTextAssetLoader.load(findQuranAsset().inputStream())
+            .groupBy { it.surahNumber to it.ayahNumber }
 
         AppLanguage.entries.forEach { language ->
             val corpus = VocabularyAssetLoader.load(findCorpusAsset().inputStream(), language)
             val index = QuranReaderWordIndex(corpus)
-            val failures = readerTokens.mapNotNull { token ->
-                val location = "${token.surahNumber}:${token.ayahNumber}:${token.wordNumber}"
-                val word = index.find(token) ?: return@mapNotNull "$location missing"
-                when {
-                    VerseExplorer.normalizeArabic(word.arabic) !=
-                        VerseExplorer.normalizeArabic(token.arabic) ->
-                        "$location resolved ${word.id} with a different Arabic form"
-                    word.transliteration.isBlank() -> "$location has no transliteration"
-                    word.meaning.isBlank() -> "$location has no meaning"
-                    word.grammar.isBlank() -> "$location has no grammar"
-                    else -> null
+            val failures = buildList {
+                readerVerses.values.forEach verseLoop@ { verseTokens ->
+                    val tappableTokens = verseTokens.filterNot(QuranPageToken::isAyahMarker)
+                    val selectedWord = index.find(tappableTokens.last())
+                    if (selectedWord == null) {
+                        val token = tappableTokens.last()
+                        add("${token.surahNumber}:${token.ayahNumber}:${token.wordNumber} missing")
+                        return@verseLoop
+                    }
+                    val exploredTokens = VerseExplorer.buildIndexedTokens(
+                        verseTokens,
+                        selectedWord,
+                        index::find,
+                    )
+                    if (exploredTokens.size != tappableTokens.size) {
+                        val token = tappableTokens.first()
+                        add("${token.surahNumber}:${token.ayahNumber} has the wrong token count")
+                    }
+                    tappableTokens.zip(exploredTokens).forEach { (token, explored) ->
+                        val location =
+                            "${token.surahNumber}:${token.ayahNumber}:${token.wordNumber}"
+                        val word = explored.word
+                        when {
+                            word == null -> add("$location missing")
+                            VerseExplorer.normalizeArabic(word.arabic) !=
+                                VerseExplorer.normalizeArabic(token.arabic) ->
+                                add("$location resolved ${word.id} with a different Arabic form")
+                            word.transliteration.isBlank() ->
+                                add("$location has no transliteration")
+                            word.meaning.isBlank() -> add("$location has no meaning")
+                            word.grammar.isBlank() -> add("$location has no grammar")
+                        }
+                    }
                 }
             }
 

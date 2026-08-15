@@ -569,11 +569,21 @@ object WordRepository {
         }
     }
 
-    fun verseTokens(word: QuranWord): List<VerseToken> = VerseExplorer.buildTokens(
-        word.verseArabic,
-        (referenceIndex?.get(word.reference) ?: words.filter { it.reference == word.reference })
-            .filter { it.verseArabic == word.verseArabic },
-    )
+    fun verseTokens(word: QuranWord): List<VerseToken> {
+        val location = word.audioLocation
+        val readerTokens = location?.let { QuranReaderRepository.verseTokens(it.surah, it.ayah) }
+            .orEmpty()
+        if (readerTokens.isNotEmpty()) {
+            return VerseExplorer.buildIndexedTokens(readerTokens, word) { token ->
+                readerWordFor(token, word.verseArabic)
+            }
+        }
+        return VerseExplorer.buildTokens(
+            word.verseArabic,
+            (referenceIndex?.get(word.reference) ?: words.filter { it.reference == word.reference })
+                .filter { it.verseArabic == word.verseArabic },
+        )
+    }
 
     fun concordance(word: QuranWord, limit: Int = 8): List<QuranWord> =
         (lemmaIndex?.get(lemmaKey(word)) ?: words.filter { lemmaKey(it) == lemmaKey(word) })

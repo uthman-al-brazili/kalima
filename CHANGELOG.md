@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.24.7 — 2026-08-14
+
+- Fixed missing meanings and grammar when tapping words in the complete ayah
+  shown on study and vocabulary cards.
+- Matched complete-ayah words by their exact Quran positions and verified every
+  tappable token across all 6,236 ayahs in English and Portuguese.
+
 ## 0.24.6 — 2026-08-14
 
 - Made meanings and grammar ready for every Quran word before the reader can be
