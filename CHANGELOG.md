@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.27.2 — 2026-08-20
+
+- Renamed the number lesson heading to “Arabic-Indic number” so learners can
+  study multiple digits on the same day without a misleading daily label.
+
 ## 0.27.1 — 2026-08-20
 
 - Renamed the number lesson’s advance button to “Next number” so its action is
