@@ -448,7 +448,7 @@ private fun DifficultWords(progress: StudyProgress) {
             .sortedByDescending { it.value.lapses }
             .filter { it.value.lapses > 0 }
             .take(5)
-            .mapNotNull { entry -> WordRepository.words.firstOrNull { it.id == entry.key }?.let { it to entry.value.lapses } }
+            .mapNotNull { entry -> WordRepository.wordById(entry.key)?.let { it to entry.value.lapses } }
     }
     Text(stringResource(R.string.difficult_words), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
     Text(stringResource(R.string.difficult_words_note), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)

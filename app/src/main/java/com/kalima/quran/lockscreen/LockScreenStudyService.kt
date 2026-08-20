@@ -25,6 +25,8 @@ import androidx.core.content.ContextCompat
 import com.kalima.quran.MainActivity
 import com.kalima.quran.R
 import com.kalima.quran.data.ProgressStore
+import com.kalima.quran.data.LockScreenWakeEvent
+import com.kalima.quran.data.LockScreenWakePolicy
 import com.kalima.quran.localization.LanguageManager
 import java.util.concurrent.Executors
 
@@ -88,10 +90,12 @@ class LockScreenStudyService : Service() {
                     }
                 }
 
-                Intent.ACTION_SCREEN_ON -> {
-                    requestedAtElapsed = SystemClock.elapsedRealtime()
-                    mainHandler.removeCallbacks(showCard)
-                    mainHandler.postDelayed(showCard, SCREEN_ON_DELAY_MS)
+                Intent.ACTION_USER_PRESENT -> {
+                    if (LockScreenWakePolicy.shouldShowCard(LockScreenWakeEvent.UserPresent)) {
+                        requestedAtElapsed = SystemClock.elapsedRealtime()
+                        mainHandler.removeCallbacks(showCard)
+                        mainHandler.postDelayed(showCard, SCREEN_ON_DELAY_MS)
+                    }
                 }
             }
         }
@@ -108,7 +112,7 @@ class LockScreenStudyService : Service() {
         createChannel()
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
-            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_USER_PRESENT)
         }
         ContextCompat.registerReceiver(
             this,

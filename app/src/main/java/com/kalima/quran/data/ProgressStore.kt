@@ -187,7 +187,7 @@ class ProgressStore private constructor(context: Context) {
     }
 
     fun toggleCustomStudy(wordId: String) {
-        if (WordRepository.words.none { it.id == wordId }) return
+        if (!WordRepository.containsWord(wordId)) return
         val ids = _progress.value.customStudyIds.toMutableSet().apply {
             if (!add(wordId)) remove(wordId)
         }
@@ -195,7 +195,7 @@ class ProgressStore private constructor(context: Context) {
     }
 
     fun toggleAlreadyKnown(wordId: String) {
-        if (WordRepository.words.none { it.id == wordId }) return
+        if (!WordRepository.containsWord(wordId)) return
         val current = _progress.value
         val markingAsKnown = wordId !in current.alreadyKnownIds
         val ids = current.alreadyKnownIds.toMutableSet().apply {
@@ -218,7 +218,7 @@ class ProgressStore private constructor(context: Context) {
 
     fun commitLockScreenAlreadyKnown(sessionId: String, wordId: String): Boolean {
         if (!canCommitLockScreenSession(sessionId, wordId)) return false
-        if (WordRepository.words.none { it.id == wordId }) return false
+        if (!WordRepository.containsWord(wordId)) return false
         val current = _progress.value
         persist(
             current.copy(
@@ -396,7 +396,7 @@ class ProgressStore private constructor(context: Context) {
     private fun existingPendingLockScreenSession(): LockScreenSession? =
         LockScreenSessionCodec.decode(
             preferences.getString(KEY_PENDING_LOCK_SCREEN_SESSION, null),
-        ) { id -> WordRepository.words.firstOrNull { it.id == id } }
+        ) { id -> WordRepository.wordById(id) }
 
     private fun savePendingLockScreenSession(session: LockScreenSession) {
         preferences.edit {
@@ -456,7 +456,7 @@ class ProgressStore private constructor(context: Context) {
 
     @Synchronized
     fun restoreFromBackup(restored: StudyProgress) {
-        val knownIds = WordRepository.words.mapTo(mutableSetOf(), QuranWord::id)
+        val knownIds = WordRepository.wordIds
         val alreadyKnownIds = restored.alreadyKnownIds.intersect(knownIds)
         val maximumWords = if (restored.maximumWords == LearningWordLimiter.UNLIMITED) {
             LearningWordLimiter.UNLIMITED
@@ -518,6 +518,12 @@ class ProgressStore private constructor(context: Context) {
         persist(_progress.value.copy(themeMode = themeMode), today())
     }
 
+    fun setQuranFontSize(fontSizeSp: Int) {
+        val normalized = QuranReaderTypography.normalize(fontSizeSp)
+        if (_progress.value.quranFontSizeSp == normalized) return
+        persist(_progress.value.copy(quranFontSizeSp = normalized), today())
+    }
+
     fun setAdvancedSettingsVisible(visible: Boolean) {
         if (_progress.value.advancedSettingsVisible == visible) return
         persist(_progress.value.copy(advancedSettingsVisible = visible), today())
@@ -559,7 +565,7 @@ class ProgressStore private constructor(context: Context) {
     fun setCurrentStudyWord(wordId: String) {
         if (_progress.value.currentStudyWordId == wordId) return
         if (wordId in _progress.value.alreadyKnownIds) return
-        if (WordRepository.words.none { it.id == wordId }) return
+        if (!WordRepository.containsWord(wordId)) return
         persist(_progress.value.copy(currentStudyWordId = wordId), today())
     }
 
@@ -598,7 +604,7 @@ class ProgressStore private constructor(context: Context) {
             legacyFavoriteIds = preferences.getStringSet(KEY_FAVORITE_IDS, emptySet()).orEmpty(),
             customStudyIds = preferences.getStringSet(KEY_CUSTOM_STUDY_IDS, emptySet()).orEmpty(),
         )
-        val validWordIds = WordRepository.words.mapTo(mutableSetOf(), QuranWord::id)
+        val validWordIds = WordRepository.wordIds
         val alreadyKnownIds = preferences.getStringSet(KEY_ALREADY_KNOWN_IDS, emptySet())
             .orEmpty()
             .intersect(validWordIds)
@@ -639,6 +645,12 @@ class ProgressStore private constructor(context: Context) {
             themeMode = preferences.getString(KEY_THEME_MODE, null)
                 ?.let { stored -> AppThemeMode.entries.firstOrNull { it.name == stored } }
                 ?: AppThemeMode.Auto,
+            quranFontSizeSp = QuranReaderTypography.normalize(
+                preferences.getInt(
+                    KEY_QURAN_FONT_SIZE_SP,
+                    QuranReaderTypography.DEFAULT_FONT_SIZE_SP,
+                ),
+            ),
             advancedSettingsVisible = preferences.getBoolean(
                 KEY_ADVANCED_SETTINGS_VISIBLE,
                 false,
@@ -713,6 +725,7 @@ class ProgressStore private constructor(context: Context) {
             putBoolean(KEY_LOCK_SCREEN_QUIZ_ENABLED, progress.lockScreenQuizEnabled)
             putInt(KEY_LOCK_SCREEN_QUIZ_INTERVAL, progress.lockScreenQuizInterval)
             putString(KEY_THEME_MODE, progress.themeMode.name)
+            putInt(KEY_QURAN_FONT_SIZE_SP, progress.quranFontSizeSp)
             putBoolean(KEY_ADVANCED_SETTINGS_VISIBLE, progress.advancedSettingsVisible)
             putBoolean(KEY_SHOW_COMPLETE_AYAH, progress.showCompleteAyah)
             putBoolean(KEY_SPACED_REPETITION_ENABLED, progress.spacedRepetitionEnabled)
@@ -821,6 +834,7 @@ class ProgressStore private constructor(context: Context) {
         private const val KEY_LOCK_SCREEN_WORDS_SINCE_QUIZ = "lock_screen_words_since_quiz"
         private const val KEY_LOCK_SCREEN_QUIZ_SEQUENCE = "lock_screen_quiz_sequence"
         private const val KEY_THEME_MODE = "theme_mode"
+        private const val KEY_QURAN_FONT_SIZE_SP = "quran_font_size_sp"
         private const val KEY_ADVANCED_SETTINGS_VISIBLE = "advanced_settings_visible"
         private const val KEY_SHOW_COMPLETE_AYAH = "show_complete_ayah"
         private const val KEY_SPACED_REPETITION_ENABLED = "spaced_repetition_enabled"

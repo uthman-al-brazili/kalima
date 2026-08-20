@@ -3,6 +3,26 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.25.0 — 2026-08-19
+
+- Prevented notification-only display wakes from opening Kalima on devices such
+  as the Samsung Galaxy M23 5G running Android 14; return-to-phone cards now wait
+  until Android confirms that the user has unlocked the device.
+- Added persistent A− and A+ text-size controls to the Quran reader, with a
+  comfortable range that reflows every page without clipping Arabic words.
+- Added real Quran.com audio for each tapped Quran word and a direct button to
+  add or remove that word from the personal study list.
+- Simplified word details and Settings by removing “Copy with citation” and the
+  redundant synthesized-audio sentence, and by tightening labels and reader
+  controls for a calmer, less overwhelming interface.
+- Added an optional Quran.Foundation donation entry in Settings. Kalima still
+  has no ads, accounts, or tracking, and the donation page opens only when the
+  user taps the button.
+- Improved responsiveness on lower-end phones by indexing word lookups, caching
+  corpus identity and surah-page locations, moving large audio/search work off
+  the UI thread, composing fewer Quran pages, and avoiding repeated preference
+  writes while settings sliders are being dragged.
+
 ## 0.24.7 — 2026-08-14
 
 - Fixed missing meanings and grammar when tapping words in the complete ayah

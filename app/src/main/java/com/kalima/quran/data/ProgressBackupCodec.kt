@@ -55,6 +55,7 @@ object ProgressBackupCodec {
             "lockScreenQuizEnabled" to progress.lockScreenQuizEnabled.toString(),
             "lockScreenQuizInterval" to progress.lockScreenQuizInterval.toString(),
             "themeMode" to progress.themeMode.name,
+            "quranFontSizeSp" to progress.quranFontSizeSp.toString(),
             "advancedSettingsVisible" to progress.advancedSettingsVisible.toString(),
             "showCompleteAyah" to progress.showCompleteAyah.toString(),
             "spacedRepetitionEnabled" to progress.spacedRepetitionEnabled.toString(),
@@ -169,6 +170,12 @@ object ProgressBackupCodec {
             lockScreenQuizInterval = values.int("lockScreenQuizInterval").coerceIn(1, 10),
             themeMode = AppThemeMode.entries.firstOrNull { it.name == values.required("themeMode") }
                 ?: throw invalid("Backup has an invalid theme"),
+            quranFontSizeSp = QuranReaderTypography.normalize(
+                values.optionalInt(
+                    "quranFontSizeSp",
+                    QuranReaderTypography.DEFAULT_FONT_SIZE_SP,
+                ),
+            ),
             advancedSettingsVisible = values.boolean("advancedSettingsVisible"),
             showCompleteAyah = values.optionalBoolean("showCompleteAyah", false),
             spacedRepetitionEnabled = values.boolean("spacedRepetitionEnabled"),
@@ -196,6 +203,13 @@ object ProgressBackupCodec {
 
     private fun Map<String, String>.int(key: String): Int =
         required(key).toIntOrNull() ?: throw invalid("Backup field '$key' is invalid")
+
+    private fun Map<String, String>.optionalInt(key: String, default: Int): Int =
+        this[key]?.toIntOrNull() ?: if (key in this) {
+            throw invalid("Backup field '$key' is invalid")
+        } else {
+            default
+        }
 
     private fun Map<String, String>.boolean(key: String): Boolean = when (val value = required(key)) {
         "true" -> true

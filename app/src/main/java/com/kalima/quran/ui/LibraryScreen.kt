@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -42,6 +43,9 @@ import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.WordStatus
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 private enum class LibraryFilter(@param:StringRes val labelRes: Int) {
     All(R.string.filter_all),
@@ -76,22 +80,44 @@ fun LibraryScreen(
             progress.customStudyIds,
         )
     }
-    val words = remember(
+    val libraryWordsKey = remember(
         query,
         filter,
         activeWords,
         progress.learnedIds,
         progress.reviewingIds,
         progress.alreadyKnownIds,
+        progress.customStudyIds,
     ) {
-        WordRepository.search(query, activeWords).filter { word ->
-            when (filter) {
-                LibraryFilter.All -> true
-                LibraryFilter.New -> progress.statusFor(word.id) == WordStatus.New
-                LibraryFilter.Reviewing -> progress.statusFor(word.id) == WordStatus.Reviewing
-                LibraryFilter.Learned -> progress.statusFor(word.id) == WordStatus.Learned
-                LibraryFilter.AlreadyKnown -> progress.statusFor(word.id) == WordStatus.AlreadyKnown
-                LibraryFilter.MyList -> word.id in progress.customStudyIds
+        LibraryWordsKey(
+            query = query,
+            filter = filter,
+            activeWords = activeWords,
+            learnedIds = progress.learnedIds,
+            reviewingIds = progress.reviewingIds,
+            alreadyKnownIds = progress.alreadyKnownIds,
+            customStudyIds = progress.customStudyIds,
+        )
+    }
+    val words by produceState(
+        initialValue = if (query.isBlank() && filter == LibraryFilter.All) {
+            activeWords
+        } else {
+            emptyList()
+        },
+        key1 = libraryWordsKey,
+    ) {
+        if (query.isNotBlank()) delay(120)
+        value = withContext(Dispatchers.Default) {
+            WordRepository.search(query, activeWords).filter { word ->
+                when (filter) {
+                    LibraryFilter.All -> true
+                    LibraryFilter.New -> progress.statusFor(word.id) == WordStatus.New
+                    LibraryFilter.Reviewing -> progress.statusFor(word.id) == WordStatus.Reviewing
+                    LibraryFilter.Learned -> progress.statusFor(word.id) == WordStatus.Learned
+                    LibraryFilter.AlreadyKnown -> progress.statusFor(word.id) == WordStatus.AlreadyKnown
+                    LibraryFilter.MyList -> word.id in progress.customStudyIds
+                }
             }
         }
     }
@@ -193,6 +219,16 @@ fun LibraryScreen(
         }
     }
 }
+
+private data class LibraryWordsKey(
+    val query: String,
+    val filter: LibraryFilter,
+    val activeWords: List<QuranWord>,
+    val learnedIds: Set<String>,
+    val reviewingIds: Set<String>,
+    val alreadyKnownIds: Set<String>,
+    val customStudyIds: Set<String>,
+)
 
 @Composable
 private fun LibraryWordCard(

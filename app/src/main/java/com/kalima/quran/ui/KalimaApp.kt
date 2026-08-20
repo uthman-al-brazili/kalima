@@ -63,6 +63,7 @@ fun KalimaApp(
     onDailyGoalChange: (Int) -> Unit,
     onMaximumWordsChange: (Int) -> Unit,
     onThemeModeChange: (AppThemeMode) -> Unit,
+    onQuranFontSizeChange: (Int) -> Unit,
     onAdvancedSettingsVisibleChange: (Boolean) -> Unit,
     onShowCompleteAyahChange: (Boolean) -> Unit,
     onSpacedRepetitionEnabledChange: (Boolean) -> Unit,
@@ -73,6 +74,7 @@ fun KalimaApp(
     onCompleteOnboarding: (StudyScope, Int) -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
+    onDonate: () -> Unit,
     currentLanguage: AppLanguage,
     onLanguageChange: (AppLanguage) -> Unit,
     onQuietHoursEnabledChange: (Boolean) -> Unit,
@@ -162,7 +164,12 @@ fun KalimaApp(
                             onShowCompleteAyahChange = onShowCompleteAyahChange,
                             launchTarget = studyLaunchTarget,
                         )
-                        AppTab.Quran -> QuranReaderScreen()
+                        AppTab.Quran -> QuranReaderScreen(
+                            fontSizeSp = progress.quranFontSizeSp,
+                            customStudyIds = progress.customStudyIds,
+                            onFontSizeChange = onQuranFontSizeChange,
+                            onToggleCustomList = onToggleCustomList,
+                        )
                         AppTab.Library -> LibraryScreen(
                             progress = progress,
                             pronouncer = pronouncer,
@@ -195,6 +202,7 @@ fun KalimaApp(
                             onMaximumWordsChange = onMaximumWordsChange,
                             onOpenAppSettings = onOpenAppSettings,
                             onPreviewLockScreen = onPreviewLockScreen,
+                            onDonate = onDonate,
                             onQuietHoursEnabledChange = onQuietHoursEnabledChange,
                             onQuietHoursChange = onQuietHoursChange,
                             onLockScreenDailyLimitChange = onLockScreenDailyLimitChange,

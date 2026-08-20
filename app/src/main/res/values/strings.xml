@@ -10,7 +10,9 @@
 
     <string name="quran_reader_title">Alcorão</string>
     <string name="quran_reader_subtitle">Leia todas as 114 suras em árabe, mesmo sem internet.</string>
-    <string name="quran_reader_page_hint">Toque em uma palavra para ver detalhes · deslize para virar a página</string>
+    <string name="quran_reader_page_hint">Toque em uma palavra · deslize para virar</string>
+    <string name="decrease_quran_text_size">Diminuir o texto do Alcorão</string>
+    <string name="increase_quran_text_size">Aumentar o texto do Alcorão</string>
     <string name="quran_open_word_details">Abrir detalhes da palavra</string>
     <string name="quran_page_indicator">Página %1$d de %2$d</string>
     <string name="quran_page_short">Página %1$d</string>
@@ -43,8 +45,8 @@
     <string name="pronunciation_failed">Não foi possível reproduzir a pronúncia. Tente novamente.</string>
     <string name="offline_word_audio_missing">Esta gravação real ainda não está salva. Conecte-se uma vez ou baixe o áudio selecionado em Ajustes.</string>
     <string name="offline_verse_audio_missing">Esta recitação do ayah por Al-Hussary ainda não está salva. Conecte-se uma vez ou baixe o áudio selecionado em Ajustes.</string>
-    <string name="study_lock_screen_title">Estude sempre que ligar a tela</string>
-    <string name="study_lock_screen_description">Ative a função principal do Kalima para receber uma palavra sempre que a tela acender.</string>
+    <string name="study_lock_screen_title">Estude ao voltar para o celular</string>
+    <string name="study_lock_screen_description">Receba uma palavra depois de desbloquear. Notificações nunca abrem o Kalima.</string>
     <string name="enable">Ativar</string>
     <string name="review_again">Ainda aprendendo</string>
     <string name="review_again_timing">Rever em 10 min</string>
@@ -111,7 +113,7 @@
     <string name="selected_content">Conteúdo selecionado</string>
     <string name="selected_content_note">O progresso acima acompanha apenas o conjunto que você escolheu estudar agora.</string>
     <string name="choose_words">Escolher palavras</string>
-    <string name="choose_words_note">A escolha também controla os cartões exibidos ao ligar a tela.</string>
+    <string name="choose_words_note">A escolha também controla os cartões exibidos depois do desbloqueio.</string>
     <string name="scope_all">Todo o Alcorão</string>
     <string name="scope_frequent">Mais usadas</string>
     <string name="scope_surah">Por sura</string>
@@ -132,11 +134,11 @@
     <string name="all_words_already_known_title">Você já conhece este conjunto</string>
     <string name="all_words_already_known_description">Estas palavras não aparecerão no estudo, quiz, lembretes nem nos cartões da tela de bloqueio. Use o filtro Já conhecidas no Vocabulário para devolver qualquer palavra à prática.</string>
     <string name="routine">Rotina</string>
-    <string name="lock_screen_study">Estudar na tela de bloqueio</string>
-    <string name="lock_screen_study_enabled">Ativo: um novo cartão aparecerá quando a tela acender.</string>
+    <string name="lock_screen_study">Estudo ao voltar para o celular</string>
+    <string name="lock_screen_study_enabled">Ativo: um novo cartão pode aparecer depois do desbloqueio.</string>
     <string name="lock_screen_study_disabled">Requer a permissão “Aparecer sobre outros apps” e mantém um serviço ativo.</string>
     <string name="preview_card">Testar cartão</string>
-    <string name="lock_screen_quiz">Quiz ao ligar a tela</string>
+    <string name="lock_screen_quiz">Quiz depois de desbloquear</string>
     <plurals name="lock_screen_quiz_enabled">
         <item quantity="one">Um quiz aparecerá depois de %1$d palavra.</item>
         <item quantity="other">Um quiz aparecerá depois de %1$d palavras.</item>
@@ -168,8 +170,8 @@
     <string name="spaced_repetition">Repetição espaçada</string>
     <string name="spaced_repetition_enabled_description">Ativa (recomendado): programa cada revisão perto do momento em que você provavelmente esqueceria.</string>
     <string name="spaced_repetition_disabled_observation">Desativada — não recomendado: as palavras se alternam sem revisões programadas, o que pode tornar o aprendizado menos eficiente e facilitar o esquecimento.</string>
-    <string name="lock_screen_features">Recursos da tela de bloqueio</string>
-    <string name="lock_screen_features_description">Ferramentas opcionais que podem aparecer quando a tela acender.</string>
+    <string name="lock_screen_features">Cartões ao voltar para o celular</string>
+    <string name="lock_screen_features_description">Ferramentas opcionais de estudo que aguardam o desbloqueio.</string>
     <string name="android_app_settings">Ajustes do Android</string>
     <string name="limit_new_words">Limitar palavras novas</string>
 
@@ -212,11 +214,11 @@
 
     <string name="daily_word_channel">Palavra diária</string>
     <string name="daily_word_channel_description">Um cartão curto de árabe corânico por dia</string>
-    <string name="lock_screen_service_title">Estudo na tela de bloqueio ativo</string>
-    <string name="lock_screen_service_text">Um cartão de estudo pode aparecer quando a tela acender.</string>
+    <string name="lock_screen_service_title">Estudo ao voltar para o celular ativo</string>
+    <string name="lock_screen_service_text">Um cartão de estudo pode aparecer depois do desbloqueio.</string>
     <string name="disable">Desativar</string>
-    <string name="lock_screen_channel">Estudo na tela de bloqueio</string>
-    <string name="lock_screen_channel_description">Mantém ativa a detecção de tela ligada</string>
+    <string name="lock_screen_channel">Estudo ao voltar para o celular</string>
+    <string name="lock_screen_channel_description">Mantém os cartões prontos para o próximo desbloqueio</string>
     <string name="onboarding_title">Comece com um caminho claro</string>
     <string name="onboarding_subtitle">Escolha o vocabulário que mais combina com sua meta. Você poderá mudar isso a qualquer momento.</string>
     <string name="onboarding_path_title">Seu primeiro caminho</string>
@@ -257,11 +259,12 @@
     <string name="device_voice_slow">Ouvir devagar</string>
     <string name="device_voice_repeat">Repetir 3×</string>
     <string name="hussary_verse_recitation">Ouvir ayah · Al-Hussary</string>
-    <string name="audio_disclosure">As palavras individuais usam gravações humanas do Quran.com. Os ayahs completos usam a recitação Murattal de Mahmoud Khalil Al-Hussary, fornecida pelo EveryAyah. O áudio do Alcorão nunca é sintetizado. As gravações ouvidas com internet ficam salvas neste aparelho; você também pode baixar de uma vez o áudio do conteúdo de estudo selecionado.</string>
+    <string name="audio_disclosure">As palavras individuais usam gravações humanas do Quran.com. Os ayahs completos usam a recitação Murattal de Mahmoud Khalil Al-Hussary, fornecida pelo EveryAyah. As gravações ouvidas com internet ficam salvas neste aparelho; você também pode baixar de uma vez o áudio do conteúdo de estudo selecionado.</string>
     <string name="offline_audio_download_title">Baixar gravações reais</string>
     <string name="offline_audio_download_confirmation">Baixar %1$d gravações de palavras e %2$d recitações de ayahs por Al-Hussary (aproximadamente %3$d MB) para o conteúdo de estudo selecionado? Downloads existentes serão reutilizados. Recomendamos Wi-Fi.</string>
     <string name="offline_audio_download_estimate">%1$d palavras · %2$d ayahs · até aproximadamente %3$d MB</string>
     <string name="offline_audio_download_progress">Salvando gravação %1$d de %2$d</string>
+    <string name="preparing_audio_selection">Preparando as gravações selecionadas…</string>
     <string name="offline_audio_download_result">Baixadas: %1$d · já disponíveis: %2$d · falhas: %3$d</string>
     <string name="download_selected_audio">Baixar áudio selecionado</string>
     <string name="cancel_download">Cancelar download</string>
@@ -318,6 +321,10 @@
     <string name="lock_health_off">Serviço desativado</string>
     <string name="privacy_title">Privacidade e transparência</string>
     <string name="privacy_summary">Sem anúncios, conta ou rastreamento. O estudo funciona offline e fica armazenado apenas neste aparelho.</string>
+    <string name="support_title">Apoie o aprendizado do Alcorão</string>
+    <string name="support_description">Se o Kalima ajuda você, é possível apoiar os projetos sem fins lucrativos da Quran.Foundation com uma doação opcional.</string>
+    <string name="donate_button">Doar com segurança</string>
+    <string name="donation_unavailable">Nenhum navegador está disponível para abrir a página de doação.</string>
     <string name="audio_title">Áudio</string>
     <string name="empty_collection">Esta coleção está vazia. Marque palavras na Biblioteca para preenchê-la.</string>
     <string name="confirm_and_continue">Confirmar e continuar</string>
@@ -343,11 +350,9 @@
     </plurals>
     <string name="lock_safety_status">Última abertura: %1$s ms (meta ≤ %2$d ms) · %3$d bloqueios de segurança</string>
     <string name="tap_verse_word">Toque em qualquer palavra do ayah completo</string>
-    <string name="word_details_not_indexed">Este termo do ayah pode ser copiado e comparado com citação, mas seu significado e sua gramática ainda não estão indexados.</string>
+    <string name="word_details_not_indexed">Esta palavra do ayah tem áudio, mas seu significado e sua gramática ainda não estão indexados.</string>
     <string name="open_word_for_study">Abrir palavra para estudar</string>
     <string name="other_occurrences">Outras ocorrências</string>
     <string name="other_occurrences_description">Mais ocorrências indexadas desta forma no corpus offline do Kalima.</string>
-    <string name="copy_citation">Copiar com citação</string>
     <string name="share_citation">Compartilhar com citação</string>
-    <string name="citation_copied">Citação copiada</string>
 </resources>

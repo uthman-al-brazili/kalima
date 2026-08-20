@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.data.QuranPageToken
 import com.kalima.quran.data.QuranReaderRepository
+import com.kalima.quran.data.QuranReaderTypography
 import com.kalima.quran.data.QuranSurah
 import com.kalima.quran.data.QuranWordAudioLocation
 import com.kalima.quran.data.QuranWord
@@ -61,7 +62,12 @@ import com.kalima.quran.data.WordRepository
 import kotlinx.coroutines.launch
 
 @Composable
-fun QuranReaderScreen() {
+fun QuranReaderScreen(
+    fontSizeSp: Int,
+    customStudyIds: Set<String>,
+    onFontSizeChange: (Int) -> Unit,
+    onToggleCustomList: (String) -> Unit,
+) {
     val pageCount = QuranReaderRepository.pageCount
     if (pageCount == 0) {
         QuranReaderUnavailable()
@@ -84,19 +90,22 @@ fun QuranReaderScreen() {
     Column(Modifier.fillMaxSize()) {
         ReaderHeader(
             currentSurahs = currentSurahs,
+            fontSizeSp = fontSizeSp,
             onChooseSurah = { surahPickerVisible = true },
+            onFontSizeChange = onFontSizeChange,
         )
 
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxWidth().weight(1f),
-            beyondViewportPageCount = 1,
+            beyondViewportPageCount = 0,
             reverseLayout = true,
             key = { it },
         ) { pageIndex ->
             QuranPage(
                 pageNumber = pageIndex + 1,
                 tokens = QuranReaderRepository.page(pageIndex + 1),
+                fontSizeSp = fontSizeSp,
                 onWordClick = { selectedToken = it },
             )
         }
@@ -124,6 +133,8 @@ fun QuranReaderScreen() {
             indexed = indexedWord != null,
             onDismiss = { selectedToken = null },
             onOpenWord = null,
+            inCustomList = indexedWord?.id?.let { it in customStudyIds } == true,
+            onToggleCustomList = onToggleCustomList,
         )
     }
 
@@ -159,7 +170,9 @@ fun QuranReaderScreen() {
 @Composable
 private fun ReaderHeader(
     currentSurahs: List<Int>,
+    fontSizeSp: Int,
     onChooseSurah: () -> Unit,
+    onFontSizeChange: (Int) -> Unit,
 ) {
     val surahsByNumber = remember {
         WordRepository.selectableSurahs.associateBy(QuranSurah::number)
@@ -172,6 +185,8 @@ private fun ReaderHeader(
         }
         else -> "${currentNames.first().transliteratedName} – ${currentNames.last().transliteratedName}"
     }
+    val decreaseTextSizeDescription = stringResource(R.string.decrease_quran_text_size)
+    val increaseTextSizeDescription = stringResource(R.string.increase_quran_text_size)
 
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) {
         Row(
@@ -197,11 +212,36 @@ private fun ReaderHeader(
                 )
             }
         }
-        Text(
-            stringResource(R.string.quran_reader_page_hint),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.quran_reader_page_hint),
+                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            TextButton(
+                onClick = {
+                    onFontSizeChange(fontSizeSp - QuranReaderTypography.FONT_SIZE_STEP_SP)
+                },
+                enabled = fontSizeSp > QuranReaderTypography.MIN_FONT_SIZE_SP,
+                modifier = Modifier.semantics {
+                    contentDescription = decreaseTextSizeDescription
+                },
+            ) {
+                Text("A−")
+            }
+            TextButton(
+                onClick = {
+                    onFontSizeChange(fontSizeSp + QuranReaderTypography.FONT_SIZE_STEP_SP)
+                },
+                enabled = fontSizeSp < QuranReaderTypography.MAX_FONT_SIZE_SP,
+                modifier = Modifier.semantics {
+                    contentDescription = increaseTextSizeDescription
+                },
+            ) {
+                Text("A+")
+            }
+        }
     }
 }
 
@@ -209,6 +249,7 @@ private fun ReaderHeader(
 private fun QuranPage(
     pageNumber: Int,
     tokens: List<QuranPageToken>,
+    fontSizeSp: Int,
     onWordClick: (QuranPageToken) -> Unit,
 ) {
     val sections = remember(tokens) { quranPageSections(tokens) }
@@ -227,7 +268,7 @@ private fun QuranPage(
                 section.startingSurahNumber?.let { surahNumber ->
                     SurahPageHeader(surahNumber)
                 }
-                QuranPageTextBlock(section.tokens, onWordClick)
+                QuranPageTextBlock(section.tokens, fontSizeSp, onWordClick)
             }
             Spacer(Modifier.height(8.dp))
             Text(
@@ -277,6 +318,7 @@ private fun SurahPageHeader(surahNumber: Int) {
 @Composable
 private fun QuranPageTextBlock(
     tokens: List<QuranPageToken>,
+    fontSizeSp: Int,
     onWordClick: (QuranPageToken) -> Unit,
 ) {
     val content = remember(tokens) { quranPageLineContent(tokens) }
@@ -303,8 +345,8 @@ private fun QuranPageTextBlock(
     }
     val baseStyle = MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.onSurface,
-        fontSize = QURAN_LINE_FONT_SIZE.sp,
-        lineHeight = QURAN_LINE_HEIGHT.sp,
+        fontSize = fontSizeSp.sp,
+        lineHeight = (fontSizeSp * QURAN_LINE_HEIGHT_MULTIPLIER).sp,
         textAlign = TextAlign.Center,
         textDirection = TextDirection.Rtl,
         localeList = LocaleList(Locale("ar")),
@@ -544,5 +586,4 @@ private fun QuranPageToken.asUnindexedWord(verseArabic: String): QuranWord {
 
 private const val BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"
 private const val QURAN_WORD_ANNOTATION = "quran-word"
-private const val QURAN_LINE_FONT_SIZE = 22f
-private const val QURAN_LINE_HEIGHT = 34f
+private const val QURAN_LINE_HEIGHT_MULTIPLIER = 1.55f

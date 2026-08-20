@@ -26,7 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -51,6 +53,8 @@ import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.localization.AppLanguage
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingsScreen(
@@ -68,6 +72,7 @@ fun SettingsScreen(
     onMaximumWordsChange: (Int) -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
+    onDonate: () -> Unit,
     onQuietHoursEnabledChange: (Boolean) -> Unit,
     onQuietHoursChange: (Int, Int) -> Unit,
     onLockScreenDailyLimitChange: (Int) -> Unit,
@@ -84,35 +89,54 @@ fun SettingsScreen(
     onDownloadOfflineWordAudio: (List<QuranWordAudioLocation>, List<QuranVerseAudioLocation>) -> Unit,
     onCancelOfflineWordAudio: () -> Unit,
 ) {
-    val audioSelectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val offlineWordAudioLocations = remember(
+    val audioSelectionKey = remember(
         progress.studyScope,
-        audioSelectionKey,
+        progress.selectedSurahs,
         progress.customStudyIds,
         progress.maximumWords,
         progress.learnedIds,
         progress.reviewingIds,
         progress.alreadyKnownIds,
     ) {
-        progress.limitNewWords(
-            WordRepository.wordsFor(
-                scope = progress.studyScope,
-                selectedSurahs = progress.selectedSurahs,
-                customStudyIds = progress.customStudyIds,
-            ),
-        ).mapNotNull { it.audioLocation }
-            .distinctBy(QuranWordAudioLocation::fileName)
+        OfflineAudioSelectionKey(
+            progress.studyScope.name,
+            progress.selectedSurahs,
+            progress.customStudyIds,
+            progress.maximumWords,
+            progress.learnedIds,
+            progress.reviewingIds,
+            progress.alreadyKnownIds,
+        )
     }
-    val offlineVerseAudioLocations = remember(offlineWordAudioLocations) {
-        offlineWordAudioLocations
-            .map(QuranVerseAudioLocation::fromWord)
-            .distinctBy(QuranVerseAudioLocation::fileName)
+    val audioSelection by produceState(
+        initialValue = OfflineAudioSelection(),
+        key1 = audioSelectionKey,
+    ) {
+        value = withContext(Dispatchers.Default) {
+            val wordLocations = progress.limitNewWords(
+                WordRepository.wordsFor(
+                    scope = progress.studyScope,
+                    selectedSurahs = progress.selectedSurahs,
+                    customStudyIds = progress.customStudyIds,
+                ),
+            ).mapNotNull { it.audioLocation }
+                .distinctBy(QuranWordAudioLocation::fileName)
+            val verseLocations = wordLocations
+                .map(QuranVerseAudioLocation::fromWord)
+                .distinctBy(QuranVerseAudioLocation::fileName)
+            OfflineAudioSelection(wordLocations, verseLocations, ready = true)
+        }
     }
+    val offlineWordAudioLocations = audioSelection.wordLocations
+    val offlineVerseAudioLocations = audioSelection.verseLocations
     val estimatedAudioMegabytes = OfflineWordAudioManager.estimatedMegabytes(
         wordCount = offlineWordAudioLocations.size,
         verseCount = offlineVerseAudioLocations.size,
     )
     var showAudioDownloadConfirmation by rememberSaveable { mutableStateOf(false) }
+    var dailyGoalSlider by rememberSaveable(progress.dailyGoal) {
+        mutableFloatStateOf(progress.dailyGoal.toFloat())
+    }
 
     if (showAudioDownloadConfirmation) {
         AlertDialog(
@@ -291,16 +315,19 @@ fun SettingsScreen(
                     Text(
                         pluralStringResource(
                             R.plurals.words_count,
-                            progress.dailyGoal,
-                            progress.dailyGoal,
+                            dailyGoalSlider.roundToInt(),
+                            dailyGoalSlider.roundToInt(),
                         ),
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                     )
                 }
                 Slider(
-                    value = progress.dailyGoal.toFloat(),
-                    onValueChange = { onDailyGoalChange(it.roundToInt()) },
+                    value = dailyGoalSlider,
+                    onValueChange = { dailyGoalSlider = it },
+                    onValueChangeFinished = {
+                        onDailyGoalChange(dailyGoalSlider.roundToInt())
+                    },
                     valueRange = 3f..20f,
                     steps = 16,
                 )
@@ -346,17 +373,21 @@ fun SettingsScreen(
                 } else {
                     Button(
                         onClick = { showAudioDownloadConfirmation = true },
-                        enabled = offlineWordAudioLocations.isNotEmpty(),
+                        enabled = audioSelection.ready && offlineWordAudioLocations.isNotEmpty(),
                     ) {
                         Text(stringResource(R.string.download_selected_audio))
                     }
                     Text(
-                        stringResource(
-                            R.string.offline_audio_download_estimate,
-                            offlineWordAudioLocations.size,
-                            offlineVerseAudioLocations.size,
-                            estimatedAudioMegabytes,
-                        ),
+                        if (audioSelection.ready) {
+                            stringResource(
+                                R.string.offline_audio_download_estimate,
+                                offlineWordAudioLocations.size,
+                                offlineVerseAudioLocations.size,
+                                estimatedAudioMegabytes,
+                            )
+                        } else {
+                            stringResource(R.string.preparing_audio_selection)
+                        },
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall,
                     )
@@ -401,6 +432,25 @@ fun SettingsScreen(
                     TextButton(onClick = onImportBackup) {
                         Text(stringResource(R.string.import_backup))
                     }
+                }
+            }
+        }
+        Spacer(Modifier.height(22.dp))
+
+        SettingsSectionTitle(R.string.support_title)
+        Spacer(Modifier.height(8.dp))
+        Surface(
+            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(Modifier.fillMaxWidth().padding(16.dp)) {
+                Text(
+                    stringResource(R.string.support_description),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = onDonate) {
+                    Text(stringResource(R.string.donate_button))
                 }
             }
         }
@@ -497,6 +547,21 @@ private fun AdvancedSettings(
     val enteredMaximum = maximumWordsText.toIntOrNull()
     val validMaximum = enteredMaximum != null &&
         enteredMaximum in LearningWordLimiter.MINIMUM_LIMIT..WordRepository.words.size
+    var quietStartSlider by rememberSaveable(progress.quietStartHour) {
+        mutableFloatStateOf(progress.quietStartHour.toFloat())
+    }
+    var quietEndSlider by rememberSaveable(progress.quietEndHour) {
+        mutableFloatStateOf(progress.quietEndHour.toFloat())
+    }
+    var dailyLimitSlider by rememberSaveable(progress.lockScreenDailyLimit) {
+        mutableFloatStateOf(progress.lockScreenDailyLimit.toFloat())
+    }
+    var cooldownSlider by rememberSaveable(progress.lockScreenCooldownMinutes) {
+        mutableFloatStateOf(progress.lockScreenCooldownMinutes.toFloat())
+    }
+    var quizIntervalSlider by rememberSaveable(progress.lockScreenQuizInterval) {
+        mutableFloatStateOf(progress.lockScreenQuizInterval.toFloat())
+    }
 
     SettingsSectionTitle(R.string.study_scheduling)
     Spacer(Modifier.height(10.dp))
@@ -618,17 +683,29 @@ private fun AdvancedSettings(
                 )
             }
             if (progress.quietHoursEnabled) {
-                Text("${progress.quietStartHour}:00", style = MaterialTheme.typography.labelMedium)
+                Text("${quietStartSlider.roundToInt()}:00", style = MaterialTheme.typography.labelMedium)
                 Slider(
-                    value = progress.quietStartHour.toFloat(),
-                    onValueChange = { onQuietHoursChange(it.roundToInt(), progress.quietEndHour) },
+                    value = quietStartSlider,
+                    onValueChange = { quietStartSlider = it },
+                    onValueChangeFinished = {
+                        onQuietHoursChange(
+                            quietStartSlider.roundToInt(),
+                            quietEndSlider.roundToInt(),
+                        )
+                    },
                     valueRange = 0f..23f,
                     steps = 22,
                 )
-                Text("${progress.quietEndHour}:00", style = MaterialTheme.typography.labelMedium)
+                Text("${quietEndSlider.roundToInt()}:00", style = MaterialTheme.typography.labelMedium)
                 Slider(
-                    value = progress.quietEndHour.toFloat(),
-                    onValueChange = { onQuietHoursChange(progress.quietStartHour, it.roundToInt()) },
+                    value = quietEndSlider,
+                    onValueChange = { quietEndSlider = it },
+                    onValueChangeFinished = {
+                        onQuietHoursChange(
+                            quietStartSlider.roundToInt(),
+                            quietEndSlider.roundToInt(),
+                        )
+                    },
                     valueRange = 0f..23f,
                     steps = 22,
                 )
@@ -643,7 +720,7 @@ private fun AdvancedSettings(
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    stringResource(R.string.daily_card_limit_value, progress.lockScreenDailyLimit),
+                    stringResource(R.string.daily_card_limit_value, dailyLimitSlider.roundToInt()),
                     modifier = Modifier.padding(start = 16.dp),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
@@ -651,8 +728,11 @@ private fun AdvancedSettings(
                 )
             }
             Slider(
-                value = progress.lockScreenDailyLimit.toFloat(),
-                onValueChange = { onLockScreenDailyLimitChange(it.roundToInt()) },
+                value = dailyLimitSlider,
+                onValueChange = { dailyLimitSlider = it },
+                onValueChangeFinished = {
+                    onLockScreenDailyLimitChange(dailyLimitSlider.roundToInt())
+                },
                 valueRange = 5f..50f,
                 steps = 44,
             )
@@ -668,8 +748,8 @@ private fun AdvancedSettings(
                 Text(
                     pluralStringResource(
                         R.plurals.minutes_count,
-                        progress.lockScreenCooldownMinutes,
-                        progress.lockScreenCooldownMinutes,
+                        cooldownSlider.roundToInt(),
+                        cooldownSlider.roundToInt(),
                     ),
                     modifier = Modifier.padding(start = 16.dp),
                     color = MaterialTheme.colorScheme.primary,
@@ -678,8 +758,11 @@ private fun AdvancedSettings(
                 )
             }
             Slider(
-                value = progress.lockScreenCooldownMinutes.toFloat(),
-                onValueChange = { onLockScreenCooldownChange(it.roundToInt()) },
+                value = cooldownSlider,
+                onValueChange = { cooldownSlider = it },
+                onValueChangeFinished = {
+                    onLockScreenCooldownChange(cooldownSlider.roundToInt())
+                },
                 valueRange = 0f..60f,
                 steps = 59,
             )
@@ -733,16 +816,19 @@ private fun AdvancedSettings(
                     Text(
                         pluralStringResource(
                             R.plurals.words_count,
-                            progress.lockScreenQuizInterval,
-                            progress.lockScreenQuizInterval,
+                            quizIntervalSlider.roundToInt(),
+                            quizIntervalSlider.roundToInt(),
                         ),
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                     )
                 }
                 Slider(
-                    value = progress.lockScreenQuizInterval.toFloat(),
-                    onValueChange = { onLockScreenQuizIntervalChange(it.roundToInt()) },
+                    value = quizIntervalSlider,
+                    onValueChange = { quizIntervalSlider = it },
+                    onValueChangeFinished = {
+                        onLockScreenQuizIntervalChange(quizIntervalSlider.roundToInt())
+                    },
                     valueRange = 1f..10f,
                     steps = 8,
                 )
@@ -829,6 +915,22 @@ private fun SettingsSectionTitle(titleRes: Int) {
         fontWeight = FontWeight.Bold,
     )
 }
+
+private data class OfflineAudioSelectionKey(
+    val studyScope: String,
+    val selectedSurahs: Set<Int>,
+    val customStudyIds: Set<String>,
+    val maximumWords: Int,
+    val learnedIds: Set<String>,
+    val reviewingIds: Set<String>,
+    val alreadyKnownIds: Set<String>,
+)
+
+private data class OfflineAudioSelection(
+    val wordLocations: List<QuranWordAudioLocation> = emptyList(),
+    val verseLocations: List<QuranVerseAudioLocation> = emptyList(),
+    val ready: Boolean = false,
+)
 
 @Composable
 private fun ThemeModeChip(

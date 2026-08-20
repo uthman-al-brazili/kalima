@@ -117,7 +117,7 @@ fun StudyScreen(
     }
     val session = remember(words, launchTarget?.wordId) {
         val requestedWord = launchTarget?.wordId
-            ?.let { requestedId -> WordRepository.words.firstOrNull { it.id == requestedId } }
+            ?.let(WordRepository::wordById)
         val resumedWord = progress.currentStudyWordId
             ?.let { currentId -> words.firstOrNull { it.id == currentId } }
         buildStudySession(
@@ -131,7 +131,7 @@ fun StudyScreen(
         selectionKey,
         launchTarget?.requestId,
     ) { mutableStateOf(session.first().id) }
-    val word = WordRepository.words.firstOrNull { it.id == currentWordId } ?: session.first()
+    val word = WordRepository.wordById(currentWordId) ?: session.first()
     var meaningRevealed by rememberSaveable(word.id) {
         mutableStateOf(shouldRevealMeaningInitially(progress.statusFor(word.id)))
     }

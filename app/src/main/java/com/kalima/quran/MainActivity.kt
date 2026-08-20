@@ -113,6 +113,7 @@ class MainActivity : ComponentActivity() {
                 onDailyGoalChange = store::setDailyGoal,
                 onMaximumWordsChange = store::setMaximumWords,
                 onThemeModeChange = store::setThemeMode,
+                onQuranFontSizeChange = store::setQuranFontSize,
                 onAdvancedSettingsVisibleChange = store::setAdvancedSettingsVisible,
                 onShowCompleteAyahChange = store::setShowCompleteAyah,
                 onSpacedRepetitionEnabledChange = store::setSpacedRepetitionEnabled,
@@ -123,6 +124,7 @@ class MainActivity : ComponentActivity() {
                 onCompleteOnboarding = store::completeOnboarding,
                 onOpenAppSettings = ::openAppSettings,
                 onPreviewLockScreen = ::previewLockScreen,
+                onDonate = ::openDonationPage,
                 currentLanguage = LanguageManager.selectedLanguage(this),
                 onLanguageChange = ::changeLanguage,
                 onQuietHoursEnabledChange = store::setQuietHoursEnabled,
@@ -221,6 +223,14 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    private fun openDonationPage() {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, DONATION_URL.toUri()))
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.donation_unavailable, Toast.LENGTH_LONG).show()
+        }
+    }
+
     private fun changeReminder(enabled: Boolean) {
         if (!enabled) {
             progressStore.setReminderEnabled(false)
@@ -279,7 +289,7 @@ class MainActivity : ComponentActivity() {
                     ProgressBackupCodec.decode(
                         backup = text,
                         expectedCorpusIdentity = WordRepository.corpusIdentity(),
-                        knownWordIds = WordRepository.words.mapTo(mutableSetOf()) { it.id },
+                        knownWordIds = WordRepository.wordIds,
                     )
                 }.onFailure { error -> Log.w(TAG, "Invalid progress backup", error) }
                     .getOrNull()
@@ -334,7 +344,7 @@ class MainActivity : ComponentActivity() {
 
     private fun updateStudyLaunchTarget(intent: Intent) {
         val wordId = intent.getStringExtra(EXTRA_STUDY_WORD_ID) ?: return
-        if (WordRepository.words.none { it.id == wordId }) return
+        if (!WordRepository.containsWord(wordId)) return
         val requestId = intent.getLongExtra(EXTRA_STUDY_REQUEST_ID, 0L)
             .takeIf { it != 0L }
             ?: SystemClock.elapsedRealtimeNanos()
@@ -346,6 +356,7 @@ class MainActivity : ComponentActivity() {
         private const val POST_RENDER_WORK_DELAY_MS = 500L
         private const val EXTRA_STUDY_WORD_ID = "com.kalima.quran.extra.STUDY_WORD_ID"
         private const val EXTRA_STUDY_REQUEST_ID = "com.kalima.quran.extra.STUDY_REQUEST_ID"
+        private const val DONATION_URL = "https://donate.quran.foundation/"
 
         fun createStudyIntent(context: Context, wordId: String): Intent =
             Intent(context, MainActivity::class.java).apply {

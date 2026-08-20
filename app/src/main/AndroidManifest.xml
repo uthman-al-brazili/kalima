@@ -26,7 +26,6 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleTop"
-            android:showWhenLocked="true"
             android:taskAffinity="" />
 
         <service
@@ -36,7 +35,7 @@
             android:stopWithTask="false">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Opt-in Quranic vocabulary study shown whenever the user turns on the screen" />
+                android:value="Opt-in Quranic vocabulary study shown after the user unlocks the device" />
         </service>
 
         <receiver android:name=".notifications.ReminderReceiver" android:exported="false" />

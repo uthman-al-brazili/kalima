@@ -391,6 +391,17 @@ object WordRepository {
     private var corpusWords: List<QuranWord> = fallbackWords
 
     @Volatile
+    private var wordIndex: Map<String, QuranWord> = fallbackWords.associateBy(QuranWord::id)
+
+    @Volatile
+    private var wordOrderIndex: Map<String, Int> = fallbackWords
+        .mapIndexed { index, word -> word.id to index }
+        .toMap()
+
+    @Volatile
+    private var corpusIdentityValue: String = buildCorpusIdentity(fallbackWords)
+
+    @Volatile
     private var searchIndex: Map<String, SearchEntry>? = buildSearchIndex(fallbackWords)
 
     @Volatile
@@ -417,6 +428,8 @@ object WordRepository {
 
     val words: List<QuranWord> get() = corpusWords
 
+    val wordIds: Set<String> get() = wordIndex.keys
+
     val frequentWords: List<QuranWord> get() = frequentIndex
 
     @Synchronized
@@ -432,6 +445,9 @@ object WordRepository {
         referenceIndex = null
         lemmaIndex = null
         corpusWords = loadedWords
+        wordIndex = loadedWords.associateBy(QuranWord::id)
+        wordOrderIndex = loadedWords.mapIndexed { index, word -> word.id to index }.toMap()
+        corpusIdentityValue = buildCorpusIdentity(loadedWords)
         readerIndex = loadedReaderIndex
         frequentIndex = imported.filter(QuranWord::isFrequent)
         rankedFrequencyIndex = buildRankedFrequencyIndex(imported)
@@ -514,7 +530,9 @@ object WordRepository {
             StudyScope.ShortSurahs -> distinctByLemma(
                 (101..114).flatMap { surahIndex[it].orEmpty() },
             )
-            StudyScope.Custom -> words.filter { it.id in customStudyIds }
+            StudyScope.Custom -> customStudyIds
+                .mapNotNull(wordIndex::get)
+                .sortedBy { wordOrderIndex[it.id] ?: Int.MAX_VALUE }
             StudyScope.Surahs -> selectedSurahs.sorted().flatMap { surahIndex[it].orEmpty() }
         }
         return when (scope) {
@@ -555,6 +573,10 @@ object WordRepository {
 
     fun wordAtSequence(sequence: Int, source: List<QuranWord> = words): QuranWord =
         source[Math.floorMod(sequence, source.size)]
+
+    fun wordById(id: String?): QuranWord? = id?.let(wordIndex::get)
+
+    fun containsWord(id: String): Boolean = id in wordIndex
 
     fun search(query: String, source: List<QuranWord> = words): List<QuranWord> {
         val term = normalizeSearchText(query)
@@ -611,16 +633,18 @@ object WordRepository {
         )
     }
 
-    fun corpusIdentity(): String {
+    fun corpusIdentity(): String = corpusIdentityValue
+
+    private fun buildCorpusIdentity(source: List<QuranWord>): String {
         val digest = MessageDigest.getInstance("SHA-256")
-        words.forEach { word ->
+        source.forEach { word ->
             digest.update(word.id.toByteArray(Charsets.UTF_8))
             digest.update('\n'.code.toByte())
         }
         val shortHash = digest.digest().take(8).joinToString("") {
             "%02x".format(it.toInt() and 0xff)
         }
-        return "kalima-quran-v2-${words.size}-$shortHash"
+        return "kalima-quran-v2-${source.size}-$shortHash"
     }
 
     private fun buildSearchIndex(source: List<QuranWord>): Map<String, SearchEntry> =

@@ -5,10 +5,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.content.ContextCompat
@@ -54,7 +52,7 @@ class LockScreenStudyActivity : ComponentActivity() {
             finish()
             return
         }
-        configureWindowForLockScreen()
+        configureWindow()
 
         val session = if (preview) {
             restoreContent(savedInstanceState)?.let { restored ->
@@ -205,7 +203,7 @@ class LockScreenStudyActivity : ComponentActivity() {
 
     private fun restoreContent(state: Bundle?): LockScreenContent? {
         if (state == null) return null
-        val word = WordRepository.words.firstOrNull { it.id == state.getString(STATE_WORD_ID) }
+        val word = WordRepository.wordById(state.getString(STATE_WORD_ID))
             ?: return null
         return when (state.getString(STATE_CONTENT_TYPE)) {
             CONTENT_WORD -> LockScreenContent.WordCard(word)
@@ -223,14 +221,7 @@ class LockScreenStudyActivity : ComponentActivity() {
         }
     }
 
-    private fun configureWindowForLockScreen() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            setShowWhenLocked(true)
-            setTurnScreenOn(false)
-        } else {
-            @Suppress("DEPRECATION")
-            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
-        }
+    private fun configureWindow() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 

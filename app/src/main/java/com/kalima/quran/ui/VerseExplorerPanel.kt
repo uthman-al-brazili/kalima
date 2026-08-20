@@ -111,6 +111,8 @@ internal fun WordExplorerSheet(
     indexed: Boolean,
     onDismiss: () -> Unit,
     onOpenWord: ((String) -> Unit)?,
+    inCustomList: Boolean = false,
+    onToggleCustomList: ((String) -> Unit)? = null,
 ) {
     val pronouncer = rememberArabicPronouncer()
     val occurrences = remember(word.id, indexed) {
@@ -137,11 +139,32 @@ internal fun WordExplorerSheet(
             if (indexed) RootAndGrammar(word.root, word.grammar)
             Text(word.reference, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             CitationActions(word)
+            PronunciationButton(
+                word = word,
+                pronouncer = pronouncer,
+                modifier = Modifier.fillMaxWidth(),
+            )
             VersePronunciationButton(
                 word = word,
                 pronouncer = pronouncer,
                 modifier = Modifier.fillMaxWidth(),
             )
+            if (indexed && onToggleCustomList != null) {
+                Button(
+                    onClick = { onToggleCustomList(word.id) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        stringResource(
+                            if (inCustomList) {
+                                R.string.remove_custom_list
+                            } else {
+                                R.string.add_custom_list
+                            },
+                        ),
+                    )
+                }
+            }
             if (onOpenWord != null) {
                 Button(
                     onClick = {

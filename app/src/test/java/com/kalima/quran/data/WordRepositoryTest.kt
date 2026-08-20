@@ -65,6 +65,15 @@ class WordRepositoryTest {
     }
 
     @Test
+    fun indexedWordLookupReturnsTheCanonicalObject() {
+        val expected = WordRepository.words[WordRepository.words.size / 2]
+
+        assertEquals(expected, WordRepository.wordById(expected.id))
+        assertTrue(WordRepository.containsWord(expected.id))
+        assertEquals(WordRepository.words.map(QuranWord::id).toSet(), WordRepository.wordIds)
+    }
+
+    @Test
     fun searchFindsPortugueseArabicAndRoots() {
         assertTrue(WordRepository.search("oração").any { it.id == "salah" })
         assertTrue(WordRepository.search("ٱلْغَيْبِ").any { it.id == "ghayb" })
