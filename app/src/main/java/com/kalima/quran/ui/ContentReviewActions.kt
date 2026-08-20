@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -81,7 +80,10 @@ fun WordCollectionActions(
 }
 
 @Composable
-fun EditorialReviewPanel(word: QuranWord) {
+fun EditorialReviewPanel(
+    word: QuranWord,
+    leadingContent: (@Composable () -> Unit)? = null,
+) {
     val context = LocalContext.current
     var expanded by rememberSaveable(word.id) { mutableStateOf(false) }
     val chooserTitle = stringResource(R.string.report_card)
@@ -96,86 +98,83 @@ fun EditorialReviewPanel(word: QuranWord) {
         stringResource(R.string.editorial_compact_title),
         stringResource(R.string.editorial_show_details),
     ).joinToString(". ")
-    if (!expanded) {
-        Box(
+    val toggleDetailsDescription = if (expanded) {
+        stringResource(R.string.editorial_hide_details)
+    } else {
+        showDetailsDescription
+    }
+    Column(Modifier.fillMaxWidth()) {
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.CenterEnd,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                leadingContent?.invoke()
+            }
             Surface(
                 modifier = Modifier.size(40.dp),
                 color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.55f),
                 shape = RoundedCornerShape(12.dp),
             ) {
-                IconButton(onClick = { expanded = true }) {
+                IconButton(onClick = { expanded = !expanded }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_content_review),
-                        contentDescription = showDetailsDescription,
+                        contentDescription = toggleDetailsDescription,
                         modifier = Modifier.size(20.dp),
                         tint = MaterialTheme.colorScheme.onTertiaryContainer,
                     )
                 }
             }
         }
-        return
-    }
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.55f),
-        shape = RoundedCornerShape(16.dp),
-    ) {
-        Column(Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
-            Row(
+        if (expanded) {
+            Spacer(Modifier.height(4.dp))
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.55f),
+                shape = RoundedCornerShape(16.dp),
             ) {
-                Text(
-                    stringResource(R.string.editorial_compact_title),
-                    modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.labelLarge,
-                )
-                val detailsDescription = stringResource(R.string.editorial_hide_details)
-                IconButton(onClick = { expanded = false }) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_expand_more),
-                        contentDescription = detailsDescription,
-                        modifier = Modifier.rotate(180f),
-                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+                    Text(
+                        stringResource(R.string.editorial_compact_title),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelLarge,
                     )
-                }
-            }
-            if (expanded) {
-                Text(
-                    stringResource(R.string.editorial_status),
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    stringResource(R.string.editorial_details),
-                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.82f),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    stringResource(R.string.editorial_metadata, word.id, word.reference),
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                TextButton(
-                    onClick = {
-                        val report = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_SUBJECT, subject)
-                            putExtra(Intent.EXTRA_TEXT, body)
-                        }
-                        context.startActivity(Intent.createChooser(report, chooserTitle))
-                    },
-                ) {
-                    Text(stringResource(R.string.report_card))
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(R.string.editorial_status),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(R.string.editorial_details),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.82f),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(R.string.editorial_metadata, word.id, word.reference),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    TextButton(
+                        onClick = {
+                            val report = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, subject)
+                                putExtra(Intent.EXTRA_TEXT, body)
+                            }
+                            context.startActivity(Intent.createChooser(report, chooserTitle))
+                        },
+                    ) {
+                        Text(stringResource(R.string.report_card))
+                    }
                 }
             }
         }

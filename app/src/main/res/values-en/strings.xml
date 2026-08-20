@@ -243,7 +243,13 @@
     <string name="onboarding_start">Start my path</string>
     <string name="onboarding_start_alphabet">Start learning the letters</string>
     <string name="alphabet_course_title">Arabic alphabet foundations</string>
-    <string name="alphabet_course_words_locked">Complete these short steps before studying full Arabic words. Numbers can continue alongside them.</string>
+    <string name="alphabet_course_words_locked">Learn at your own pace or skip for now. You can return to the letters any time from Study.</string>
+    <string name="skip_alphabet_for_now">Skip for now</string>
+    <string name="alphabet_shortcut_title">Arabic alphabet</string>
+    <string name="alphabet_shortcut_description">Hear and practice the letters whenever you want.</string>
+    <string name="alphabet_shortcut_progress">%1$d of %2$d lessons complete</string>
+    <string name="study_alphabet">Study</string>
+    <string name="continue_alphabet">Continue</string>
     <string name="foundation_step_progress">%1$d/%2$d</string>
     <string name="alphabet_letters_lesson">Meet these letters</string>
     <string name="alphabet_letters_note">Focus on the letter’s shape and dots. You will recall every name before this lesson is complete.</string>
@@ -266,6 +272,9 @@
     <string name="number_course_title">Today’s Arabic number</string>
     <string name="next_number">I know this number</string>
     <string name="finish_number_course">Finish number course</string>
+    <string name="hear_letter">Hear this letter</string>
+    <string name="hear_number">Hear this number</string>
+    <string name="foundation_voice_unavailable">Install or enable an Arabic voice in your device’s text-to-speech settings to hear letters and numbers.</string>
     <string name="finish_alphabet_first">Finish the Arabic alphabet foundation before enabling word study outside the app.</string>
     <string name="quiz_after_alphabet_title">The quiz starts after the alphabet</string>
     <string name="quiz_after_alphabet_description">Continue the alphabet plan in Study. Once it is complete, word quizzes will unlock automatically.</string>

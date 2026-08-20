@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,6 +67,8 @@ fun StudyScreen(
     onToggleAlreadyKnown: (String) -> Unit,
     onShowCompleteAyahChange: (Boolean) -> Unit,
     onCompleteAlphabetLesson: () -> Unit,
+    onStartAlphabetFoundation: () -> Unit,
+    onSkipAlphabetFoundation: () -> Unit,
     onCompleteNumberLesson: () -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
@@ -77,6 +78,8 @@ fun StudyScreen(
             progress = progress,
             onCompleteAlphabetLesson = onCompleteAlphabetLesson,
             onCompleteNumberLesson = onCompleteNumberLesson,
+            onSkipAlphabetFoundation = onSkipAlphabetFoundation,
+            pronouncer = pronouncer,
         )
         return
     }
@@ -102,11 +105,16 @@ fun StudyScreen(
         progress.limitNewWords(selectedWords)
     }
     if (availableWords.isEmpty()) {
-        when {
-            selectedWords.isNotEmpty() && selectedWords.all { it.id in progress.alreadyKnownIds } ->
-                AllWordsAlreadyKnownState()
-            progress.studyScope == StudyScope.Custom -> EmptyCollectionState()
-            else -> LearningLimitEmptyState()
+        FoundationAccessibleEmptyState(
+            progress = progress,
+            onStartAlphabetFoundation = onStartAlphabetFoundation,
+        ) { modifier ->
+            when {
+                selectedWords.isNotEmpty() && selectedWords.all { it.id in progress.alreadyKnownIds } ->
+                    AllWordsAlreadyKnownState(modifier)
+                progress.studyScope == StudyScope.Custom -> EmptyCollectionState(modifier)
+                else -> LearningLimitEmptyState(modifier)
+            }
         }
         return
     }
@@ -128,7 +136,12 @@ fun StudyScreen(
         }
     }
     if (words.isEmpty()) {
-        AllCaughtUpState()
+        FoundationAccessibleEmptyState(
+            progress = progress,
+            onStartAlphabetFoundation = onStartAlphabetFoundation,
+        ) { modifier ->
+            AllCaughtUpState(modifier)
+        }
         return
     }
     val session = remember(words, launchTarget?.wordId) {
@@ -175,11 +188,17 @@ fun StudyScreen(
                 progress = progress,
                 dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
             )
+            Spacer(Modifier.height(14.dp))
+            AlphabetAccessCard(
+                progress = progress,
+                onStartAlphabetFoundation = onStartAlphabetFoundation,
+            )
             if (progress.hasNumberFoundationLesson) {
                 Spacer(Modifier.height(16.dp))
                 NumberFoundationCard(
                     progress = progress,
                     onCompleteNumberLesson = onCompleteNumberLesson,
+                    pronouncer = pronouncer,
                 )
             }
             if (!progress.lockScreenEnabled) {
@@ -219,16 +238,35 @@ fun StudyScreen(
                 meaningRevealed = meaningRevealed,
                 onRevealChange = { meaningRevealed = it },
                 onToggleCustomList = onToggleCustomList,
-                onToggleAlreadyKnown = { wordId ->
-                    val markingAsKnown = wordId !in progress.alreadyKnownIds
-                    onToggleAlreadyKnown(wordId)
-                    if (markingAsKnown && wordId == word.id) moveToNextWord()
-                },
                 showCompleteAyah = progress.showCompleteAyah,
                 onShowCompleteAyahChange = onShowCompleteAyahChange,
                 onOpenWord = { wordId ->
                     currentWordId = wordId
                     onCurrentWordChange(wordId)
+                },
+            )
+            Spacer(Modifier.height(4.dp))
+            EditorialReviewPanel(
+                word = word,
+                leadingContent = {
+                    TextButton(
+                        onClick = {
+                            val markingAsKnown = word.id !in progress.alreadyKnownIds
+                            onToggleAlreadyKnown(word.id)
+                            if (markingAsKnown) moveToNextWord()
+                        },
+                    ) {
+                        Text(
+                            stringResource(
+                                if (word.id in progress.alreadyKnownIds) {
+                                    R.string.restore_to_practice
+                                } else {
+                                    R.string.mark_already_known
+                                },
+                            ),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
                 },
             )
             Spacer(Modifier.height(18.dp))
@@ -268,6 +306,8 @@ private fun AlphabetFoundationScreen(
     progress: StudyProgress,
     onCompleteAlphabetLesson: () -> Unit,
     onCompleteNumberLesson: () -> Unit,
+    onSkipAlphabetFoundation: () -> Unit,
+    pronouncer: ArabicPronouncer,
 ) {
     val lessonIndex = progress.completedAlphabetLessons
         .coerceIn(0, ArabicFoundations.alphabetLessons.lastIndex)
@@ -293,6 +333,14 @@ private fun AlphabetFoundationScreen(
             stringResource(R.string.alphabet_course_words_locked),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            TextButton(onClick = onSkipAlphabetFoundation) {
+                Text(stringResource(R.string.skip_alphabet_for_now))
+            }
+        }
         Spacer(Modifier.height(14.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             LinearProgressIndicator(
@@ -376,6 +424,12 @@ private fun AlphabetFoundationScreen(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            FoundationPronunciationButton(
+                                text = symbol.spokenArabic,
+                                pronouncer = pronouncer,
+                                labelRes = R.string.hear_letter,
                             )
                         }
                     }
@@ -568,6 +622,7 @@ private fun AlphabetFoundationScreen(
             NumberFoundationCard(
                 progress = progress,
                 onCompleteNumberLesson = onCompleteNumberLesson,
+                pronouncer = pronouncer,
             )
         }
         Spacer(Modifier.height(24.dp))
@@ -578,6 +633,7 @@ private fun AlphabetFoundationScreen(
 private fun NumberFoundationCard(
     progress: StudyProgress,
     onCompleteNumberLesson: () -> Unit,
+    pronouncer: ArabicPronouncer,
 ) {
     val lessonIndex = progress.completedNumberLessons
         .coerceIn(0, ArabicFoundations.numberLessons.lastIndex)
@@ -628,6 +684,13 @@ private fun NumberFoundationCard(
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(10.dp))
+            FoundationPronunciationButton(
+                text = lesson.arabicName,
+                pronouncer = pronouncer,
+                modifier = Modifier.fillMaxWidth(),
+                labelRes = R.string.hear_number,
+            )
+            Spacer(Modifier.height(8.dp))
             OutlinedButton(
                 onClick = onCompleteNumberLesson,
                 modifier = Modifier.fillMaxWidth(),
@@ -645,6 +708,72 @@ private fun NumberFoundationCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun AlphabetAccessCard(
+    progress: StudyProgress,
+    onStartAlphabetFoundation: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val canResume = progress.completedAlphabetLessons in
+        1 until ArabicFoundations.alphabetLessonCount
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f),
+        shape = RoundedCornerShape(18.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.alphabet_shortcut_title),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                Text(
+                    if (canResume) {
+                        stringResource(
+                            R.string.alphabet_shortcut_progress,
+                            progress.completedAlphabetLessons,
+                            ArabicFoundations.alphabetLessonCount,
+                        )
+                    } else {
+                        stringResource(R.string.alphabet_shortcut_description)
+                    },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            TextButton(onClick = onStartAlphabetFoundation) {
+                Text(
+                    stringResource(
+                        if (canResume) R.string.continue_alphabet
+                        else R.string.study_alphabet,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FoundationAccessibleEmptyState(
+    progress: StudyProgress,
+    onStartAlphabetFoundation: () -> Unit,
+    content: @Composable (Modifier) -> Unit,
+) {
+    Column(Modifier.fillMaxSize()) {
+        AlphabetAccessCard(
+            progress = progress,
+            onStartAlphabetFoundation = onStartAlphabetFoundation,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+        )
+        content(Modifier.weight(1f))
     }
 }
 
@@ -852,7 +981,6 @@ private fun WordCard(
     meaningRevealed: Boolean,
     onRevealChange: (Boolean) -> Unit,
     onToggleCustomList: (String) -> Unit,
-    onToggleAlreadyKnown: (String) -> Unit,
     showCompleteAyah: Boolean,
     onShowCompleteAyahChange: (Boolean) -> Unit,
     onOpenWord: (String) -> Unit,
@@ -880,26 +1008,7 @@ private fun WordCard(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                Column(horizontalAlignment = Alignment.End) {
-                    WordStatusPill(progress.statusFor(word.id))
-                    OutlinedButton(
-                        onClick = { onToggleAlreadyKnown(word.id) },
-                        modifier = Modifier.height(36.dp),
-                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-                        shape = RoundedCornerShape(12.dp),
-                    ) {
-                        Text(
-                            stringResource(
-                                if (word.id in progress.alreadyKnownIds) {
-                                    R.string.restore_to_practice
-                                } else {
-                                    R.string.mark_already_known
-                                },
-                            ),
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    }
-                }
+                WordStatusPill(progress.statusFor(word.id))
             }
             Spacer(Modifier.height(22.dp))
             ArabicText(
@@ -930,7 +1039,7 @@ private fun WordCard(
                 inCustomList = word.id in progress.customStudyIds,
                 alreadyKnown = word.id in progress.alreadyKnownIds,
                 onToggleCustomList = onToggleCustomList,
-                onToggleAlreadyKnown = onToggleAlreadyKnown,
+                onToggleAlreadyKnown = {},
                 showAlreadyKnown = false,
             )
             if (meaningRevealed) {
@@ -992,8 +1101,6 @@ private fun WordCard(
                 }
                 Spacer(Modifier.height(14.dp))
                 CitationActions(word)
-                Spacer(Modifier.height(8.dp))
-                EditorialReviewPanel(word)
                 TextButton(onClick = { onRevealChange(false) }) {
                     Text(stringResource(R.string.hide_meaning))
                 }

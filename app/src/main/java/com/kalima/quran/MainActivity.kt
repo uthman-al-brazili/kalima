@@ -124,6 +124,8 @@ class MainActivity : ComponentActivity() {
                 onToggleAlreadyKnown = store::toggleAlreadyKnown,
                 onCompleteOnboarding = store::completeOnboarding,
                 onCompleteAlphabetLesson = store::completeNextAlphabetLesson,
+                onStartAlphabetFoundation = store::startAlphabetFoundation,
+                onSkipAlphabetFoundation = store::skipAlphabetFoundation,
                 onCompleteNumberLesson = store::completeNextNumberLesson,
                 onOpenAppSettings = ::openAppSettings,
                 onPreviewLockScreen = ::previewLockScreen,

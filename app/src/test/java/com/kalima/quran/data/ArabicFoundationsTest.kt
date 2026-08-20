@@ -59,6 +59,44 @@ class ArabicFoundationsTest {
     }
 
     @Test
+    fun `every foundation symbol provides Arabic speech text`() {
+        val symbols = ArabicFoundations.alphabetLessons.flatMap(AlphabetLesson::symbols)
+
+        assertTrue(symbols.all { it.spokenArabic.isNotBlank() })
+        assertEquals("أَلِف", symbols.first().spokenArabic)
+        assertEquals("يَاء", symbols.dropLast(4).last().spokenArabic)
+    }
+
+    @Test
+    fun `skipping alphabet keeps lesson progress and resuming continues it`() {
+        val inProgress = StudyProgress(
+            alphabetCourseRequested = true,
+            completedAlphabetLessons = 3,
+        )
+
+        val skipped = inProgress.skipAlphabetFoundation()
+        val resumed = skipped.startAlphabetFoundation()
+
+        assertFalse(skipped.needsAlphabetFoundation)
+        assertEquals(3, skipped.completedAlphabetLessons)
+        assertTrue(resumed.needsAlphabetFoundation)
+        assertEquals(3, resumed.completedAlphabetLessons)
+    }
+
+    @Test
+    fun `a completed or previously declined alphabet course can be studied from the beginning`() {
+        val previouslyKnown = StudyProgress(
+            alphabetCourseRequested = false,
+            completedAlphabetLessons = ArabicFoundations.alphabetLessonCount,
+        )
+
+        val restarted = previouslyKnown.startAlphabetFoundation()
+
+        assertTrue(restarted.needsAlphabetFoundation)
+        assertEquals(0, restarted.completedAlphabetLessons)
+    }
+
+    @Test
     fun `number lessons remain parallel and cover zero through nine`() {
         val progress = StudyProgress(
             numberCourseRequested = true,

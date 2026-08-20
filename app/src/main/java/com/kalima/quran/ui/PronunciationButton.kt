@@ -104,6 +104,30 @@ fun VersePronunciationButton(
 }
 
 @Composable
+fun FoundationPronunciationButton(
+    text: String,
+    pronouncer: ArabicPronouncer,
+    modifier: Modifier = Modifier,
+    @StringRes labelRes: Int,
+) {
+    PronunciationControl(
+        play = { onPlaybackResult ->
+            pronouncer.speakFoundation(
+                text = text,
+                onPlaybackResult = onPlaybackResult,
+            )
+        },
+        modifier = modifier,
+        compact = false,
+        dense = true,
+        labelRes = labelRes,
+        offlineMessageRes = R.string.foundation_voice_unavailable,
+        contentColor = MaterialTheme.colorScheme.primary,
+        borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
+    )
+}
+
+@Composable
 private fun PronunciationControl(
     play: ((PronunciationResult) -> Unit) -> PronunciationResult,
     modifier: Modifier,
@@ -128,11 +152,15 @@ private fun PronunciationControl(
     val label = stringResource(labelRes)
     val failedMessage = stringResource(R.string.pronunciation_failed)
     val offlineAudioMissingMessage = stringResource(offlineMessageRes)
+    val deviceVoiceUnavailableMessage = stringResource(R.string.foundation_voice_unavailable)
     fun handleResult(result: PronunciationResult) {
         when (result) {
             PronunciationResult.Started -> Unit
             PronunciationResult.OfflineAudioMissing -> {
                 Toast.makeText(context, offlineAudioMissingMessage, Toast.LENGTH_LONG).show()
+            }
+            PronunciationResult.DeviceVoiceUnavailable -> {
+                Toast.makeText(context, deviceVoiceUnavailableMessage, Toast.LENGTH_LONG).show()
             }
             PronunciationResult.Failed -> {
                 Toast.makeText(context, failedMessage, Toast.LENGTH_LONG).show()

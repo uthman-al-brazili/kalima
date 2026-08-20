@@ -3,6 +3,7 @@ package com.kalima.quran.data
 data class FoundationSymbol(
     val arabic: String,
     val transliteration: String,
+    val spokenArabic: String = arabic,
 )
 
 data class AlphabetLesson(
@@ -42,58 +43,58 @@ object ArabicFoundations {
     val alphabetLessons: List<AlphabetLesson> = listOf(
         AlphabetLesson(
             listOf(
-                FoundationSymbol("ا", "alif"),
-                FoundationSymbol("ب", "bāʾ"),
-                FoundationSymbol("ت", "tāʾ"),
-                FoundationSymbol("ث", "thāʾ"),
+                FoundationSymbol("ا", "alif", "أَلِف"),
+                FoundationSymbol("ب", "bāʾ", "بَاء"),
+                FoundationSymbol("ت", "tāʾ", "تَاء"),
+                FoundationSymbol("ث", "thāʾ", "ثَاء"),
             ),
         ),
         AlphabetLesson(
             listOf(
-                FoundationSymbol("ج", "jīm"),
-                FoundationSymbol("ح", "ḥāʾ"),
-                FoundationSymbol("خ", "khāʾ"),
-                FoundationSymbol("د", "dāl"),
+                FoundationSymbol("ج", "jīm", "جِيم"),
+                FoundationSymbol("ح", "ḥāʾ", "حَاء"),
+                FoundationSymbol("خ", "khāʾ", "خَاء"),
+                FoundationSymbol("د", "dāl", "دَال"),
             ),
         ),
         AlphabetLesson(
             listOf(
-                FoundationSymbol("ذ", "dhāl"),
-                FoundationSymbol("ر", "rāʾ"),
-                FoundationSymbol("ز", "zāy"),
-                FoundationSymbol("س", "sīn"),
+                FoundationSymbol("ذ", "dhāl", "ذَال"),
+                FoundationSymbol("ر", "rāʾ", "رَاء"),
+                FoundationSymbol("ز", "zāy", "زَاي"),
+                FoundationSymbol("س", "sīn", "سِين"),
             ),
         ),
         AlphabetLesson(
             listOf(
-                FoundationSymbol("ش", "shīn"),
-                FoundationSymbol("ص", "ṣād"),
-                FoundationSymbol("ض", "ḍād"),
-                FoundationSymbol("ط", "ṭāʾ"),
+                FoundationSymbol("ش", "shīn", "شِين"),
+                FoundationSymbol("ص", "ṣād", "صَاد"),
+                FoundationSymbol("ض", "ḍād", "ضَاد"),
+                FoundationSymbol("ط", "ṭāʾ", "طَاء"),
             ),
         ),
         AlphabetLesson(
             listOf(
-                FoundationSymbol("ظ", "ẓāʾ"),
-                FoundationSymbol("ع", "ʿayn"),
-                FoundationSymbol("غ", "ghayn"),
-                FoundationSymbol("ف", "fāʾ"),
+                FoundationSymbol("ظ", "ẓāʾ", "ظَاء"),
+                FoundationSymbol("ع", "ʿayn", "عَيْن"),
+                FoundationSymbol("غ", "ghayn", "غَيْن"),
+                FoundationSymbol("ف", "fāʾ", "فَاء"),
             ),
         ),
         AlphabetLesson(
             listOf(
-                FoundationSymbol("ق", "qāf"),
-                FoundationSymbol("ك", "kāf"),
-                FoundationSymbol("ل", "lām"),
-                FoundationSymbol("م", "mīm"),
+                FoundationSymbol("ق", "qāf", "قَاف"),
+                FoundationSymbol("ك", "kāf", "كَاف"),
+                FoundationSymbol("ل", "lām", "لَام"),
+                FoundationSymbol("م", "mīm", "مِيم"),
             ),
         ),
         AlphabetLesson(
             listOf(
-                FoundationSymbol("ن", "nūn"),
-                FoundationSymbol("ه", "hāʾ"),
-                FoundationSymbol("و", "wāw"),
-                FoundationSymbol("ي", "yāʾ"),
+                FoundationSymbol("ن", "nūn", "نُون"),
+                FoundationSymbol("ه", "hāʾ", "هَاء"),
+                FoundationSymbol("و", "wāw", "وَاو"),
+                FoundationSymbol("ي", "yāʾ", "يَاء"),
             ),
         ),
         AlphabetLesson(
@@ -131,3 +132,14 @@ val StudyProgress.needsAlphabetFoundation: Boolean
 val StudyProgress.hasNumberFoundationLesson: Boolean
     get() = numberCourseRequested &&
         completedNumberLessons < ArabicFoundations.numberLessonCount
+
+fun StudyProgress.startAlphabetFoundation(): StudyProgress = copy(
+    alphabetCourseRequested = true,
+    completedAlphabetLessons = completedAlphabetLessons
+        .takeIf { it in 0 until ArabicFoundations.alphabetLessonCount }
+        ?: 0,
+)
+
+fun StudyProgress.skipAlphabetFoundation(): StudyProgress = copy(
+    alphabetCourseRequested = false,
+)

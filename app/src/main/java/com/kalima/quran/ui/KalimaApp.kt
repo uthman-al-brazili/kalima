@@ -73,6 +73,8 @@ fun KalimaApp(
     onToggleAlreadyKnown: (String) -> Unit,
     onCompleteOnboarding: (StudyScope, Int, Boolean, Boolean) -> Unit,
     onCompleteAlphabetLesson: () -> Unit,
+    onStartAlphabetFoundation: () -> Unit,
+    onSkipAlphabetFoundation: () -> Unit,
     onCompleteNumberLesson: () -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
@@ -166,6 +168,8 @@ fun KalimaApp(
                             onToggleAlreadyKnown = onToggleAlreadyKnown,
                             onShowCompleteAyahChange = onShowCompleteAyahChange,
                             onCompleteAlphabetLesson = onCompleteAlphabetLesson,
+                            onStartAlphabetFoundation = onStartAlphabetFoundation,
+                            onSkipAlphabetFoundation = onSkipAlphabetFoundation,
                             onCompleteNumberLesson = onCompleteNumberLesson,
                             launchTarget = studyLaunchTarget,
                         )

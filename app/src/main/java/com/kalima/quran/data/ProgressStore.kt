@@ -272,6 +272,17 @@ class ProgressStore private constructor(context: Context) {
         )
     }
 
+    fun startAlphabetFoundation() {
+        val current = _progress.value
+        persist(current.startAlphabetFoundation(), today())
+    }
+
+    fun skipAlphabetFoundation() {
+        val current = _progress.value
+        if (!current.needsAlphabetFoundation) return
+        persist(current.skipAlphabetFoundation(), today())
+    }
+
     fun completeNextNumberLesson() {
         val current = _progress.value
         if (!current.hasNumberFoundationLesson) return

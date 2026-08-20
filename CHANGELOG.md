@@ -3,6 +3,18 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.26.3 — 2026-08-20
+
+- Moved “I already know this” and the editorial-review status into a quiet
+  utility row below the vocabulary card, leaving the card itself focused on the
+  Arabic word and its lesson content.
+- Added Arabic device-voice playback for every alphabet symbol and number, with
+  fully vocalized letter and number names and guidance when an Arabic voice is
+  not installed on the device.
+- Made alphabet lessons optional and reversible: learners can skip without
+  losing partial progress, resume later, or restart the alphabet from Study
+  after finishing it or saying they already knew it during onboarding.
+
 ## 0.26.2 — 2026-08-20
 
 - Reworked alphabet lessons into focused, one-symbol-at-a-time learning followed
