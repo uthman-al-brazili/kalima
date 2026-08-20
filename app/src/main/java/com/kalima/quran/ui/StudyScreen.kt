@@ -72,21 +72,12 @@ fun StudyScreen(
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
     onShowCompleteAyahChange: (Boolean) -> Unit,
-    onCompleteAlphabetLesson: () -> Unit,
-    onStartAlphabetFoundation: () -> Unit,
-    onSkipAlphabetFoundation: () -> Unit,
-    onCompleteNumberLesson: () -> Unit,
+    onOpenFoundations: () -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
 ) {
     if (progress.needsAlphabetFoundation) {
-        AlphabetFoundationScreen(
-            progress = progress,
-            onCompleteAlphabetLesson = onCompleteAlphabetLesson,
-            onCompleteNumberLesson = onCompleteNumberLesson,
-            onSkipAlphabetFoundation = onSkipAlphabetFoundation,
-            pronouncer = pronouncer,
-        )
+        WordStudyLockedScreen(onOpenFoundations = onOpenFoundations)
         return
     }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -116,19 +107,14 @@ fun StudyScreen(
     }
     if (availableWords.isEmpty()) {
         Box(Modifier.fillMaxSize()) {
-            FoundationAccessibleEmptyState(
-                progress = progress,
-                onStartAlphabetFoundation = onStartAlphabetFoundation,
-            ) { modifier ->
-                when {
-                    selectedWords.isNotEmpty() && selectedWords.all { it.id in progress.alreadyKnownIds } ->
-                        AllWordsAlreadyKnownState(
-                            modifier = modifier,
-                            onOpenExcludedWords = onOpenExcludedWords,
-                        )
-                    progress.studyScope == StudyScope.Custom -> EmptyCollectionState(modifier)
-                    else -> LearningLimitEmptyState(modifier)
-                }
+            when {
+                selectedWords.isNotEmpty() && selectedWords.all { it.id in progress.alreadyKnownIds } ->
+                    AllWordsAlreadyKnownState(
+                        modifier = Modifier.fillMaxSize(),
+                        onOpenExcludedWords = onOpenExcludedWords,
+                    )
+                progress.studyScope == StudyScope.Custom -> EmptyCollectionState(Modifier.fillMaxSize())
+                else -> LearningLimitEmptyState(Modifier.fillMaxSize())
             }
             SnackbarHost(
                 hostState = snackbarHostState,
@@ -156,12 +142,7 @@ fun StudyScreen(
     }
     if (words.isEmpty()) {
         Box(Modifier.fillMaxSize()) {
-            FoundationAccessibleEmptyState(
-                progress = progress,
-                onStartAlphabetFoundation = onStartAlphabetFoundation,
-            ) { modifier ->
-                AllCaughtUpState(modifier)
-            }
+            AllCaughtUpState(Modifier.fillMaxSize())
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(20.dp),
@@ -226,19 +207,6 @@ fun StudyScreen(
                     ),
                 )
             }
-            Spacer(Modifier.height(14.dp))
-            AlphabetAccessCard(
-                progress = progress,
-                onStartAlphabetFoundation = onStartAlphabetFoundation,
-            )
-            if (progress.hasNumberFoundationLesson) {
-                Spacer(Modifier.height(16.dp))
-                NumberFoundationCard(
-                    progress = progress,
-                    onCompleteNumberLesson = onCompleteNumberLesson,
-                    pronouncer = pronouncer,
-                )
-            }
             if (!progress.lockScreenEnabled) {
                 Spacer(Modifier.height(16.dp))
                 Surface(
@@ -301,8 +269,6 @@ fun StudyScreen(
                     onCurrentWordChange(wordId)
                 },
             )
-            Spacer(Modifier.height(4.dp))
-            EditorialReviewPanel(word = word)
             Spacer(Modifier.height(18.dp))
             Text(
                 stringResource(R.string.context_meaning_note),
@@ -338,6 +304,91 @@ fun StudyScreen(
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 20.dp, vertical = 112.dp),
         )
+    }
+}
+
+@Composable
+fun FoundationsScreen(
+    progress: StudyProgress,
+    onCompleteAlphabetLesson: () -> Unit,
+    onStartAlphabetFoundation: () -> Unit,
+    onSkipAlphabetFoundation: () -> Unit,
+    onCompleteNumberLesson: () -> Unit,
+    onStartNumberFoundation: () -> Unit,
+    pronouncer: ArabicPronouncer,
+) {
+    if (progress.needsAlphabetFoundation) {
+        AlphabetFoundationScreen(
+            progress = progress,
+            onCompleteAlphabetLesson = onCompleteAlphabetLesson,
+            onCompleteNumberLesson = onCompleteNumberLesson,
+            onSkipAlphabetFoundation = onSkipAlphabetFoundation,
+            pronouncer = pronouncer,
+        )
+        return
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 24.dp),
+    ) {
+        Text(
+            stringResource(R.string.foundations_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            stringResource(R.string.foundations_description),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Spacer(Modifier.height(22.dp))
+        AlphabetAccessCard(
+            progress = progress,
+            onStartAlphabetFoundation = onStartAlphabetFoundation,
+        )
+        Spacer(Modifier.height(16.dp))
+        if (progress.hasNumberFoundationLesson) {
+            NumberFoundationCard(
+                progress = progress,
+                onCompleteNumberLesson = onCompleteNumberLesson,
+                pronouncer = pronouncer,
+            )
+        } else {
+            NumberAccessCard(onStartNumberFoundation = onStartNumberFoundation)
+        }
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun WordStudyLockedScreen(onOpenFoundations: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                stringResource(R.string.study_after_foundations_title),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.study_after_foundations_description),
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(20.dp))
+            Button(onClick = onOpenFoundations) {
+                Text(stringResource(R.string.open_foundations))
+            }
+        }
     }
 }
 
@@ -752,6 +803,37 @@ private fun NumberFoundationCard(
 }
 
 @Composable
+private fun NumberAccessCard(onStartNumberFoundation: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f),
+        shape = RoundedCornerShape(18.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.numbers_shortcut_title),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                Text(
+                    stringResource(R.string.numbers_shortcut_description),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            TextButton(onClick = onStartNumberFoundation) {
+                Text(stringResource(R.string.review_numbers))
+            }
+        }
+    }
+}
+
+@Composable
 private fun AlphabetAccessCard(
     progress: StudyProgress,
     onStartAlphabetFoundation: () -> Unit,
@@ -798,22 +880,6 @@ private fun AlphabetAccessCard(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun FoundationAccessibleEmptyState(
-    progress: StudyProgress,
-    onStartAlphabetFoundation: () -> Unit,
-    content: @Composable (Modifier) -> Unit,
-) {
-    Column(Modifier.fillMaxSize()) {
-        AlphabetAccessCard(
-            progress = progress,
-            onStartAlphabetFoundation = onStartAlphabetFoundation,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
-        )
-        content(Modifier.weight(1f))
     }
 }
 
@@ -1158,6 +1224,7 @@ private fun WordCard(
                     Text(stringResource(R.string.hide_meaning))
                 }
             }
+            EditorialReviewPanel(word)
         }
     }
 }

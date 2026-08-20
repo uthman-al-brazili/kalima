@@ -111,4 +111,17 @@ class ArabicFoundationsTest {
             ArabicFoundations.numberLessons.map(NumberLesson::arabicDigit),
         )
     }
+
+    @Test
+    fun `a completed or previously declined number course can be studied from the beginning`() {
+        val previouslyKnown = StudyProgress(
+            numberCourseRequested = false,
+            completedNumberLessons = ArabicFoundations.numberLessonCount,
+        )
+
+        val restarted = previouslyKnown.startNumberFoundation()
+
+        assertTrue(restarted.hasNumberFoundationLesson)
+        assertEquals(0, restarted.completedNumberLessons)
+    }
 }

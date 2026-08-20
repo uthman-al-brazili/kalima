@@ -45,6 +45,7 @@ private enum class AppTab(@param:StringRes val labelRes: Int, @param:DrawableRes
     Library(R.string.tab_words, R.drawable.ic_library),
     Quiz(R.string.tab_quiz, R.drawable.ic_quiz),
     Progress(R.string.tab_progress, R.drawable.ic_progress),
+    Foundations(R.string.tab_foundations, R.drawable.ic_foundations),
     Settings(R.string.tab_settings, R.drawable.ic_settings),
 }
 
@@ -76,6 +77,7 @@ fun KalimaApp(
     onStartAlphabetFoundation: () -> Unit,
     onSkipAlphabetFoundation: () -> Unit,
     onCompleteNumberLesson: () -> Unit,
+    onStartNumberFoundation: () -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
     onDonate: () -> Unit,
@@ -172,10 +174,7 @@ fun KalimaApp(
                             onToggleCustomList = onToggleCustomList,
                             onToggleAlreadyKnown = onToggleAlreadyKnown,
                             onShowCompleteAyahChange = onShowCompleteAyahChange,
-                            onCompleteAlphabetLesson = onCompleteAlphabetLesson,
-                            onStartAlphabetFoundation = onStartAlphabetFoundation,
-                            onSkipAlphabetFoundation = onSkipAlphabetFoundation,
-                            onCompleteNumberLesson = onCompleteNumberLesson,
+                            onOpenFoundations = { selectedName = AppTab.Foundations.name },
                             launchTarget = studyLaunchTarget,
                         )
                         AppTab.Quran -> QuranReaderScreen(
@@ -201,6 +200,15 @@ fun KalimaApp(
                             progress = progress,
                             onStudyScopeChange = onStudyScopeChange,
                             onToggleSurah = onToggleSurah,
+                        )
+                        AppTab.Foundations -> FoundationsScreen(
+                            progress = progress,
+                            onCompleteAlphabetLesson = onCompleteAlphabetLesson,
+                            onStartAlphabetFoundation = onStartAlphabetFoundation,
+                            onSkipAlphabetFoundation = onSkipAlphabetFoundation,
+                            onCompleteNumberLesson = onCompleteNumberLesson,
+                            onStartNumberFoundation = onStartNumberFoundation,
+                            pronouncer = pronouncer,
                         )
                         AppTab.Settings -> SettingsScreen(
                             progress = progress,

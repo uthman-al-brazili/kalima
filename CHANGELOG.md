@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.27.0 — 2026-08-20
+
+- Moved alphabet and Arabic-Indic number learning into a separate, optional
+  Basics tab so the Study tab stays focused on Quranic words.
+- Added clear routes to the Basics tab for learners who still need the alphabet,
+  and made both alphabet and number courses available to restart at any time.
+- Moved the “Content under review” control into a labeled footer within each
+  word card, keeping it attached to the word’s source and editorial details.
+
 ## 0.26.4 — 2026-08-20
 
 - Moved “I already know this word” beside the Arabic study word and added a

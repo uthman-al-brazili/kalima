@@ -6,6 +6,7 @@
     <string name="tab_words">Words</string>
     <string name="tab_quiz">Quiz</string>
     <string name="tab_progress">Progress</string>
+    <string name="tab_foundations">Basics</string>
     <string name="tab_settings">Settings</string>
 
     <string name="quran_reader_title">Quran</string>
@@ -253,7 +254,7 @@
     <string name="onboarding_start">Start my path</string>
     <string name="onboarding_start_alphabet">Start learning the letters</string>
     <string name="alphabet_course_title">Arabic alphabet foundations</string>
-    <string name="alphabet_course_words_locked">Learn at your own pace or skip for now. You can return to the letters any time from Study.</string>
+    <string name="alphabet_course_words_locked">Learn at your own pace or skip for now. You can return to the letters any time from Basics.</string>
     <string name="skip_alphabet_for_now">Skip for now</string>
     <string name="alphabet_shortcut_title">Arabic alphabet</string>
     <string name="alphabet_shortcut_description">Hear and practice the letters whenever you want.</string>
@@ -282,12 +283,20 @@
     <string name="number_course_title">Today’s Arabic number</string>
     <string name="next_number">I know this number</string>
     <string name="finish_number_course">Finish number course</string>
+    <string name="foundations_title">Arabic basics</string>
+    <string name="foundations_description">Optional help with the alphabet and Arabic-Indic digits, kept separate from Quranic word study.</string>
+    <string name="numbers_shortcut_title">Arabic-Indic numbers</string>
+    <string name="numbers_shortcut_description">Review the digits ٠–٩ and hear their Arabic names.</string>
+    <string name="review_numbers">Review</string>
+    <string name="study_after_foundations_title">Word study starts after the alphabet</string>
+    <string name="study_after_foundations_description">Your letter course is in Basics. Finish it there, or skip it for now, to begin studying Quranic words.</string>
+    <string name="open_foundations">Open Basics</string>
     <string name="hear_letter">Hear this letter</string>
     <string name="hear_number">Hear this number</string>
     <string name="foundation_voice_unavailable">Install or enable an Arabic voice in your device’s text-to-speech settings to hear letters and numbers.</string>
     <string name="finish_alphabet_first">Finish the Arabic alphabet foundation before enabling word study outside the app.</string>
     <string name="quiz_after_alphabet_title">The quiz starts after the alphabet</string>
-    <string name="quiz_after_alphabet_description">Continue the alphabet plan in Study. Once it is complete, word quizzes will unlock automatically.</string>
+    <string name="quiz_after_alphabet_description">Continue the alphabet plan in Basics. Once it is complete, word quizzes will unlock automatically.</string>
     <string name="scope_top_100">100 essentials</string>
     <string name="scope_first_50">50 essentials</string>
     <string name="scope_top_300">300 frequent</string>

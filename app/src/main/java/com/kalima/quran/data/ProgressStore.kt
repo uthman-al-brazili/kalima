@@ -295,6 +295,11 @@ class ProgressStore private constructor(context: Context) {
         )
     }
 
+    fun startNumberFoundation() {
+        val current = _progress.value
+        persist(current.startNumberFoundation(), today())
+    }
+
     fun toggleSurah(surahNumber: Int) {
         if (surahNumber !in AVAILABLE_SURAHS) return
         val selected = _progress.value.selectedSurahs.toMutableSet().apply {

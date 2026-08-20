@@ -127,6 +127,7 @@ class MainActivity : ComponentActivity() {
                 onStartAlphabetFoundation = store::startAlphabetFoundation,
                 onSkipAlphabetFoundation = store::skipAlphabetFoundation,
                 onCompleteNumberLesson = store::completeNextNumberLesson,
+                onStartNumberFoundation = store::startNumberFoundation,
                 onOpenAppSettings = ::openAppSettings,
                 onPreviewLockScreen = ::previewLockScreen,
                 onDonate = ::openDonationPage,

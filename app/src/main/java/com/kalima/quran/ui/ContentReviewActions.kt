@@ -1,18 +1,16 @@
 package com.kalima.quran.ui
 
 import android.content.Intent
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -22,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -82,7 +79,6 @@ fun WordCollectionActions(
 @Composable
 fun EditorialReviewPanel(
     word: QuranWord,
-    leadingContent: (@Composable () -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var expanded by rememberSaveable(word.id) { mutableStateOf(false) }
@@ -104,30 +100,24 @@ fun EditorialReviewPanel(
         showDetailsDescription
     }
     Column(Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+        TextButton(
+            onClick = { expanded = !expanded },
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentDescription = toggleDetailsDescription },
         ) {
-            Box(
-                modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                leadingContent?.invoke()
-            }
-            Surface(
-                modifier = Modifier.size(40.dp),
-                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.55f),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                IconButton(onClick = { expanded = !expanded }) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_content_review),
-                        contentDescription = toggleDetailsDescription,
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                    )
-                }
-            }
+            Icon(
+                painter = painterResource(R.drawable.ic_content_review),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                stringResource(R.string.editorial_compact_title),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelMedium,
+            )
         }
         if (expanded) {
             Spacer(Modifier.height(4.dp))

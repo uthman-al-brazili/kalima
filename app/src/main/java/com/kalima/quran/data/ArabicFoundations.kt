@@ -143,3 +143,10 @@ fun StudyProgress.startAlphabetFoundation(): StudyProgress = copy(
 fun StudyProgress.skipAlphabetFoundation(): StudyProgress = copy(
     alphabetCourseRequested = false,
 )
+
+fun StudyProgress.startNumberFoundation(): StudyProgress = copy(
+    numberCourseRequested = true,
+    completedNumberLessons = completedNumberLessons
+        .takeIf { it in 0 until ArabicFoundations.numberLessonCount }
+        ?: 0,
+)
