@@ -151,7 +151,14 @@ fun KalimaApp(
                                     contentDescription = stringResource(tab.labelRes),
                                 )
                             },
-                            label = { Text(stringResource(tab.labelRes)) },
+                            label = {
+                                Text(
+                                    text = stringResource(tab.labelRes),
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            },
                             alwaysShowLabel = false,
                         )
                     }

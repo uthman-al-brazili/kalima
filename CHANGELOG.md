@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.27.1 — 2026-08-20
+
+- Renamed the number lesson’s advance button to “Next number” so its action is
+  direct and clear.
+- Removed the Excluded words shortcut from the active Study screen to leave
+  more room for the lesson; excluded words remain available in Vocabulary.
+- Kept bottom-navigation labels such as “Progresso” on one line on narrow
+  phone screens.
+
 ## 0.27.0 — 2026-08-20
 
 - Moved alphabet and Arabic-Indic number learning into a separate, optional

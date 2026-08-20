@@ -194,19 +194,6 @@ fun StudyScreen(
                 progress = progress,
                 dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
             )
-            Spacer(Modifier.height(12.dp))
-            OutlinedButton(
-                onClick = onOpenExcludedWords,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    pluralStringResource(
-                        R.plurals.excluded_words_count,
-                        progress.alreadyKnownIds.size,
-                        progress.alreadyKnownIds.size,
-                    ),
-                )
-            }
             if (!progress.lockScreenEnabled) {
                 Spacer(Modifier.height(16.dp))
                 Surface(
