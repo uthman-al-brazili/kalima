@@ -65,6 +65,10 @@ object ProgressBackupCodec {
             "favoriteIds" to encodeSet(emptySet()),
             "customStudyIds" to encodeSet(progress.customStudyIds),
             "onboardingComplete" to progress.onboardingComplete.toString(),
+            "alphabetCourseRequested" to progress.alphabetCourseRequested.toString(),
+            "numberCourseRequested" to progress.numberCourseRequested.toString(),
+            "completedAlphabetLessons" to progress.completedAlphabetLessons.toString(),
+            "completedNumberLessons" to progress.completedNumberLessons.toString(),
             "reviewEvents" to encodeSet(ReviewEventCodec.encode(progress.reviewEvents)),
             "quietHoursEnabled" to progress.quietHoursEnabled.toString(),
             "quietStartHour" to progress.quietStartHour.toString(),
@@ -183,6 +187,22 @@ object ProgressBackupCodec {
             reviewSchedules = schedules,
             customStudyIds = customStudyIds,
             onboardingComplete = values.boolean("onboardingComplete"),
+            alphabetCourseRequested = values.optionalBoolean(
+                "alphabetCourseRequested",
+                false,
+            ),
+            numberCourseRequested = values.optionalBoolean(
+                "numberCourseRequested",
+                false,
+            ),
+            completedAlphabetLessons = values.optionalInt(
+                "completedAlphabetLessons",
+                0,
+            ).coerceIn(0, ArabicFoundations.alphabetLessonCount),
+            completedNumberLessons = values.optionalInt(
+                "completedNumberLessons",
+                0,
+            ).coerceIn(0, ArabicFoundations.numberLessonCount),
             reviewEvents = reviewEvents,
             quietHoursEnabled = values.boolean("quietHoursEnabled"),
             quietStartHour = values.int("quietStartHour").coerceIn(0, 23),

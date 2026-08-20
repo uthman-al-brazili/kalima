@@ -25,6 +25,10 @@ class ProgressBackupCodecTest {
             lockScreenCooldownMinutes = 15,
             showCompleteAyah = true,
             quranFontSizeSp = 34,
+            alphabetCourseRequested = true,
+            numberCourseRequested = true,
+            completedAlphabetLessons = 3,
+            completedNumberLessons = 7,
         )
         val encoded = ProgressBackupCodec.encode(progress, "0.17.0", "corpus", now)
         val decoded = ProgressBackupCodec.decode(encoded, "corpus", knownIds)
@@ -37,6 +41,10 @@ class ProgressBackupCodecTest {
         assertEquals(15, decoded.progress.lockScreenCooldownMinutes)
         assertEquals(true, decoded.progress.showCompleteAyah)
         assertEquals(34, decoded.progress.quranFontSizeSp)
+        assertEquals(true, decoded.progress.alphabetCourseRequested)
+        assertEquals(true, decoded.progress.numberCourseRequested)
+        assertEquals(3, decoded.progress.completedAlphabetLessons)
+        assertEquals(7, decoded.progress.completedNumberLessons)
     }
 
     @Test
@@ -135,5 +143,39 @@ class ProgressBackupCodecTest {
             QuranReaderTypography.DEFAULT_FONT_SIZE_SP,
             ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress.quranFontSizeSp,
         )
+    }
+
+    @Test
+    fun backupsCreatedBeforeFoundationCoursesKeepExistingLearnersUnblocked() {
+        val current = ProgressBackupCodec.encode(StudyProgress(), "0.25.0", "corpus", now)
+        val encodedPayload = current.lineSequence().first { it.startsWith("payload=") }
+            .removePrefix("payload=")
+        val payload = String(
+            Base64.getUrlDecoder().decode(encodedPayload),
+            StandardCharsets.UTF_8,
+        )
+        val legacyPayload = payload.lineSequence()
+            .filterNot { line ->
+                line.startsWith("alphabetCourseRequested\t") ||
+                    line.startsWith("numberCourseRequested\t") ||
+                    line.startsWith("completedAlphabetLessons\t") ||
+                    line.startsWith("completedNumberLessons\t")
+            }
+            .joinToString("\n")
+        val legacyEncodedPayload = Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(legacyPayload.toByteArray(StandardCharsets.UTF_8))
+        val legacyChecksum = MessageDigest.getInstance("SHA-256")
+            .digest(legacyPayload.toByteArray(StandardCharsets.UTF_8))
+            .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        val legacy = listOf(
+            "#kalima-progress-backup-v1",
+            "sha256=$legacyChecksum",
+            "payload=$legacyEncodedPayload",
+        ).joinToString("\n")
+
+        val progress = ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress
+        assertEquals(false, progress.alphabetCourseRequested)
+        assertEquals(false, progress.numberCourseRequested)
+        assertEquals(false, progress.needsAlphabetFoundation)
     }
 }

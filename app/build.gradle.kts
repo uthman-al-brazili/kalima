@@ -4,6 +4,14 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val releaseSigningValues = mapOf(
+    "storeFile" to providers.environmentVariable("KALIMA_KEYSTORE_FILE").orNull,
+    "storePassword" to providers.environmentVariable("KALIMA_KEYSTORE_PASSWORD").orNull,
+    "keyAlias" to providers.environmentVariable("KALIMA_KEY_ALIAS").orNull,
+    "keyPassword" to providers.environmentVariable("KALIMA_KEY_PASSWORD").orNull,
+)
+val hasReleaseSigning = releaseSigningValues.values.all { !it.isNullOrBlank() }
+
 android {
     namespace = "com.kalima.quran"
     compileSdk = 36
@@ -12,15 +20,27 @@ android {
         applicationId = "com.kalima.quran"
         minSdk = 26
         targetSdk = 36
-        versionCode = 54
-        versionName = "0.25.0"
+        versionCode = 55
+        versionName = "0.26.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("uptodown") {
+                storeFile = file(requireNotNull(releaseSigningValues["storeFile"]))
+                storePassword = requireNotNull(releaseSigningValues["storePassword"])
+                keyAlias = requireNotNull(releaseSigningValues["keyAlias"])
+                keyPassword = requireNotNull(releaseSigningValues["keyPassword"])
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("uptodown")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -38,6 +58,19 @@ android {
         buildConfig = false
     }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+}
+
+val verifyUptodownSigning by tasks.registering {
+    doLast {
+        check(hasReleaseSigning) {
+            "A public release requires KALIMA_KEYSTORE_FILE, " +
+                "KALIMA_KEYSTORE_PASSWORD, KALIMA_KEY_ALIAS, and KALIMA_KEY_PASSWORD."
+        }
+    }
+}
+
+tasks.configureEach {
+    if (name == "packageRelease") dependsOn(verifyUptodownSigning)
 }
 
 dependencies {

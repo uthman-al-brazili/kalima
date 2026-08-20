@@ -25,6 +25,7 @@ import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.ProgressBackupCodec
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.needsAlphabetFoundation
 import com.kalima.quran.audio.OfflineWordAudioManager
 import com.kalima.quran.lockscreen.LockScreenStudyService
 import com.kalima.quran.lockscreen.LockScreenStudyActivity
@@ -122,9 +123,12 @@ class MainActivity : ComponentActivity() {
                 onToggleCustomList = store::toggleCustomStudy,
                 onToggleAlreadyKnown = store::toggleAlreadyKnown,
                 onCompleteOnboarding = store::completeOnboarding,
+                onCompleteAlphabetLesson = store::completeNextAlphabetLesson,
+                onCompleteNumberLesson = store::completeNextNumberLesson,
                 onOpenAppSettings = ::openAppSettings,
                 onPreviewLockScreen = ::previewLockScreen,
                 onDonate = ::openDonationPage,
+                onContactDeveloper = ::openSupportEmail,
                 currentLanguage = LanguageManager.selectedLanguage(this),
                 onLanguageChange = ::changeLanguage,
                 onQuietHoursEnabledChange = store::setQuietHoursEnabled,
@@ -184,6 +188,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun changeLockScreen(enabled: Boolean) {
+        if (enabled && progressStore.progress.value.needsAlphabetFoundation) {
+            Toast.makeText(this, R.string.finish_alphabet_first, Toast.LENGTH_LONG).show()
+            return
+        }
         if (!enabled) {
             progressStore.setLockScreenEnabled(false)
             LockScreenStudyService.stop(this)
@@ -224,6 +232,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openDonationPage() {
+        if (DONATION_URL.isBlank()) {
+            Toast.makeText(this, R.string.donation_unavailable, Toast.LENGTH_LONG).show()
+            return
+        }
         try {
             startActivity(Intent(Intent.ACTION_VIEW, DONATION_URL.toUri()))
         } catch (_: ActivityNotFoundException) {
@@ -231,7 +243,21 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun openSupportEmail() {
+        val intent = Intent(Intent.ACTION_SENDTO, "mailto:$SUPPORT_EMAIL".toUri())
+            .putExtra(Intent.EXTRA_SUBJECT, getString(R.string.support_email_subject))
+        try {
+            startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.support_email_unavailable, Toast.LENGTH_LONG).show()
+        }
+    }
+
     private fun changeReminder(enabled: Boolean) {
+        if (enabled && progressStore.progress.value.needsAlphabetFoundation) {
+            Toast.makeText(this, R.string.finish_alphabet_first, Toast.LENGTH_LONG).show()
+            return
+        }
         if (!enabled) {
             progressStore.setReminderEnabled(false)
             ReminderScheduler.cancel(this)
@@ -356,7 +382,8 @@ class MainActivity : ComponentActivity() {
         private const val POST_RENDER_WORK_DELAY_MS = 500L
         private const val EXTRA_STUDY_WORD_ID = "com.kalima.quran.extra.STUDY_WORD_ID"
         private const val EXTRA_STUDY_REQUEST_ID = "com.kalima.quran.extra.STUDY_REQUEST_ID"
-        private const val DONATION_URL = "https://donate.quran.foundation/"
+        private const val DONATION_URL = "https://sites.google.com/view/kalimaapp"
+        private const val SUPPORT_EMAIL = "uthman-al-brazili@proton.me"
 
         fun createStudyIntent(context: Context, wordId: String): Intent =
             Intent(context, MainActivity::class.java).apply {

@@ -3,6 +3,22 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.26.0 — 2026-08-20
+
+- Added first-launch questions about Arabic alphabet and number knowledge, with
+  a personalized foundation plan for learners who need either course.
+- Added eight right-to-left alphabet lessons covering all 28 letters, joining,
+  and short vowels; complete-word study and quizzes now wait until required
+  alphabet foundations are finished.
+- Added a parallel course for the Arabic-Indic digits ٠–٩ that can continue
+  alongside alphabet or vocabulary study without blocking either path.
+- Added a pronunciation control directly to quiz questions that display an
+  Arabic word.
+- Simplified study-card audio to one icon-only action, removed the three-repeat
+  control, and moved “I already know this” to a compact action at the top.
+- Redirected optional support to Uthman (Gustavo), clarified that it funds
+  Kalima and future apps for Muslims, and added a direct developer email action.
+
 ## 0.25.0 — 2026-08-19
 
 - Prevented notification-only display wakes from opening Kalima on devices such

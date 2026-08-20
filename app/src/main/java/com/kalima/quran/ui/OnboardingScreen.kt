@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
@@ -55,9 +56,11 @@ private val starterPaths = listOf(
 )
 
 @Composable
-fun OnboardingScreen(onComplete: (StudyScope, Int) -> Unit) {
+fun OnboardingScreen(onComplete: (StudyScope, Int, Boolean, Boolean) -> Unit) {
     var selectedScope by rememberSaveable { mutableStateOf(StudyScope.Frequent) }
     var dailyGoal by rememberSaveable { mutableIntStateOf(5) }
+    var knowsArabicAlphabet by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    var knowsArabicNumbers by rememberSaveable { mutableStateOf<Boolean?>(null) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -88,6 +91,58 @@ fun OnboardingScreen(onComplete: (StudyScope, Int) -> Unit) {
                 stringResource(R.string.onboarding_subtitle),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Spacer(Modifier.height(24.dp))
+            Text(
+                stringResource(R.string.onboarding_foundations_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                stringResource(R.string.onboarding_foundations_description),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(Modifier.height(10.dp))
+            KnowledgeQuestion(
+                questionRes = R.string.onboarding_knows_alphabet,
+                answer = knowsArabicAlphabet,
+                onAnswer = { knowsArabicAlphabet = it },
+            )
+            Spacer(Modifier.height(9.dp))
+            KnowledgeQuestion(
+                questionRes = R.string.onboarding_knows_numbers,
+                answer = knowsArabicNumbers,
+                onAnswer = { knowsArabicNumbers = it },
+            )
+            if (knowsArabicAlphabet == false || knowsArabicNumbers == false) {
+                Spacer(Modifier.height(10.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(Modifier.fillMaxWidth().padding(14.dp)) {
+                        Text(
+                            stringResource(R.string.onboarding_your_plan),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        if (knowsArabicAlphabet == false) {
+                            Text(
+                                stringResource(R.string.onboarding_alphabet_plan),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        if (knowsArabicNumbers == false) {
+                            Text(
+                                stringResource(R.string.onboarding_numbers_plan),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                }
+            }
             Spacer(Modifier.height(24.dp))
             Text(
                 stringResource(R.string.onboarding_path_title),
@@ -138,13 +193,52 @@ fun OnboardingScreen(onComplete: (StudyScope, Int) -> Unit) {
             )
             Spacer(Modifier.height(18.dp))
             Button(
-                onClick = { onComplete(selectedScope, dailyGoal) },
+                onClick = {
+                    onComplete(
+                        selectedScope,
+                        dailyGoal,
+                        requireNotNull(knowsArabicAlphabet),
+                        requireNotNull(knowsArabicNumbers),
+                    )
+                },
+                enabled = knowsArabicAlphabet != null && knowsArabicNumbers != null,
                 modifier = Modifier.fillMaxWidth().height(54.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
                 Text(stringResource(R.string.onboarding_start), fontWeight = FontWeight.Bold)
             }
             Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun KnowledgeQuestion(
+    @StringRes questionRes: Int,
+    answer: Boolean?,
+    onAnswer: (Boolean) -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
+    ) {
+        Column(Modifier.padding(14.dp)) {
+            Text(stringResource(questionRes), fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(
+                    selected = answer == true,
+                    onClick = { onAnswer(true) },
+                    label = { Text(stringResource(R.string.yes)) },
+                )
+                FilterChip(
+                    selected = answer == false,
+                    onClick = { onAnswer(false) },
+                    label = { Text(stringResource(R.string.no)) },
+                )
+            }
         }
     }
 }

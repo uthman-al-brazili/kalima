@@ -36,6 +36,7 @@ fun WordCollectionActions(
     alreadyKnown: Boolean,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
+    showAlreadyKnown: Boolean = true,
 ) {
     val customListDescription = stringResource(
         if (inCustomList) R.string.remove_custom_list else R.string.add_custom_list,
@@ -49,6 +50,7 @@ fun WordCollectionActions(
             .fillMaxWidth()
             .semantics { contentDescription = customListDescription },
     )
+    if (!showAlreadyKnown) return
     Spacer(Modifier.height(8.dp))
     val alreadyKnownDescription = stringResource(
         if (alreadyKnown) R.string.restore_to_practice_description

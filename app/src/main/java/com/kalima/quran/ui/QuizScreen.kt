@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -42,6 +43,7 @@ import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.needsAlphabetFoundation
 import com.kalima.quran.quiz.QuizEngine
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
@@ -72,6 +74,29 @@ fun QuizScreen(
     onAnswer: (String, Boolean) -> Unit,
     pronouncer: ArabicPronouncer,
 ) {
+    if (progress.needsAlphabetFoundation) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                stringResource(R.string.quiz_after_alphabet_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                stringResource(R.string.quiz_after_alphabet_description),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+        return
+    }
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val selectedSource = remember(
         progress.studyScope,
@@ -252,6 +277,13 @@ private fun QuizQuestionCard(question: QuizQuestion, pronouncer: ArabicPronounce
                     Text(
                         question.word.transliteration,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    PronunciationButton(
+                        word = question.word,
+                        pronouncer = pronouncer,
+                        modifier = Modifier.size(44.dp),
+                        compact = true,
                     )
                 }
 

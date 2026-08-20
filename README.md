@@ -29,7 +29,12 @@ Kalima é um aplicativo para Android e Windows inspirado na ideia de aprendizado
 - 100 formas entre as mais frequentes no Alcorão;
 - todas as 42.001 formas de vocabulário únicas das 114 suras, preservando um cartão por forma e por sura;
 - seleção pesquisável do estudo por uma ou várias suras, incluindo combinações como 2 + 36 + 114;
-- configuração inicial guiada para 100 essenciais, oração, suras curtas ou corpus completo;
+- configuração inicial que pergunta sobre o alfabeto e os números árabes, cria
+  um plano de fundamentos quando necessário e só libera palavras completas
+  depois das letras, ligações e vogais breves;
+- curso dos algarismos árabes de ٠ a ٩ em paralelo às lições de letras ou
+  vocabulário;
+- escolha guiada para 100 essenciais, oração, suras curtas ou corpus completo;
 - caminhos persistentes Primeiras 50, Top 100, Top 300, Top 500, oração, suras 101–114,
   todo o corpus e seleção por sura;
 - favoritos e lista de estudo personalizada, disponíveis como coleções independentes;

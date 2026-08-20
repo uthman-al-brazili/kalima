@@ -232,12 +232,53 @@ class ProgressStore private constructor(context: Context) {
         return true
     }
 
-    fun completeOnboarding(scope: StudyScope, dailyGoal: Int) {
+    fun completeOnboarding(
+        scope: StudyScope,
+        dailyGoal: Int,
+        knowsArabicAlphabet: Boolean,
+        knowsArabicNumbers: Boolean,
+    ) {
         persist(
             _progress.value.copy(
                 onboardingComplete = true,
                 studyScope = scope,
                 dailyGoal = dailyGoal.coerceIn(3, 20),
+                alphabetCourseRequested = !knowsArabicAlphabet,
+                numberCourseRequested = !knowsArabicNumbers,
+                completedAlphabetLessons = if (knowsArabicAlphabet) {
+                    ArabicFoundations.alphabetLessonCount
+                } else {
+                    0
+                },
+                completedNumberLessons = if (knowsArabicNumbers) {
+                    ArabicFoundations.numberLessonCount
+                } else {
+                    0
+                },
+            ),
+            today(),
+        )
+    }
+
+    fun completeNextAlphabetLesson() {
+        val current = _progress.value
+        if (!current.needsAlphabetFoundation) return
+        persist(
+            current.copy(
+                completedAlphabetLessons = (current.completedAlphabetLessons + 1)
+                    .coerceAtMost(ArabicFoundations.alphabetLessonCount),
+            ),
+            today(),
+        )
+    }
+
+    fun completeNextNumberLesson() {
+        val current = _progress.value
+        if (!current.hasNumberFoundationLesson) return
+        persist(
+            current.copy(
+                completedNumberLessons = (current.completedNumberLessons + 1)
+                    .coerceAtMost(ArabicFoundations.numberLessonCount),
             ),
             today(),
         )
@@ -667,6 +708,22 @@ class ProgressStore private constructor(context: Context) {
                     preferences.contains(KEY_LEARNED) ||
                     preferences.contains(KEY_REVIEW_SCHEDULES),
             ),
+            alphabetCourseRequested = preferences.getBoolean(
+                KEY_ALPHABET_COURSE_REQUESTED,
+                false,
+            ),
+            numberCourseRequested = preferences.getBoolean(
+                KEY_NUMBER_COURSE_REQUESTED,
+                false,
+            ),
+            completedAlphabetLessons = preferences.getInt(
+                KEY_COMPLETED_ALPHABET_LESSONS,
+                0,
+            ).coerceIn(0, ArabicFoundations.alphabetLessonCount),
+            completedNumberLessons = preferences.getInt(
+                KEY_COMPLETED_NUMBER_LESSONS,
+                0,
+            ).coerceIn(0, ArabicFoundations.numberLessonCount),
             reviewEvents = ReviewEventCodec.decode(
                 preferences.getStringSet(KEY_REVIEW_EVENTS, emptySet()).orEmpty(),
             ),
@@ -733,6 +790,10 @@ class ProgressStore private constructor(context: Context) {
             putStringSet(KEY_FAVORITE_IDS, emptySet())
             putStringSet(KEY_CUSTOM_STUDY_IDS, progress.customStudyIds)
             putBoolean(KEY_ONBOARDING_COMPLETE, progress.onboardingComplete)
+            putBoolean(KEY_ALPHABET_COURSE_REQUESTED, progress.alphabetCourseRequested)
+            putBoolean(KEY_NUMBER_COURSE_REQUESTED, progress.numberCourseRequested)
+            putInt(KEY_COMPLETED_ALPHABET_LESSONS, progress.completedAlphabetLessons)
+            putInt(KEY_COMPLETED_NUMBER_LESSONS, progress.completedNumberLessons)
             putStringSet(KEY_REVIEW_EVENTS, ReviewEventCodec.encode(progress.reviewEvents))
             putBoolean(KEY_QUIET_HOURS_ENABLED, progress.quietHoursEnabled)
             putInt(KEY_QUIET_START_HOUR, progress.quietStartHour)
@@ -843,6 +904,10 @@ class ProgressStore private constructor(context: Context) {
         private const val KEY_FAVORITE_IDS = "favorite_ids"
         private const val KEY_CUSTOM_STUDY_IDS = "custom_study_ids"
         private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
+        private const val KEY_ALPHABET_COURSE_REQUESTED = "alphabet_course_requested"
+        private const val KEY_NUMBER_COURSE_REQUESTED = "number_course_requested"
+        private const val KEY_COMPLETED_ALPHABET_LESSONS = "completed_alphabet_lessons"
+        private const val KEY_COMPLETED_NUMBER_LESSONS = "completed_number_lessons"
         private const val KEY_REVIEW_EVENTS = "review_events_v1"
         private const val KEY_QUIET_HOURS_ENABLED = "quiet_hours_enabled"
         private const val KEY_QUIET_START_HOUR = "quiet_start_hour"

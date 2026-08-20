@@ -3,12 +3,14 @@ package com.kalima.quran.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QuranWord
+import com.kalima.quran.data.ArabicFoundations
 import com.kalima.quran.data.ReviewQueue
 import com.kalima.quran.data.ReviewSchedule
 import com.kalima.quran.data.SpacedRepetition
@@ -49,6 +52,8 @@ import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.WordStatus
 import com.kalima.quran.data.limitNewWords
+import com.kalima.quran.data.hasNumberFoundationLesson
+import com.kalima.quran.data.needsAlphabetFoundation
 import java.time.Instant
 import java.time.LocalDate
 
@@ -61,9 +66,19 @@ fun StudyScreen(
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
     onShowCompleteAyahChange: (Boolean) -> Unit,
+    onCompleteAlphabetLesson: () -> Unit,
+    onCompleteNumberLesson: () -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
 ) {
+    if (progress.needsAlphabetFoundation) {
+        AlphabetFoundationScreen(
+            progress = progress,
+            onCompleteAlphabetLesson = onCompleteAlphabetLesson,
+            onCompleteNumberLesson = onCompleteNumberLesson,
+        )
+        return
+    }
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val selectedWords = remember(
         progress.studyScope,
@@ -159,6 +174,13 @@ fun StudyScreen(
                 progress = progress,
                 dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
             )
+            if (progress.hasNumberFoundationLesson) {
+                Spacer(Modifier.height(16.dp))
+                NumberFoundationCard(
+                    progress = progress,
+                    onCompleteNumberLesson = onCompleteNumberLesson,
+                )
+            }
             if (!progress.lockScreenEnabled) {
                 Spacer(Modifier.height(16.dp))
                 Surface(
@@ -237,6 +259,219 @@ fun StudyScreen(
             },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
+    }
+}
+
+@Composable
+private fun AlphabetFoundationScreen(
+    progress: StudyProgress,
+    onCompleteAlphabetLesson: () -> Unit,
+    onCompleteNumberLesson: () -> Unit,
+) {
+    val lessonIndex = progress.completedAlphabetLessons
+        .coerceIn(0, ArabicFoundations.alphabetLessons.lastIndex)
+    val lesson = ArabicFoundations.alphabetLessons[lessonIndex]
+    val fraction = lessonIndex.toFloat() / ArabicFoundations.alphabetLessonCount
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 18.dp),
+    ) {
+        Text(
+            stringResource(R.string.alphabet_course_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            stringResource(R.string.alphabet_course_words_locked),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(14.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            LinearProgressIndicator(
+                progress = { fraction },
+                modifier = Modifier.weight(1f).height(7.dp),
+                color = MaterialTheme.colorScheme.secondary,
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                stringResource(
+                    R.string.foundation_step_progress,
+                    lessonIndex + 1,
+                    ArabicFoundations.alphabetLessonCount,
+                ),
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        Spacer(Modifier.height(18.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        ) {
+            Column(Modifier.padding(18.dp)) {
+                Text(
+                    stringResource(
+                        if (lesson.teachesVowels) {
+                            R.string.alphabet_vowels_lesson
+                        } else {
+                            R.string.alphabet_letters_lesson
+                        },
+                    ),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(Modifier.height(12.dp))
+                lesson.symbols.chunked(2).forEach { rowSymbols ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        // Place the first lesson symbol on the right, matching Arabic reading order.
+                        rowSymbols.asReversed().forEach { symbol ->
+                            Surface(
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(18.dp),
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(14.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    ArabicText(
+                                        symbol.arabic,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        size = 40,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                    Text(
+                                        symbol.transliteration,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                }
+                            }
+                        }
+                        if (rowSymbols.size == 1) Spacer(Modifier.weight(1f))
+                    }
+                    Spacer(Modifier.height(10.dp))
+                }
+                Text(
+                    stringResource(
+                        if (lesson.teachesVowels) {
+                            R.string.alphabet_vowels_note
+                        } else {
+                            R.string.alphabet_letters_note
+                        },
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(Modifier.height(16.dp))
+                Button(
+                    onClick = onCompleteAlphabetLesson,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Text(
+                        stringResource(
+                            if (lessonIndex == ArabicFoundations.alphabetLessons.lastIndex) {
+                                R.string.finish_alphabet_course
+                            } else {
+                                R.string.complete_alphabet_step
+                            },
+                        ),
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+        }
+        if (progress.hasNumberFoundationLesson) {
+            Spacer(Modifier.height(16.dp))
+            NumberFoundationCard(
+                progress = progress,
+                onCompleteNumberLesson = onCompleteNumberLesson,
+            )
+        }
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun NumberFoundationCard(
+    progress: StudyProgress,
+    onCompleteNumberLesson: () -> Unit,
+) {
+    val lessonIndex = progress.completedNumberLessons
+        .coerceIn(0, ArabicFoundations.numberLessons.lastIndex)
+    val lesson = ArabicFoundations.numberLessons[lessonIndex]
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.72f),
+        ),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        stringResource(R.string.number_course_title),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        stringResource(
+                            R.string.foundation_step_progress,
+                            lessonIndex + 1,
+                            ArabicFoundations.numberLessonCount,
+                        ),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
+                Text(
+                    "${lesson.arabicDigit}  =  ${lesson.westernDigit}",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            ArabicText(
+                lesson.arabicName,
+                modifier = Modifier.fillMaxWidth(),
+                size = 32,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                lesson.transliteration,
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(10.dp))
+            OutlinedButton(
+                onClick = onCompleteNumberLesson,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Text(
+                    stringResource(
+                        if (lessonIndex == ArabicFoundations.numberLessons.lastIndex) {
+                            R.string.finish_number_course
+                        } else {
+                            R.string.next_number
+                        },
+                    ),
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
     }
 }
 
@@ -459,7 +694,11 @@ private fun WordCard(
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top,
+            ) {
                 Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(100.dp)) {
                     Text(
                         word.category,
@@ -468,7 +707,26 @@ private fun WordCard(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                WordStatusPill(progress.statusFor(word.id))
+                Column(horizontalAlignment = Alignment.End) {
+                    WordStatusPill(progress.statusFor(word.id))
+                    OutlinedButton(
+                        onClick = { onToggleAlreadyKnown(word.id) },
+                        modifier = Modifier.height(36.dp),
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                        shape = RoundedCornerShape(12.dp),
+                    ) {
+                        Text(
+                            stringResource(
+                                if (word.id in progress.alreadyKnownIds) {
+                                    R.string.restore_to_practice
+                                } else {
+                                    R.string.mark_already_known
+                                },
+                            ),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                }
             }
             Spacer(Modifier.height(22.dp))
             ArabicText(
@@ -483,26 +741,14 @@ private fun WordCard(
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 PronunciationButton(
                     word = word,
                     pronouncer = pronouncer,
-                    modifier = Modifier.weight(1f).height(42.dp),
-                    dense = true,
+                    modifier = Modifier.size(44.dp),
+                    compact = true,
                     labelRes = R.string.device_voice_slow,
                     playbackRate = ArabicPronouncer.WORD_SLOW_RATE,
-                )
-                PronunciationButton(
-                    word = word,
-                    pronouncer = pronouncer,
-                    modifier = Modifier.weight(1f).height(42.dp),
-                    dense = true,
-                    labelRes = R.string.device_voice_repeat,
-                    playbackRate = ArabicPronouncer.WORD_SLOW_RATE,
-                    repeatCount = 3,
                 )
             }
             Spacer(Modifier.height(14.dp))
@@ -512,6 +758,7 @@ private fun WordCard(
                 alreadyKnown = word.id in progress.alreadyKnownIds,
                 onToggleCustomList = onToggleCustomList,
                 onToggleAlreadyKnown = onToggleAlreadyKnown,
+                showAlreadyKnown = false,
             )
             if (meaningRevealed) {
                 Text(

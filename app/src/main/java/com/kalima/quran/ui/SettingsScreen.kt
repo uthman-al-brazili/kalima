@@ -73,6 +73,7 @@ fun SettingsScreen(
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
     onDonate: () -> Unit,
+    onContactDeveloper: () -> Unit,
     onQuietHoursEnabledChange: (Boolean) -> Unit,
     onQuietHoursChange: (Int, Int) -> Unit,
     onLockScreenDailyLimitChange: (Int) -> Unit,
@@ -451,6 +452,9 @@ fun SettingsScreen(
                 Spacer(Modifier.height(8.dp))
                 Button(onClick = onDonate) {
                     Text(stringResource(R.string.donate_button))
+                }
+                TextButton(onClick = onContactDeveloper) {
+                    Text(stringResource(R.string.contact_developer))
                 }
             }
         }
