@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.26.1 — 2026-08-20
+
+- Hid word-study path and daily word-goal choices from first-time learners who
+  do not yet know the Arabic alphabet, keeping onboarding focused on starting
+  their letter foundations.
+
 ## 0.26.0 — 2026-08-20
 
 - Added first-launch questions about Arabic alphabet and number knowledge, with

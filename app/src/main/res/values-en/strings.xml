@@ -241,6 +241,7 @@
     <string name="path_explore_all_desc">Use the whole corpus and choose freely.</string>
     <string name="onboarding_daily_goal">Starting daily goal: %1$d words</string>
     <string name="onboarding_start">Start my path</string>
+    <string name="onboarding_start_alphabet">Start learning the letters</string>
     <string name="alphabet_course_title">Arabic alphabet foundations</string>
     <string name="alphabet_course_words_locked">Complete these short steps before studying full Arabic words. Numbers can continue alongside them.</string>
     <string name="foundation_step_progress">%1$d/%2$d</string>

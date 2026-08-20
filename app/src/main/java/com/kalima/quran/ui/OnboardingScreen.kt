@@ -143,54 +143,56 @@ fun OnboardingScreen(onComplete: (StudyScope, Int, Boolean, Boolean) -> Unit) {
                     }
                 }
             }
-            Spacer(Modifier.height(24.dp))
-            Text(
-                stringResource(R.string.onboarding_path_title),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-            )
-            Spacer(Modifier.height(10.dp))
-            starterPaths.forEach { path ->
-                val selected = path.scope == selectedScope
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { selectedScope = path.scope },
-                    shape = RoundedCornerShape(18.dp),
-                    color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(
-                        1.dp,
-                        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
-                    ),
-                ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+            if (shouldShowWordStudySetup(knowsArabicAlphabet)) {
+                Spacer(Modifier.height(24.dp))
+                Text(
+                    stringResource(R.string.onboarding_path_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(Modifier.height(10.dp))
+                starterPaths.forEach { path ->
+                    val selected = path.scope == selectedScope
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedScope = path.scope },
+                        shape = RoundedCornerShape(18.dp),
+                        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                        border = BorderStroke(
+                            1.dp,
+                            if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                        ),
                     ) {
-                        RadioButton(selected = selected, onClick = { selectedScope = path.scope })
-                        Column(Modifier.weight(1f)) {
-                            Text(stringResource(path.titleRes), fontWeight = FontWeight.Bold)
-                            Text(
-                                stringResource(path.descriptionRes),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall,
-                            )
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = selected, onClick = { selectedScope = path.scope })
+                            Column(Modifier.weight(1f)) {
+                                Text(stringResource(path.titleRes), fontWeight = FontWeight.Bold)
+                                Text(
+                                    stringResource(path.descriptionRes),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
                         }
                     }
+                    Spacer(Modifier.height(9.dp))
                 }
-                Spacer(Modifier.height(9.dp))
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    stringResource(R.string.onboarding_daily_goal, dailyGoal),
+                    fontWeight = FontWeight.Bold,
+                )
+                Slider(
+                    value = dailyGoal.toFloat(),
+                    onValueChange = { dailyGoal = it.roundToInt() },
+                    valueRange = 3f..15f,
+                    steps = 11,
+                )
             }
-            Spacer(Modifier.height(12.dp))
-            Text(
-                stringResource(R.string.onboarding_daily_goal, dailyGoal),
-                fontWeight = FontWeight.Bold,
-            )
-            Slider(
-                value = dailyGoal.toFloat(),
-                onValueChange = { dailyGoal = it.roundToInt() },
-                valueRange = 3f..15f,
-                steps = 11,
-            )
             Spacer(Modifier.height(18.dp))
             Button(
                 onClick = {
@@ -205,12 +207,24 @@ fun OnboardingScreen(onComplete: (StudyScope, Int, Boolean, Boolean) -> Unit) {
                 modifier = Modifier.fillMaxWidth().height(54.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text(stringResource(R.string.onboarding_start), fontWeight = FontWeight.Bold)
+                Text(
+                    stringResource(
+                        if (knowsArabicAlphabet == false) {
+                            R.string.onboarding_start_alphabet
+                        } else {
+                            R.string.onboarding_start
+                        },
+                    ),
+                    fontWeight = FontWeight.Bold,
+                )
             }
             Spacer(Modifier.height(24.dp))
         }
     }
 }
+
+internal fun shouldShowWordStudySetup(knowsArabicAlphabet: Boolean?): Boolean =
+    knowsArabicAlphabet == true
 
 @Composable
 private fun KnowledgeQuestion(

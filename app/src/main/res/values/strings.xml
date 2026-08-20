@@ -241,6 +241,7 @@
     <string name="path_explore_all_desc">Use todo o corpus e escolha livremente.</string>
     <string name="onboarding_daily_goal">Meta diária inicial: %1$d palavras</string>
     <string name="onboarding_start">Iniciar meu caminho</string>
+    <string name="onboarding_start_alphabet">Começar a aprender as letras</string>
     <string name="alphabet_course_title">Fundamentos do alfabeto árabe</string>
     <string name="alphabet_course_words_locked">Conclua estas etapas curtas antes de estudar palavras árabes completas. Os números podem avançar em paralelo.</string>
     <string name="foundation_step_progress">%1$d/%2$d</string>
