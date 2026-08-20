@@ -3,6 +3,16 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.26.4 — 2026-08-20
+
+- Moved “I already know this word” beside the Arabic study word and added a
+  clear confirmation message with an immediate Undo action after exclusion.
+- Added a prominent Excluded words entry from Study and Vocabulary that shows
+  every excluded word, including words outside the current study set, with a
+  one-tap option to add each word back to studies.
+- Added confirmation feedback when a word is excluded from a return-to-phone
+  study card and clarified the same recovery path in both supported languages.
+
 ## 0.26.3 — 2026-08-20
 
 - Moved “I already know this” and the editorial-review status into a quiet

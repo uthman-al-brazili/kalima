@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.os.SystemClock
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.content.ContextCompat
@@ -118,7 +119,16 @@ class LockScreenStudyActivity : ComponentActivity() {
                                 )
                             }
                         }
-                        if (answerCommitted) finish()
+                        if (answerCommitted) {
+                            if (!preview) {
+                                Toast.makeText(
+                                    this@LockScreenStudyActivity,
+                                    com.kalima.quran.R.string.word_excluded_message,
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                            }
+                            finish()
+                        }
                     },
                     onDismiss = ::finish,
                     onOpenApp = ::openMainApp,

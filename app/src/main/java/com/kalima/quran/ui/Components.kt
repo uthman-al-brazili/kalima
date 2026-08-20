@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -181,7 +182,10 @@ fun AllCaughtUpState(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun AllWordsAlreadyKnownState(modifier: Modifier = Modifier) {
+fun AllWordsAlreadyKnownState(
+    modifier: Modifier = Modifier,
+    onOpenExcludedWords: (() -> Unit)? = null,
+) {
     Column(
         modifier = modifier.fillMaxSize().padding(28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -200,6 +204,12 @@ fun AllWordsAlreadyKnownState(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
+        if (onOpenExcludedWords != null) {
+            Spacer(Modifier.height(18.dp))
+            OutlinedButton(onClick = onOpenExcludedWords) {
+                Text(stringResource(R.string.excluded_words))
+            }
+        }
     }
 }
 

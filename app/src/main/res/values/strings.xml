@@ -61,8 +61,10 @@
     <string name="mark_already_known_description">Marcar como já conhecida e retirar da prática</string>
     <string name="restore_to_practice">Voltar à prática</string>
     <string name="restore_to_practice_description">Devolver esta palavra ao estudo, quiz, lembretes e cartões da tela de bloqueio</string>
-    <string name="already_known_confirmation">Retirar esta palavra do estudo, quiz, lembretes e cartões da tela de bloqueio? Você poderá restaurá-la pelo filtro Já conhecidas no Vocabulário.</string>
+    <string name="already_known_confirmation">Retirar esta palavra do estudo, quiz, lembretes e cartões da tela de bloqueio? Você poderá restaurá-la em Palavras excluídas no Vocabulário.</string>
     <string name="remove_from_practice">Retirar</string>
+    <string name="word_excluded_message">Esta palavra não aparecerá mais nos seus estudos. Você pode devolvê-la em Palavras excluídas.</string>
+    <string name="undo">Desfazer</string>
     <plurals name="review_good_days">
         <item quantity="one">Rever em %1$d dia</item>
         <item quantity="other">Rever em %1$d dias</item>
@@ -101,7 +103,15 @@
     <string name="filter_new">Novas</string>
     <string name="filter_reviewing">Revisão</string>
     <string name="filter_learned">Aprendidas</string>
-    <string name="filter_already_known">Já conhecidas</string>
+    <string name="filter_already_known">Excluídas</string>
+    <string name="excluded_words">Palavras excluídas</string>
+    <string name="excluded_words_description">Estas palavras não aparecerão no estudo, quiz, lembretes nem nos cartões da tela de bloqueio. Devolva qualquer palavra para voltar a estudá-la.</string>
+    <string name="add_back_to_studies">Devolver aos estudos</string>
+    <string name="no_excluded_words">Você não excluiu nenhuma palavra.</string>
+    <plurals name="excluded_words_count">
+        <item quantity="one">%1$d palavra excluída</item>
+        <item quantity="other">%1$d palavras excluídas</item>
+    </plurals>
     <string name="no_words_found">Nenhuma palavra encontrada.</string>
 
     <string name="progress_title">Seu progresso</string>
@@ -132,7 +142,7 @@
     <string name="all_caught_up_title">Revisões em dia</string>
     <string name="all_caught_up_description">Não há cartões programados para agora. O Kalima mostrará cada palavra novamente quando chegar a hora da próxima revisão.</string>
     <string name="all_words_already_known_title">Você já conhece este conjunto</string>
-    <string name="all_words_already_known_description">Estas palavras não aparecerão no estudo, quiz, lembretes nem nos cartões da tela de bloqueio. Use o filtro Já conhecidas no Vocabulário para devolver qualquer palavra à prática.</string>
+    <string name="all_words_already_known_description">Estas palavras não aparecerão no estudo, quiz, lembretes nem nos cartões da tela de bloqueio. Abra Palavras excluídas para devolver qualquer palavra aos estudos.</string>
     <string name="routine">Rotina</string>
     <string name="lock_screen_study">Estudo ao voltar para o celular</string>
     <string name="lock_screen_study_enabled">Ativo: um novo cartão pode aparecer depois do desbloqueio.</string>

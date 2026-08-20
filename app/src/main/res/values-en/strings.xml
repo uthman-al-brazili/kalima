@@ -57,12 +57,14 @@
     <string name="review_good_no_schedule">Got it</string>
     <string name="review_without_schedule">Next word</string>
     <string name="review_good_tomorrow">Review tomorrow</string>
-    <string name="mark_already_known">I already know this</string>
+    <string name="mark_already_known">I already know this word</string>
     <string name="mark_already_known_description">Mark as already known and remove from practice</string>
     <string name="restore_to_practice">Add back to practice</string>
     <string name="restore_to_practice_description">Restore this word to study, quiz, reminders, and lock-screen cards</string>
-    <string name="already_known_confirmation">Remove this word from study, quizzes, reminders, and lock-screen cards? You can restore it from the Already known filter in Vocabulary.</string>
+    <string name="already_known_confirmation">Remove this word from study, quizzes, reminders, and lock-screen cards? You can restore it from Excluded words in Vocabulary.</string>
     <string name="remove_from_practice">Remove</string>
+    <string name="word_excluded_message">This word won’t appear in your studies anymore. You can add it back from Excluded words.</string>
+    <string name="undo">Undo</string>
     <plurals name="review_good_days">
         <item quantity="one">Review in %1$d day</item>
         <item quantity="other">Review in %1$d days</item>
@@ -101,7 +103,15 @@
     <string name="filter_new">New</string>
     <string name="filter_reviewing">Reviewing</string>
     <string name="filter_learned">Learned</string>
-    <string name="filter_already_known">Already known</string>
+    <string name="filter_already_known">Excluded</string>
+    <string name="excluded_words">Excluded words</string>
+    <string name="excluded_words_description">These words won’t appear in study, quizzes, reminders, or lock-screen cards. Add any word back to resume studying it.</string>
+    <string name="add_back_to_studies">Add back to studies</string>
+    <string name="no_excluded_words">You haven’t excluded any words.</string>
+    <plurals name="excluded_words_count">
+        <item quantity="one">%1$d excluded word</item>
+        <item quantity="other">%1$d excluded words</item>
+    </plurals>
     <string name="no_words_found">No words found.</string>
 
     <string name="progress_title">Your progress</string>
@@ -132,7 +142,7 @@
     <string name="all_caught_up_title">You’re all caught up</string>
     <string name="all_caught_up_description">No cards are scheduled right now. Kalima will bring each word back when its next review is due.</string>
     <string name="all_words_already_known_title">You already know this set</string>
-    <string name="all_words_already_known_description">These words will stay out of study, quizzes, reminders, and lock-screen cards. Use the Already known filter in Vocabulary to add any word back.</string>
+    <string name="all_words_already_known_description">These words will stay out of study, quizzes, reminders, and lock-screen cards. Open Excluded words to add any word back.</string>
     <string name="routine">Routine</string>
     <string name="lock_screen_study">Return-to-phone study</string>
     <string name="lock_screen_study_enabled">Active: a new card may appear after you unlock.</string>

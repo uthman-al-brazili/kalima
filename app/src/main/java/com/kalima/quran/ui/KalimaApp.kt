@@ -101,6 +101,7 @@ fun KalimaApp(
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
     var handledStudyRequestId by rememberSaveable { mutableLongStateOf(NO_STUDY_REQUEST) }
+    var excludedWordsRequestId by rememberSaveable { mutableLongStateOf(0L) }
     val hasPendingStudyRequest = studyLaunchTarget != null &&
         studyLaunchTarget.requestId != handledStudyRequestId
     val selected = if (hasPendingStudyRequest) AppTab.Study else AppTab.valueOf(selectedName)
@@ -163,6 +164,10 @@ fun KalimaApp(
                             onAnswer = onAnswer,
                             onCurrentWordChange = onCurrentStudyWordChange,
                             onEnableLockScreen = { onLockScreenChange(true) },
+                            onOpenExcludedWords = {
+                                excludedWordsRequestId += 1L
+                                selectedName = AppTab.Library.name
+                            },
                             pronouncer = pronouncer,
                             onToggleCustomList = onToggleCustomList,
                             onToggleAlreadyKnown = onToggleAlreadyKnown,
@@ -185,6 +190,7 @@ fun KalimaApp(
                             onToggleCustomList = onToggleCustomList,
                             onToggleAlreadyKnown = onToggleAlreadyKnown,
                             onShowCompleteAyahChange = onShowCompleteAyahChange,
+                            openExcludedWordsRequestId = excludedWordsRequestId,
                         )
                         AppTab.Quiz -> QuizScreen(
                             progress = progress,

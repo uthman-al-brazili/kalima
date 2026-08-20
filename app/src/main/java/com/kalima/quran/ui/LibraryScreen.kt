@@ -23,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -63,11 +64,20 @@ fun LibraryScreen(
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
     onShowCompleteAyahChange: (Boolean) -> Unit,
+    openExcludedWordsRequestId: Long = 0L,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var filterName by rememberSaveable { mutableStateOf(LibraryFilter.All.name) }
     var expandedId by rememberSaveable { mutableStateOf<String?>(null) }
     val filter = LibraryFilter.valueOf(filterName)
+
+    LaunchedEffect(openExcludedWordsRequestId) {
+        if (openExcludedWordsRequestId > 0L) {
+            query = ""
+            filterName = LibraryFilter.AlreadyKnown.name
+            expandedId = null
+        }
+    }
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val activeWords = remember(
         progress.studyScope,
@@ -109,7 +119,13 @@ fun LibraryScreen(
     ) {
         if (query.isNotBlank()) delay(120)
         value = withContext(Dispatchers.Default) {
-            WordRepository.search(query, activeWords).filter { word ->
+            val searchSource = librarySearchSource(
+                activeWords = activeWords,
+                allWords = WordRepository.words,
+                alreadyKnownIds = progress.alreadyKnownIds,
+                excludedOnly = filter == LibraryFilter.AlreadyKnown,
+            )
+            WordRepository.search(query, searchSource).filter { word ->
                 when (filter) {
                     LibraryFilter.All -> true
                     LibraryFilter.New -> progress.statusFor(word.id) == WordStatus.New
@@ -179,6 +195,31 @@ fun LibraryScreen(
                 shape = RoundedCornerShape(16.dp),
             )
             Spacer(Modifier.height(10.dp))
+            OutlinedButton(
+                onClick = {
+                    query = ""
+                    filterName = LibraryFilter.AlreadyKnown.name
+                    expandedId = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    pluralStringResource(
+                        R.plurals.excluded_words_count,
+                        progress.alreadyKnownIds.size,
+                        progress.alreadyKnownIds.size,
+                    ),
+                )
+            }
+            if (filter == LibraryFilter.AlreadyKnown) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.excluded_words_description),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            Spacer(Modifier.height(10.dp))
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -195,7 +236,13 @@ fun LibraryScreen(
         if (words.isEmpty()) {
             item {
                 Text(
-                    stringResource(R.string.no_words_found),
+                    stringResource(
+                        if (filter == LibraryFilter.AlreadyKnown) {
+                            R.string.no_excluded_words
+                        } else {
+                            R.string.no_words_found
+                        },
+                    ),
                     modifier = Modifier.fillMaxWidth().padding(top = 40.dp),
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -229,6 +276,17 @@ private data class LibraryWordsKey(
     val alreadyKnownIds: Set<String>,
     val customStudyIds: Set<String>,
 )
+
+internal fun librarySearchSource(
+    activeWords: List<QuranWord>,
+    allWords: List<QuranWord>,
+    alreadyKnownIds: Set<String>,
+    excludedOnly: Boolean,
+): List<QuranWord> = if (excludedOnly) {
+    allWords.filter { it.id in alreadyKnownIds }
+} else {
+    activeWords
+}
 
 @Composable
 private fun LibraryWordCard(
@@ -279,6 +337,15 @@ private fun LibraryWordCard(
                 )
                 WordStatusPill(status)
             }
+            if (alreadyKnown) {
+                Spacer(Modifier.height(10.dp))
+                OutlinedButton(
+                    onClick = { onToggleAlreadyKnown(word.id) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.add_back_to_studies))
+                }
+            }
             if (expanded) {
                 Spacer(Modifier.height(14.dp))
                 if (showCompleteAyah) {
@@ -315,6 +382,7 @@ private fun LibraryWordCard(
                     alreadyKnown = alreadyKnown,
                     onToggleCustomList = onToggleCustomList,
                     onToggleAlreadyKnown = onToggleAlreadyKnown,
+                    showAlreadyKnown = !alreadyKnown,
                 )
                 CitationActions(word)
                 EditorialReviewPanel(word)
