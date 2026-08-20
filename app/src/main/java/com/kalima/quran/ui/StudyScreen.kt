@@ -1,5 +1,6 @@
 package com.kalima.quran.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -272,6 +273,10 @@ private fun AlphabetFoundationScreen(
         .coerceIn(0, ArabicFoundations.alphabetLessons.lastIndex)
     val lesson = ArabicFoundations.alphabetLessons[lessonIndex]
     val fraction = lessonIndex.toFloat() / ArabicFoundations.alphabetLessonCount
+    var recalling by rememberSaveable(lessonIndex) { mutableStateOf(false) }
+    var symbolIndex by rememberSaveable(lessonIndex) { mutableStateOf(0) }
+    var selectedOptionIndex by rememberSaveable(lessonIndex) { mutableStateOf<Int?>(null) }
+    val practiceQuestions = remember(lesson) { lesson.practiceQuestions() }
 
     Column(
         modifier = Modifier
@@ -316,7 +321,9 @@ private fun AlphabetFoundationScreen(
             Column(Modifier.padding(18.dp)) {
                 Text(
                     stringResource(
-                        if (lesson.teachesVowels) {
+                        if (recalling) {
+                            R.string.alphabet_recall_title
+                        } else if (lesson.teachesVowels) {
                             R.string.alphabet_vowels_lesson
                         } else {
                             R.string.alphabet_letters_lesson
@@ -325,68 +332,234 @@ private fun AlphabetFoundationScreen(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                 )
-                Spacer(Modifier.height(12.dp))
-                lesson.symbols.chunked(2).forEach { rowSymbols ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        // Place the first lesson symbol on the right, matching Arabic reading order.
-                        rowSymbols.asReversed().forEach { symbol ->
-                            Surface(
-                                modifier = Modifier.weight(1f),
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                shape = RoundedCornerShape(18.dp),
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(14.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                ) {
-                                    ArabicText(
-                                        symbol.arabic,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        size = 40,
-                                        color = MaterialTheme.colorScheme.primary,
-                                    )
-                                    Text(
-                                        symbol.transliteration,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
-                                }
-                            }
-                        }
-                        if (rowSymbols.size == 1) Spacer(Modifier.weight(1f))
-                    }
-                    Spacer(Modifier.height(10.dp))
-                }
                 Text(
                     stringResource(
-                        if (lesson.teachesVowels) {
-                            R.string.alphabet_vowels_note
+                        if (recalling) {
+                            R.string.alphabet_recall_instruction
                         } else {
-                            R.string.alphabet_letters_note
+                            R.string.alphabet_learn_instruction
                         },
                     ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(Modifier.height(16.dp))
-                Button(
-                    onClick = onCompleteAlphabetLesson,
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
+                if (!recalling) {
+                    val symbol = lesson.symbols[symbolIndex]
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(22.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 22.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                stringResource(
+                                    R.string.alphabet_symbol_progress,
+                                    symbolIndex + 1,
+                                    lesson.symbols.size,
+                                ),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.72f),
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            ArabicText(
+                                symbol.arabic,
+                                modifier = Modifier.fillMaxWidth(),
+                                size = 88,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                symbol.transliteration,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(12.dp))
                     Text(
                         stringResource(
-                            if (lessonIndex == ArabicFoundations.alphabetLessons.lastIndex) {
-                                R.string.finish_alphabet_course
+                            if (lesson.teachesVowels) {
+                                R.string.alphabet_vowels_note
                             } else {
-                                R.string.complete_alphabet_step
+                                R.string.alphabet_letters_note
                             },
                         ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        OutlinedButton(
+                            onClick = { symbolIndex -= 1 },
+                            modifier = Modifier.weight(1f).height(52.dp),
+                            enabled = symbolIndex > 0,
+                            shape = RoundedCornerShape(16.dp),
+                        ) {
+                            Text(stringResource(R.string.previous_symbol))
+                        }
+                        Button(
+                            onClick = {
+                                if (symbolIndex == lesson.symbols.lastIndex) {
+                                    symbolIndex = 0
+                                    selectedOptionIndex = null
+                                    recalling = true
+                                } else {
+                                    symbolIndex += 1
+                                }
+                            },
+                            modifier = Modifier.weight(1.35f).height(52.dp),
+                            shape = RoundedCornerShape(16.dp),
+                        ) {
+                            Text(
+                                stringResource(
+                                    if (symbolIndex == lesson.symbols.lastIndex) {
+                                        R.string.start_alphabet_recall
+                                    } else {
+                                        R.string.next_symbol
+                                    },
+                                ),
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+                } else {
+                    val question = practiceQuestions[symbolIndex]
+                    val answeredCorrectly = selectedOptionIndex == question.correctOptionIndex
+                    Text(
+                        stringResource(
+                            R.string.alphabet_symbol_progress,
+                            symbolIndex + 1,
+                            practiceQuestions.size,
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                     )
+                    Text(
+                        stringResource(R.string.alphabet_recall_prompt),
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(22.dp),
+                    ) {
+                        ArabicText(
+                            question.symbol.arabic,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+                            size = 88,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    Spacer(Modifier.height(14.dp))
+                    question.options.forEachIndexed { optionIndex, option ->
+                        val selected = selectedOptionIndex == optionIndex
+                        val correct = selected && optionIndex == question.correctOptionIndex
+                        val containerColor = when {
+                            correct -> MaterialTheme.colorScheme.primaryContainer
+                            selected -> MaterialTheme.colorScheme.errorContainer
+                            else -> MaterialTheme.colorScheme.surface
+                        }
+                        val contentColor = when {
+                            correct -> MaterialTheme.colorScheme.onPrimaryContainer
+                            selected -> MaterialTheme.colorScheme.onErrorContainer
+                            else -> MaterialTheme.colorScheme.onSurface
+                        }
+                        val borderColor = when {
+                            correct -> MaterialTheme.colorScheme.primary
+                            selected -> MaterialTheme.colorScheme.error
+                            else -> MaterialTheme.colorScheme.outline
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                if (!answeredCorrectly) selectedOptionIndex = optionIndex
+                            },
+                            modifier = Modifier.fillMaxWidth().height(48.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = containerColor,
+                                contentColor = contentColor,
+                            ),
+                            border = BorderStroke(1.dp, borderColor),
+                        ) {
+                            Text(option, fontWeight = FontWeight.SemiBold)
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    if (selectedOptionIndex != null) {
+                        Text(
+                            stringResource(
+                                if (answeredCorrectly) {
+                                    R.string.alphabet_answer_correct
+                                } else {
+                                    R.string.alphabet_try_again
+                                },
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                            color = if (answeredCorrectly) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            },
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Spacer(Modifier.height(10.dp))
+                    }
+                    if (answeredCorrectly) {
+                        Button(
+                            onClick = {
+                                if (symbolIndex == practiceQuestions.lastIndex) {
+                                    onCompleteAlphabetLesson()
+                                } else {
+                                    symbolIndex += 1
+                                    selectedOptionIndex = null
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().height(52.dp),
+                            shape = RoundedCornerShape(16.dp),
+                        ) {
+                            Text(
+                                stringResource(
+                                    when {
+                                        symbolIndex < practiceQuestions.lastIndex -> {
+                                            R.string.next_alphabet_question
+                                        }
+                                        lessonIndex == ArabicFoundations.alphabetLessons.lastIndex -> {
+                                            R.string.finish_alphabet_course
+                                        }
+                                        else -> R.string.complete_alphabet_step
+                                    },
+                                ),
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+                    TextButton(
+                        onClick = {
+                            recalling = false
+                            symbolIndex = 0
+                            selectedOptionIndex = null
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.review_alphabet_symbols))
+                    }
                 }
             }
         }

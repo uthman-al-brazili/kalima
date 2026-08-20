@@ -8,6 +8,27 @@ data class FoundationSymbol(
 data class AlphabetLesson(
     val symbols: List<FoundationSymbol>,
     val teachesVowels: Boolean = false,
+) {
+    fun practiceQuestions(): List<AlphabetPracticeQuestion> = symbols.mapIndexed { index, symbol ->
+        val correctOptionIndex = (index * 3 + 1) % symbols.size
+        val distractors = symbols
+            .asSequence()
+            .filterNot { it == symbol }
+            .map(FoundationSymbol::transliteration)
+            .toMutableList()
+            .apply { add(correctOptionIndex, symbol.transliteration) }
+        AlphabetPracticeQuestion(
+            symbol = symbol,
+            options = distractors,
+            correctOptionIndex = correctOptionIndex,
+        )
+    }
+}
+
+data class AlphabetPracticeQuestion(
+    val symbol: FoundationSymbol,
+    val options: List<String>,
+    val correctOptionIndex: Int,
 )
 
 data class NumberLesson(

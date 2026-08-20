@@ -1,14 +1,18 @@
 package com.kalima.quran.ui
 
 import android.content.Intent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -22,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -86,6 +92,32 @@ fun EditorialReviewPanel(word: QuranWord) {
         word.reference,
         word.arabic,
     )
+    val showDetailsDescription = listOf(
+        stringResource(R.string.editorial_compact_title),
+        stringResource(R.string.editorial_show_details),
+    ).joinToString(". ")
+    if (!expanded) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            Surface(
+                modifier = Modifier.size(40.dp),
+                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.55f),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                IconButton(onClick = { expanded = true }) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_content_review),
+                        contentDescription = showDetailsDescription,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                    )
+                }
+            }
+        }
+        return
+    }
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.55f),
@@ -103,12 +135,13 @@ fun EditorialReviewPanel(word: QuranWord) {
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.labelLarge,
                 )
-                TextButton(onClick = { expanded = !expanded }) {
-                    Text(
-                        stringResource(
-                            if (expanded) R.string.editorial_hide_details
-                            else R.string.editorial_show_details,
-                        ),
+                val detailsDescription = stringResource(R.string.editorial_hide_details)
+                IconButton(onClick = { expanded = false }) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_expand_more),
+                        contentDescription = detailsDescription,
+                        modifier = Modifier.rotate(180f),
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
                     )
                 }
             }

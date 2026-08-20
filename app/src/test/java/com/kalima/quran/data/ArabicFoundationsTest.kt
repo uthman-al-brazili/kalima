@@ -34,6 +34,31 @@ class ArabicFoundationsTest {
     }
 
     @Test
+    fun `every alphabet lesson has a complete recognition check`() {
+        ArabicFoundations.alphabetLessons.forEach { lesson ->
+            val questions = lesson.practiceQuestions()
+
+            assertEquals(lesson.symbols.size, questions.size)
+            assertEquals(
+                lesson.symbols,
+                questions.map(AlphabetPracticeQuestion::symbol),
+            )
+            questions.forEach { question ->
+                assertEquals(lesson.symbols.size, question.options.size)
+                assertEquals(lesson.symbols.size, question.options.toSet().size)
+                assertEquals(
+                    question.symbol.transliteration,
+                    question.options[question.correctOptionIndex],
+                )
+            }
+            assertEquals(
+                lesson.symbols.indices.toSet(),
+                questions.map(AlphabetPracticeQuestion::correctOptionIndex).toSet(),
+            )
+        }
+    }
+
+    @Test
     fun `number lessons remain parallel and cover zero through nine`() {
         val progress = StudyProgress(
             numberCourseRequested = true,

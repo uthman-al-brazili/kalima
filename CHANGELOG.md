@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.26.2 — 2026-08-20
+
+- Reworked alphabet lessons into focused, one-symbol-at-a-time learning followed
+  by a required recognition check with immediate retry and review options.
+- Replaced the collapsed content-review banner with a compact status icon while
+  keeping the full editorial details and reporting action one tap away.
+- Removed the duplicate pronunciation button from quiz feedback when the Arabic
+  question card already provides the same audio action.
+
 ## 0.26.1 — 2026-08-20
 
 - Hid word-study path and daily word-goal choices from first-time learners who

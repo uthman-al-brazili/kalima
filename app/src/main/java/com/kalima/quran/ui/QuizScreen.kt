@@ -232,7 +232,6 @@ fun QuizScreen(
                 correct = selectedOption == question.correctOptionIndex,
                 onNext = { currentIndex += 1 },
                 lastQuestion = currentIndex == session.lastIndex,
-                pronouncer = pronouncer,
             )
         }
         Spacer(Modifier.height(24.dp))
@@ -467,7 +466,6 @@ private fun QuizFeedback(
     correct: Boolean,
     onNext: () -> Unit,
     lastQuestion: Boolean,
-    pronouncer: ArabicPronouncer,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -514,12 +512,6 @@ private fun QuizFeedback(
                     MaterialTheme.colorScheme.onErrorContainer
                 },
                 style = MaterialTheme.typography.bodySmall,
-            )
-            Spacer(Modifier.height(10.dp))
-            PronunciationButton(
-                word = question.word,
-                pronouncer = pronouncer,
-                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(12.dp))
             Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
