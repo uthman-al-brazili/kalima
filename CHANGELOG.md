@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.28.2 — 2026-08-21
+
+- Kept the “New” badge visible for a word's entire first presentation so it
+  does not appear to become a review before the learner moves on.
+
 ## 0.28.1 — 2026-08-21
 
 - Made brand-new words reveal their meaning and learning details immediately,

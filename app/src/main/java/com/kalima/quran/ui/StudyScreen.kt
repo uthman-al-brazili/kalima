@@ -242,6 +242,10 @@ fun StudyScreen(
             WordCard(
                 word = word,
                 progress = progress,
+                displayedStatus = studyPresentationStatus(
+                    status = progress.statusFor(word.id),
+                    isNewPresentation = isNewPresentation,
+                ),
                 pronouncer = pronouncer,
                 meaningRevealed = meaningRevealed,
                 onRevealChange = { meaningRevealed = it },
@@ -995,6 +999,11 @@ private fun StudyActionBar(
 
 internal fun shouldRevealMeaningInitially(status: WordStatus): Boolean = status == WordStatus.New
 
+internal fun studyPresentationStatus(
+    status: WordStatus,
+    isNewPresentation: Boolean,
+): WordStatus = if (isNewPresentation) WordStatus.New else status
+
 internal fun studyWordsForPresentation(
     queuedWords: List<QuranWord>,
     availableWords: List<QuranWord>,
@@ -1140,6 +1149,7 @@ private fun StudyHeader(progress: StudyProgress, dueCount: Int) {
 private fun WordCard(
     word: QuranWord,
     progress: StudyProgress,
+    displayedStatus: WordStatus,
     pronouncer: ArabicPronouncer,
     meaningRevealed: Boolean,
     onRevealChange: (Boolean) -> Unit,
@@ -1172,7 +1182,7 @@ private fun WordCard(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                WordStatusPill(progress.statusFor(word.id))
+                WordStatusPill(displayedStatus)
             }
             Spacer(Modifier.height(22.dp))
             ArabicText(
