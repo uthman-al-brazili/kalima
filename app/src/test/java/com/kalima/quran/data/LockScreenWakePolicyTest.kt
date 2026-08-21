@@ -6,36 +6,44 @@ import org.junit.Test
 
 class LockScreenWakePolicyTest {
     @Test
-    fun `notification display wakes never open a study activity`() {
-        assertFalse(LockScreenWakePolicy.shouldShowCard(LockScreenWakeEvent.DisplayWoke))
+    fun `display wake is the event that can open over the keyguard`() {
+        assertTrue(LockScreenWakePolicy.shouldShowCard(LockScreenWakeEvent.DisplayWoke))
     }
 
     @Test
-    fun `a confirmed present user can receive a study card`() {
-        assertTrue(LockScreenWakePolicy.shouldShowCard(LockScreenWakeEvent.UserPresent))
+    fun `user present is too late to open a lock screen card`() {
+        assertFalse(LockScreenWakePolicy.shouldShowCard(LockScreenWakeEvent.UserPresent))
     }
 
     @Test
-    fun `notification wake keeps card armed but never launches it`() {
+    fun `first display wake consumes the armed lock screen card`() {
         val armed = LockScreenWakePolicy.transition(false, LockScreenWakeEvent.ScreenOff)
-        val notificationWake = LockScreenWakePolicy.transition(
+        val displayWake = LockScreenWakePolicy.transition(
             armed.awaitingUnlock,
             LockScreenWakeEvent.DisplayWoke,
         )
 
-        assertTrue(notificationWake.awaitingUnlock)
-        assertFalse(notificationWake.showCard)
+        assertFalse(displayWake.awaitingUnlock)
+        assertTrue(displayWake.showCard)
     }
 
     @Test
-    fun `only the first confirmed unlock consumes an armed card`() {
-        val unlock = LockScreenWakePolicy.transition(true, LockScreenWakeEvent.UserPresent)
-        val duplicate = LockScreenWakePolicy.transition(
-            unlock.awaitingUnlock,
+    fun `unlock cannot cause a duplicate launch after screen on`() {
+        val displayWake = LockScreenWakePolicy.transition(true, LockScreenWakeEvent.DisplayWoke)
+        val unlock = LockScreenWakePolicy.transition(
+            displayWake.awaitingUnlock,
             LockScreenWakeEvent.UserPresent,
         )
 
-        assertTrue(unlock.showCard)
-        assertFalse(duplicate.showCard)
+        assertTrue(displayWake.showCard)
+        assertFalse(unlock.showCard)
+    }
+
+    @Test
+    fun `display wake without a preceding screen off does not launch`() {
+        val displayWake = LockScreenWakePolicy.transition(false, LockScreenWakeEvent.DisplayWoke)
+
+        assertFalse(displayWake.awaitingUnlock)
+        assertFalse(displayWake.showCard)
     }
 }

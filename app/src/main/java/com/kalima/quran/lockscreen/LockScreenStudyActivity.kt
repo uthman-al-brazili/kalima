@@ -5,8 +5,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -50,12 +52,15 @@ class LockScreenStudyActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         progressStore = ProgressStore.get(applicationContext)
         preview = intent.getBooleanExtra(EXTRA_PREVIEW, false)
-        if (!preview && LockScreenSystemSafety.blockReason(this) != null) {
+        if (
+            !preview &&
+            LockScreenSystemSafety.blockReason(this, allowLockedDevice = true) != null
+        ) {
             progressStore.recordLockScreenSafetySkip()
             finish()
             return
         }
-        configureWindow()
+        configureWindowForLockScreen()
 
         val restoredSession = restoreContent(savedInstanceState)?.let { restored ->
             LockScreenSession(
@@ -244,7 +249,14 @@ class LockScreenStudyActivity : ComponentActivity() {
         }
     }
 
-    private fun configureWindow() {
+    private fun configureWindowForLockScreen() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(false)
+        } else {
+            @Suppress("DEPRECATION")
+            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+        }
         WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 

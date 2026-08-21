@@ -47,7 +47,7 @@
     <string name="offline_word_audio_missing">Esta gravação real ainda não está salva. Conecte-se uma vez ou baixe o áudio selecionado em Ajustes.</string>
     <string name="offline_verse_audio_missing">Esta recitação do ayah por Al-Hussary ainda não está salva. Conecte-se uma vez ou baixe o áudio selecionado em Ajustes.</string>
     <string name="study_lock_screen_title">Estude ao voltar para o celular</string>
-    <string name="study_lock_screen_description">Receba uma palavra depois de desbloquear. Notificações nunca abrem o Kalima.</string>
+    <string name="study_lock_screen_description">Receba uma palavra diretamente na tela de bloqueio quando a tela acender.</string>
     <string name="enable">Ativar</string>
     <string name="review_again">Ainda aprendendo</string>
     <string name="review_again_timing">Rever em 10 min</string>
@@ -124,7 +124,7 @@
     <string name="selected_content">Conteúdo selecionado</string>
     <string name="selected_content_note">O progresso acima acompanha apenas o conjunto que você escolheu estudar agora.</string>
     <string name="choose_words">Escolher palavras</string>
-    <string name="choose_words_note">A escolha também controla os cartões exibidos depois do desbloqueio.</string>
+    <string name="choose_words_note">A escolha também controla os cartões exibidos na tela de bloqueio.</string>
     <string name="scope_all">Todo o Alcorão</string>
     <string name="scope_frequent">Mais usadas</string>
     <string name="scope_surah">Por sura</string>
@@ -146,10 +146,10 @@
     <string name="all_words_already_known_description">Estas palavras não aparecerão no estudo, quiz, lembretes nem nos cartões da tela de bloqueio. Abra Palavras excluídas para devolver qualquer palavra aos estudos.</string>
     <string name="routine">Rotina</string>
     <string name="lock_screen_study">Estudo ao voltar para o celular</string>
-    <string name="lock_screen_study_enabled">Ativo: um novo cartão pode aparecer depois do desbloqueio.</string>
+    <string name="lock_screen_study_enabled">Ativo: um novo cartão pode aparecer sobre a tela de bloqueio.</string>
     <string name="lock_screen_study_disabled">Requer a permissão “Aparecer sobre outros apps” e mantém um serviço ativo.</string>
     <string name="preview_card">Testar cartão</string>
-    <string name="lock_screen_quiz">Quiz depois de desbloquear</string>
+    <string name="lock_screen_quiz">Quiz na tela de bloqueio</string>
     <plurals name="lock_screen_quiz_enabled">
         <item quantity="one">Um quiz aparecerá depois de %1$d palavra.</item>
         <item quantity="other">Um quiz aparecerá depois de %1$d palavras.</item>
@@ -182,7 +182,7 @@
     <string name="spaced_repetition_enabled_description">Ativa (recomendado): programa cada revisão perto do momento em que você provavelmente esqueceria.</string>
     <string name="spaced_repetition_disabled_observation">Desativada — não recomendado: as palavras se alternam sem revisões programadas, o que pode tornar o aprendizado menos eficiente e facilitar o esquecimento.</string>
     <string name="lock_screen_features">Cartões ao voltar para o celular</string>
-    <string name="lock_screen_features_description">Ferramentas opcionais de estudo que aguardam o desbloqueio.</string>
+    <string name="lock_screen_features_description">Ferramentas opcionais de estudo exibidas sobre a tela de bloqueio.</string>
     <string name="android_app_settings">Ajustes do Android</string>
     <string name="limit_new_words">Limitar palavras novas</string>
 
@@ -226,10 +226,10 @@
     <string name="daily_word_channel">Palavra diária</string>
     <string name="daily_word_channel_description">Um cartão curto de árabe corânico por dia</string>
     <string name="lock_screen_service_title">Estudo ao voltar para o celular ativo</string>
-    <string name="lock_screen_service_text">Um cartão de estudo pode aparecer depois do desbloqueio.</string>
+    <string name="lock_screen_service_text">Um cartão de estudo pode aparecer quando a tela bloqueada acender.</string>
     <string name="disable">Desativar</string>
     <string name="lock_screen_channel">Estudo ao voltar para o celular</string>
-    <string name="lock_screen_channel_description">Mantém os cartões prontos para o próximo desbloqueio</string>
+    <string name="lock_screen_channel_description">Mantém os cartões prontos para a próxima ativação da tela bloqueada</string>
     <string name="onboarding_title">Comece com um caminho claro</string>
     <string name="onboarding_subtitle">Conte ao Kalima de onde você está começando e escolha o vocabulário que mais combina com sua meta.</string>
     <string name="onboarding_foundations_title">Primeiro, os fundamentos</string>

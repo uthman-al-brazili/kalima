@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.28.3 — 2026-08-21
+
+- Restored study and quiz cards directly over the still-locked keyguard when
+  the display turns on, including the Samsung Galaxy M23 5G on Android 14,
+  without dismissing the system lock or biometrics.
+- Added a mandatory build-time lock-screen regression contract so every future
+  Android build verifies the manifest, window, screen-wake, and safety paths
+  required for this behavior before an APK can be assembled.
+
 ## 0.28.2 — 2026-08-21
 
 - Kept the “New” badge visible for a word's entire first presentation so it

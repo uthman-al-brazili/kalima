@@ -39,4 +39,20 @@ class LockScreenDevicePolicyTest {
         )
         assertNull(LockScreenDevicePolicy.blockReason(safe))
     }
+
+    @Test
+    fun lockedDeviceIsAllowedOnlyForTheExplicitLockScreenPresentation() {
+        val locked = safe.copy(deviceLocked = true)
+
+        assertEquals(
+            LockScreenDeviceBlockReason.DeviceLocked,
+            LockScreenDevicePolicy.blockReason(locked),
+        )
+        assertNull(
+            LockScreenDevicePolicy.blockReason(
+                state = locked,
+                allowLockedDevice = true,
+            ),
+        )
+    }
 }

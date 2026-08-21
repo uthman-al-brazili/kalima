@@ -21,9 +21,12 @@ data class LockScreenDeviceState(
 )
 
 object LockScreenDevicePolicy {
-    fun blockReason(state: LockScreenDeviceState): LockScreenDeviceBlockReason? = when {
+    fun blockReason(
+        state: LockScreenDeviceState,
+        allowLockedDevice: Boolean = false,
+    ): LockScreenDeviceBlockReason? = when {
         !state.screenInteractive -> LockScreenDeviceBlockReason.ScreenNotInteractive
-        state.deviceLocked -> LockScreenDeviceBlockReason.DeviceLocked
+        state.deviceLocked && !allowLockedDevice -> LockScreenDeviceBlockReason.DeviceLocked
         state.callOrAlarmActive -> LockScreenDeviceBlockReason.CallOrAlarm
         state.mediaActive -> LockScreenDeviceBlockReason.MediaActive
         state.carMode -> LockScreenDeviceBlockReason.CarMode

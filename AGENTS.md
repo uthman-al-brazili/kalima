@@ -17,3 +17,13 @@ For every completed Android application change that produces a new version:
 8. Update `releases/SHA256SUMS.txt` with checksums for the APK and source archive.
 
 Preserve existing progress-compatible identifiers and unrelated user changes. If a requested release name already exists, stop instead of replacing the backup.
+
+Lock-screen cards are a critical Android regression contract. They must launch
+over the still-locked keyguard when the display turns on, including on a Samsung
+Galaxy M23 5G running Android 14; they must not wait for `ACTION_USER_PRESENT`.
+For every Android application change, run `verifyLockScreenRegression` in
+addition to the relevant tests, lint, and assembly. Never remove or bypass the
+manifest/window `showWhenLocked` declarations, the `ACTION_SCREEN_ON` launch
+path, or the explicit locked-device safety allowance. When a compatible Android
+14 device is connected, also install the candidate APK and exercise a real
+screen-off/screen-on cycle before completing the release.

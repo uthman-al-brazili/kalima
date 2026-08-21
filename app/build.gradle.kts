@@ -20,8 +20,8 @@ android {
         applicationId = "com.kalima.quran"
         minSdk = 26
         targetSdk = 36
-        versionCode = 65
-        versionName = "0.28.2"
+        versionCode = 66
+        versionName = "0.28.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -69,8 +69,91 @@ val verifyUptodownSigning by tasks.registering {
     }
 }
 
+val lockScreenContractFiles = mapOf(
+    "manifest" to file("src/main/AndroidManifest.xml"),
+    "activity" to file("src/main/java/com/kalima/quran/lockscreen/LockScreenStudyActivity.kt"),
+    "service" to file("src/main/java/com/kalima/quran/lockscreen/LockScreenStudyService.kt"),
+    "safety" to file("src/main/java/com/kalima/quran/lockscreen/LockScreenSystemSafety.kt"),
+    "wakePolicy" to file("src/main/java/com/kalima/quran/data/LockScreenWakePolicy.kt"),
+)
+
+val verifyLockScreenRegression by tasks.registering {
+    group = "verification"
+    description = "Verifies that return-to-phone cards still open over the locked keyguard."
+    inputs.files(lockScreenContractFiles.values)
+
+    doLast {
+        val sources = lockScreenContractFiles.mapValues { (_, source) -> source.readText() }
+        fun requireContract(fileKey: String, snippet: String, explanation: String) {
+            check(sources.getValue(fileKey).contains(snippet)) {
+                "Lock-screen regression: $explanation (${lockScreenContractFiles.getValue(fileKey)})."
+            }
+        }
+
+        requireContract(
+            "manifest",
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            "background activity launch permission is missing",
+        )
+        requireContract(
+            "manifest",
+            "android:showWhenLocked=\"true\"",
+            "LockScreenStudyActivity is not declared to show over the keyguard",
+        )
+        requireContract(
+            "manifest",
+            "android:turnScreenOn=\"false\"",
+            "the activity must not wake the display by itself",
+        )
+        requireContract(
+            "activity",
+            "setShowWhenLocked(true)",
+            "the runtime Samsung-compatible showWhenLocked safeguard is missing",
+        )
+        requireContract(
+            "activity",
+            "setTurnScreenOn(false)",
+            "the activity must preserve user-controlled display wakes",
+        )
+        requireContract(
+            "activity",
+            "LockScreenSystemSafety.blockReason(this, allowLockedDevice = true)",
+            "the activity incorrectly rejects the still-locked keyguard",
+        )
+        requireContract(
+            "service",
+            "Intent.ACTION_SCREEN_ON",
+            "the foreground service no longer observes display wakes",
+        )
+        requireContract(
+            "service",
+            "LockScreenWakeEvent.DisplayWoke",
+            "display wakes no longer request the lock-screen card",
+        )
+        requireContract(
+            "service",
+            "allowLockedDevice = true",
+            "the service incorrectly rejects launches over the keyguard",
+        )
+        requireContract(
+            "safety",
+            "allowLockedDevice: Boolean = false",
+            "locked-device safety is no longer an explicit opt-in",
+        )
+        requireContract(
+            "wakePolicy",
+            "event == LockScreenWakeEvent.DisplayWoke",
+            "the wake policy waits until after authentication",
+        )
+        check(!sources.getValue("service").contains("Intent.ACTION_USER_PRESENT")) {
+            "Lock-screen regression: the service must not wait for ACTION_USER_PRESENT."
+        }
+    }
+}
+
 tasks.configureEach {
     if (name == "packageRelease") dependsOn(verifyUptodownSigning)
+    if (name == "preBuild" || name == "check") dependsOn(verifyLockScreenRegression)
 }
 
 dependencies {

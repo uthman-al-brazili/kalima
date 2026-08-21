@@ -19,6 +19,7 @@ object LockScreenSystemSafety {
         context: Context,
         criticalAudioActive: Boolean = false,
         nowMillis: Long = System.currentTimeMillis(),
+        allowLockedDevice: Boolean = false,
     ): LockScreenDeviceBlockReason? {
         val power = context.getSystemService(PowerManager::class.java)
         val keyguard = context.getSystemService(KeyguardManager::class.java)
@@ -34,7 +35,7 @@ object LockScreenSystemSafety {
             audio.mode == AudioManager.MODE_IN_COMMUNICATION
 
         return LockScreenDevicePolicy.blockReason(
-            LockScreenDeviceState(
+            state = LockScreenDeviceState(
                 screenInteractive = power.isInteractive,
                 deviceLocked = keyguard.isKeyguardLocked,
                 callOrAlarmActive = criticalAudioActive || callMode || alarmImminent,
@@ -43,6 +44,7 @@ object LockScreenSystemSafety {
                 powerSaver = power.isPowerSaveMode,
                 thermalPressure = thermalPressure,
             ),
+            allowLockedDevice = allowLockedDevice,
         )
     }
 }

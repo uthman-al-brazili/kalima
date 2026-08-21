@@ -47,7 +47,7 @@
     <string name="offline_word_audio_missing">This real recording has not been saved yet. Connect once or download the selected audio in Settings.</string>
     <string name="offline_verse_audio_missing">This Al-Hussary ayah recitation has not been saved yet. Connect once or download the selected audio in Settings.</string>
     <string name="study_lock_screen_title">Study when you return to your phone</string>
-    <string name="study_lock_screen_description">Receive a word after you unlock. Notification wakes never open Kalima.</string>
+    <string name="study_lock_screen_description">Receive a word directly on the lock screen when the display turns on.</string>
     <string name="enable">Enable</string>
     <string name="review_again">Still learning</string>
     <string name="review_again_timing">Review in 10 min</string>
@@ -124,7 +124,7 @@
     <string name="selected_content">Selected content</string>
     <string name="selected_content_note">The progress above tracks only the set you have chosen to study now.</string>
     <string name="choose_words">Choose words</string>
-    <string name="choose_words_note">This choice also controls the cards shown after you unlock.</string>
+    <string name="choose_words_note">This choice also controls the cards shown on the lock screen.</string>
     <string name="scope_all">Whole Quran</string>
     <string name="scope_frequent">Most used</string>
     <string name="scope_surah">By surah</string>
@@ -146,10 +146,10 @@
     <string name="all_words_already_known_description">These words will stay out of study, quizzes, reminders, and lock-screen cards. Open Excluded words to add any word back.</string>
     <string name="routine">Routine</string>
     <string name="lock_screen_study">Return-to-phone study</string>
-    <string name="lock_screen_study_enabled">Active: a new card may appear after you unlock.</string>
+    <string name="lock_screen_study_enabled">Active: a new card may appear over the lock screen.</string>
     <string name="lock_screen_study_disabled">Requires the “Display over other apps” permission and keeps a service active.</string>
     <string name="preview_card">Preview card</string>
-    <string name="lock_screen_quiz">Quiz after unlocking</string>
+    <string name="lock_screen_quiz">Lock-screen quiz</string>
     <plurals name="lock_screen_quiz_enabled">
         <item quantity="one">A quiz will appear after %1$d word.</item>
         <item quantity="other">A quiz will appear after %1$d words.</item>
@@ -182,7 +182,7 @@
     <string name="spaced_repetition_enabled_description">Enabled (recommended): schedules each review near the time you are likely to forget.</string>
     <string name="spaced_repetition_disabled_observation">Disabled — not recommended: words rotate without timed reviews, which may make learning less efficient and easier to forget.</string>
     <string name="lock_screen_features">Return-to-phone cards</string>
-    <string name="lock_screen_features_description">Optional study tools that wait for you to unlock first.</string>
+    <string name="lock_screen_features_description">Optional study tools displayed over the device lock screen.</string>
     <string name="android_app_settings">Android settings</string>
     <string name="limit_new_words">Limit new words</string>
 
@@ -226,10 +226,10 @@
     <string name="daily_word_channel">Daily word</string>
     <string name="daily_word_channel_description">One short Quranic Arabic card each day</string>
     <string name="lock_screen_service_title">Return-to-phone study is active</string>
-    <string name="lock_screen_service_text">A study card may appear after you unlock.</string>
+    <string name="lock_screen_service_text">A study card may appear when the locked display turns on.</string>
     <string name="disable">Disable</string>
     <string name="lock_screen_channel">Return-to-phone study</string>
-    <string name="lock_screen_channel_description">Keeps study cards ready for your next unlock</string>
+    <string name="lock_screen_channel_description">Keeps study cards ready for the next locked-display wake</string>
     <string name="onboarding_title">Start with a clear path</string>
     <string name="onboarding_subtitle">Tell Kalima where you are starting, then choose the vocabulary that best matches your goal.</string>
     <string name="onboarding_foundations_title">First, the foundations</string>

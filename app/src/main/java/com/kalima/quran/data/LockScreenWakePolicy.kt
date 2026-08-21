@@ -13,15 +13,15 @@ data class LockScreenWakeTransition(
 
 object LockScreenWakePolicy {
     /**
-     * A notification can wake a display without any user action. Waiting for
-     * USER_PRESENT prevents those notification wakes from opening an activity.
+     * The lock-screen card must launch while the keyguard is still visible.
+     * USER_PRESENT is too late because Android sends it after authentication.
      */
     fun shouldShowCard(event: LockScreenWakeEvent): Boolean =
-        event == LockScreenWakeEvent.UserPresent
+        event == LockScreenWakeEvent.DisplayWoke
 
     /**
-     * A screen-off event arms one card. SCREEN_ON may be caused by a notification,
-     * so only USER_PRESENT consumes the arm and requests a launch.
+     * A screen-off event arms one card. The first SCREEN_ON consumes that arm and
+     * requests a launch over the keyguard. USER_PRESENT must never launch again.
      */
     fun transition(
         awaitingUnlock: Boolean,
@@ -32,12 +32,12 @@ object LockScreenWakePolicy {
             showCard = false,
         )
         LockScreenWakeEvent.DisplayWoke -> LockScreenWakeTransition(
-            awaitingUnlock = awaitingUnlock,
-            showCard = false,
+            awaitingUnlock = false,
+            showCard = awaitingUnlock,
         )
         LockScreenWakeEvent.UserPresent -> LockScreenWakeTransition(
             awaitingUnlock = false,
-            showCard = awaitingUnlock,
+            showCard = false,
         )
     }
 }

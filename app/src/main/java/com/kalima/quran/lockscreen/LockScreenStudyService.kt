@@ -43,15 +43,19 @@ class LockScreenStudyService : Service() {
     @Volatile private var criticalAudioActive = false
     private var requestedAtElapsed = 0L
     private var awaitingUnlock = false
-    private var unlockRetryCount = 0
+    private var launchRetryCount = 0
 
     private val showCard: Runnable = Runnable {
         if (!progressStore.canShowLockScreenCard() || !Settings.canDrawOverlays(this)) return@Runnable
-        val systemBlock = LockScreenSystemSafety.blockReason(this, criticalAudioActive)
+        val systemBlock = LockScreenSystemSafety.blockReason(
+            context = this,
+            criticalAudioActive = criticalAudioActive,
+            allowLockedDevice = true,
+        )
         if (systemBlock != null) {
-            if (systemBlock in RETRYABLE_UNLOCK_BLOCKS && unlockRetryCount < MAX_UNLOCK_RETRIES) {
-                unlockRetryCount += 1
-                mainHandler.postDelayed(showCard, UNLOCK_RETRY_DELAY_MS)
+            if (systemBlock in RETRYABLE_LAUNCH_BLOCKS && launchRetryCount < MAX_LAUNCH_RETRIES) {
+                launchRetryCount += 1
+                mainHandler.postDelayed(showCard, LAUNCH_RETRY_DELAY_MS)
                 return@Runnable
             }
             progressStore.recordLockScreenSafetySkip()
@@ -105,21 +109,14 @@ class LockScreenStudyService : Service() {
                 }
 
                 Intent.ACTION_SCREEN_ON -> {
-                    awaitingUnlock = LockScreenWakePolicy.transition(
-                        awaitingUnlock,
-                        LockScreenWakeEvent.DisplayWoke,
-                    ).awaitingUnlock
-                }
-
-                Intent.ACTION_USER_PRESENT -> {
                     val transition = LockScreenWakePolicy.transition(
                         awaitingUnlock,
-                        LockScreenWakeEvent.UserPresent,
+                        LockScreenWakeEvent.DisplayWoke,
                     )
                     awaitingUnlock = transition.awaitingUnlock
                     if (transition.showCard) {
                         requestedAtElapsed = SystemClock.elapsedRealtime()
-                        unlockRetryCount = 0
+                        launchRetryCount = 0
                         mainHandler.removeCallbacks(showCard)
                         mainHandler.postDelayed(showCard, SCREEN_ON_DELAY_MS)
                     }
@@ -142,7 +139,6 @@ class LockScreenStudyService : Service() {
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_SCREEN_ON)
-            addAction(Intent.ACTION_USER_PRESENT)
         }
         ContextCompat.registerReceiver(
             this,
@@ -245,8 +241,8 @@ class LockScreenStudyService : Service() {
         private const val CHANNEL_ID = "lock_screen_study"
         private const val NOTIFICATION_ID = 1401
         private const val SCREEN_ON_DELAY_MS = 200L
-        private const val UNLOCK_RETRY_DELAY_MS = 250L
-        private const val MAX_UNLOCK_RETRIES = 8
+        private const val LAUNCH_RETRY_DELAY_MS = 250L
+        private const val MAX_LAUNCH_RETRIES = 8
         private const val ACTION_START = "com.kalima.quran.action.START_LOCK_SCREEN"
         private const val ACTION_STOP = "com.kalima.quran.action.STOP_LOCK_SCREEN"
         private val CRITICAL_AUDIO_USAGES = setOf(
@@ -254,9 +250,8 @@ class LockScreenStudyService : Service() {
             AudioAttributes.USAGE_NOTIFICATION_RINGTONE,
             AudioAttributes.USAGE_VOICE_COMMUNICATION,
         )
-        private val RETRYABLE_UNLOCK_BLOCKS = setOf(
+        private val RETRYABLE_LAUNCH_BLOCKS = setOf(
             LockScreenDeviceBlockReason.ScreenNotInteractive,
-            LockScreenDeviceBlockReason.DeviceLocked,
         )
 
         fun start(context: Context) {
