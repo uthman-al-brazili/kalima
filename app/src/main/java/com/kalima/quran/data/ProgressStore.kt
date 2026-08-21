@@ -32,6 +32,58 @@ class ProgressStore private constructor(context: Context) {
         recordAnswer(wordId, learned, ReviewSource.Study)
     }
 
+    fun introduce(wordId: String): Boolean =
+        recordIntroduction(wordId, ReviewSource.Study)
+
+    fun commitLockScreenIntroduction(sessionId: String, wordId: String): Boolean =
+        recordIntroduction(wordId, ReviewSource.LockScreen, sessionId)
+
+    private fun recordIntroduction(
+        wordId: String,
+        source: ReviewSource,
+        lockScreenSessionId: String? = null,
+    ): Boolean {
+        if (lockScreenSessionId != null && !canCommitLockScreenSession(lockScreenSessionId, wordId)) {
+            return false
+        }
+        val moment = Instant.now()
+        val date = today()
+        val previous = refreshDayIfNeeded(_progress.value, date)
+        if (previous.statusFor(wordId) != WordStatus.New) return false
+
+        val schedules = if (previous.spacedRepetitionEnabled) {
+            previous.reviewSchedules + (wordId to SpacedRepetition.introduce(moment))
+        } else {
+            previous.reviewSchedules
+        }
+        val (learnedIds, reviewingIds) = if (previous.spacedRepetitionEnabled) {
+            statusSets(schedules)
+        } else {
+            previous.learnedIds to (previous.reviewingIds + wordId)
+        }
+        val lastStudyDate = preferences.getString(KEY_LAST_STUDY_DATE, null)
+            ?.let(LocalDate::parse)
+        val updated = previous.copy(
+            learnedIds = learnedIds,
+            reviewingIds = reviewingIds,
+            todayAnsweredIds = previous.todayAnsweredIds + wordId,
+            streakDays = StreakCalculator.next(previous.streakDays, lastStudyDate, date),
+            reviewSchedules = schedules,
+            reviewEvents = ReviewHistory.append(
+                previous.reviewEvents,
+                ReviewEvent(moment, wordId, null, true, source),
+            ),
+        )
+        preferences.edit { putString(KEY_LAST_STUDY_DATE, date.toString()) }
+        persist(
+            updated,
+            date,
+            completedLockScreenSessionId = lockScreenSessionId,
+            clearPendingLockScreenSession = lockScreenSessionId != null,
+        )
+        return true
+    }
+
     fun commitLockScreenAnswer(sessionId: String, wordId: String, learned: Boolean): Boolean =
         recordAnswer(wordId, learned, ReviewSource.LockScreen, sessionId)
 

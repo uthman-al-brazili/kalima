@@ -15,6 +15,7 @@ import androidx.core.view.WindowCompat
 import com.kalima.quran.MainActivity
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.WordStatus
 import com.kalima.quran.localization.LanguageManager
 import com.kalima.quran.quiz.LockScreenContent
 import com.kalima.quran.quiz.LockScreenSession
@@ -30,6 +31,7 @@ class LockScreenStudyActivity : ComponentActivity() {
     private var openingMainApp = false
     private var answerCommitted = false
     private var preview = false
+    private var firstWordPresentation = false
 
     private val closeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
@@ -55,15 +57,16 @@ class LockScreenStudyActivity : ComponentActivity() {
         }
         configureWindow()
 
-        val session = if (preview) {
-            restoreContent(savedInstanceState)?.let { restored ->
-                LockScreenSession(
-                    id = savedInstanceState?.getString(STATE_SESSION_ID)
-                        ?: "preview-${SystemClock.elapsedRealtimeNanos()}",
-                    content = restored,
-                    shown = true,
-                )
-            } ?: progressStore.nextLockScreenSession(preview = true)
+        val restoredSession = restoreContent(savedInstanceState)?.let { restored ->
+            LockScreenSession(
+                id = savedInstanceState?.getString(STATE_SESSION_ID)
+                    ?: "restored-${SystemClock.elapsedRealtimeNanos()}",
+                content = restored,
+                shown = true,
+            )
+        }
+        val session = restoredSession ?: if (preview) {
+            progressStore.nextLockScreenSession(preview = true)
         } else {
             progressStore.nextLockScreenSession(preview = false)
         }
@@ -83,11 +86,18 @@ class LockScreenStudyActivity : ComponentActivity() {
                 progressStore.recordLockScreenLatency(SystemClock.elapsedRealtime() - requestedAt)
             }
         val progress = progressStore.progress.value
+        val wordContent = session.content as? LockScreenContent.WordCard
+        firstWordPresentation = savedInstanceState?.getBoolean(STATE_FIRST_WORD_PRESENTATION)
+            ?: (wordContent?.word?.id?.let(progress::statusFor) == WordStatus.New)
+        if (firstWordPresentation && !preview && savedInstanceState == null && wordContent != null) {
+            progressStore.commitLockScreenIntroduction(session.id, wordContent.word.id)
+        }
 
         setContent {
             when (val content = currentSession.content) {
                 is LockScreenContent.WordCard -> LockScreenStudyScreen(
                     word = content.word,
+                    isNewPresentation = firstWordPresentation,
                     initialRememberedSelection = studyRememberedSelection,
                     showCompleteAyah = progress.showCompleteAyah,
                     onShowCompleteAyahChange = progressStore::setShowCompleteAyah,
@@ -96,6 +106,9 @@ class LockScreenStudyActivity : ComponentActivity() {
                         val remembered = studyRememberedSelection ?: return@confirm
                         if (!answerCommitted) {
                             answerCommitted = if (preview) {
+                                true
+                            } else if (firstWordPresentation) {
+                                progressStore.toggleAlreadyKnown(content.word.id)
                                 true
                             } else {
                                 progressStore.commitLockScreenAnswer(
@@ -191,6 +204,7 @@ class LockScreenStudyActivity : ComponentActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString(STATE_SESSION_ID, currentSession.id)
+        outState.putBoolean(STATE_FIRST_WORD_PRESENTATION, firstWordPresentation)
         studyRememberedSelection?.let { outState.putBoolean(STATE_STUDY_REMEMBERED, it) }
         when (val content = currentSession.content) {
             is LockScreenContent.WordCard -> {
@@ -283,6 +297,7 @@ class LockScreenStudyActivity : ComponentActivity() {
         const val EXTRA_REQUESTED_AT_ELAPSED = "com.kalima.quran.extra.LOCK_SCREEN_REQUESTED_AT"
         const val ACTION_CLOSE = "com.kalima.quran.action.CLOSE_LOCK_SCREEN_CARD"
         private const val STATE_SESSION_ID = "session_id"
+        private const val STATE_FIRST_WORD_PRESENTATION = "first_word_presentation"
         private const val STATE_STUDY_REMEMBERED = "study_remembered"
         private const val STATE_CONTENT_TYPE = "content_type"
         private const val STATE_WORD_ID = "word_id"

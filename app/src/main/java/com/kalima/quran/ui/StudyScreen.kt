@@ -66,6 +66,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun StudyScreen(
     progress: StudyProgress,
+    onIntroduce: (String) -> Unit,
     onAnswer: (String, Boolean) -> Unit,
     onCurrentWordChange: (String) -> Unit,
     onEnableLockScreen: () -> Unit,
@@ -124,7 +125,10 @@ fun StudyScreen(
         }
         return
     }
-    val words = remember(
+    var activeIntroductionId by rememberSaveable(progress.studyScope.name, selectionKey) {
+        mutableStateOf<String?>(null)
+    }
+    val queuedWords = remember(
         availableWords,
         progress.reviewSchedules,
         progress.spacedRepetitionEnabled,
@@ -140,6 +144,9 @@ fun StudyScreen(
         } else {
             ReviewQueue.rotated(availableWords, dailyStart)
         }
+    }
+    val words = remember(queuedWords, availableWords, activeIntroductionId) {
+        studyWordsForPresentation(queuedWords, availableWords, activeIntroductionId)
     }
     if (words.isEmpty()) {
         Box(Modifier.fillMaxSize()) {
@@ -168,6 +175,9 @@ fun StudyScreen(
         launchTarget?.requestId,
     ) { mutableStateOf(session.first().id) }
     val word = WordRepository.wordById(currentWordId) ?: session.first()
+    val isNewPresentation = rememberSaveable(word.id) {
+        progress.statusFor(word.id) == WordStatus.New
+    }
     var meaningRevealed by rememberSaveable(word.id) {
         mutableStateOf(shouldRevealMeaningInitially(progress.statusFor(word.id)))
     }
@@ -181,6 +191,10 @@ fun StudyScreen(
 
     LaunchedEffect(word.id) {
         onCurrentWordChange(word.id)
+        if (isNewPresentation) {
+            activeIntroductionId = word.id
+            onIntroduce(word.id)
+        }
         scrollState.scrollTo(0)
     }
 
@@ -270,12 +284,17 @@ fun StudyScreen(
 
         StudyActionBar(
             meaningRevealed = meaningRevealed,
+            isNewPresentation = isNewPresentation,
             spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
             goodTiming = goodReviewTiming(
                 spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
                 schedule = progress.scheduleFor(word.id),
             ),
             onRevealMeaning = { meaningRevealed = true },
+            onNextWord = {
+                activeIntroductionId = null
+                moveToNextWord()
+            },
             onAgain = {
                 onAnswer(word.id, false)
                 moveToNextWord()
@@ -888,9 +907,11 @@ private fun AlphabetAccessCard(
 @Composable
 private fun StudyActionBar(
     meaningRevealed: Boolean,
+    isNewPresentation: Boolean,
     spacedRepetitionEnabled: Boolean,
     goodTiming: String,
     onRevealMeaning: () -> Unit,
+    onNextWord: () -> Unit,
     onAgain: () -> Unit,
     onRemembered: () -> Unit,
     modifier: Modifier = Modifier,
@@ -919,6 +940,14 @@ private fun StudyActionBar(
                     shape = RoundedCornerShape(16.dp),
                 ) {
                     Text(stringResource(R.string.reveal_meaning), fontWeight = FontWeight.Bold)
+                }
+            } else if (isNewPresentation) {
+                Button(
+                    onClick = onNextWord,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Text(stringResource(R.string.next_word), fontWeight = FontWeight.Bold)
                 }
             } else {
                 Text(
@@ -964,7 +993,20 @@ private fun StudyActionBar(
     }
 }
 
-internal fun shouldRevealMeaningInitially(@Suppress("UNUSED_PARAMETER") status: WordStatus): Boolean = false
+internal fun shouldRevealMeaningInitially(status: WordStatus): Boolean = status == WordStatus.New
+
+internal fun studyWordsForPresentation(
+    queuedWords: List<QuranWord>,
+    availableWords: List<QuranWord>,
+    activeIntroductionId: String?,
+): List<QuranWord> = if (queuedWords.isNotEmpty()) {
+    queuedWords
+} else {
+    activeIntroductionId
+        ?.let { introducedId -> availableWords.firstOrNull { it.id == introducedId } }
+        ?.let(::listOf)
+        .orEmpty()
+}
 
 @Composable
 private fun ReviewActionContent(title: String, detail: String) {

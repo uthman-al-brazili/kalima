@@ -54,6 +54,7 @@ data class StudyLaunchTarget(val wordId: String, val requestId: Long)
 @Composable
 fun KalimaApp(
     progress: StudyProgress,
+    onIntroduce: (String) -> Unit,
     onAnswer: (String, Boolean) -> Unit,
     onCurrentStudyWordChange: (String) -> Unit,
     onQuizAnswer: (String, Boolean) -> Unit,
@@ -170,6 +171,7 @@ fun KalimaApp(
                     when (selected) {
                         AppTab.Study -> StudyScreen(
                             progress = progress,
+                            onIntroduce = onIntroduce,
                             onAnswer = onAnswer,
                             onCurrentWordChange = onCurrentStudyWordChange,
                             onEnableLockScreen = { onLockScreenChange(true) },

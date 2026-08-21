@@ -36,6 +36,15 @@ object SpacedRepetition {
     const val LEARNED_REPETITIONS = 2
     const val AGAIN_DELAY_MINUTES = 10L
 
+    fun introduce(now: Instant): ReviewSchedule = ReviewSchedule(
+        repetitions = 0,
+        intervalDays = 0,
+        easeFactor = INITIAL_EASE_FACTOR,
+        dueAt = now.plus(Duration.ofMinutes(AGAIN_DELAY_MINUTES)),
+        lastReviewedAt = now,
+        lapses = 0,
+    )
+
     fun review(
         previous: ReviewSchedule?,
         grade: ReviewGrade,

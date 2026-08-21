@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.28.1 — 2026-08-21
+
+- Made brand-new words reveal their meaning and learning details immediately,
+  with a single “Next word” action in Study and no “Hard” or “Easy” grading on
+  return-to-phone cards until the learner encounters the word again.
+- Recorded each first presentation as a neutral introduction that counts the
+  word as encountered and schedules its first recall without treating it as a
+  correct answer, a mistake, or a lapse.
+
 ## 0.28.0 — 2026-08-21
 
 - Reworked root and surah statistics as clearly explained word coverage with

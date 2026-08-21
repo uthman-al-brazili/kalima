@@ -317,6 +317,7 @@
     <string name="path_group_collection">Other sets</string>
     <string name="path_selected_summary">Current set: %1$s</string>
     <string name="reveal_meaning">Reveal meaning</string>
+    <string name="next_word">Next word</string>
     <string name="recall_before_reveal">Before revealing it, pause and try to remember the translation.</string>
     <string name="rate_recall_instruction">How easy was it to remember the translation?</string>
     <string name="review_hard">Hard</string>

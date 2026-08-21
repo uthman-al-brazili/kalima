@@ -104,6 +104,7 @@ class MainActivity : ComponentActivity() {
             val offlineWordAudioState by offlineWordAudioManager.state.collectAsStateWithLifecycle()
             KalimaApp(
                 progress = progress,
+                onIntroduce = store::introduce,
                 onAnswer = store::answer,
                 onCurrentStudyWordChange = store::setCurrentStudyWord,
                 onQuizAnswer = store::answerQuiz,

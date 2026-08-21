@@ -29,4 +29,20 @@ class ReviewHistoryTest {
         assertEquals(50, ReviewHistory.accuracy(events, 7, now))
         assertNull(ReviewHistory.accuracy(emptyList(), 1, now))
     }
+
+    @Test
+    fun introductionsRoundTripWithoutChangingRecallAccuracy() {
+        val introduction = ReviewEvent(now, "new", null, true, ReviewSource.Study)
+        val events = listOf(
+            introduction,
+            ReviewEvent(now, "remembered", true, false, ReviewSource.Study),
+            ReviewEvent(now, "forgotten", false, false, ReviewSource.LockScreen),
+        )
+
+        assertEquals(
+            listOf(introduction),
+            ReviewEventCodec.decode(ReviewEventCodec.encode(listOf(introduction))),
+        )
+        assertEquals(50, ReviewHistory.accuracy(events, 1, now))
+    }
 }

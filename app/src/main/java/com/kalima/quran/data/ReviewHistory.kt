@@ -13,7 +13,7 @@ enum class ReviewSource {
 data class ReviewEvent(
     val timestamp: Instant,
     val wordId: String,
-    val correct: Boolean,
+    val correct: Boolean?,
     val wasNew: Boolean,
     val source: ReviewSource,
 )
@@ -29,9 +29,11 @@ object ReviewHistory {
         days: Long,
         now: Instant = Instant.now(),
     ): Int? {
-        val recent = events.filter { it.timestamp >= now.minusSeconds(days * 86_400) }
+        val recent = events.filter {
+            it.correct != null && it.timestamp >= now.minusSeconds(days * 86_400)
+        }
         if (recent.isEmpty()) return null
-        return (recent.count(ReviewEvent::correct) * 100f / recent.size).toInt()
+        return (recent.count { it.correct == true } * 100f / recent.size).toInt()
     }
 
     fun countByDay(
@@ -46,7 +48,11 @@ object ReviewEventCodec {
             event.timestamp.toEpochMilli(),
             index,
             event.wordId,
-            if (event.correct) 1 else 0,
+            when (event.correct) {
+                true -> 1
+                false -> 0
+                null -> "-"
+            },
             if (event.wasNew) 1 else 0,
             event.source.name,
         ).joinToString("|")
@@ -60,7 +66,12 @@ object ReviewEventCodec {
         ReviewEvent(
             timestamp = timestamp,
             wordId = parts[2],
-            correct = parts[3] == "1",
+            correct = when (parts[3]) {
+                "1" -> true
+                "0" -> false
+                "-" -> null
+                else -> return@mapNotNull null
+            },
             wasNew = parts[4] == "1",
             source = source,
         )

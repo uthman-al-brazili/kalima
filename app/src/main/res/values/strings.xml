@@ -317,6 +317,7 @@
     <string name="path_group_collection">Outros conjuntos</string>
     <string name="path_selected_summary">Conjunto atual: %1$s</string>
     <string name="reveal_meaning">Revelar significado</string>
+    <string name="next_word">Próxima palavra</string>
     <string name="recall_before_reveal">Antes de revelar, pare um instante e tente lembrar a tradução.</string>
     <string name="rate_recall_instruction">Como foi lembrar a tradução?</string>
     <string name="review_hard">Difícil</string>

@@ -46,6 +46,7 @@ import com.kalima.quran.ui.theme.Muted
 @Composable
 fun LockScreenStudyScreen(
     word: QuranWord,
+    isNewPresentation: Boolean,
     initialRememberedSelection: Boolean?,
     showCompleteAyah: Boolean,
     onShowCompleteAyahChange: (Boolean) -> Unit,
@@ -59,7 +60,7 @@ fun LockScreenStudyScreen(
     var rememberedSelection by rememberSaveable(word.id) {
         mutableStateOf(initialRememberedSelection)
     }
-    var meaningRevealed by rememberSaveable(word.id) { mutableStateOf(false) }
+    var meaningRevealed by rememberSaveable(word.id) { mutableStateOf(isNewPresentation) }
     var confirmingAlreadyKnown by rememberSaveable(word.id) { mutableStateOf(false) }
     var completeAyahVisible by rememberSaveable { mutableStateOf(showCompleteAyah) }
     KalimaTheme {
@@ -130,13 +131,15 @@ fun LockScreenStudyScreen(
                             textAlign = TextAlign.Center,
                             fontWeight = FontWeight.Bold,
                         )
-                        Text(
-                            stringResource(R.string.rate_recall_instruction),
-                            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
-                            color = Color.White.copy(alpha = 0.68f),
-                            style = MaterialTheme.typography.bodySmall,
-                            textAlign = TextAlign.Center,
-                        )
+                        if (!isNewPresentation) {
+                            Text(
+                                stringResource(R.string.rate_recall_instruction),
+                                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                                color = Color.White.copy(alpha = 0.68f),
+                                style = MaterialTheme.typography.bodySmall,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
                     } else {
                         Text(
                             stringResource(R.string.recall_before_reveal),
@@ -283,7 +286,7 @@ fun LockScreenStudyScreen(
                     Spacer(Modifier.height(12.dp))
                 }
 
-                if (meaningRevealed) {
+                if (meaningRevealed && !isNewPresentation) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),

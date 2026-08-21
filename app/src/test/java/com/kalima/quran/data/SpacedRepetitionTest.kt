@@ -37,6 +37,18 @@ class SpacedRepetitionTest {
     }
 
     @Test
+    fun introducedCardWaitsForRecallWithoutRecordingALapse() {
+        val introduced = SpacedRepetition.introduce(now)
+
+        assertEquals(0, introduced.repetitions)
+        assertEquals(0, introduced.intervalDays)
+        assertEquals(Duration.ofMinutes(10), Duration.between(now, introduced.dueAt))
+        assertEquals(SpacedRepetition.INITIAL_EASE_FACTOR, introduced.easeFactor, 0.001)
+        assertEquals(0, introduced.lapses)
+        assertFalse(introduced.isLearned)
+    }
+
+    @Test
     fun earlySuccessfulReviewDoesNotInflateInterval() {
         val first = SpacedRepetition.review(null, ReviewGrade.Good, now)
         val early = SpacedRepetition.review(first, ReviewGrade.Good, now.plusSeconds(60))
