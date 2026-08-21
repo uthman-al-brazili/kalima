@@ -3,6 +3,25 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.28.0 — 2026-08-21
+
+- Reworked root and surah statistics as clearly explained word coverage with
+  progress bars, replacing the ambiguous “familiar” mastery counts.
+- Made every Study and return-to-phone card ask learners to recall the
+  translation before revealing it, followed by direct “Hard” and “Easy”
+  grading, and removed internal lemma terminology from learner-facing notes.
+- Matched alphabet playback to the fully vocalized Arabic letter name shown
+  beside its transliteration and preferred a clear Saudi Arabic device voice.
+- Hardened return-to-phone launching so notification-only screen wakes never
+  open Kalima, while a real completed unlock is detected once and retried
+  briefly if Android is still dismissing the keyguard.
+- Kept Study, Quiz, reminders, and return-to-phone cards available when a
+  learner voluntarily restarts the alphabet after already knowing, finishing,
+  or skipping it.
+- Replaced the visible activity dates with a learner-friendly Hijri calendar,
+  including Arabic and translated weekdays and month names plus tap-to-hear
+  Arabic pronunciation for the current weekday and month.
+
 ## 0.27.2 — 2026-08-20
 
 - Renamed the number lesson heading to “Arabic-Indic number” so learners can

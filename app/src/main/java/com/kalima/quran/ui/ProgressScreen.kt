@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -34,12 +35,16 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
+import com.kalima.quran.audio.ArabicPronouncer
+import com.kalima.quran.data.HijriCalendar
+import com.kalima.quran.data.HijriCalendarDate
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.ReviewHistory
 import com.kalima.quran.data.limitNewWords
 import java.time.LocalDate
+import java.time.DayOfWeek
 import java.time.ZoneId
 
 @Composable
@@ -47,6 +52,7 @@ fun ProgressScreen(
     progress: StudyProgress,
     onStudyScopeChange: (StudyScope) -> Unit,
     onToggleSurah: (Int) -> Unit,
+    pronouncer: ArabicPronouncer,
 ) {
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val activeWords = remember(
@@ -299,7 +305,7 @@ fun ProgressScreen(
             }
         }
         Spacer(Modifier.height(24.dp))
-        ActivityCalendar(progress)
+        ActivityCalendar(progress, pronouncer)
         Spacer(Modifier.height(24.dp))
         if (progress.spacedRepetitionEnabled) DifficultWords(progress)
         Spacer(Modifier.height(24.dp))
@@ -312,7 +318,7 @@ fun ProgressScreen(
 
 @Composable
 private fun SurahMastery(words: List<com.kalima.quran.data.QuranWord>, progress: StudyProgress) {
-    val surahs = remember(words, progress.learnedIds, progress.reviewingIds) {
+    val surahs = remember(words, progress.learnedIds, progress.reviewingIds, progress.alreadyKnownIds) {
         words.filter { it.surahNumber != null }
             .groupBy { requireNotNull(it.surahNumber) }
             .map { (surah, surahWords) ->
@@ -322,20 +328,33 @@ private fun SurahMastery(words: List<com.kalima.quran.data.QuranWord>, progress:
             .take(5)
     }
     Text(stringResource(R.string.surah_mastery), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text(
+        stringResource(R.string.surah_mastery_note),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.bodySmall,
+    )
     Spacer(Modifier.height(10.dp))
     if (surahs.isEmpty()) {
         Text(stringResource(R.string.no_history_yet), color = MaterialTheme.colorScheme.onSurfaceVariant)
     } else surahs.forEach { (surah, familiar, total) ->
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                stringResource(R.string.surah_number, surah),
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+        Column(modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    stringResource(R.string.surah_number, surah),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(stringResource(R.string.mastery_value, familiar, total), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(5.dp))
+            LinearProgressIndicator(
+                progress = { if (total == 0) 0f else familiar.toFloat() / total },
+                modifier = Modifier.fillMaxWidth().height(6.dp),
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
             )
-            Text(stringResource(R.string.mastery_value, familiar, total), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -380,8 +399,9 @@ private fun ProgressPathChip(
 }
 
 @Composable
-private fun ActivityCalendar(progress: StudyProgress) {
+private fun ActivityCalendar(progress: StudyProgress, pronouncer: ArabicPronouncer) {
     val today = LocalDate.now()
+    val todayHijri = HijriCalendar.from(today)
     val counts = remember(progress.reviewEvents) { ReviewHistory.countByDay(progress.reviewEvents) }
     val days = (13L downTo 0L).map(today::minusDays)
     Text(
@@ -395,18 +415,27 @@ private fun ActivityCalendar(progress: StudyProgress) {
         style = MaterialTheme.typography.bodySmall,
     )
     Spacer(Modifier.height(10.dp))
+    HijriTodayCard(todayHijri, pronouncer)
+    Spacer(Modifier.height(12.dp))
     days.chunked(7).forEach { week ->
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(7.dp),
         ) {
             week.forEach { day ->
+                val hijriDay = HijriCalendar.from(day)
                 val count = counts[day] ?: 0
+                val translatedDate = stringResource(
+                    R.string.hijri_date_translation,
+                    weekdayName(hijriDay.dayOfWeek),
+                    hijriDay.dayOfMonth,
+                    monthName(hijriDay.monthOfYear),
+                    hijriDay.year,
+                )
                 val dayDescription = pluralStringResource(
                     R.plurals.activity_day_description,
                     count,
-                    day.dayOfMonth,
-                    day.monthValue,
+                    translatedDate,
                     count,
                 )
                 Surface(
@@ -425,9 +454,19 @@ private fun ActivityCalendar(progress: StudyProgress) {
                     },
                     shape = RoundedCornerShape(10.dp),
                 ) {
-                    Column(Modifier.padding(vertical = 8.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-                        Text(day.dayOfMonth.toString(), style = MaterialTheme.typography.labelSmall)
-                        Text(count.toString(), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium)
+                    Column(Modifier.padding(vertical = 7.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            HijriCalendar.weekday(hijriDay.dayOfWeek).shortArabic,
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                        Text(weekdayShortName(hijriDay.dayOfWeek), style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            HijriCalendar.arabicIndicNumber(hijriDay.dayOfMonth),
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                        Text("×$count", style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
@@ -440,6 +479,107 @@ private fun ActivityCalendar(progress: StudyProgress) {
         style = MaterialTheme.typography.labelSmall,
     )
 }
+
+@Composable
+private fun HijriTodayCard(date: HijriCalendarDate, pronouncer: ArabicPronouncer) {
+    val weekday = HijriCalendar.weekday(date.dayOfWeek)
+    val month = HijriCalendar.month(date.monthOfYear)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = RoundedCornerShape(18.dp),
+    ) {
+        Column(Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                stringResource(R.string.today_hijri_calendar),
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(6.dp))
+            ArabicText(
+                "${weekday.arabic}، ${HijriCalendar.arabicIndicNumber(date.dayOfMonth)} " +
+                    "${month.arabic} ${HijriCalendar.arabicIndicNumber(date.year)} هـ",
+                modifier = Modifier.fillMaxWidth(),
+                size = 25,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                stringResource(
+                    R.string.hijri_date_translation,
+                    weekdayName(date.dayOfWeek),
+                    date.dayOfMonth,
+                    monthName(date.monthOfYear),
+                    date.year,
+                ),
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FoundationPronunciationButton(
+                    text = weekday.arabic,
+                    pronouncer = pronouncer,
+                    modifier = Modifier.weight(1f),
+                    labelRes = R.string.hear_weekday,
+                )
+                FoundationPronunciationButton(
+                    text = month.arabic,
+                    pronouncer = pronouncer,
+                    modifier = Modifier.weight(1f),
+                    labelRes = R.string.hear_month,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun weekdayName(day: DayOfWeek): String = stringResource(
+    when (day) {
+        DayOfWeek.MONDAY -> R.string.weekday_monday
+        DayOfWeek.TUESDAY -> R.string.weekday_tuesday
+        DayOfWeek.WEDNESDAY -> R.string.weekday_wednesday
+        DayOfWeek.THURSDAY -> R.string.weekday_thursday
+        DayOfWeek.FRIDAY -> R.string.weekday_friday
+        DayOfWeek.SATURDAY -> R.string.weekday_saturday
+        DayOfWeek.SUNDAY -> R.string.weekday_sunday
+    },
+)
+
+@Composable
+private fun weekdayShortName(day: DayOfWeek): String = stringResource(
+    when (day) {
+        DayOfWeek.MONDAY -> R.string.weekday_monday_short
+        DayOfWeek.TUESDAY -> R.string.weekday_tuesday_short
+        DayOfWeek.WEDNESDAY -> R.string.weekday_wednesday_short
+        DayOfWeek.THURSDAY -> R.string.weekday_thursday_short
+        DayOfWeek.FRIDAY -> R.string.weekday_friday_short
+        DayOfWeek.SATURDAY -> R.string.weekday_saturday_short
+        DayOfWeek.SUNDAY -> R.string.weekday_sunday_short
+    },
+)
+
+@Composable
+private fun monthName(month: Int): String = stringResource(
+    when (month) {
+        1 -> R.string.hijri_month_muharram
+        2 -> R.string.hijri_month_safar
+        3 -> R.string.hijri_month_rabi_awwal
+        4 -> R.string.hijri_month_rabi_thani
+        5 -> R.string.hijri_month_jumada_awwal
+        6 -> R.string.hijri_month_jumada_thani
+        7 -> R.string.hijri_month_rajab
+        8 -> R.string.hijri_month_shaban
+        9 -> R.string.hijri_month_ramadan
+        10 -> R.string.hijri_month_shawwal
+        11 -> R.string.hijri_month_dhu_qidah
+        12 -> R.string.hijri_month_dhu_hijjah
+        else -> error("Invalid Hijri month: $month")
+    },
+)
 
 @Composable
 private fun DifficultWords(progress: StudyProgress) {
@@ -474,7 +614,7 @@ private fun DifficultWords(progress: StudyProgress) {
 
 @Composable
 private fun RootMastery(words: List<com.kalima.quran.data.QuranWord>, progress: StudyProgress) {
-    val roots = remember(words, progress.learnedIds, progress.reviewingIds) {
+    val roots = remember(words, progress.learnedIds, progress.reviewingIds, progress.alreadyKnownIds) {
         words.filter { it.root.isNotBlank() && it.root != "—" }
             .groupBy { it.root }
             .map { (root, rootWords) ->
@@ -484,16 +624,29 @@ private fun RootMastery(words: List<com.kalima.quran.data.QuranWord>, progress: 
             .take(5)
     }
     Text(stringResource(R.string.root_mastery), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text(
+        stringResource(R.string.root_mastery_note),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.bodySmall,
+    )
     Spacer(Modifier.height(10.dp))
     if (roots.isEmpty()) {
         Text(stringResource(R.string.no_history_yet), color = MaterialTheme.colorScheme.onSurfaceVariant)
     } else roots.forEach { (root, familiar, total) ->
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(root, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-            Text(stringResource(R.string.mastery_value, familiar, total), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column(modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(root, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.mastery_value, familiar, total), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(5.dp))
+            LinearProgressIndicator(
+                progress = { if (total == 0) 0f else familiar.toFloat() / total },
+                modifier = Modifier.fillMaxWidth().height(6.dp),
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
         }
     }
 }

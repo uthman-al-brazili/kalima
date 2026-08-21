@@ -63,7 +63,9 @@ internal class ArabicFoundationVoice(context: Context) {
     private fun finishInitialization(status: Int) {
         val engine = textToSpeech
         val languageAvailable = if (status == TextToSpeech.SUCCESS && engine != null) {
-            engine.setLanguage(Locale.forLanguageTag(ARABIC_LANGUAGE_TAG)) >= TextToSpeech.LANG_AVAILABLE
+            ARABIC_LOCALES.any { locale ->
+                engine.setLanguage(locale) >= TextToSpeech.LANG_AVAILABLE
+            }
         } else {
             false
         }
@@ -95,7 +97,10 @@ internal class ArabicFoundationVoice(context: Context) {
     }
 
     private companion object {
-        const val ARABIC_LANGUAGE_TAG = "ar"
         const val FOUNDATION_UTTERANCE_ID = "kalima-foundation-pronunciation"
+        val ARABIC_LOCALES: List<Locale> = listOf(
+            Locale.forLanguageTag("ar-SA"),
+            Locale.forLanguageTag("ar"),
+        )
     }
 }

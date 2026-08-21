@@ -33,7 +33,10 @@ class LockScreenDevicePolicyTest {
             LockScreenDeviceBlockReason.PowerSaver,
             LockScreenDevicePolicy.blockReason(safe.copy(powerSaver = true)),
         )
-        assertNull(LockScreenDevicePolicy.blockReason(safe.copy(deviceLocked = true)))
+        assertEquals(
+            LockScreenDeviceBlockReason.DeviceLocked,
+            LockScreenDevicePolicy.blockReason(safe.copy(deviceLocked = true)),
+        )
         assertNull(LockScreenDevicePolicy.blockReason(safe))
     }
 }

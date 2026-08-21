@@ -57,6 +57,7 @@ import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.WordStatus
 import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.data.hasNumberFoundationLesson
+import com.kalima.quran.data.hasAlphabetFoundationLesson
 import com.kalima.quran.data.needsAlphabetFoundation
 import java.time.Instant
 import java.time.LocalDate
@@ -264,7 +265,7 @@ fun StudyScreen(
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
             )
-            Spacer(Modifier.height(112.dp))
+            Spacer(Modifier.height(148.dp))
         }
 
         StudyActionBar(
@@ -289,7 +290,7 @@ fun StudyScreen(
             hostState = snackbarHostState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 20.dp, vertical = 112.dp),
+                .padding(horizontal = 20.dp, vertical = 148.dp),
         )
     }
 }
@@ -304,7 +305,7 @@ fun FoundationsScreen(
     onStartNumberFoundation: () -> Unit,
     pronouncer: ArabicPronouncer,
 ) {
-    if (progress.needsAlphabetFoundation) {
+    if (progress.hasAlphabetFoundationLesson) {
         AlphabetFoundationScreen(
             progress = progress,
             onCompleteAlphabetLesson = onCompleteAlphabetLesson,
@@ -497,6 +498,14 @@ private fun AlphabetFoundationScreen(
                                 size = 88,
                                 color = MaterialTheme.colorScheme.primary,
                             )
+                            if (symbol.spokenArabic != symbol.arabic) {
+                                ArabicText(
+                                    symbol.spokenArabic,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    size = 28,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                            }
                             Text(
                                 symbol.transliteration,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -508,6 +517,12 @@ private fun AlphabetFoundationScreen(
                                 text = symbol.spokenArabic,
                                 pronouncer = pronouncer,
                                 labelRes = R.string.hear_letter,
+                            )
+                            Text(
+                                stringResource(R.string.letter_audio_matches_name),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.labelSmall,
+                                textAlign = TextAlign.Center,
                             )
                         }
                     }
@@ -889,54 +904,67 @@ private fun StudyActionBar(
         tonalElevation = 3.dp,
         shadowElevation = 8.dp,
     ) {
-        if (!meaningRevealed) {
-            Button(
-                onClick = onRevealMeaning,
-                modifier = Modifier.padding(8.dp).fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                Text(stringResource(R.string.reveal_meaning), fontWeight = FontWeight.Bold)
-            }
-        } else {
-            Row(
-                modifier = Modifier.padding(8.dp).fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                OutlinedButton(
-                    onClick = onAgain,
-                    modifier = Modifier.weight(1f).height(68.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    ReviewActionContent(
-                        title = stringResource(
-                            if (spacedRepetitionEnabled) R.string.review_again
-                            else R.string.review_again_no_schedule,
-                        ),
-                        detail = stringResource(
-                            if (spacedRepetitionEnabled) R.string.review_again_timing
-                            else R.string.review_without_schedule,
-                        ),
-                    )
-                }
+        Column(Modifier.padding(8.dp)) {
+            if (!meaningRevealed) {
+                Text(
+                    stringResource(R.string.recall_before_reveal),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                )
                 Button(
-                    onClick = onRemembered,
-                    modifier = Modifier.weight(1f).height(68.dp),
+                    onClick = onRevealMeaning,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                    ),
                 ) {
-                    ReviewActionContent(
-                        title = stringResource(R.string.review_remembered),
-                        detail = goodTiming,
-                    )
+                    Text(stringResource(R.string.reveal_meaning), fontWeight = FontWeight.Bold)
+                }
+            } else {
+                Text(
+                    stringResource(R.string.rate_recall_instruction),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = onAgain,
+                        modifier = Modifier.weight(1f).height(68.dp),
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        ReviewActionContent(
+                            title = stringResource(R.string.review_hard),
+                            detail = stringResource(
+                                if (spacedRepetitionEnabled) R.string.review_again_timing
+                                else R.string.review_without_schedule,
+                            ),
+                        )
+                    }
+                    Button(
+                        onClick = onRemembered,
+                        modifier = Modifier.weight(1f).height(68.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    ) {
+                        ReviewActionContent(
+                            title = stringResource(R.string.review_easy),
+                            detail = goodTiming,
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-internal fun shouldRevealMeaningInitially(status: WordStatus): Boolean = status == WordStatus.New
+internal fun shouldRevealMeaningInitially(@Suppress("UNUSED_PARAMETER") status: WordStatus): Boolean = false
 
 @Composable
 private fun ReviewActionContent(title: String, detail: String) {
@@ -1199,7 +1227,7 @@ private fun WordCard(
                     shape = RoundedCornerShape(16.dp),
                 ) {
                     Text(
-                        "💡 ${word.insight}",
+                        "💡 ${word.learnerInsight}",
                         modifier = Modifier.padding(14.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary,

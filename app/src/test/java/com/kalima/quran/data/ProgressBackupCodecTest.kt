@@ -26,6 +26,7 @@ class ProgressBackupCodecTest {
             showCompleteAyah = true,
             quranFontSizeSp = 34,
             alphabetCourseRequested = true,
+            alphabetFoundationRequired = true,
             numberCourseRequested = true,
             completedAlphabetLessons = 3,
             completedNumberLessons = 7,
@@ -42,6 +43,7 @@ class ProgressBackupCodecTest {
         assertEquals(true, decoded.progress.showCompleteAyah)
         assertEquals(34, decoded.progress.quranFontSizeSp)
         assertEquals(true, decoded.progress.alphabetCourseRequested)
+        assertEquals(true, decoded.progress.alphabetFoundationRequired)
         assertEquals(true, decoded.progress.numberCourseRequested)
         assertEquals(3, decoded.progress.completedAlphabetLessons)
         assertEquals(7, decoded.progress.completedNumberLessons)
@@ -157,6 +159,7 @@ class ProgressBackupCodecTest {
         val legacyPayload = payload.lineSequence()
             .filterNot { line ->
                 line.startsWith("alphabetCourseRequested\t") ||
+                    line.startsWith("alphabetFoundationRequired\t") ||
                     line.startsWith("numberCourseRequested\t") ||
                     line.startsWith("completedAlphabetLessons\t") ||
                     line.startsWith("completedNumberLessons\t")
@@ -177,5 +180,45 @@ class ProgressBackupCodecTest {
         assertEquals(false, progress.alphabetCourseRequested)
         assertEquals(false, progress.numberCourseRequested)
         assertEquals(false, progress.needsAlphabetFoundation)
+    }
+
+    @Test
+    fun backupsFromVoluntaryAlphabetReviewKeepEstablishedLearnersUnblocked() {
+        val reviewingAlphabet = StudyProgress(
+            learnedIds = setOf("word-1"),
+            alphabetCourseRequested = true,
+            alphabetFoundationRequired = false,
+            completedAlphabetLessons = 0,
+        )
+        val legacy = withoutPayloadField(
+            ProgressBackupCodec.encode(reviewingAlphabet, "0.27.2", "corpus", now),
+            "alphabetFoundationRequired",
+        )
+
+        val progress = ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress
+        assertEquals(true, progress.hasAlphabetFoundationLesson)
+        assertEquals(false, progress.needsAlphabetFoundation)
+    }
+
+    private fun withoutPayloadField(backup: String, field: String): String {
+        val encodedPayload = backup.lineSequence().first { it.startsWith("payload=") }
+            .removePrefix("payload=")
+        val payload = String(
+            Base64.getUrlDecoder().decode(encodedPayload),
+            StandardCharsets.UTF_8,
+        )
+        val legacyPayload = payload.lineSequence()
+            .filterNot { it.startsWith("$field\t") }
+            .joinToString("\n")
+        val legacyEncodedPayload = Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(legacyPayload.toByteArray(StandardCharsets.UTF_8))
+        val legacyChecksum = MessageDigest.getInstance("SHA-256")
+            .digest(legacyPayload.toByteArray(StandardCharsets.UTF_8))
+            .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        return listOf(
+            "#kalima-progress-backup-v1",
+            "sha256=$legacyChecksum",
+            "payload=$legacyEncodedPayload",
+        ).joinToString("\n")
     }
 }

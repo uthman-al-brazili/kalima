@@ -2,13 +2,12 @@ package com.kalima.quran.ui
 
 import com.kalima.quran.data.WordStatus
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MeaningVisibilityTest {
     @Test
-    fun `new words reveal their meaning initially`() {
-        assertTrue(shouldRevealMeaningInitially(WordStatus.New))
+    fun `new words ask for recall before revealing their meaning`() {
+        assertFalse(shouldRevealMeaningInitially(WordStatus.New))
     }
 
     @Test

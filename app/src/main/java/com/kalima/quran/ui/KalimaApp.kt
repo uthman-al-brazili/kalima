@@ -207,6 +207,7 @@ fun KalimaApp(
                             progress = progress,
                             onStudyScopeChange = onStudyScopeChange,
                             onToggleSurah = onToggleSurah,
+                            pronouncer = pronouncer,
                         )
                         AppTab.Foundations -> FoundationsScreen(
                             progress = progress,

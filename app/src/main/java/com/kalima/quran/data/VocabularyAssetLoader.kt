@@ -69,16 +69,16 @@ internal object VocabularyAssetLoader {
                     },
                     insight = when {
                         isFrequent && english ->
-                            "This form appears $frequency times in the Quran. Recorded lemma: $lemma."
+                            "This form appears $frequency times in the Quran."
                         isFrequent ->
-                            "Esta forma aparece $frequency vezes no Alcorão. Lema registrado: $lemma."
+                            "Esta forma aparece $frequency vezes no Alcorão."
                         english -> {
                             val occurrence = if (frequency == 1) "time" else "times"
-                            "It appears $frequency $occurrence in this surah. Recorded lemma: $lemma."
+                            "It appears $frequency $occurrence in this surah."
                         }
                         else -> {
                             val occurrence = if (frequency == 1) "vez" else "vezes"
-                            "Aparece $frequency $occurrence nesta sura. Lema registrado: $lemma."
+                            "Aparece $frequency $occurrence nesta sura."
                         }
                     },
                     frequency = frequency,

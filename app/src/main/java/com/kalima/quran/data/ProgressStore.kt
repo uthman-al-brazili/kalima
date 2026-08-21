@@ -244,6 +244,7 @@ class ProgressStore private constructor(context: Context) {
                 studyScope = scope,
                 dailyGoal = dailyGoal.coerceIn(3, 20),
                 alphabetCourseRequested = !knowsArabicAlphabet,
+                alphabetFoundationRequired = !knowsArabicAlphabet,
                 numberCourseRequested = !knowsArabicNumbers,
                 completedAlphabetLessons = if (knowsArabicAlphabet) {
                     ArabicFoundations.alphabetLessonCount
@@ -262,11 +263,14 @@ class ProgressStore private constructor(context: Context) {
 
     fun completeNextAlphabetLesson() {
         val current = _progress.value
-        if (!current.needsAlphabetFoundation) return
+        if (!current.hasAlphabetFoundationLesson) return
+        val completedLessons = (current.completedAlphabetLessons + 1)
+            .coerceAtMost(ArabicFoundations.alphabetLessonCount)
         persist(
             current.copy(
-                completedAlphabetLessons = (current.completedAlphabetLessons + 1)
-                    .coerceAtMost(ArabicFoundations.alphabetLessonCount),
+                completedAlphabetLessons = completedLessons,
+                alphabetFoundationRequired = current.alphabetFoundationRequired &&
+                    completedLessons < ArabicFoundations.alphabetLessonCount,
             ),
             today(),
         )
@@ -279,7 +283,7 @@ class ProgressStore private constructor(context: Context) {
 
     fun skipAlphabetFoundation() {
         val current = _progress.value
-        if (!current.needsAlphabetFoundation) return
+        if (!current.hasAlphabetFoundationLesson) return
         persist(current.skipAlphabetFoundation(), today())
     }
 
@@ -665,6 +669,20 @@ class ProgressStore private constructor(context: Context) {
         val alreadyKnownIds = preferences.getStringSet(KEY_ALREADY_KNOWN_IDS, emptySet())
             .orEmpty()
             .intersect(validWordIds)
+        val alphabetCourseRequested = preferences.getBoolean(
+            KEY_ALPHABET_COURSE_REQUESTED,
+            false,
+        )
+        val completedAlphabetLessons = preferences.getInt(
+            KEY_COMPLETED_ALPHABET_LESSONS,
+            0,
+        ).coerceIn(0, ArabicFoundations.alphabetLessonCount)
+        val alphabetFoundationRequired = preferences.getBoolean(
+            KEY_ALPHABET_FOUNDATION_REQUIRED,
+            alphabetCourseRequested &&
+                completedAlphabetLessons < ArabicFoundations.alphabetLessonCount &&
+                learnedIds.isEmpty() && reviewingIds.isEmpty() && alreadyKnownIds.isEmpty(),
+        )
         return StudyProgress(
             learnedIds = learnedIds,
             reviewingIds = reviewingIds,
@@ -724,18 +742,13 @@ class ProgressStore private constructor(context: Context) {
                     preferences.contains(KEY_LEARNED) ||
                     preferences.contains(KEY_REVIEW_SCHEDULES),
             ),
-            alphabetCourseRequested = preferences.getBoolean(
-                KEY_ALPHABET_COURSE_REQUESTED,
-                false,
-            ),
+            alphabetCourseRequested = alphabetCourseRequested,
+            alphabetFoundationRequired = alphabetFoundationRequired,
             numberCourseRequested = preferences.getBoolean(
                 KEY_NUMBER_COURSE_REQUESTED,
                 false,
             ),
-            completedAlphabetLessons = preferences.getInt(
-                KEY_COMPLETED_ALPHABET_LESSONS,
-                0,
-            ).coerceIn(0, ArabicFoundations.alphabetLessonCount),
+            completedAlphabetLessons = completedAlphabetLessons,
             completedNumberLessons = preferences.getInt(
                 KEY_COMPLETED_NUMBER_LESSONS,
                 0,
@@ -807,6 +820,7 @@ class ProgressStore private constructor(context: Context) {
             putStringSet(KEY_CUSTOM_STUDY_IDS, progress.customStudyIds)
             putBoolean(KEY_ONBOARDING_COMPLETE, progress.onboardingComplete)
             putBoolean(KEY_ALPHABET_COURSE_REQUESTED, progress.alphabetCourseRequested)
+            putBoolean(KEY_ALPHABET_FOUNDATION_REQUIRED, progress.alphabetFoundationRequired)
             putBoolean(KEY_NUMBER_COURSE_REQUESTED, progress.numberCourseRequested)
             putInt(KEY_COMPLETED_ALPHABET_LESSONS, progress.completedAlphabetLessons)
             putInt(KEY_COMPLETED_NUMBER_LESSONS, progress.completedNumberLessons)
@@ -921,6 +935,7 @@ class ProgressStore private constructor(context: Context) {
         private const val KEY_CUSTOM_STUDY_IDS = "custom_study_ids"
         private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
         private const val KEY_ALPHABET_COURSE_REQUESTED = "alphabet_course_requested"
+        private const val KEY_ALPHABET_FOUNDATION_REQUIRED = "alphabet_foundation_required"
         private const val KEY_NUMBER_COURSE_REQUESTED = "number_course_requested"
         private const val KEY_COMPLETED_ALPHABET_LESSONS = "completed_alphabet_lessons"
         private const val KEY_COMPLETED_NUMBER_LESSONS = "completed_number_lessons"

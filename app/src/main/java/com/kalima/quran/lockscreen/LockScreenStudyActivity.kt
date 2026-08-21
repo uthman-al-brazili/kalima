@@ -88,7 +88,6 @@ class LockScreenStudyActivity : ComponentActivity() {
             when (val content = currentSession.content) {
                 is LockScreenContent.WordCard -> LockScreenStudyScreen(
                     word = content.word,
-                    spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
                     initialRememberedSelection = studyRememberedSelection,
                     showCompleteAyah = progress.showCompleteAyah,
                     onShowCompleteAyahChange = progressStore::setShowCompleteAyah,

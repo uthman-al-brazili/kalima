@@ -66,6 +66,7 @@ object ProgressBackupCodec {
             "customStudyIds" to encodeSet(progress.customStudyIds),
             "onboardingComplete" to progress.onboardingComplete.toString(),
             "alphabetCourseRequested" to progress.alphabetCourseRequested.toString(),
+            "alphabetFoundationRequired" to progress.alphabetFoundationRequired.toString(),
             "numberCourseRequested" to progress.numberCourseRequested.toString(),
             "completedAlphabetLessons" to progress.completedAlphabetLessons.toString(),
             "completedNumberLessons" to progress.completedNumberLessons.toString(),
@@ -153,6 +154,20 @@ object ProgressBackupCodec {
             legacyFavoriteIds = values.idSet("favoriteIds", knownWordIds),
             customStudyIds = values.idSet("customStudyIds", knownWordIds),
         )
+        val alphabetCourseRequested = values.optionalBoolean(
+            "alphabetCourseRequested",
+            false,
+        )
+        val completedAlphabetLessons = values.optionalInt(
+            "completedAlphabetLessons",
+            0,
+        ).coerceIn(0, ArabicFoundations.alphabetLessonCount)
+        val alphabetFoundationRequired = values.optionalBoolean(
+            "alphabetFoundationRequired",
+            alphabetCourseRequested &&
+                completedAlphabetLessons < ArabicFoundations.alphabetLessonCount &&
+                learned.isEmpty() && reviewing.isEmpty() && alreadyKnown.isEmpty(),
+        )
         val progress = StudyProgress(
             learnedIds = learned,
             reviewingIds = reviewing,
@@ -187,18 +202,13 @@ object ProgressBackupCodec {
             reviewSchedules = schedules,
             customStudyIds = customStudyIds,
             onboardingComplete = values.boolean("onboardingComplete"),
-            alphabetCourseRequested = values.optionalBoolean(
-                "alphabetCourseRequested",
-                false,
-            ),
+            alphabetCourseRequested = alphabetCourseRequested,
+            alphabetFoundationRequired = alphabetFoundationRequired,
             numberCourseRequested = values.optionalBoolean(
                 "numberCourseRequested",
                 false,
             ),
-            completedAlphabetLessons = values.optionalInt(
-                "completedAlphabetLessons",
-                0,
-            ).coerceIn(0, ArabicFoundations.alphabetLessonCount),
+            completedAlphabetLessons = completedAlphabetLessons,
             completedNumberLessons = values.optionalInt(
                 "completedNumberLessons",
                 0,

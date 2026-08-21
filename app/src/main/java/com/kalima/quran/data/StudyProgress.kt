@@ -37,6 +37,7 @@ data class StudyProgress(
     val customStudyIds: Set<String> = emptySet(),
     val onboardingComplete: Boolean = true,
     val alphabetCourseRequested: Boolean = false,
+    val alphabetFoundationRequired: Boolean = false,
     val numberCourseRequested: Boolean = false,
     val completedAlphabetLessons: Int = 0,
     val completedNumberLessons: Int = 0,

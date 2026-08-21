@@ -17,7 +17,14 @@ data class QuranWord(
     val surahNumber: Int? = null,
     val isFrequent: Boolean = false,
     val audioLocation: QuranWordAudioLocation? = null,
-)
+) {
+    /** Learner-facing note with internal corpus terminology removed. */
+    val learnerInsight: String
+        get() = insight
+            .substringBefore(" Recorded lemma:")
+            .substringBefore(" Lema registrado:")
+            .trim()
+}
 
 enum class StudyScope {
     All,

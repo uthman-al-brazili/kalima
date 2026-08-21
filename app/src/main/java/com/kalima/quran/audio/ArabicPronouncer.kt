@@ -93,6 +93,6 @@ class ArabicPronouncer(context: Context) {
         const val WORD_DEFAULT_RATE = 1f
         const val WORD_SLOW_RATE = 0.7f
         const val VERSE_DEFAULT_RATE = 1f
-        const val FOUNDATION_DEFAULT_RATE = 0.8f
+        const val FOUNDATION_DEFAULT_RATE = 0.7f
     }
 }

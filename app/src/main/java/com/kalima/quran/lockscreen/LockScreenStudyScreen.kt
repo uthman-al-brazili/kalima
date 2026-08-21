@@ -46,7 +46,6 @@ import com.kalima.quran.ui.theme.Muted
 @Composable
 fun LockScreenStudyScreen(
     word: QuranWord,
-    spacedRepetitionEnabled: Boolean,
     initialRememberedSelection: Boolean?,
     showCompleteAyah: Boolean,
     onShowCompleteAyahChange: (Boolean) -> Unit,
@@ -60,6 +59,7 @@ fun LockScreenStudyScreen(
     var rememberedSelection by rememberSaveable(word.id) {
         mutableStateOf(initialRememberedSelection)
     }
+    var meaningRevealed by rememberSaveable(word.id) { mutableStateOf(false) }
     var confirmingAlreadyKnown by rememberSaveable(word.id) { mutableStateOf(false) }
     var completeAyahVisible by rememberSaveable { mutableStateOf(showCompleteAyah) }
     KalimaTheme {
@@ -122,13 +122,42 @@ fun LockScreenStudyScreen(
                         borderColor = Gold.copy(alpha = 0.65f),
                     )
                     Spacer(Modifier.height(12.dp))
-                    Text(
-                        word.meaning,
-                        color = Color.White,
-                        style = MaterialTheme.typography.headlineSmall,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                    )
+                    if (meaningRevealed) {
+                        Text(
+                            word.meaning,
+                            color = Color.White,
+                            style = MaterialTheme.typography.headlineSmall,
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            stringResource(R.string.rate_recall_instruction),
+                            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                            color = Color.White.copy(alpha = 0.68f),
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center,
+                        )
+                    } else {
+                        Text(
+                            stringResource(R.string.recall_before_reveal),
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White.copy(alpha = 0.78f),
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        Button(
+                            onClick = { meaningRevealed = true },
+                            modifier = Modifier.fillMaxWidth().height(52.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Gold,
+                                contentColor = Forest,
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                        ) {
+                            Text(stringResource(R.string.reveal_meaning), fontWeight = FontWeight.Bold)
+                        }
+                    }
                     Spacer(Modifier.height(8.dp))
                     if (confirmingAlreadyKnown) {
                         Surface(
@@ -232,7 +261,7 @@ fun LockScreenStudyScreen(
                             Spacer(Modifier.height(14.dp))
                             HorizontalDivider(color = Muted.copy(alpha = 0.2f))
                             Spacer(Modifier.height(12.dp))
-                            Text("💡 ${word.insight}", color = Forest, style = MaterialTheme.typography.bodyMedium)
+                            Text("💡 ${word.learnerInsight}", color = Forest, style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                     Spacer(Modifier.height(18.dp))
@@ -254,64 +283,57 @@ fun LockScreenStudyScreen(
                     Spacer(Modifier.height(12.dp))
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            rememberedSelection = false
-                            onSelect(false)
-                        },
-                        modifier = Modifier.weight(1f).height(54.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color.White,
-                            containerColor = if (rememberedSelection == false) {
-                                Color.White.copy(alpha = 0.16f)
-                            } else {
-                                Color.Transparent
-                            },
-                        ),
+                if (meaningRevealed) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text(
-                            stringResource(
-                                if (spacedRepetitionEnabled) {
-                                    R.string.review_later
+                        OutlinedButton(
+                            onClick = {
+                                rememberedSelection = false
+                                onSelect(false)
+                            },
+                            modifier = Modifier.weight(1f).height(54.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.White,
+                                containerColor = if (rememberedSelection == false) {
+                                    Color.White.copy(alpha = 0.16f)
                                 } else {
-                                    R.string.review_again_no_schedule
+                                    Color.Transparent
                                 },
                             ),
-                            fontWeight = FontWeight.SemiBold,
-                        )
+                        ) {
+                            Text(stringResource(R.string.review_hard), fontWeight = FontWeight.SemiBold)
+                        }
+                        Button(
+                            onClick = {
+                                rememberedSelection = true
+                                onSelect(true)
+                            },
+                            modifier = Modifier.weight(1f).height(54.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (rememberedSelection == true) Gold else Gold.copy(alpha = 0.62f),
+                                contentColor = Forest,
+                            ),
+                        ) {
+                            Text(stringResource(R.string.review_easy), fontWeight = FontWeight.Bold)
+                        }
                     }
-                    Button(
-                        onClick = {
-                            rememberedSelection = true
-                            onSelect(true)
-                        },
-                        modifier = Modifier.weight(1f).height(54.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (rememberedSelection == true) Gold else Gold.copy(alpha = 0.62f),
-                            contentColor = Forest,
-                        ),
-                    ) {
-                        Text(stringResource(R.string.already_learned), fontWeight = FontWeight.Bold)
-                    }
-                }
-                if (rememberedSelection != null) {
-                    Spacer(Modifier.height(8.dp))
-                    Button(
-                        onClick = onConfirm,
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Cream,
-                            contentColor = Forest,
-                        ),
-                    ) {
-                        Text(stringResource(R.string.confirm_and_continue), fontWeight = FontWeight.Bold)
+                    if (rememberedSelection != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Button(
+                            onClick = onConfirm,
+                            modifier = Modifier.fillMaxWidth().height(48.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Cream,
+                                contentColor = Forest,
+                            ),
+                        ) {
+                            Text(stringResource(R.string.confirm_and_continue), fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

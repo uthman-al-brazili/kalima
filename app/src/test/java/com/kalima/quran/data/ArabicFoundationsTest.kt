@@ -23,6 +23,7 @@ class ArabicFoundationsTest {
     fun `alphabet lessons block complete words until finished`() {
         val starting = StudyProgress(
             alphabetCourseRequested = true,
+            alphabetFoundationRequired = true,
             completedAlphabetLessons = 0,
         )
         val finished = starting.copy(
@@ -71,6 +72,7 @@ class ArabicFoundationsTest {
     fun `skipping alphabet keeps lesson progress and resuming continues it`() {
         val inProgress = StudyProgress(
             alphabetCourseRequested = true,
+            alphabetFoundationRequired = true,
             completedAlphabetLessons = 3,
         )
 
@@ -79,7 +81,8 @@ class ArabicFoundationsTest {
 
         assertFalse(skipped.needsAlphabetFoundation)
         assertEquals(3, skipped.completedAlphabetLessons)
-        assertTrue(resumed.needsAlphabetFoundation)
+        assertFalse(resumed.needsAlphabetFoundation)
+        assertTrue(resumed.hasAlphabetFoundationLesson)
         assertEquals(3, resumed.completedAlphabetLessons)
     }
 
@@ -92,7 +95,8 @@ class ArabicFoundationsTest {
 
         val restarted = previouslyKnown.startAlphabetFoundation()
 
-        assertTrue(restarted.needsAlphabetFoundation)
+        assertFalse(restarted.needsAlphabetFoundation)
+        assertTrue(restarted.hasAlphabetFoundationLesson)
         assertEquals(0, restarted.completedAlphabetLessons)
     }
 

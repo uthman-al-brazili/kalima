@@ -126,6 +126,9 @@ object ArabicFoundations {
 }
 
 val StudyProgress.needsAlphabetFoundation: Boolean
+    get() = alphabetFoundationRequired && hasAlphabetFoundationLesson
+
+val StudyProgress.hasAlphabetFoundationLesson: Boolean
     get() = alphabetCourseRequested &&
         completedAlphabetLessons < ArabicFoundations.alphabetLessonCount
 
@@ -142,6 +145,7 @@ fun StudyProgress.startAlphabetFoundation(): StudyProgress = copy(
 
 fun StudyProgress.skipAlphabetFoundation(): StudyProgress = copy(
     alphabetCourseRequested = false,
+    alphabetFoundationRequired = false,
 )
 
 fun StudyProgress.startNumberFoundation(): StudyProgress = copy(

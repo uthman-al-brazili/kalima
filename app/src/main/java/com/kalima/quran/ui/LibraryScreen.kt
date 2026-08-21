@@ -372,7 +372,7 @@ private fun LibraryWordCard(
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    word.insight,
+                    word.learnerInsight,
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyMedium,
                 )
