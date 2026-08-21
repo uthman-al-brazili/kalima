@@ -20,8 +20,8 @@ android {
         applicationId = "com.kalima.quran"
         minSdk = 26
         targetSdk = 36
-        versionCode = 66
-        versionName = "0.28.3"
+        versionCode = 67
+        versionName = "0.28.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -75,6 +75,12 @@ val lockScreenContractFiles = mapOf(
     "service" to file("src/main/java/com/kalima/quran/lockscreen/LockScreenStudyService.kt"),
     "safety" to file("src/main/java/com/kalima/quran/lockscreen/LockScreenSystemSafety.kt"),
     "wakePolicy" to file("src/main/java/com/kalima/quran/data/LockScreenWakePolicy.kt"),
+)
+
+val startupContractFiles = mapOf(
+    "progress" to file("src/main/java/com/kalima/quran/data/ProgressStore.kt"),
+    "words" to file("src/main/java/com/kalima/quran/data/WordRepository.kt"),
+    "reader" to file("src/main/java/com/kalima/quran/ui/QuranReaderScreen.kt"),
 )
 
 val verifyLockScreenRegression by tasks.registering {
@@ -151,9 +157,36 @@ val verifyLockScreenRegression by tasks.registering {
     }
 }
 
+val verifyStartupRegression by tasks.registering {
+    group = "verification"
+    description = "Verifies that optional Quran reader data stays off the app startup path."
+    inputs.files(startupContractFiles.values)
+
+    doLast {
+        val sources = startupContractFiles.mapValues { (_, source) -> source.readText() }
+        check(!sources.getValue("progress").contains("QuranReaderRepository.initialize")) {
+            "Startup regression: ProgressStore must not load all Quran pages before first render."
+        }
+        check(sources.getValue("words").contains("readerIndex = null")) {
+            "Startup regression: the Quran reader word index must remain deferred."
+        }
+        check(sources.getValue("words").contains("fun prepareReaderIndex()")) {
+            "Startup regression: the deferred Quran reader word index entry point is missing."
+        }
+        check(sources.getValue("reader").contains("initializeQuranReader(context)")) {
+            "Startup regression: the Quran tab no longer loads its offline pages on demand."
+        }
+        check(sources.getValue("reader").contains("WordRepository.prepareReaderIndex()")) {
+            "Startup regression: the Quran tab no longer prepares word lookups off the startup path."
+        }
+    }
+}
+
 tasks.configureEach {
     if (name == "packageRelease") dependsOn(verifyUptodownSigning)
-    if (name == "preBuild" || name == "check") dependsOn(verifyLockScreenRegression)
+    if (name == "preBuild" || name == "check") {
+        dependsOn(verifyLockScreenRegression, verifyStartupRegression)
+    }
 }
 
 dependencies {

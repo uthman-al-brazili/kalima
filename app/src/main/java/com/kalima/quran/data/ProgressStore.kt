@@ -21,7 +21,6 @@ class ProgressStore private constructor(context: Context) {
 
     init {
         WordRepository.initialize(context.applicationContext)
-        QuranReaderRepository.initialize(context.applicationContext)
     }
 
     private val today = { LocalDate.now() }

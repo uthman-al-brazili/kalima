@@ -440,7 +440,6 @@ object WordRepository {
         }
         val imported = input.use { VocabularyAssetLoader.load(it, language) }
         val loadedWords = curatedWords(language) + imported
-        val loadedReaderIndex = QuranReaderWordIndex(loadedWords)
         searchIndex = null
         referenceIndex = null
         lemmaIndex = null
@@ -448,7 +447,7 @@ object WordRepository {
         wordIndex = loadedWords.associateBy(QuranWord::id)
         wordOrderIndex = loadedWords.mapIndexed { index, word -> word.id to index }.toMap()
         corpusIdentityValue = buildCorpusIdentity(loadedWords)
-        readerIndex = loadedReaderIndex
+        readerIndex = null
         frequentIndex = imported.filter(QuranWord::isFrequent)
         rankedFrequencyIndex = buildRankedFrequencyIndex(imported)
         surahIndex = imported
@@ -460,21 +459,26 @@ object WordRepository {
     @Synchronized
     fun prepareDeferredIndexes() {
         val source = words
-        if (
-            searchIndex != null && referenceIndex != null && lemmaIndex != null &&
-            readerIndex != null
-        ) return
+        if (searchIndex != null && referenceIndex != null && lemmaIndex != null) return
 
         val preparedSearchIndex = buildSearchIndex(source)
         val preparedReferenceIndex = source.groupBy(QuranWord::reference)
         val preparedLemmaIndex = source.groupBy(::lemmaKey)
-        val preparedReaderIndex = readerIndex ?: QuranReaderWordIndex(source)
         if (corpusWords !== source) return
         searchIndex = preparedSearchIndex
         referenceIndex = preparedReferenceIndex
         lemmaIndex = preparedLemmaIndex
-        readerIndex = preparedReaderIndex
     }
+
+    @Synchronized
+    fun prepareReaderIndex() {
+        if (readerIndex != null) return
+        val source = words
+        val preparedReaderIndex = QuranReaderWordIndex(source)
+        if (corpusWords === source) readerIndex = preparedReaderIndex
+    }
+
+    fun isReaderIndexPrepared(): Boolean = readerIndex != null
 
     private fun curatedWords(language: AppLanguage): List<QuranWord> {
         val localized = if (language == AppLanguage.Portuguese) {
@@ -617,7 +621,7 @@ object WordRepository {
 
     fun readerWordFor(token: QuranPageToken, verseArabic: String): QuranWord? {
         if (token.isAyahMarker) return null
-        if (readerIndex == null) prepareDeferredIndexes()
+        if (readerIndex == null) prepareReaderIndex()
         val match = readerIndex?.find(token) ?: return null
         val surahName = selectableSurahs.firstOrNull { it.number == token.surahNumber }
             ?.transliteratedName

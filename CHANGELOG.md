@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.28.4 — 2026-08-21
+
+- Made the Android app reach its first usable screen sooner by keeping all 604
+  offline Quran pages and their word-lookup index out of the cold-start path.
+- Load the offline Quran reader only when its tab is opened, with a clear
+  loading state, while preserving complete word details after it is ready.
+- Added a mandatory startup regression contract alongside the lock-screen
+  contract so later builds cannot silently restore the expensive startup work.
+
 ## 0.28.3 — 2026-08-21
 
 - Restored study and quiz cards directly over the still-locked keyguard when

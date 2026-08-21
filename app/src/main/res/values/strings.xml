@@ -22,6 +22,7 @@
     <string name="choose_quran_page">Ir para a página</string>
     <string name="quran_page_range">Número da página (1–%1$d)</string>
     <string name="open_quran_page">Abrir página</string>
+    <string name="quran_reader_loading">Abrindo as páginas offline do Alcorão…</string>
     <string name="quran_reader_unavailable">Não foi possível abrir as páginas offline do Alcorão.</string>
     <string name="quran_selected_surah">%1$d. %2$s · %3$s</string>
     <string name="previous_surah">Anterior</string>

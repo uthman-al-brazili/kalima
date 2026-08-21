@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -34,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -54,12 +57,15 @@ import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.data.QuranPageToken
 import com.kalima.quran.data.QuranReaderRepository
+import com.kalima.quran.data.initializeQuranReader
 import com.kalima.quran.data.QuranReaderTypography
 import com.kalima.quran.data.QuranSurah
 import com.kalima.quran.data.QuranWordAudioLocation
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.WordRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun QuranReaderScreen(
@@ -68,11 +74,31 @@ fun QuranReaderScreen(
     onFontSizeChange: (Int) -> Unit,
     onToggleCustomList: (String) -> Unit,
 ) {
-    val pageCount = QuranReaderRepository.pageCount
-    if (pageCount == 0) {
+    val context = LocalContext.current.applicationContext
+    val readerAvailable by produceState<Boolean?>(
+        initialValue = true.takeIf {
+            QuranReaderRepository.pageCount > 0 && WordRepository.isReaderIndexPrepared()
+        },
+        key1 = context,
+    ) {
+        if (value != true) {
+            withContext(Dispatchers.Default) {
+                initializeQuranReader(context)
+                WordRepository.prepareReaderIndex()
+            }
+            value = QuranReaderRepository.pageCount > 0
+        }
+    }
+    if (readerAvailable == null) {
+        QuranReaderLoading()
+        return
+    }
+    if (readerAvailable == false) {
         QuranReaderUnavailable()
         return
     }
+
+    val pageCount = QuranReaderRepository.pageCount
 
     val pagerState = rememberPagerState(pageCount = { pageCount })
     val scope = rememberCoroutineScope()
@@ -544,6 +570,23 @@ private fun PagePickerSheet(
             }
             Spacer(Modifier.height(24.dp))
         }
+    }
+}
+
+@Composable
+private fun QuranReaderLoading() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        CircularProgressIndicator()
+        Spacer(Modifier.height(16.dp))
+        Text(
+            stringResource(R.string.quran_reader_loading),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
