@@ -56,6 +56,19 @@ class QuizEngineTest {
     }
 
     @Test
+    fun insufficientDistinctOptionsReturnAnEmptySessionInsteadOfCrashing() {
+        val onlyWord = words.first()
+
+        val session = QuizEngine.createSession(
+            words = listOf(onlyWord),
+            random = Random(59),
+            optionWords = listOf(onlyWord),
+        )
+
+        assertTrue(session.isEmpty())
+    }
+
+    @Test
     fun sessionDoesNotRepeatTargetsWhenFewerThanFiveAreDue() {
         val targets = words.take(2)
 

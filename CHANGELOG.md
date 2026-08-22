@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.28.5 — 2026-08-22
+
+- Fixed the Quiz tab closing the app when a saved study selection did not have
+  enough distinct answers, a state that could remain after every scheduled
+  review was completed and disappear after reinstalling the app.
+- Kept quiz questions inside the selected content while safely supplementing
+  their answer choices with eligible vocabulary, with a clear empty state if
+  four distinct choices still cannot be formed.
+
 ## 0.28.4 — 2026-08-21
 
 - Made the Android app reach its first usable screen sooner by keeping all 604

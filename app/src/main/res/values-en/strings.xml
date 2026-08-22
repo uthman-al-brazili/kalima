@@ -196,6 +196,7 @@
     <string name="done">Done</string>
 
     <string name="quiz_intro">Five random words from your selected content, with no timer, penalties, or effect on study scheduling.</string>
+    <string name="quiz_not_enough_options">There are not enough distinct answers for this mode yet. Add more words to the selected content or choose another mode.</string>
     <string name="quiz_arabic_to_meaning">What does this word mean?</string>
     <string name="quiz_meaning_to_arabic">Which Arabic word corresponds to:</string>
     <string name="quiz_contextual_meaning">What does the highlighted word mean?</string>

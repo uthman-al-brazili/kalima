@@ -38,8 +38,8 @@ object QuizEngine {
             QuizMode.Cloze -> List(targets.size) { QuizQuestionType.ClozeToArabic }
             QuizMode.Roots -> List(targets.size) { QuizQuestionType.RootToArabic }
         }
-        return targets.mapIndexed { index, word ->
-            createQuestion(word, types[index], optionWords, random)
+        return targets.mapIndexedNotNull { index, word ->
+            createQuestionOrNull(word, types[index], optionWords, random)
         }
     }
 
@@ -63,7 +63,16 @@ object QuizEngine {
         type: QuizQuestionType,
         source: List<QuranWord>,
         random: Random,
-    ): QuizQuestion {
+    ): QuizQuestion = requireNotNull(createQuestionOrNull(word, type, source, random)) {
+        "Não há alternativas distintas suficientes para este conjunto"
+    }
+
+    private fun createQuestionOrNull(
+        word: QuranWord,
+        type: QuizQuestionType,
+        source: List<QuranWord>,
+        random: Random,
+    ): QuizQuestion? {
         val correctAnswer = answerFor(word, type)
         val distractors = linkedSetOf<String>()
         var attempts = 0
@@ -80,9 +89,7 @@ object QuizEngine {
                     if (distractors.size < QuizQuestion.OPTION_COUNT - 1) distractors += candidate
                 }
         }
-        require(distractors.size == QuizQuestion.OPTION_COUNT - 1) {
-            "Não há alternativas distintas suficientes para este conjunto"
-        }
+        if (distractors.size != QuizQuestion.OPTION_COUNT - 1) return null
         val options = (distractors.toList() + correctAnswer).shuffled(random)
         return QuizQuestion(
             word = word,

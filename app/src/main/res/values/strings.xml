@@ -196,6 +196,7 @@
     <string name="done">Concluir</string>
 
     <string name="quiz_intro">Cinco palavras aleatórias do conteúdo selecionado, sem cronômetro, penalidades nem efeito na programação do estudo.</string>
+    <string name="quiz_not_enough_options">Ainda não há alternativas distintas suficientes para este modo. Adicione mais palavras ao conteúdo selecionado ou escolha outro modo.</string>
     <string name="quiz_arabic_to_meaning">Qual é o significado desta palavra?</string>
     <string name="quiz_meaning_to_arabic">Qual palavra árabe corresponde a:</string>
     <string name="quiz_contextual_meaning">Qual é o significado da palavra destacada?</string>

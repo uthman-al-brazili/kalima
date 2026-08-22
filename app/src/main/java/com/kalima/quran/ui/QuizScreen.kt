@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
+import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
@@ -121,27 +122,42 @@ fun QuizScreen(
         }
         return
     }
+    val optionWords = remember(selectedWords, progress.alreadyKnownIds) {
+        quizOptionPool(
+            selectedWords = selectedWords,
+            allWords = WordRepository.words,
+            alreadyKnownIds = progress.alreadyKnownIds,
+        )
+    }
     var modeName by rememberSaveable { mutableStateOf(QuizMode.Mixed.name) }
     val mode = QuizMode.entries.firstOrNull { it.name == modeName } ?: QuizMode.Mixed
     var sessionVersion by rememberSaveable { mutableIntStateOf(0) }
     val sessionKey = progress.quizSessionKey(mode, sessionVersion)
-    val session = remember(sessionKey) {
-        val targets = when (mode) {
+    val targets = remember(selectedWords, mode) {
+        when (mode) {
             QuizMode.Roots -> selectedWords.filter { it.root.isNotBlank() && it.root != "—" }
             else -> selectedWords
         }
-        if (targets.isEmpty()) {
-            emptyList()
-        } else {
-            QuizEngine.createSession(
-                words = targets,
-                optionWords = selectedWords,
-                mode = mode,
-            )
-        }
+    }
+    if (targets.isEmpty()) {
+        QuizModeEmptyScreen(
+            mode = mode,
+            onModeChange = {
+                modeName = it.name
+                sessionVersion += 1
+            },
+        )
+        return
+    }
+    val session = remember(sessionKey, optionWords) {
+        QuizEngine.createSession(
+            words = targets,
+            optionWords = optionWords,
+            mode = mode,
+        )
     }
     if (session.isEmpty()) {
-        QuizModeEmptyScreen(
+        QuizOptionsEmptyScreen(
             mode = mode,
             onModeChange = {
                 modeName = it.name
@@ -235,6 +251,17 @@ fun QuizScreen(
             )
         }
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+internal fun quizOptionPool(
+    selectedWords: List<QuranWord>,
+    allWords: List<QuranWord>,
+    alreadyKnownIds: Set<String>,
+): List<QuranWord> {
+    val selectedIds = selectedWords.mapTo(mutableSetOf()) { it.id }
+    return selectedWords + allWords.filterNot { word ->
+        word.id in selectedIds || word.id in alreadyKnownIds
     }
 }
 
@@ -376,6 +403,23 @@ private fun QuizModeEmptyScreen(mode: QuizMode, onModeChange: (QuizMode) -> Unit
         Spacer(Modifier.height(28.dp))
         Text(
             stringResource(R.string.no_words_found),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun QuizOptionsEmptyScreen(mode: QuizMode, onModeChange: (QuizMode) -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        QuizModeSelector(mode, onModeChange)
+        Spacer(Modifier.height(28.dp))
+        Text(
+            stringResource(R.string.quiz_not_enough_options),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
