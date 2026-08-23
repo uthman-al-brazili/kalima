@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "pnpm check && vite build",
+    "build": "node scripts/verify-screenshots.mjs && tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "check": "node scripts/verify-screenshots.mjs && tsc --noEmit",
     "verify:screenshots": "node scripts/verify-screenshots.mjs"
