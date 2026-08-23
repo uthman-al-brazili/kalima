@@ -26,3 +26,4 @@ pnpm-debug.log*
 
 # deployment and generated files
 /dist/
+/.wrangler/
