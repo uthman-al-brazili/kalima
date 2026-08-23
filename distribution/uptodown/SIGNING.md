@@ -26,3 +26,14 @@ The build intentionally fails `packageRelease` when any signing value is
 missing. The normal version-backup process still produces its separately named
 debug APK for local restoration and testing; that debug-signed APK must not be
 used as the long-term public Uptodown package.
+
+For an interactive local walkthrough that keeps passwords out of chat and
+shell history, run:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\distribution\uptodown\Sign-Current-Beta.ps1
+```
+
+The walkthrough can reuse the original production keystore or create the first
+permanent key for an unpublished draft. A newly created key cannot update an APK
+that has already been published under a different certificate.
