@@ -20,6 +20,12 @@ data class StudyProgress(
     val streakDays: Int = 0,
     val reminderEnabled: Boolean = false,
     val lockScreenEnabled: Boolean = false,
+    /**
+     * The guided paths selected together. Empty is a compatibility marker for
+     * progress saved before multi-path selection; [studyScope] remains its
+     * authoritative single-path value in that case.
+     */
+    val selectedStudyScopes: Set<StudyScope> = emptySet(),
     val studyScope: StudyScope = StudyScope.All,
     val selectedSurahs: Set<Int> = emptySet(),
     val quizCorrectDays: Map<String, Set<String>> = emptyMap(),
@@ -53,6 +59,9 @@ data class StudyProgress(
     val lastLockScreenLatencyMs: Long? = null,
     val lockScreenSafetySkips: Int = 0,
 ) {
+    val studyScopes: Set<StudyScope>
+        get() = selectedStudyScopes.ifEmpty { setOf(studyScope) }
+
     val todayCompleted: Int get() = todayAnsweredIds.size
 
     fun statusFor(id: String): WordStatus = when (id) {

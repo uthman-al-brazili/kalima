@@ -545,6 +545,16 @@ object WordRepository {
         }
     }
 
+    fun wordsFor(
+        scopes: Set<StudyScope>,
+        selectedSurahs: Set<Int>,
+        customStudyIds: Set<String> = emptySet(),
+    ): List<QuranWord> = scopes
+        .ifEmpty { setOf(StudyScope.All) }
+        .sortedBy(StudyScope::ordinal)
+        .flatMap { scope -> wordsFor(scope, selectedSurahs, customStudyIds) }
+        .distinctBy(QuranWord::id)
+
     private fun buildRankedFrequencyIndex(source: List<QuranWord>): List<QuranWord> {
         val frequent = source.filter(QuranWord::isFrequent)
         val frequentKeys = frequent.mapTo(mutableSetOf(), ::lemmaKey)

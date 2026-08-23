@@ -30,6 +30,8 @@ class ProgressBackupCodecTest {
             numberCourseRequested = true,
             completedAlphabetLessons = 3,
             completedNumberLessons = 7,
+            selectedStudyScopes = setOf(StudyScope.Frequent50, StudyScope.Prayer),
+            studyScope = StudyScope.Frequent50,
         )
         val encoded = ProgressBackupCodec.encode(progress, "0.17.0", "corpus", now)
         val decoded = ProgressBackupCodec.decode(encoded, "corpus", knownIds)
@@ -47,6 +49,7 @@ class ProgressBackupCodecTest {
         assertEquals(true, decoded.progress.numberCourseRequested)
         assertEquals(3, decoded.progress.completedAlphabetLessons)
         assertEquals(7, decoded.progress.completedNumberLessons)
+        assertEquals(progress.studyScopes, decoded.progress.studyScopes)
     }
 
     @Test
@@ -198,6 +201,22 @@ class ProgressBackupCodecTest {
         val progress = ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress
         assertEquals(true, progress.hasAlphabetFoundationLesson)
         assertEquals(false, progress.needsAlphabetFoundation)
+    }
+
+    @Test
+    fun backupsBeforeMultiplePathsUseTheLegacySelectedPath() {
+        val legacy = withoutPayloadField(
+            ProgressBackupCodec.encode(
+                StudyProgress(studyScope = StudyScope.ShortSurahs),
+                "0.28.5",
+                "corpus",
+                now,
+            ),
+            "selectedStudyScopes",
+        )
+
+        val progress = ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress
+        assertEquals(setOf(StudyScope.ShortSurahs), progress.studyScopes)
     }
 
     private fun withoutPayloadField(backup: String, field: String): String {

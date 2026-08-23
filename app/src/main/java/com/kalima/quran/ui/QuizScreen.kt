@@ -50,9 +50,10 @@ import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
 import com.kalima.quran.quiz.QuizMode
 import com.kalima.quran.quiz.VerseExcerptBuilder
+import kotlin.random.Random
 
 internal data class QuizSessionKey(
-    val studyScope: StudyScope,
+    val studyScopes: Set<StudyScope>,
     val selectedSurahs: Set<Int>,
     val customStudyIds: Set<String>,
     val alreadyKnownIds: Set<String>,
@@ -61,7 +62,7 @@ internal data class QuizSessionKey(
 )
 
 internal fun StudyProgress.quizSessionKey(mode: QuizMode, version: Int) = QuizSessionKey(
-    studyScope = studyScope,
+    studyScopes = studyScopes,
     selectedSurahs = selectedSurahs,
     customStudyIds = customStudyIds,
     alreadyKnownIds = alreadyKnownIds,
@@ -98,14 +99,15 @@ fun QuizScreen(
         }
         return
     }
+    val scopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val selectedSource = remember(
-        progress.studyScope,
+        scopeKey,
         selectionKey,
         progress.customStudyIds,
     ) {
         WordRepository.wordsFor(
-            progress.studyScope,
+            progress.studyScopes,
             progress.selectedSurahs,
             progress.customStudyIds,
         )
@@ -117,7 +119,7 @@ fun QuizScreen(
         when {
             selectedSource.isNotEmpty() && selectedSource.all { it.id in progress.alreadyKnownIds } ->
                 AllWordsAlreadyKnownState()
-            progress.studyScope == StudyScope.Custom -> EmptyCollectionState()
+            progress.studyScopes == setOf(StudyScope.Custom) -> EmptyCollectionState()
             else -> LearningLimitEmptyState()
         }
         return
@@ -133,6 +135,7 @@ fun QuizScreen(
     val mode = QuizMode.entries.firstOrNull { it.name == modeName } ?: QuizMode.Mixed
     var sessionVersion by rememberSaveable { mutableIntStateOf(0) }
     val sessionKey = progress.quizSessionKey(mode, sessionVersion)
+    val sessionSeed by rememberSaveable(sessionKey) { mutableIntStateOf(Random.Default.nextInt()) }
     val targets = remember(selectedWords, mode) {
         when (mode) {
             QuizMode.Roots -> selectedWords.filter { it.root.isNotBlank() && it.root != "—" }
@@ -153,6 +156,7 @@ fun QuizScreen(
         QuizEngine.createSession(
             words = targets,
             optionWords = optionWords,
+            random = Random(sessionSeed),
             mode = mode,
         )
     }
@@ -176,7 +180,6 @@ fun QuizScreen(
         QuizSummary(
             score = score,
             total = session.size,
-            progress = progress,
             onNewQuiz = { sessionVersion += 1 },
         )
         return
@@ -537,6 +540,15 @@ private fun QuizFeedback(
             )
             Spacer(Modifier.height(6.dp))
             Text(
+                stringResource(R.string.quiz_word_translation, question.word.meaning),
+                color = if (correct) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onErrorContainer
+                },
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
                 stringResource(
                     R.string.reference_root,
                     question.word.transliteration,
@@ -573,14 +585,9 @@ private fun QuizFeedback(
 private fun QuizSummary(
     score: Int,
     total: Int,
-    progress: StudyProgress,
     onNewQuiz: () -> Unit,
 ) {
-    val historicalAccuracy = if (progress.quizTotalAnswers == 0) {
-        0
-    } else {
-        progress.quizCorrectAnswers * 100 / progress.quizTotalAnswers
-    }
+    val sessionAccuracy = quizSessionAccuracy(score, total)
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -603,17 +610,18 @@ private fun QuizSummary(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        if (progress.quizTotalAnswers > 0) {
-            Spacer(Modifier.height(10.dp))
-            Text(
-                stringResource(R.string.overall_accuracy, historicalAccuracy),
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
+        Spacer(Modifier.height(10.dp))
+        Text(
+            stringResource(R.string.quiz_session_accuracy, sessionAccuracy),
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold,
+        )
         Spacer(Modifier.height(22.dp))
         Button(onClick = onNewQuiz) {
             Text(stringResource(R.string.start_another_quiz))
         }
     }
 }
+
+internal fun quizSessionAccuracy(score: Int, total: Int): Int =
+    if (total <= 0) 0 else (score.coerceIn(0, total) * 100) / total

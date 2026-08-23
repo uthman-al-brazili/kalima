@@ -69,6 +69,23 @@ class ArabicFoundationsTest {
     }
 
     @Test
+    fun `alphabet reference covers all letters and four vowel forms with speech`() {
+        val reference = ArabicFoundations.alphabetReference
+
+        assertEquals(28, reference.size)
+        assertEquals(28, reference.map { it.letter.arabic }.toSet().size)
+        reference.forEach { row ->
+            assertEquals(4, row.vowelVariants.size)
+            assertEquals(
+                listOf('َ', 'ِ', 'ُ', 'ْ'),
+                row.vowelVariants.map { it.arabic.last() },
+            )
+            assertTrue(row.vowelVariants.all { it.spokenArabic == it.arabic })
+            assertTrue(row.vowelVariants.take(3).all { it.transliteration.isNotBlank() })
+        }
+    }
+
+    @Test
     fun `skipping alphabet keeps lesson progress and resuming continues it`() {
         val inProgress = StudyProgress(
             alphabetCourseRequested = true,

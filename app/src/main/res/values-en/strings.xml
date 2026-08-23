@@ -164,6 +164,7 @@
     <string name="daily_reminder">Daily reminder</string>
     <string name="daily_reminder_description">Daily notification at 8:00 AM, subject to Android permissions.</string>
     <string name="daily_goal">Daily goal</string>
+    <string name="daily_goal_info">Sets how many words you plan to study each day. The goal guides the daily indicator but does not block additional study.</string>
     <string name="language">Language</string>
     <string name="language_description">Choose the language used for the interface and word meanings.</string>
     <string name="language_portuguese">Português</string>
@@ -186,6 +187,14 @@
     <string name="lock_screen_features_description">Optional study tools displayed over the device lock screen.</string>
     <string name="android_app_settings">Android settings</string>
     <string name="limit_new_words">Limit new words</string>
+    <string name="setting_info_content_description">More information about %1$s</string>
+    <string name="spaced_repetition_info">Schedules each review near the time a word may be forgotten. When disabled, words simply rotate without a review schedule.</string>
+    <string name="lock_screen_study_info">Shows cards when the locked display turns on. It requires the “Display over other apps” permission and keeps a lightweight service active.</string>
+    <string name="quiet_hours_info">Prevents cards from appearing during the chosen time range, even while lock-screen study is active.</string>
+    <string name="daily_card_limit_info">Limits how many cards may appear on the lock screen in one day. Regular in-app study remains available.</string>
+    <string name="card_cooldown_info">Sets the minimum time between lock-screen cards so they do not interrupt you too frequently.</string>
+    <string name="lock_screen_quiz_info">Mixes four-choice questions into lock-screen cards after the chosen number of words.</string>
+    <string name="quiz_interval_info">Sets how many word cards appear before each lock-screen quiz.</string>
 
     <string name="choose_surahs">Choose surahs</string>
     <plurals name="surahs_selected">
@@ -202,6 +211,7 @@
     <string name="quiz_contextual_meaning">What does the highlighted word mean?</string>
     <string name="correct">Correct</string>
     <string name="correct_answer">Correct answer: %1$s</string>
+    <string name="quiz_word_translation">Translation: %1$s</string>
     <string name="review_due_now">Review available now</string>
     <string name="review_in_minutes">Next review in %1$d min</string>
     <string name="review_tomorrow">Next review tomorrow</string>
@@ -216,6 +226,7 @@
     <string name="quiz_good">Good work. Every encounter strengthens your memory.</string>
     <string name="quiz_keep_practicing">That is okay. Practice these words again whenever you want.</string>
     <string name="overall_accuracy">Overall accuracy: %1$d%%</string>
+    <string name="quiz_session_accuracy">This quiz accuracy: %1$d%%</string>
     <string name="start_another_quiz">Start another quiz</string>
 
     <string name="quick_study">QUICK STUDY</string>
@@ -318,6 +329,7 @@
     <string name="path_group_goal">By goal</string>
     <string name="path_group_collection">Other sets</string>
     <string name="path_selected_summary">Current set: %1$s</string>
+    <string name="study_paths_combined">%1$d guided paths combined</string>
     <string name="reveal_meaning">Reveal meaning</string>
     <string name="next_word">Next word</string>
     <string name="recall_before_reveal">Before revealing it, pause and try to remember the translation.</string>
@@ -413,7 +425,7 @@
     <string name="hijri_month_dhu_hijjah">Dhu al-Hijjah</string>
     <string name="no_history_yet">Not enough history yet</string>
     <string name="guided_paths">Guided paths</string>
-    <string name="guided_paths_note">Change focus without erasing your progress.</string>
+    <string name="guided_paths_note">Select one or more paths; Study combines all chosen content without erasing your progress.</string>
     <string name="quiet_hours">Quiet hours</string>
     <string name="quiet_hours_summary">Do not show cards between %1$02d:00 and %2$02d:00</string>
     <string name="daily_card_limit">Daily card limit</string>
@@ -426,10 +438,10 @@
     <string name="lock_health_off">Service disabled</string>
     <string name="privacy_title">Privacy and transparency</string>
     <string name="privacy_summary">No ads, account, or tracking. Study works offline and stays only on this device.</string>
-    <string name="support_title">Support Kalima’s development</string>
-    <string name="support_description">If Kalima helps you, you can support its independent developer with an optional donation. Your support helps me continue improving Kalima and build more apps for Muslims.</string>
-    <string name="donate_button">Support the developer</string>
-    <string name="donation_unavailable">The developer’s donation page could not be opened.</string>
+    <string name="support_title">Kalima website</string>
+    <string name="support_description">Open Kalima’s official website for news, information, and ways to get in touch.</string>
+    <string name="open_website">Open Kalima website</string>
+    <string name="website_unavailable">Kalima’s website could not be opened.</string>
     <string name="contact_developer">Email the developer</string>
     <string name="support_email_subject">Kalima support</string>
     <string name="support_email_unavailable">No email app is available to contact the developer.</string>
@@ -439,6 +451,7 @@
     <string name="backup_title">Backup and recovery</string>
     <string name="backup_description">Export all learning progress and settings, or restore them on this device.</string>
     <string name="backup_local_note">Backups are local files under your control. Kalima also creates a recovery copy before a restore.</string>
+    <string name="backup_info">Export progress and settings to a local file under your control, or restore a file on this device. Before restoring, Kalima creates a local recovery copy.</string>
     <string name="export_backup">Export backup</string>
     <string name="import_backup">Import backup</string>
     <string name="restore_backup">Restore backup</string>
@@ -457,6 +470,10 @@
         <item quantity="other">%1$d minutes</item>
     </plurals>
     <string name="lock_safety_status">Last launch: %1$s ms (budget ≤ %2$d ms) · %3$d safety skips</string>
+    <string name="alphabet_reference_title">Arabic alphabet table</string>
+    <string name="alphabet_reference_description">Consult all 28 letters with fatḥa (a), kasra (i), ḍamma (u), and sukūn (no vowel). Tap each form’s speaker to hear it.</string>
+    <string name="open_alphabet_reference">Open the complete alphabet table</string>
+    <string name="hide_alphabet_reference">Hide the alphabet table</string>
     <string name="tap_verse_word">Tap any word in the complete ayah</string>
     <string name="word_details_not_indexed">This ayah word has audio, but its meaning and grammar are not yet indexed.</string>
     <string name="open_word_for_study">Open word for study</string>

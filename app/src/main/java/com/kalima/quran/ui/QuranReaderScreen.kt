@@ -76,15 +76,12 @@ fun QuranReaderScreen(
 ) {
     val context = LocalContext.current.applicationContext
     val readerAvailable by produceState<Boolean?>(
-        initialValue = true.takeIf {
-            QuranReaderRepository.pageCount > 0 && WordRepository.isReaderIndexPrepared()
-        },
+        initialValue = true.takeIf { QuranReaderRepository.pageCount > 0 },
         key1 = context,
     ) {
         if (value != true) {
-            withContext(Dispatchers.Default) {
+            withContext(Dispatchers.IO) {
                 initializeQuranReader(context)
-                WordRepository.prepareReaderIndex()
             }
             value = QuranReaderRepository.pageCount > 0
         }
@@ -96,6 +93,19 @@ fun QuranReaderScreen(
     if (readerAvailable == false) {
         QuranReaderUnavailable()
         return
+    }
+
+    // Word lookup is useful after a tap, but it must not delay the first readable Quran page.
+    val readerIndexReady by produceState(
+        initialValue = WordRepository.isReaderIndexPrepared(),
+        key1 = context,
+    ) {
+        if (!value) {
+            withContext(Dispatchers.Default) {
+                WordRepository.prepareReaderIndex()
+            }
+            value = WordRepository.isReaderIndexPrepared()
+        }
     }
 
     val pageCount = QuranReaderRepository.pageCount
@@ -151,8 +161,8 @@ fun QuranReaderScreen(
 
     selectedToken?.let { token ->
         val verseArabic = QuranReaderRepository.verseText(token.surahNumber, token.ayahNumber)
-        val indexedWord = remember(token, verseArabic) {
-            WordRepository.readerWordFor(token, verseArabic)
+        val indexedWord = remember(token, verseArabic, readerIndexReady) {
+            if (readerIndexReady) WordRepository.readerWordFor(token, verseArabic) else null
         }
         WordExplorerSheet(
             word = indexedWord ?: token.asUnindexedWord(verseArabic),

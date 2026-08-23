@@ -81,7 +81,7 @@ fun KalimaApp(
     onStartNumberFoundation: () -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
-    onDonate: () -> Unit,
+    onOpenWebsite: () -> Unit,
     onContactDeveloper: () -> Unit,
     currentLanguage: AppLanguage,
     onLanguageChange: (AppLanguage) -> Unit,
@@ -235,7 +235,7 @@ fun KalimaApp(
                             onMaximumWordsChange = onMaximumWordsChange,
                             onOpenAppSettings = onOpenAppSettings,
                             onPreviewLockScreen = onPreviewLockScreen,
-                            onDonate = onDonate,
+                            onOpenWebsite = onOpenWebsite,
                             onContactDeveloper = onContactDeveloper,
                             onQuietHoursEnabledChange = onQuietHoursEnabledChange,
                             onQuietHoursChange = onQuietHoursChange,
@@ -266,12 +266,7 @@ private fun TabStateProvider(
     stateHolder: SaveableStateHolder,
     content: @Composable () -> Unit,
 ) {
-    if (selected == AppTab.Quiz) {
-        // A reopened quiz must start unanswered instead of restoring the last tapped option.
-        content()
-    } else {
-        stateHolder.SaveableStateProvider(selected.name, content)
-    }
+    stateHolder.SaveableStateProvider(selected.name, content)
 }
 
 private const val NO_STUDY_REQUEST = Long.MIN_VALUE

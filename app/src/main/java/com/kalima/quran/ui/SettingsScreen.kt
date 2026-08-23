@@ -36,17 +36,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.audio.OfflineWordAudioDownloadState
 import com.kalima.quran.audio.OfflineWordAudioManager
 import com.kalima.quran.data.AppThemeMode
 import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.LearningWordLimiter
-import com.kalima.quran.data.LockScreenPerformanceBudget
 import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.QuranVerseAudioLocation
 import com.kalima.quran.data.QuranWordAudioLocation
 import com.kalima.quran.data.WordRepository
@@ -72,7 +75,7 @@ fun SettingsScreen(
     onMaximumWordsChange: (Int) -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
-    onDonate: () -> Unit,
+    onOpenWebsite: () -> Unit,
     onContactDeveloper: () -> Unit,
     onQuietHoursEnabledChange: (Boolean) -> Unit,
     onQuietHoursChange: (Int, Int) -> Unit,
@@ -91,7 +94,7 @@ fun SettingsScreen(
     onCancelOfflineWordAudio: () -> Unit,
 ) {
     val audioSelectionKey = remember(
-        progress.studyScope,
+        progress.studyScopes,
         progress.selectedSurahs,
         progress.customStudyIds,
         progress.maximumWords,
@@ -100,7 +103,7 @@ fun SettingsScreen(
         progress.alreadyKnownIds,
     ) {
         OfflineAudioSelectionKey(
-            progress.studyScope.name,
+            progress.studyScopes.map(StudyScope::name).sorted().joinToString(","),
             progress.selectedSurahs,
             progress.customStudyIds,
             progress.maximumWords,
@@ -116,7 +119,7 @@ fun SettingsScreen(
         value = withContext(Dispatchers.Default) {
             val wordLocations = progress.limitNewWords(
                 WordRepository.wordsFor(
-                    scope = progress.studyScope,
+                    scopes = progress.studyScopes,
                     selectedSurahs = progress.selectedSurahs,
                     customStudyIds = progress.customStudyIds,
                 ),
@@ -137,6 +140,23 @@ fun SettingsScreen(
     var showAudioDownloadConfirmation by rememberSaveable { mutableStateOf(false) }
     var dailyGoalSlider by rememberSaveable(progress.dailyGoal) {
         mutableFloatStateOf(progress.dailyGoal.toFloat())
+    }
+    var visibleSettingInfo by remember { mutableStateOf<SettingInfo?>(null) }
+    val showSettingInfo: (Int, Int) -> Unit = { titleRes, bodyRes ->
+        visibleSettingInfo = SettingInfo(titleRes, bodyRes)
+    }
+
+    visibleSettingInfo?.let { info ->
+        AlertDialog(
+            onDismissRequest = { visibleSettingInfo = null },
+            title = { Text(stringResource(info.titleRes)) },
+            text = { Text(stringResource(info.bodyRes)) },
+            confirmButton = {
+                TextButton(onClick = { visibleSettingInfo = null }) {
+                    Text(stringResource(R.string.close))
+                }
+            },
+        )
     }
 
     if (showAudioDownloadConfirmation) {
@@ -221,11 +241,10 @@ fun SettingsScreen(
         )
         Spacer(Modifier.height(22.dp))
 
-        SettingsSectionTitle(R.string.appearance)
-        Text(
-            stringResource(R.string.appearance_description),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
+        SettingsSectionTitle(
+            R.string.appearance,
+            R.string.appearance_description,
+            showSettingInfo,
         )
         Spacer(Modifier.height(10.dp))
         Surface(
@@ -259,11 +278,10 @@ fun SettingsScreen(
         }
         Spacer(Modifier.height(22.dp))
 
-        SettingsSectionTitle(R.string.language)
-        Text(
-            stringResource(R.string.language_description),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
+        SettingsSectionTitle(
+            R.string.language,
+            R.string.language_description,
+            showSettingInfo,
         )
         Spacer(Modifier.height(10.dp))
         Surface(
@@ -300,19 +318,25 @@ fun SettingsScreen(
         ) {
             Column(Modifier.padding(18.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.daily_reminder), fontWeight = FontWeight.Bold)
-                        Text(
-                            stringResource(R.string.daily_reminder_description),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
+                    SettingLabel(
+                        R.string.daily_reminder,
+                        R.string.daily_reminder_description,
+                        showSettingInfo,
+                        Modifier.weight(1f),
+                    )
                     Switch(checked = progress.reminderEnabled, onCheckedChange = onReminderChange)
                 }
-                Spacer(Modifier.height(20.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(stringResource(R.string.daily_goal), fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    SettingLabel(
+                        R.string.daily_goal,
+                        R.string.daily_goal_info,
+                        showSettingInfo,
+                        Modifier.weight(1f),
+                    )
                     Text(
                         pluralStringResource(
                             R.plurals.words_count,
@@ -336,7 +360,11 @@ fun SettingsScreen(
         }
         Spacer(Modifier.height(22.dp))
 
-        SettingsSectionTitle(R.string.audio_title)
+        SettingsSectionTitle(
+            R.string.audio_title,
+            R.string.audio_disclosure,
+            showSettingInfo,
+        )
         Spacer(Modifier.height(8.dp))
         Surface(
             color = MaterialTheme.colorScheme.surface,
@@ -344,11 +372,6 @@ fun SettingsScreen(
             tonalElevation = 1.dp,
         ) {
             Column(Modifier.padding(18.dp)) {
-                Text(
-                    stringResource(R.string.audio_disclosure),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(10.dp))
                 if (offlineWordAudioState.running) {
                     val progressFraction = if (offlineWordAudioState.total == 0) {
                         0f
@@ -409,11 +432,10 @@ fun SettingsScreen(
         }
         Spacer(Modifier.height(22.dp))
 
-        SettingsSectionTitle(R.string.backup_title)
-        Text(
-            stringResource(R.string.backup_description),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
+        SettingsSectionTitle(
+            R.string.backup_title,
+            R.string.backup_info,
+            showSettingInfo,
         )
         Spacer(Modifier.height(8.dp))
         Surface(
@@ -422,10 +444,6 @@ fun SettingsScreen(
             tonalElevation = 1.dp,
         ) {
             Column(Modifier.fillMaxWidth().padding(18.dp)) {
-                Text(
-                    stringResource(R.string.backup_local_note),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(onClick = onExportBackup) {
                         Text(stringResource(R.string.export_backup))
@@ -438,20 +456,19 @@ fun SettingsScreen(
         }
         Spacer(Modifier.height(22.dp))
 
-        SettingsSectionTitle(R.string.support_title)
+        SettingsSectionTitle(
+            R.string.support_title,
+            R.string.support_description,
+            showSettingInfo,
+        )
         Spacer(Modifier.height(8.dp))
         Surface(
             color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f),
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(Modifier.fillMaxWidth().padding(16.dp)) {
-                Text(
-                    stringResource(R.string.support_description),
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                )
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = onDonate) {
-                    Text(stringResource(R.string.donate_button))
+                Button(onClick = onOpenWebsite) {
+                    Text(stringResource(R.string.open_website))
                 }
                 TextButton(onClick = onContactDeveloper) {
                     Text(stringResource(R.string.contact_developer))
@@ -460,18 +477,11 @@ fun SettingsScreen(
         }
         Spacer(Modifier.height(22.dp))
 
-        SettingsSectionTitle(R.string.privacy_title)
-        Spacer(Modifier.height(8.dp))
-        Surface(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            shape = RoundedCornerShape(20.dp),
-        ) {
-            Text(
-                stringResource(R.string.privacy_summary),
-                modifier = Modifier.padding(18.dp),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-        }
+        SettingsSectionTitle(
+            R.string.privacy_title,
+            R.string.privacy_summary,
+            showSettingInfo,
+        )
         Spacer(Modifier.height(22.dp))
 
         Surface(
@@ -483,16 +493,12 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth().padding(18.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        stringResource(R.string.show_advanced_settings),
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        stringResource(R.string.advanced_settings_description),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
+                SettingLabel(
+                    R.string.show_advanced_settings,
+                    R.string.advanced_settings_description,
+                    showSettingInfo,
+                    Modifier.weight(1f),
+                )
                 Switch(
                     checked = progress.advancedSettingsVisible,
                     onCheckedChange = onAdvancedSettingsVisibleChange,
@@ -518,6 +524,7 @@ fun SettingsScreen(
                 onPauseLockScreenToday = onPauseLockScreenToday,
                 onResumeLockScreen = onResumeLockScreen,
                 onLockScreenCooldownChange = onLockScreenCooldownChange,
+                onShowSettingInfo = showSettingInfo,
             )
         }
         Spacer(Modifier.height(24.dp))
@@ -541,6 +548,7 @@ private fun AdvancedSettings(
     onPauseLockScreenToday: () -> Unit,
     onResumeLockScreen: () -> Unit,
     onLockScreenCooldownChange: (Int) -> Unit,
+    onShowSettingInfo: (Int, Int) -> Unit,
 ) {
     var maximumWordsText by rememberSaveable(progress.maximumWords) {
         mutableStateOf(
@@ -567,7 +575,11 @@ private fun AdvancedSettings(
         mutableFloatStateOf(progress.lockScreenQuizInterval.toFloat())
     }
 
-    SettingsSectionTitle(R.string.study_scheduling)
+    SettingsSectionTitle(
+        R.string.study_scheduling,
+        R.string.spaced_repetition_info,
+        onShowSettingInfo,
+    )
     Spacer(Modifier.height(10.dp))
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -578,24 +590,12 @@ private fun AdvancedSettings(
             modifier = Modifier.fillMaxWidth().padding(18.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.spaced_repetition), fontWeight = FontWeight.Bold)
-                Text(
-                    stringResource(
-                        if (progress.spacedRepetitionEnabled) {
-                            R.string.spaced_repetition_enabled_description
-                        } else {
-                            R.string.spaced_repetition_disabled_observation
-                        },
-                    ),
-                    color = if (progress.spacedRepetitionEnabled) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.error
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
+            SettingLabel(
+                R.string.spaced_repetition,
+                R.string.spaced_repetition_info,
+                onShowSettingInfo,
+                Modifier.weight(1f),
+            )
             Switch(
                 checked = progress.spacedRepetitionEnabled,
                 onCheckedChange = onSpacedRepetitionEnabledChange,
@@ -604,11 +604,10 @@ private fun AdvancedSettings(
     }
     Spacer(Modifier.height(22.dp))
 
-    SettingsSectionTitle(R.string.lock_screen_features)
-    Text(
-        stringResource(R.string.lock_screen_features_description),
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        style = MaterialTheme.typography.bodySmall,
+    SettingsSectionTitle(
+        R.string.lock_screen_features,
+        R.string.lock_screen_features_description,
+        onShowSettingInfo,
     )
     Spacer(Modifier.height(10.dp))
     Surface(
@@ -618,18 +617,12 @@ private fun AdvancedSettings(
     ) {
         Column(Modifier.padding(18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.lock_screen_study), fontWeight = FontWeight.Bold)
-                    Text(
-                        if (progress.lockScreenEnabled) {
-                            stringResource(R.string.lock_screen_study_enabled)
-                        } else {
-                            stringResource(R.string.lock_screen_study_disabled)
-                        },
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
+                SettingLabel(
+                    R.string.lock_screen_study,
+                    R.string.lock_screen_study_info,
+                    onShowSettingInfo,
+                    Modifier.weight(1f),
+                )
                 Switch(
                     checked = progress.lockScreenEnabled,
                     onCheckedChange = onLockScreenChange,
@@ -643,44 +636,14 @@ private fun AdvancedSettings(
                     Text(stringResource(R.string.android_app_settings))
                 }
             }
-            Text(
-                if (progress.lockScreenEnabled) {
-                    stringResource(
-                        R.string.lock_health_ok,
-                        progress.lockScreenCardsToday,
-                        progress.lockScreenDailyLimit,
-                    )
-                } else {
-                    stringResource(R.string.lock_health_off)
-                },
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                stringResource(
-                    R.string.lock_safety_status,
-                    progress.lastLockScreenLatencyMs?.toString() ?: "—",
-                    LockScreenPerformanceBudget.MAX_LAUNCH_LATENCY_MS,
-                    progress.lockScreenSafetySkips,
-                ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.quiet_hours), fontWeight = FontWeight.Bold)
-                    Text(
-                        stringResource(
-                            R.string.quiet_hours_summary,
-                            progress.quietStartHour,
-                            progress.quietEndHour,
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
+                SettingLabel(
+                    R.string.quiet_hours,
+                    R.string.quiet_hours_info,
+                    onShowSettingInfo,
+                    Modifier.weight(1f),
+                )
                 Switch(
                     checked = progress.quietHoursEnabled,
                     onCheckedChange = onQuietHoursEnabledChange,
@@ -718,10 +681,11 @@ private fun AdvancedSettings(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    stringResource(R.string.daily_card_limit),
-                    modifier = Modifier.weight(1f),
-                    fontWeight = FontWeight.Bold,
+                SettingLabel(
+                    R.string.daily_card_limit,
+                    R.string.daily_card_limit_info,
+                    onShowSettingInfo,
+                    Modifier.weight(1f),
                 )
                 Text(
                     stringResource(R.string.daily_card_limit_value, dailyLimitSlider.roundToInt()),
@@ -744,10 +708,11 @@ private fun AdvancedSettings(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    stringResource(R.string.card_cooldown),
-                    modifier = Modifier.weight(1f),
-                    fontWeight = FontWeight.Bold,
+                SettingLabel(
+                    R.string.card_cooldown,
+                    R.string.card_cooldown_info,
+                    onShowSettingInfo,
+                    Modifier.weight(1f),
                 )
                 Text(
                     pluralStringResource(
@@ -792,22 +757,12 @@ private fun AdvancedSettings(
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.lock_screen_quiz), fontWeight = FontWeight.Bold)
-                    Text(
-                        if (progress.lockScreenQuizEnabled) {
-                            pluralStringResource(
-                                R.plurals.lock_screen_quiz_enabled,
-                                progress.lockScreenQuizInterval,
-                                progress.lockScreenQuizInterval,
-                            )
-                        } else {
-                            stringResource(R.string.lock_screen_quiz_disabled)
-                        },
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
+                SettingLabel(
+                    R.string.lock_screen_quiz,
+                    R.string.lock_screen_quiz_info,
+                    onShowSettingInfo,
+                    Modifier.weight(1f),
+                )
                 Switch(
                     checked = progress.lockScreenQuizEnabled,
                     onCheckedChange = onLockScreenQuizChange,
@@ -816,7 +771,12 @@ private fun AdvancedSettings(
             if (progress.lockScreenQuizEnabled) {
                 Spacer(Modifier.height(12.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(stringResource(R.string.interval), fontWeight = FontWeight.SemiBold)
+                    SettingLabel(
+                        R.string.interval,
+                        R.string.quiz_interval_info,
+                        onShowSettingInfo,
+                        Modifier.weight(1f),
+                    )
                     Text(
                         pluralStringResource(
                             R.plurals.words_count,
@@ -841,11 +801,10 @@ private fun AdvancedSettings(
     }
     Spacer(Modifier.height(22.dp))
 
-    SettingsSectionTitle(R.string.learning_limit)
-    Text(
-        stringResource(R.string.learning_limit_description),
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        style = MaterialTheme.typography.bodySmall,
+    SettingsSectionTitle(
+        R.string.learning_limit,
+        R.string.learning_limit_description,
+        onShowSettingInfo,
     )
     Spacer(Modifier.height(10.dp))
     Surface(
@@ -855,10 +814,11 @@ private fun AdvancedSettings(
     ) {
         Column(Modifier.padding(18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(R.string.limit_new_words),
-                    modifier = Modifier.weight(1f),
-                    fontWeight = FontWeight.Bold,
+                SettingLabel(
+                    R.string.limit_new_words,
+                    R.string.learning_limit_description,
+                    onShowSettingInfo,
+                    Modifier.weight(1f),
                 )
                 Switch(
                     checked = progress.maximumWords != LearningWordLimiter.UNLIMITED,
@@ -912,13 +872,61 @@ private fun AdvancedSettings(
 }
 
 @Composable
-private fun SettingsSectionTitle(titleRes: Int) {
-    Text(
-        stringResource(titleRes),
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Bold,
-    )
+private fun SettingsSectionTitle(
+    titleRes: Int,
+    infoRes: Int? = null,
+    onShowInfo: ((Int, Int) -> Unit)? = null,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            stringResource(titleRes),
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+        )
+        if (infoRes != null && onShowInfo != null) {
+            SettingInfoButton(titleRes, infoRes, onShowInfo)
+        }
+    }
 }
+
+@Composable
+private fun SettingLabel(
+    titleRes: Int,
+    infoRes: Int,
+    onShowInfo: (Int, Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            stringResource(titleRes),
+            modifier = Modifier.weight(1f),
+            fontWeight = FontWeight.Bold,
+        )
+        SettingInfoButton(titleRes, infoRes, onShowInfo)
+    }
+}
+
+@Composable
+private fun SettingInfoButton(
+    titleRes: Int,
+    infoRes: Int,
+    onShowInfo: (Int, Int) -> Unit,
+) {
+    val title = stringResource(titleRes)
+    val description = stringResource(R.string.setting_info_content_description, title)
+    TextButton(onClick = { onShowInfo(titleRes, infoRes) }) {
+        Text(
+            "ⓘ",
+            fontSize = 20.sp,
+            modifier = Modifier.semantics {
+                contentDescription = description
+            },
+        )
+    }
+}
+
+private data class SettingInfo(val titleRes: Int, val bodyRes: Int)
 
 private data class OfflineAudioSelectionKey(
     val studyScope: String,

@@ -39,6 +39,12 @@ data class NumberLesson(
     val transliteration: String,
 )
 
+/** A permanent, quick-reference row for one of the 28 Arabic letters. */
+data class ArabicLetterReference(
+    val letter: FoundationSymbol,
+    val vowelVariants: List<FoundationSymbol>,
+)
+
 object ArabicFoundations {
     val alphabetLessons: List<AlphabetLesson> = listOf(
         AlphabetLesson(
@@ -121,8 +127,68 @@ object ArabicFoundations {
         NumberLesson(9, "٩", "تِسْعَة", "tisʿa"),
     )
 
+    /**
+     * The complete alphabet reference remains available after the guided course.
+     * Each row has the four short-vowel forms in the same order: fatḥa, kasra,
+     * ḍamma, and sukūn.
+     */
+    val alphabetReference: List<ArabicLetterReference> by lazy {
+        val sounds = listOf(
+            "a" to "َ", "i" to "ِ", "u" to "ُ", "" to "ْ",
+        )
+        alphabetLessons
+            .filterNot(AlphabetLesson::teachesVowels)
+            .flatMap(AlphabetLesson::symbols)
+            .map { letter ->
+                val stem = letterVowelStem(letter.arabic)
+                ArabicLetterReference(
+                    letter = letter,
+                    vowelVariants = sounds.map { (sound, mark) ->
+                        FoundationSymbol(
+                            arabic = letter.arabic + mark,
+                            transliteration = stem + sound,
+                            // The letter plus its vowel mark is what the device voice should say.
+                            spokenArabic = letter.arabic + mark,
+                        )
+                    },
+                )
+            }
+    }
+
     val alphabetLessonCount: Int get() = alphabetLessons.size
     val numberLessonCount: Int get() = numberLessons.size
+
+    private fun letterVowelStem(letter: String): String = when (letter) {
+        "ا" -> ""
+        "ب" -> "b"
+        "ت" -> "t"
+        "ث" -> "th"
+        "ج" -> "j"
+        "ح" -> "ḥ"
+        "خ" -> "kh"
+        "د" -> "d"
+        "ذ" -> "dh"
+        "ر" -> "r"
+        "ز" -> "z"
+        "س" -> "s"
+        "ش" -> "sh"
+        "ص" -> "ṣ"
+        "ض" -> "ḍ"
+        "ط" -> "ṭ"
+        "ظ" -> "ẓ"
+        "ع" -> "ʿ"
+        "غ" -> "gh"
+        "ف" -> "f"
+        "ق" -> "q"
+        "ك" -> "k"
+        "ل" -> "l"
+        "م" -> "m"
+        "ن" -> "n"
+        "ه" -> "h"
+        "و" -> "w"
+        "ي" -> "y"
+        else -> error("Unknown Arabic alphabet letter: $letter")
+    }
 }
 
 val StudyProgress.needsAlphabetFoundation: Boolean

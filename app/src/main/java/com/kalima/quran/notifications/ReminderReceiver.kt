@@ -72,7 +72,7 @@ object NotificationHelper {
         val progress = ProgressStore.get(context).progress.value
         val activeWords = progress.limitNewWords(
             WordRepository.wordsFor(
-                progress.studyScope,
+                progress.studyScopes,
                 progress.selectedSurahs,
                 progress.customStudyIds,
             ),

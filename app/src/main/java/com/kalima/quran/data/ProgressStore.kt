@@ -225,17 +225,29 @@ class ProgressStore private constructor(context: Context) {
         )
     }
 
-    fun setStudyScope(scope: StudyScope) {
-        val selectedSurahs = if (scope == StudyScope.Surahs && _progress.value.selectedSurahs.isEmpty()) {
+    fun toggleStudyScope(scope: StudyScope) {
+        val current = _progress.value
+        val scopes = current.studyScopes.toMutableSet().apply {
+            if (!add(scope) && size > 1) remove(scope)
+        }
+        val selectedSurahs = if (StudyScope.Surahs in scopes && current.selectedSurahs.isEmpty()) {
             setOf(DEFAULT_SURAH)
         } else {
-            _progress.value.selectedSurahs
+            current.selectedSurahs
         }
         persist(
-            _progress.value.copy(studyScope = scope, selectedSurahs = selectedSurahs),
+            current.copy(
+                selectedStudyScopes = scopes,
+                // Keep the previous identifier for older app versions and integrations.
+                studyScope = scopes.minBy(StudyScope::ordinal),
+                selectedSurahs = selectedSurahs,
+            ),
             today(),
         )
     }
+
+    @Deprecated("Use toggleStudyScope for multi-path selection")
+    fun setStudyScope(scope: StudyScope) = toggleStudyScope(scope)
 
     fun toggleCustomStudy(wordId: String) {
         if (!WordRepository.containsWord(wordId)) return
@@ -293,6 +305,7 @@ class ProgressStore private constructor(context: Context) {
             _progress.value.copy(
                 onboardingComplete = true,
                 studyScope = scope,
+                selectedStudyScopes = setOf(scope),
                 dailyGoal = dailyGoal.coerceIn(3, 20),
                 alphabetCourseRequested = !knowsArabicAlphabet,
                 alphabetFoundationRequired = !knowsArabicAlphabet,
@@ -357,15 +370,22 @@ class ProgressStore private constructor(context: Context) {
 
     fun toggleSurah(surahNumber: Int) {
         if (surahNumber !in AVAILABLE_SURAHS) return
-        val selected = _progress.value.selectedSurahs.toMutableSet().apply {
+        val current = _progress.value
+        val selected = current.selectedSurahs.toMutableSet().apply {
             if (!add(surahNumber)) remove(surahNumber)
         }
-        val updated = if (selected.isEmpty()) {
-            _progress.value.copy(studyScope = StudyScope.All, selectedSurahs = emptySet())
-        } else {
-            _progress.value.copy(studyScope = StudyScope.Surahs, selectedSurahs = selected)
+        val scopes = current.studyScopes.toMutableSet().apply {
+            if (selected.isEmpty()) remove(StudyScope.Surahs) else add(StudyScope.Surahs)
+            if (isEmpty()) add(StudyScope.All)
         }
-        persist(updated, today())
+        persist(
+            current.copy(
+                studyScope = scopes.minBy(StudyScope::ordinal),
+                selectedStudyScopes = scopes,
+                selectedSurahs = selected,
+            ),
+            today(),
+        )
     }
 
     fun canShowLockScreenCard(now: Instant = Instant.now()): Boolean =
@@ -409,7 +429,7 @@ class ProgressStore private constructor(context: Context) {
     private fun createLockScreenSession(preview: Boolean): LockScreenSession? {
         val current = _progress.value
         val selectedSource = WordRepository.wordsFor(
-            current.studyScope,
+            current.studyScopes,
             current.selectedSurahs,
             current.customStudyIds,
         )
@@ -734,6 +754,13 @@ class ProgressStore private constructor(context: Context) {
                 completedAlphabetLessons < ArabicFoundations.alphabetLessonCount &&
                 learnedIds.isEmpty() && reviewingIds.isEmpty() && alreadyKnownIds.isEmpty(),
         )
+        val studyScope = StudyScope.fromPersistedName(
+            preferences.getString(KEY_STUDY_SCOPE, null),
+        ) ?: StudyScope.All
+        val selectedStudyScopes = preferences.getStringSet(KEY_SELECTED_STUDY_SCOPES, emptySet())
+            .orEmpty()
+            .mapNotNull(StudyScope::fromPersistedName)
+            .toSet()
         return StudyProgress(
             learnedIds = learnedIds,
             reviewingIds = reviewingIds,
@@ -753,9 +780,8 @@ class ProgressStore private constructor(context: Context) {
             streakDays = preferences.getInt(KEY_STREAK, 0),
             reminderEnabled = preferences.getBoolean(KEY_REMINDER, false),
             lockScreenEnabled = preferences.getBoolean(KEY_LOCK_SCREEN_ENABLED, false),
-            studyScope = StudyScope.fromPersistedName(
-                preferences.getString(KEY_STUDY_SCOPE, null),
-            ) ?: StudyScope.All,
+            studyScope = studyScope,
+            selectedStudyScopes = selectedStudyScopes.ifEmpty { setOf(studyScope) },
             selectedSurahs = preferences.getStringSet(KEY_SELECTED_SURAHS, emptySet())
                 .orEmpty()
                 .mapNotNull(String::toIntOrNull)
@@ -855,6 +881,7 @@ class ProgressStore private constructor(context: Context) {
             putBoolean(KEY_REMINDER, progress.reminderEnabled)
             putBoolean(KEY_LOCK_SCREEN_ENABLED, progress.lockScreenEnabled)
             putString(KEY_STUDY_SCOPE, progress.studyScope.name)
+            putStringSet(KEY_SELECTED_STUDY_SCOPES, progress.studyScopes.mapTo(mutableSetOf()) { it.name })
             putStringSet(KEY_SELECTED_SURAHS, progress.selectedSurahs.map(Int::toString).toSet())
             putStringSet(KEY_QUIZ_CORRECT_DAYS, encodeQuizCorrectDays(progress.quizCorrectDays))
             putInt(KEY_QUIZ_CORRECT_ANSWERS, progress.quizCorrectAnswers)
@@ -967,6 +994,7 @@ class ProgressStore private constructor(context: Context) {
         private const val KEY_LOCK_SCREEN_SEQUENCE = "lock_screen_sequence"
         private const val KEY_LAST_STUDY_DATE = "last_study_date"
         private const val KEY_STUDY_SCOPE = "study_scope"
+        private const val KEY_SELECTED_STUDY_SCOPES = "selected_study_scopes"
         private const val KEY_SELECTED_SURAHS = "selected_surahs"
         private const val KEY_QUIZ_CORRECT_DAYS = "quiz_correct_days"
         private const val KEY_QUIZ_CORRECT_ANSWERS = "quiz_correct_answers"

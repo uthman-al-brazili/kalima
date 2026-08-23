@@ -86,14 +86,15 @@ fun StudyScreen(
     val coroutineScope = rememberCoroutineScope()
     val excludedMessage = stringResource(R.string.word_excluded_message)
     val undoLabel = stringResource(R.string.undo)
+    val scopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val selectedWords = remember(
-        progress.studyScope,
+        scopeKey,
         selectionKey,
         progress.customStudyIds,
     ) {
         WordRepository.wordsFor(
-            progress.studyScope,
+            progress.studyScopes,
             progress.selectedSurahs,
             progress.customStudyIds,
         )
@@ -115,7 +116,7 @@ fun StudyScreen(
                         modifier = Modifier.fillMaxSize(),
                         onOpenExcludedWords = onOpenExcludedWords,
                     )
-                progress.studyScope == StudyScope.Custom -> EmptyCollectionState(Modifier.fillMaxSize())
+                progress.studyScopes == setOf(StudyScope.Custom) -> EmptyCollectionState(Modifier.fillMaxSize())
                 else -> LearningLimitEmptyState(Modifier.fillMaxSize())
             }
             SnackbarHost(
@@ -125,7 +126,7 @@ fun StudyScreen(
         }
         return
     }
-    var activeIntroductionId by rememberSaveable(progress.studyScope.name, selectionKey) {
+    var activeIntroductionId by rememberSaveable(scopeKey, selectionKey) {
         mutableStateOf<String?>(null)
     }
     val queuedWords = remember(
@@ -170,7 +171,7 @@ fun StudyScreen(
         )
     }
     var currentWordId by rememberSaveable(
-        progress.studyScope.name,
+        scopeKey,
         selectionKey,
         launchTarget?.requestId,
     ) { mutableStateOf(session.first().id) }
@@ -188,6 +189,9 @@ fun StudyScreen(
         onCurrentWordChange(nextWord.id)
     }
     val scrollState = rememberScrollState()
+    var scrollPositionWordId by rememberSaveable(scopeKey, selectionKey) {
+        mutableStateOf<String?>(null)
+    }
 
     LaunchedEffect(word.id) {
         onCurrentWordChange(word.id)
@@ -195,7 +199,10 @@ fun StudyScreen(
             activeIntroductionId = word.id
             onIntroduce(word.id)
         }
-        scrollState.scrollTo(0)
+        if (scrollPositionWordId != word.id) {
+            scrollState.scrollTo(0)
+            scrollPositionWordId = word.id
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -370,6 +377,8 @@ fun FoundationsScreen(
         } else {
             NumberAccessCard(onStartNumberFoundation = onStartNumberFoundation)
         }
+        Spacer(Modifier.height(22.dp))
+        AlphabetReferenceTable(pronouncer = pronouncer)
         Spacer(Modifier.height(24.dp))
     }
 }
@@ -419,6 +428,7 @@ private fun AlphabetFoundationScreen(
     var symbolIndex by rememberSaveable(lessonIndex) { mutableStateOf(0) }
     var selectedOptionIndex by rememberSaveable(lessonIndex) { mutableStateOf<Int?>(null) }
     val practiceQuestions = remember(lesson) { lesson.practiceQuestions() }
+    var showReference by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -442,6 +452,21 @@ private fun AlphabetFoundationScreen(
             TextButton(onClick = onSkipAlphabetFoundation) {
                 Text(stringResource(R.string.skip_alphabet_for_now))
             }
+        }
+        TextButton(
+            onClick = { showReference = !showReference },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                stringResource(
+                    if (showReference) R.string.hide_alphabet_reference
+                    else R.string.open_alphabet_reference,
+                ),
+            )
+        }
+        if (showReference) {
+            AlphabetReferenceTable(pronouncer = pronouncer)
+            Spacer(Modifier.height(14.dp))
         }
         Spacer(Modifier.height(14.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -742,6 +767,76 @@ private fun AlphabetFoundationScreen(
             )
         }
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun AlphabetReferenceTable(pronouncer: ArabicPronouncer) {
+    Text(
+        stringResource(R.string.alphabet_reference_title),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+    )
+    Text(
+        stringResource(R.string.alphabet_reference_description),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.bodySmall,
+    )
+    Spacer(Modifier.height(10.dp))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            ArabicFoundations.alphabetReference.forEachIndexed { index, reference ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(0.9f)) {
+                        ArabicText(
+                            reference.letter.arabic,
+                            modifier = Modifier.fillMaxWidth(),
+                            size = 32,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            reference.letter.transliteration,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                    reference.vowelVariants.forEach { variant ->
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            ArabicText(
+                                variant.arabic,
+                                modifier = Modifier.fillMaxWidth(),
+                                size = 27,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                variant.transliteration.ifEmpty { "—" },
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                            FoundationPronunciationButton(
+                                text = variant.spokenArabic,
+                                pronouncer = pronouncer,
+                                labelRes = R.string.hear_letter,
+                                compact = true,
+                            )
+                        }
+                    }
+                }
+                if (index != ArabicFoundations.alphabetReference.lastIndex) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                }
+            }
+        }
     }
 }
 
@@ -1078,7 +1173,9 @@ private fun StudyHeader(progress: StudyProgress, dueCount: Int) {
             )
             Text(stringResource(R.string.today_word), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text(
-                when (progress.studyScope) {
+                if (progress.studyScopes.size > 1) {
+                    stringResource(R.string.study_paths_combined, progress.studyScopes.size)
+                } else when (progress.studyScopes.single()) {
                     StudyScope.All -> stringResource(R.string.scope_all_description)
                     StudyScope.Frequent50 -> stringResource(R.string.scope_first_50_description)
                     StudyScope.Frequent -> stringResource(R.string.scope_frequent_description)
@@ -1249,12 +1346,11 @@ private fun WordCard(
                         )
                         Spacer(Modifier.height(8.dp))
                         if (showCompleteAyah) {
-                            VerseExplorerPanel(word = word, onOpenWord = onOpenWord)
-                            VersePronunciationButton(
+                            RecitableVerseExplorer(
                                 word = word,
                                 pronouncer = pronouncer,
                                 modifier = Modifier.fillMaxWidth(),
-                                labelRes = R.string.hussary_verse_recitation,
+                                onOpenWord = onOpenWord,
                             )
                             TextButton(
                                 onClick = { onShowCompleteAyahChange(false) },

@@ -78,14 +78,15 @@ fun LibraryScreen(
             expandedId = null
         }
     }
+    val scopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val activeWords = remember(
-        progress.studyScope,
+        scopeKey,
         selectionKey,
         progress.customStudyIds,
     ) {
         WordRepository.wordsFor(
-            progress.studyScope,
+            progress.studyScopes,
             progress.selectedSurahs,
             progress.customStudyIds,
         )
@@ -146,7 +147,13 @@ fun LibraryScreen(
         item {
             Text(stringResource(R.string.library_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Text(
-                when (progress.studyScope) {
+                when {
+                    progress.studyScopes.size > 1 -> pluralStringResource(
+                        R.plurals.library_available_cards,
+                        activeWords.size,
+                        activeWords.size,
+                    )
+                    else -> when (progress.studyScopes.single()) {
                     StudyScope.All -> pluralStringResource(
                         R.plurals.library_available_cards,
                         activeWords.size,
@@ -180,6 +187,7 @@ fun LibraryScreen(
                             activeWords.size,
                             progress.selectedSurahs.size,
                         )
+                    }
                     }
                 },
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -349,12 +357,10 @@ private fun LibraryWordCard(
             if (expanded) {
                 Spacer(Modifier.height(14.dp))
                 if (showCompleteAyah) {
-                    VerseExplorerPanel(word)
-                    VersePronunciationButton(
+                    RecitableVerseExplorer(
                         word = word,
                         pronouncer = pronouncer,
                         modifier = Modifier.fillMaxWidth(),
-                        labelRes = R.string.hussary_verse_recitation,
                     )
                     OutlinedButton(
                         onClick = { onShowCompleteAyahChange(false) },

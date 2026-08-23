@@ -54,14 +54,15 @@ fun ProgressScreen(
     onToggleSurah: (Int) -> Unit,
     pronouncer: ArabicPronouncer,
 ) {
+    val scopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val activeWords = remember(
-        progress.studyScope,
+        scopeKey,
         selectionKey,
         progress.customStudyIds,
     ) {
         WordRepository.wordsFor(
-            progress.studyScope,
+            progress.studyScopes,
             progress.selectedSurahs,
             progress.customStudyIds,
         )
@@ -80,6 +81,10 @@ fun ProgressScreen(
     }
     val dueInScope = progress.dueReviewCount(learningWords.mapTo(mutableSetOf()) { it.id })
     val learnedFraction = if (activeWords.isEmpty()) 0f else learnedInScope.toFloat() / activeWords.size
+    val selectedPathSummary = progress.studyScopes
+        .sortedBy(StudyScope::ordinal)
+        .map { scope -> studyScopeDescription(scope) }
+        .joinToString("  •  ")
     val today = LocalDate.now()
     val eventsToday = progress.reviewEvents.filter {
         it.timestamp.atZone(ZoneId.systemDefault()).toLocalDate() == today
@@ -203,15 +208,15 @@ fun ProgressScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    ProgressPathChip(progress.studyScope, StudyScope.Frequent50, R.string.scope_first_50, onStudyScopeChange, Modifier.weight(1f))
-                    ProgressPathChip(progress.studyScope, StudyScope.Frequent, R.string.scope_top_100, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScopes, StudyScope.Frequent50, R.string.scope_first_50, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScopes, StudyScope.Frequent, R.string.scope_top_100, onStudyScopeChange, Modifier.weight(1f))
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    ProgressPathChip(progress.studyScope, StudyScope.Frequent300, R.string.scope_top_300, onStudyScopeChange, Modifier.weight(1f))
-                    ProgressPathChip(progress.studyScope, StudyScope.Frequent500, R.string.scope_top_500, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScopes, StudyScope.Frequent300, R.string.scope_top_300, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScopes, StudyScope.Frequent500, R.string.scope_top_500, onStudyScopeChange, Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(10.dp))
                 PathGroupLabel(R.string.path_group_goal)
@@ -220,8 +225,8 @@ fun ProgressScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    ProgressPathChip(progress.studyScope, StudyScope.Prayer, R.string.scope_prayer, onStudyScopeChange, Modifier.weight(1f))
-                    ProgressPathChip(progress.studyScope, StudyScope.ShortSurahs, R.string.scope_short_surahs, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScopes, StudyScope.Prayer, R.string.scope_prayer, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScopes, StudyScope.ShortSurahs, R.string.scope_short_surahs, onStudyScopeChange, Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(10.dp))
                 PathGroupLabel(R.string.path_group_collection)
@@ -230,17 +235,17 @@ fun ProgressScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    ProgressPathChip(progress.studyScope, StudyScope.All, R.string.scope_all, onStudyScopeChange, Modifier.weight(1f))
-                    ProgressPathChip(progress.studyScope, StudyScope.Surahs, R.string.scope_surah, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScopes, StudyScope.All, R.string.scope_all, onStudyScopeChange, Modifier.weight(1f))
+                    ProgressPathChip(progress.studyScopes, StudyScope.Surahs, R.string.scope_surah, onStudyScopeChange, Modifier.weight(1f))
                 }
                 ProgressPathChip(
-                    progress.studyScope,
+                    progress.studyScopes,
                     StudyScope.Custom,
                     R.string.scope_custom,
                     onStudyScopeChange,
                     Modifier.fillMaxWidth(),
                 )
-                if (progress.studyScope == StudyScope.Surahs) {
+                if (StudyScope.Surahs in progress.studyScopes) {
                     Spacer(Modifier.height(10.dp))
                     Text(
                         if (progress.selectedSurahs.size == 1) {
@@ -283,7 +288,7 @@ fun ProgressScreen(
                     Text(
                         stringResource(
                             R.string.path_selected_summary,
-                            studyScopeDescription(progress.studyScope),
+                            selectedPathSummary,
                         ),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -384,14 +389,14 @@ private fun studyScopeDescription(scope: StudyScope): String = when (scope) {
 
 @Composable
 private fun ProgressPathChip(
-    selectedScope: StudyScope,
+    selectedScopes: Set<StudyScope>,
     scope: StudyScope,
     labelRes: Int,
     onSelect: (StudyScope) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     FilterChip(
-        selected = selectedScope == scope,
+        selected = scope in selectedScopes,
         onClick = { onSelect(scope) },
         label = { Text(stringResource(labelRes)) },
         modifier = modifier,

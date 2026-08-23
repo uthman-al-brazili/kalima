@@ -3,6 +3,22 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.29.0 — 2026-08-22
+
+- Added an always-available Arabic alphabet table in Basics with all 28 letters,
+  fatḥa, kasra, ḍamma, and sukūn variants, transliteration, and tap-to-hear audio.
+- Added an information button to each setting and moved lengthy explanations into
+  on-demand dialogs, making the Settings screen substantially more compact.
+- Replaced the in-app donation action with a direct link to the Kalima website.
+- Kept the current Study card, reveal and scroll position, and the exact Quiz
+  session, answer, score, mode, and scroll position when switching tabs.
+- Show the tested word's translation after every quiz answer and calculate the
+  result percentage from the current quiz, so a perfect 5/5 displays 100%.
+- Allow multiple guided paths to be selected together, studying their stable,
+  duplicate-free union while preserving legacy progress and backup compatibility.
+- Made the Quran reader show its first offline page before the optional word-detail
+  index finishes, and highlight each word in sequence during Al-Hussary ayah audio.
+
 ## 0.28.5 — 2026-08-22
 
 - Fixed the Quiz tab closing the app when a saved study selection did not have

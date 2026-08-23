@@ -44,6 +44,9 @@ object ProgressBackupCodec {
             "reminderEnabled" to progress.reminderEnabled.toString(),
             "lockScreenEnabled" to progress.lockScreenEnabled.toString(),
             "studyScope" to progress.studyScope.name,
+            "selectedStudyScopes" to progress.studyScopes
+                .sortedBy(StudyScope::ordinal)
+                .joinToString(",") { it.name },
             "selectedSurahs" to progress.selectedSurahs.sorted().joinToString(","),
             "quizCorrectDays" to encodeSet(
                 progress.quizCorrectDays.mapTo(mutableSetOf()) { (id, days) ->
@@ -168,6 +171,17 @@ object ProgressBackupCodec {
                 completedAlphabetLessons < ArabicFoundations.alphabetLessonCount &&
                 learned.isEmpty() && reviewing.isEmpty() && alreadyKnown.isEmpty(),
         )
+        val legacyStudyScope = StudyScope.fromPersistedName(values.required("studyScope"))
+            ?: throw invalid("Backup has an invalid study scope")
+        val selectedStudyScopes = values["selectedStudyScopes"]
+            ?.takeIf(String::isNotBlank)
+            ?.split(',')
+            ?.map { stored ->
+                StudyScope.fromPersistedName(stored)
+                    ?: throw invalid("Backup has an invalid selected study scope")
+            }
+            ?.toSet()
+            .orEmpty()
         val progress = StudyProgress(
             learnedIds = learned,
             reviewingIds = reviewing,
@@ -178,8 +192,8 @@ object ProgressBackupCodec {
             streakDays = values.int("streakDays").coerceAtLeast(0),
             reminderEnabled = values.boolean("reminderEnabled"),
             lockScreenEnabled = values.boolean("lockScreenEnabled"),
-            studyScope = StudyScope.fromPersistedName(values.required("studyScope"))
-                ?: throw invalid("Backup has an invalid study scope"),
+            studyScope = legacyStudyScope,
+            selectedStudyScopes = selectedStudyScopes.ifEmpty { setOf(legacyStudyScope) },
             selectedSurahs = values.required("selectedSurahs").split(',')
                 .mapNotNull(String::toIntOrNull).filterTo(mutableSetOf()) { it in 1..114 },
             quizCorrectDays = quizCorrectDays,

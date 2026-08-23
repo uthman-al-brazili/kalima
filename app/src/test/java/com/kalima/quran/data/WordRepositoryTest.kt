@@ -9,6 +9,23 @@ import java.time.LocalDate
 
 class WordRepositoryTest {
     @Test
+    fun `multiple guided paths produce a stable union without duplicate cards`() {
+        val scopes = setOf(StudyScope.Prayer, StudyScope.Frequent50)
+        val combined = WordRepository.wordsFor(scopes, emptySet())
+        val expectedIds = scopes
+            .flatMap { WordRepository.wordsFor(it, emptySet()) }
+            .map(QuranWord::id)
+            .toSet()
+
+        assertEquals(expectedIds, combined.map(QuranWord::id).toSet())
+        assertEquals(expectedIds.size, combined.size)
+        assertEquals(
+            combined.map(QuranWord::id),
+            WordRepository.wordsFor(scopes.reversed().toSet(), emptySet()).map(QuranWord::id),
+        )
+    }
+
+    @Test
     fun completeAyahFindsMeaningForAlBaqarahVerse34FirstToken() {
         val corpusAsset = sequenceOf(
             java.io.File("src/main/assets/${VocabularyAssetLoader.ASSET_NAME}.gz"),

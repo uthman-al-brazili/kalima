@@ -119,7 +119,7 @@ class MainActivity : ComponentActivity() {
                 onAdvancedSettingsVisibleChange = store::setAdvancedSettingsVisible,
                 onShowCompleteAyahChange = store::setShowCompleteAyah,
                 onSpacedRepetitionEnabledChange = store::setSpacedRepetitionEnabled,
-                onStudyScopeChange = store::setStudyScope,
+                onStudyScopeChange = store::toggleStudyScope,
                 onToggleSurah = store::toggleSurah,
                 onToggleCustomList = store::toggleCustomStudy,
                 onToggleAlreadyKnown = store::toggleAlreadyKnown,
@@ -131,7 +131,7 @@ class MainActivity : ComponentActivity() {
                 onStartNumberFoundation = store::startNumberFoundation,
                 onOpenAppSettings = ::openAppSettings,
                 onPreviewLockScreen = ::previewLockScreen,
-                onDonate = ::openDonationPage,
+                onOpenWebsite = ::openWebsite,
                 onContactDeveloper = ::openSupportEmail,
                 currentLanguage = LanguageManager.selectedLanguage(this),
                 onLanguageChange = ::changeLanguage,
@@ -235,15 +235,11 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun openDonationPage() {
-        if (DONATION_URL.isBlank()) {
-            Toast.makeText(this, R.string.donation_unavailable, Toast.LENGTH_LONG).show()
-            return
-        }
+    private fun openWebsite() {
         try {
-            startActivity(Intent(Intent.ACTION_VIEW, DONATION_URL.toUri()))
+            startActivity(Intent(Intent.ACTION_VIEW, WEBSITE_URL.toUri()))
         } catch (_: ActivityNotFoundException) {
-            Toast.makeText(this, R.string.donation_unavailable, Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.website_unavailable, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -386,7 +382,7 @@ class MainActivity : ComponentActivity() {
         private const val POST_RENDER_WORK_DELAY_MS = 500L
         private const val EXTRA_STUDY_WORD_ID = "com.kalima.quran.extra.STUDY_WORD_ID"
         private const val EXTRA_STUDY_REQUEST_ID = "com.kalima.quran.extra.STUDY_REQUEST_ID"
-        private const val DONATION_URL = "https://sites.google.com/view/kalimaapp"
+        private const val WEBSITE_URL = "https://kalima-h1f.pages.dev/"
         private const val SUPPORT_EMAIL = "uthman-al-brazili@proton.me"
 
         fun createStudyIntent(context: Context, wordId: String): Intent =
