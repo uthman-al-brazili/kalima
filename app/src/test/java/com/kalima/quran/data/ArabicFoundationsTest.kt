@@ -91,14 +91,7 @@ class ArabicFoundationsTest {
 
         assertEquals(listOf("أَ", "إِ", "أُ", "أْ"), alif.vowelVariants.map(FoundationSymbol::arabic))
         assertEquals(listOf("ʾa", "ʾi", "ʾu", "ʾ"), alif.vowelVariants.map(FoundationSymbol::transliteration))
-    }
-
-    @Test
-    fun `alphabet reference search accepts Arabic and transliterated letter names`() {
-        assertEquals(listOf("ق"), ArabicFoundations.alphabetReferenceMatching("ق").map { it.letter.arabic })
-        assertEquals(listOf("ق"), ArabicFoundations.alphabetReferenceMatching("qaf").map { it.letter.arabic })
-        assertEquals(listOf("ح"), ArabicFoundations.alphabetReferenceMatching("ḥāʾ").map { it.letter.arabic })
-        assertEquals(ArabicFoundations.alphabetReference, ArabicFoundations.alphabetReferenceMatching(""))
+        assertEquals("إِ", alif.vowelVariants[1].spokenArabic)
     }
 
     @Test

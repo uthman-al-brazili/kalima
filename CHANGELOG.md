@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.29.2 — 2026-08-23
+
+- Removed search from the Arabic alphabet reference and laid out each row from
+  right to left, beginning with the base letter on the right.
+- Kept vowel-form playback on Arabic script and re-applied the selected Arabic
+  device-voice locale for every utterance, including alif with kasra (`إِ`).
+- Added explicit no-internet feedback when uncached word or Al-Hussary ayah audio
+  cannot play, including connections that drop after playback begins.
+
 ## 0.29.1 — 2026-08-23
 
 - Split the Arabic alphabet reference into seven compact four-letter pages and

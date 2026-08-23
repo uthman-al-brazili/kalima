@@ -1,7 +1,5 @@
 package com.kalima.quran.data
 
-import java.text.Normalizer
-
 data class FoundationSymbol(
     val arabic: String,
     val transliteration: String,
@@ -170,22 +168,6 @@ object ArabicFoundations {
             }
     }
 
-    fun alphabetReferenceMatching(query: String): List<ArabicLetterReference> {
-        val normalizedQuery = normalizeReferenceSearch(query)
-        if (normalizedQuery.isBlank()) return alphabetReference
-        val exactMatches = alphabetReference.filter { reference ->
-            reference.searchTerms().any { term ->
-                normalizeReferenceSearch(term) == normalizedQuery
-            }
-        }
-        if (exactMatches.isNotEmpty()) return exactMatches
-        return alphabetReference.filter { reference ->
-            reference.searchTerms().any { term ->
-                normalizeReferenceSearch(term).contains(normalizedQuery)
-            }
-        }
-    }
-
     val alphabetLessonCount: Int get() = alphabetLessons.size
     val numberLessonCount: Int get() = numberLessons.size
 
@@ -221,27 +203,6 @@ object ArabicFoundations {
         else -> error("Unknown Arabic alphabet letter: $letter")
     }
 
-    private fun ArabicLetterReference.searchTerms(): List<String> = buildList {
-        add(letter.arabic)
-        add(letter.transliteration)
-        add(letter.spokenArabic)
-        vowelVariants.forEach { variant ->
-            add(variant.arabic)
-            add(variant.transliteration)
-        }
-    }
-
-    private fun normalizeReferenceSearch(value: String): String = Normalizer
-        .normalize(value.trim().lowercase(), Normalizer.Form.NFD)
-        .filterNot { mark ->
-            // Ignore Arabic vowel marks and the transliteration macron, while retaining
-            // consonant distinctions such as ḥ/kh and ṣ/s.
-            mark == '\u0304' ||
-                mark in '\u0610'..'\u061A' ||
-                mark in '\u064B'..'\u065F' ||
-                mark == '\u0670' ||
-                mark in '\u06D6'..'\u06ED'
-        }
 }
 
 val StudyProgress.needsAlphabetFoundation: Boolean

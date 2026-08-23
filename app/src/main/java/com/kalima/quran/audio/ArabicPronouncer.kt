@@ -33,14 +33,23 @@ class ArabicPronouncer(context: Context) {
             hasOfflineAudio = location?.let(wordAudioPlayer::hasOfflineAudio) == true,
             hasValidatedInternet = hasValidatedInternet(),
         )
-        if (source == WordAudioSource.Unavailable) return PronunciationResult.OfflineAudioMissing
+        if (source == WordAudioSource.Unavailable) {
+            return if (location == null) {
+                PronunciationResult.Failed
+            } else {
+                PronunciationResult.OfflineAudioMissing
+            }
+        }
+        val isStreaming = source == WordAudioSource.StreamingQuranComRecording
 
         return wordAudioPlayer.play(
             location = requireNotNull(location),
             playbackRate = playbackRate,
             repeatCount = repeatCount,
-            allowStreaming = source == WordAudioSource.StreamingQuranComRecording,
-            onFailure = { onPlaybackResult(PronunciationResult.Failed) },
+            allowStreaming = isStreaming,
+            onFailure = {
+                onPlaybackResult(classifyPlaybackFailure(isStreaming, hasValidatedInternet()))
+            },
         )
     }
 
@@ -53,16 +62,20 @@ class ArabicPronouncer(context: Context) {
         wordAudioPlayer.stop()
         foundationVoice.stop()
         val hasOfflineAudio = location?.let(verseAudioPlayer::hasOfflineAudio) == true
-        if (location == null || (!hasOfflineAudio && !hasValidatedInternet())) {
+        if (location == null) return PronunciationResult.Failed
+        if (!hasOfflineAudio && !hasValidatedInternet()) {
             return PronunciationResult.OfflineAudioMissing
         }
+        val isStreaming = !hasOfflineAudio
 
         return verseAudioPlayer.play(
             location = location,
             playbackRate = playbackRate,
             repeatCount = repeatCount,
-            allowStreaming = !hasOfflineAudio,
-            onFailure = { onPlaybackResult(PronunciationResult.Failed) },
+            allowStreaming = isStreaming,
+            onFailure = {
+                onPlaybackResult(classifyPlaybackFailure(isStreaming, hasValidatedInternet()))
+            },
         )
     }
 
@@ -95,4 +108,13 @@ class ArabicPronouncer(context: Context) {
         const val VERSE_DEFAULT_RATE = 1f
         const val FOUNDATION_DEFAULT_RATE = 0.7f
     }
+}
+
+internal fun classifyPlaybackFailure(
+    isStreaming: Boolean,
+    hasValidatedInternet: Boolean,
+): PronunciationResult = if (isStreaming && !hasValidatedInternet) {
+    PronunciationResult.OfflineAudioMissing
+} else {
+    PronunciationResult.Failed
 }

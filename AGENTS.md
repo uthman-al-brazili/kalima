@@ -1,5 +1,19 @@
 # Kalima workspace instructions
 
+Use subagents for concrete, bounded subtasks whenever project work can be
+usefully divided or parallelized. The primary agent remains responsible for
+integrating the results and verifying the completed work. Trivial atomic tasks
+do not need artificial delegation.
+
+For every delegated subtask, explicitly select the subagent's model and
+reasoning effort using current official OpenAI model guidance. Choose the least
+costly available model and the lowest effort reasonably expected to meet the
+subtask's acceptance criteria, considering complexity, risk, required quality,
+latency, and expected token use. Escalate the model or effort only when the
+task's difficulty, impact, or verification results justify it. Do not hard-code
+a model/effort matrix that may become stale; re-check the official guidance as
+the available model lineup changes.
+
 Application changes target the Android version only by default. Do not change,
 version, build, test, package, or release the Windows version unless the user
 explicitly requests Windows work. Preserve the existing Windows source and

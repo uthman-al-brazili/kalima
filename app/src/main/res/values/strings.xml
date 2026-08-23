@@ -45,8 +45,8 @@
     <string name="reference_root">%1$s  •  raiz %2$s</string>
     <string name="listen_pronunciation">Ouvir pronúncia</string>
     <string name="pronunciation_failed">Não foi possível reproduzir a pronúncia. Tente novamente.</string>
-    <string name="offline_word_audio_missing">Esta gravação real ainda não está salva. Conecte-se uma vez ou baixe o áudio selecionado em Ajustes.</string>
-    <string name="offline_verse_audio_missing">Esta recitação do ayah por Al-Hussary ainda não está salva. Conecte-se uma vez ou baixe o áudio selecionado em Ajustes.</string>
+    <string name="offline_word_audio_missing">Sem conexão com a internet, e a gravação desta palavra ainda não foi salva. Conecte-se e tente novamente ou baixe o áudio selecionado em Ajustes.</string>
+    <string name="offline_verse_audio_missing">Sem conexão com a internet, e esta recitação do ayah por Al-Hussary ainda não foi salva. Conecte-se e tente novamente ou baixe o áudio selecionado em Ajustes.</string>
     <string name="study_lock_screen_title">Estude ao voltar para o celular</string>
     <string name="study_lock_screen_description">Receba uma palavra diretamente na tela de bloqueio quando a tela acender.</string>
     <string name="enable">Ativar</string>
@@ -461,10 +461,7 @@
     </plurals>
     <string name="lock_safety_status">Última abertura: %1$s ms (meta ≤ %2$d ms) · %3$d bloqueios de segurança</string>
     <string name="alphabet_reference_title">Tabela do alfabeto árabe</string>
-    <string name="alphabet_reference_description">Encontre cada uma das 28 letras por símbolo ou nome. Cada página mostra quatro letras com fatḥa (a), kasra (i), ḍamma (u) e sukūn. Toque no alto-falante de cada forma para ouvir; no alif, as vogais iniciais são escritas com hamza (أ/إ).</string>
-    <string name="alphabet_reference_search_label">Buscar letra</string>
-    <string name="alphabet_reference_search_hint">Ex.: ب, ba, qaf ou ق</string>
-    <string name="alphabet_reference_no_results">Nenhuma letra encontrada. Tente o símbolo árabe ou o nome transliterado.</string>
+    <string name="alphabet_reference_description">Consulte as 28 letras da direita para a esquerda. Cada página mostra quatro letras com fatḥa (a), kasra (i), ḍamma (u) e sukūn. Toque no alto-falante de cada forma para ouvir o som em árabe; no alif, as vogais iniciais são escritas com hamza (أ/إ).</string>
     <string name="alphabet_reference_page">Página %1$d de %2$d</string>
     <string name="open_alphabet_reference">Consultar tabela completa do alfabeto</string>
     <string name="hide_alphabet_reference">Ocultar tabela do alfabeto</string>

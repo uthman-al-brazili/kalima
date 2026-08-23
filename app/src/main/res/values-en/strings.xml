@@ -45,8 +45,8 @@
     <string name="reference_root">%1$s  •  root %2$s</string>
     <string name="listen_pronunciation">Hear pronunciation</string>
     <string name="pronunciation_failed">The pronunciation could not be played. Please try again.</string>
-    <string name="offline_word_audio_missing">This real recording has not been saved yet. Connect once or download the selected audio in Settings.</string>
-    <string name="offline_verse_audio_missing">This Al-Hussary ayah recitation has not been saved yet. Connect once or download the selected audio in Settings.</string>
+    <string name="offline_word_audio_missing">Not connected to the internet, and this word recording has not been saved yet. Connect and try again, or download the selected audio in Settings.</string>
+    <string name="offline_verse_audio_missing">Not connected to the internet, and this Al-Hussary ayah recitation has not been saved yet. Connect and try again, or download the selected audio in Settings.</string>
     <string name="study_lock_screen_title">Study when you return to your phone</string>
     <string name="study_lock_screen_description">Receive a word directly on the lock screen when the display turns on.</string>
     <string name="enable">Enable</string>
@@ -461,10 +461,7 @@
     </plurals>
     <string name="lock_safety_status">Last launch: %1$s ms (budget ≤ %2$d ms) · %3$d safety skips</string>
     <string name="alphabet_reference_title">Arabic alphabet table</string>
-    <string name="alphabet_reference_description">Find any of the 28 letters by symbol or name. Each page shows four letters with fatḥa (a), kasra (i), ḍamma (u), and sukūn. Tap each form’s speaker to hear it; initial vowels on alif use hamza (أ/إ).</string>
-    <string name="alphabet_reference_search_label">Find a letter</string>
-    <string name="alphabet_reference_search_hint">For example: ب, ba, qaf, or ق</string>
-    <string name="alphabet_reference_no_results">No letters found. Try the Arabic symbol or transliterated name.</string>
+    <string name="alphabet_reference_description">Browse all 28 letters from right to left. Each page shows four letters with fatḥa (a), kasra (i), ḍamma (u), and sukūn. Tap each form’s speaker to hear its Arabic sound; initial vowels on alif use hamza (أ/إ).</string>
     <string name="alphabet_reference_page">Page %1$d of %2$d</string>
     <string name="open_alphabet_reference">Open the complete alphabet table</string>
     <string name="hide_alphabet_reference">Hide the alphabet table</string>

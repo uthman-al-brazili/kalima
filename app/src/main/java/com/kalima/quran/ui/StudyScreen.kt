@@ -23,7 +23,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -31,6 +30,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -40,11 +40,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QuranWord
@@ -773,11 +775,11 @@ private fun AlphabetFoundationScreen(
 
 @Composable
 private fun AlphabetReferenceTable(pronouncer: ArabicPronouncer) {
-    var query by rememberSaveable { mutableStateOf("") }
     var requestedPage by rememberSaveable { mutableStateOf(0) }
-    val matches = remember(query) { ArabicFoundations.alphabetReferenceMatching(query) }
-    val pages = remember(matches) { matches.chunked(ArabicFoundations.alphabetReferencePageSize) }
-    val pageIndex = requestedPage.coerceIn(0, (pages.size - 1).coerceAtLeast(0))
+    val pages = remember {
+        ArabicFoundations.alphabetReference.chunked(ArabicFoundations.alphabetReferencePageSize)
+    }
+    val pageIndex = requestedPage.coerceIn(0, pages.lastIndex)
 
     Text(
         stringResource(R.string.alphabet_reference_title),
@@ -789,34 +791,7 @@ private fun AlphabetReferenceTable(pronouncer: ArabicPronouncer) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.bodySmall,
     )
-    Spacer(Modifier.height(10.dp))
-    OutlinedTextField(
-        value = query,
-        onValueChange = {
-            query = it
-            requestedPage = 0
-        },
-        modifier = Modifier.fillMaxWidth(),
-        label = { Text(stringResource(R.string.alphabet_reference_search_label)) },
-        placeholder = { Text(stringResource(R.string.alphabet_reference_search_hint)) },
-        singleLine = true,
-    )
     Spacer(Modifier.height(12.dp))
-    if (pages.isEmpty()) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Text(
-                stringResource(R.string.alphabet_reference_no_results),
-                modifier = Modifier.padding(16.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-        }
-        return
-    }
     Text(
         stringResource(R.string.alphabet_reference_page, pageIndex + 1, pages.size),
         modifier = Modifier.fillMaxWidth(),
@@ -832,45 +807,47 @@ private fun AlphabetReferenceTable(pronouncer: ArabicPronouncer) {
     ) {
         Column(Modifier.padding(12.dp)) {
             pages[pageIndex].forEachIndexed { index, reference ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(Modifier.weight(0.9f)) {
-                        ArabicText(
-                            reference.letter.arabic,
-                            modifier = Modifier.fillMaxWidth(),
-                            size = 32,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        Text(
-                            reference.letter.transliteration,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    }
-                    reference.vowelVariants.forEach { variant ->
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(0.9f)) {
                             ArabicText(
-                                variant.arabic,
+                                reference.letter.arabic,
                                 modifier = Modifier.fillMaxWidth(),
-                                size = 27,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                size = 32,
+                                color = MaterialTheme.colorScheme.primary,
                             )
                             Text(
-                                variant.transliteration.ifEmpty { "—" },
+                                reference.letter.transliteration,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.labelSmall,
                             )
-                            FoundationPronunciationButton(
-                                text = variant.spokenArabic,
-                                pronouncer = pronouncer,
-                                labelRes = R.string.hear_letter,
-                                compact = true,
-                            )
+                        }
+                        reference.vowelVariants.forEach { variant ->
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                ArabicText(
+                                    variant.arabic,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    size = 27,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Text(
+                                    variant.transliteration.ifEmpty { "—" },
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                                FoundationPronunciationButton(
+                                    text = variant.spokenArabic,
+                                    pronouncer = pronouncer,
+                                    labelRes = R.string.hear_letter,
+                                    compact = true,
+                                )
+                            }
                         }
                     }
                 }

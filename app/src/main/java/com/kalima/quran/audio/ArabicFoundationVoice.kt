@@ -23,6 +23,7 @@ internal class ArabicFoundationVoice(context: Context) {
     private var state = State.Initializing
     private var pendingSpeech: PendingSpeech? = null
     private var textToSpeech: TextToSpeech? = null
+    private var arabicLocale: Locale? = null
 
     init {
         textToSpeech = TextToSpeech(context.applicationContext) { status ->
@@ -57,21 +58,23 @@ internal class ArabicFoundationVoice(context: Context) {
         textToSpeech?.stop()
         textToSpeech?.shutdown()
         textToSpeech = null
+        arabicLocale = null
         state = State.Unavailable
     }
 
     private fun finishInitialization(status: Int) {
         val engine = textToSpeech
-        val languageAvailable = if (status == TextToSpeech.SUCCESS && engine != null) {
-            ARABIC_LOCALES.any { locale ->
+        val selectedLocale = if (status == TextToSpeech.SUCCESS && engine != null) {
+            ARABIC_LOCALES.firstOrNull { locale ->
                 engine.setLanguage(locale) >= TextToSpeech.LANG_AVAILABLE
             }
         } else {
-            false
+            null
         }
-        state = if (languageAvailable) State.Ready else State.Unavailable
+        arabicLocale = selectedLocale
+        state = if (selectedLocale != null) State.Ready else State.Unavailable
         val pending = pendingSpeech.also { pendingSpeech = null } ?: return
-        val result = if (languageAvailable) {
+        val result = if (selectedLocale != null) {
             play(pending)
         } else {
             PronunciationResult.DeviceVoiceUnavailable
@@ -81,7 +84,13 @@ internal class ArabicFoundationVoice(context: Context) {
 
     private fun play(request: PendingSpeech): PronunciationResult {
         val engine = textToSpeech ?: return PronunciationResult.DeviceVoiceUnavailable
+        val locale = arabicLocale ?: return PronunciationResult.DeviceVoiceUnavailable
         engine.stop()
+        if (engine.setLanguage(locale) < TextToSpeech.LANG_AVAILABLE) {
+            arabicLocale = null
+            state = State.Unavailable
+            return PronunciationResult.DeviceVoiceUnavailable
+        }
         engine.setSpeechRate(request.playbackRate)
         val result = engine.speak(
             request.text,
