@@ -17,6 +17,17 @@ pnpm build
 
 The deployable output is generated in `dist/`.
 
+## Publishing
+
+The production website is always published to the existing Cloudflare Pages
+project at `https://kalima-h1f.pages.dev/`:
+
+```powershell
+pnpm deploy:cloudflare
+```
+
+Do not publish this website through ChatGPT Sites or another hosting provider.
+
 ## App screenshots
 
 The website keeps separate, real Android captures in `public/screens/en/` and
