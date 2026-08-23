@@ -49,13 +49,11 @@ class ArabicPronouncer(context: Context) {
         playbackRate: Float = VERSE_DEFAULT_RATE,
         repeatCount: Int = 1,
         onPlaybackResult: (PronunciationResult) -> Unit = {},
-        onPlaybackProgress: (VerseAudioPlaybackProgress) -> Unit = {},
     ): PronunciationResult {
         wordAudioPlayer.stop()
         foundationVoice.stop()
         val hasOfflineAudio = location?.let(verseAudioPlayer::hasOfflineAudio) == true
         if (location == null || (!hasOfflineAudio && !hasValidatedInternet())) {
-            verseAudioPlayer.stop()
             return PronunciationResult.OfflineAudioMissing
         }
 
@@ -65,7 +63,6 @@ class ArabicPronouncer(context: Context) {
             repeatCount = repeatCount,
             allowStreaming = !hasOfflineAudio,
             onFailure = { onPlaybackResult(PronunciationResult.Failed) },
-            onProgress = onPlaybackProgress,
         )
     }
 
@@ -77,10 +74,6 @@ class ArabicPronouncer(context: Context) {
         wordAudioPlayer.stop()
         verseAudioPlayer.stop()
         return foundationVoice.speak(text, playbackRate, onPlaybackResult)
-    }
-
-    fun stopVerse() {
-        verseAudioPlayer.stop()
     }
 
     private fun hasValidatedInternet(): Boolean {

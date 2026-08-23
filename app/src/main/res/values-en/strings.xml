@@ -164,7 +164,6 @@
     <string name="daily_reminder">Daily reminder</string>
     <string name="daily_reminder_description">Daily notification at 8:00 AM, subject to Android permissions.</string>
     <string name="daily_goal">Daily goal</string>
-    <string name="daily_goal_info">Sets how many words you plan to study each day. The goal guides the daily indicator but does not block additional study.</string>
     <string name="language">Language</string>
     <string name="language_description">Choose the language used for the interface and word meanings.</string>
     <string name="language_portuguese">Português</string>
@@ -187,14 +186,6 @@
     <string name="lock_screen_features_description">Optional study tools displayed over the device lock screen.</string>
     <string name="android_app_settings">Android settings</string>
     <string name="limit_new_words">Limit new words</string>
-    <string name="setting_info_content_description">More information about %1$s</string>
-    <string name="spaced_repetition_info">Schedules each review near the time a word may be forgotten. When disabled, words simply rotate without a review schedule.</string>
-    <string name="lock_screen_study_info">Shows cards when the locked display turns on. It requires the “Display over other apps” permission and keeps a lightweight service active.</string>
-    <string name="quiet_hours_info">Prevents cards from appearing during the chosen time range, even while lock-screen study is active.</string>
-    <string name="daily_card_limit_info">Limits how many cards may appear on the lock screen in one day. Regular in-app study remains available.</string>
-    <string name="card_cooldown_info">Sets the minimum time between lock-screen cards so they do not interrupt you too frequently.</string>
-    <string name="lock_screen_quiz_info">Mixes four-choice questions into lock-screen cards after the chosen number of words.</string>
-    <string name="quiz_interval_info">Sets how many word cards appear before each lock-screen quiz.</string>
 
     <string name="choose_surahs">Choose surahs</string>
     <plurals name="surahs_selected">
@@ -451,7 +442,6 @@
     <string name="backup_title">Backup and recovery</string>
     <string name="backup_description">Export all learning progress and settings, or restore them on this device.</string>
     <string name="backup_local_note">Backups are local files under your control. Kalima also creates a recovery copy before a restore.</string>
-    <string name="backup_info">Export progress and settings to a local file under your control, or restore a file on this device. Before restoring, Kalima creates a local recovery copy.</string>
     <string name="export_backup">Export backup</string>
     <string name="import_backup">Import backup</string>
     <string name="restore_backup">Restore backup</string>
@@ -471,7 +461,11 @@
     </plurals>
     <string name="lock_safety_status">Last launch: %1$s ms (budget ≤ %2$d ms) · %3$d safety skips</string>
     <string name="alphabet_reference_title">Arabic alphabet table</string>
-    <string name="alphabet_reference_description">Consult all 28 letters with fatḥa (a), kasra (i), ḍamma (u), and sukūn (no vowel). Tap each form’s speaker to hear it.</string>
+    <string name="alphabet_reference_description">Find any of the 28 letters by symbol or name. Each page shows four letters with fatḥa (a), kasra (i), ḍamma (u), and sukūn. Tap each form’s speaker to hear it; initial vowels on alif use hamza (أ/إ).</string>
+    <string name="alphabet_reference_search_label">Find a letter</string>
+    <string name="alphabet_reference_search_hint">For example: ب, ba, qaf, or ق</string>
+    <string name="alphabet_reference_no_results">No letters found. Try the Arabic symbol or transliterated name.</string>
+    <string name="alphabet_reference_page">Page %1$d of %2$d</string>
     <string name="open_alphabet_reference">Open the complete alphabet table</string>
     <string name="hide_alphabet_reference">Hide the alphabet table</string>
     <string name="tap_verse_word">Tap any word in the complete ayah</string>

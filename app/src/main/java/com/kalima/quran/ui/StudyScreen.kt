@@ -23,6 +23,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -772,6 +773,12 @@ private fun AlphabetFoundationScreen(
 
 @Composable
 private fun AlphabetReferenceTable(pronouncer: ArabicPronouncer) {
+    var query by rememberSaveable { mutableStateOf("") }
+    var requestedPage by rememberSaveable { mutableStateOf(0) }
+    val matches = remember(query) { ArabicFoundations.alphabetReferenceMatching(query) }
+    val pages = remember(matches) { matches.chunked(ArabicFoundations.alphabetReferencePageSize) }
+    val pageIndex = requestedPage.coerceIn(0, (pages.size - 1).coerceAtLeast(0))
+
     Text(
         stringResource(R.string.alphabet_reference_title),
         style = MaterialTheme.typography.titleLarge,
@@ -783,13 +790,48 @@ private fun AlphabetReferenceTable(pronouncer: ArabicPronouncer) {
         style = MaterialTheme.typography.bodySmall,
     )
     Spacer(Modifier.height(10.dp))
+    OutlinedTextField(
+        value = query,
+        onValueChange = {
+            query = it
+            requestedPage = 0
+        },
+        modifier = Modifier.fillMaxWidth(),
+        label = { Text(stringResource(R.string.alphabet_reference_search_label)) },
+        placeholder = { Text(stringResource(R.string.alphabet_reference_search_hint)) },
+        singleLine = true,
+    )
+    Spacer(Modifier.height(12.dp))
+    if (pages.isEmpty()) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Text(
+                stringResource(R.string.alphabet_reference_no_results),
+                modifier = Modifier.padding(16.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+        return
+    }
+    Text(
+        stringResource(R.string.alphabet_reference_page, pageIndex + 1, pages.size),
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.labelLarge,
+        textAlign = TextAlign.Center,
+    )
+    Spacer(Modifier.height(8.dp))
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Column(Modifier.padding(12.dp)) {
-            ArabicFoundations.alphabetReference.forEachIndexed { index, reference ->
+            pages[pageIndex].forEachIndexed { index, reference ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -832,10 +874,30 @@ private fun AlphabetReferenceTable(pronouncer: ArabicPronouncer) {
                         }
                     }
                 }
-                if (index != ArabicFoundations.alphabetReference.lastIndex) {
+                if (index != pages[pageIndex].lastIndex) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                 }
             }
+        }
+    }
+    Spacer(Modifier.height(8.dp))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        OutlinedButton(
+            onClick = { requestedPage = pageIndex - 1 },
+            modifier = Modifier.weight(1f),
+            enabled = pageIndex > 0,
+        ) {
+            Text(stringResource(R.string.previous_page))
+        }
+        Button(
+            onClick = { requestedPage = pageIndex + 1 },
+            modifier = Modifier.weight(1f),
+            enabled = pageIndex < pages.lastIndex,
+        ) {
+            Text(stringResource(R.string.next_page))
         }
     }
 }
@@ -1346,11 +1408,12 @@ private fun WordCard(
                         )
                         Spacer(Modifier.height(8.dp))
                         if (showCompleteAyah) {
-                            RecitableVerseExplorer(
+                            VerseExplorerPanel(word = word, onOpenWord = onOpenWord)
+                            VersePronunciationButton(
                                 word = word,
                                 pronouncer = pronouncer,
                                 modifier = Modifier.fillMaxWidth(),
-                                onOpenWord = onOpenWord,
+                                labelRes = R.string.hussary_verse_recitation,
                             )
                             TextButton(
                                 onClick = { onShowCompleteAyahChange(false) },

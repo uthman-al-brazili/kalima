@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.audio.PronunciationResult
-import com.kalima.quran.audio.VerseAudioPlaybackProgress
 import com.kalima.quran.data.QuranVerseAudioLocation
 import com.kalima.quran.data.QuranWord
 
@@ -83,7 +82,6 @@ fun VersePronunciationButton(
     repeatCount: Int = 1,
     contentColor: Color = Color.Unspecified,
     borderColor: Color = Color.Unspecified,
-    onPlaybackProgress: (VerseAudioPlaybackProgress) -> Unit = {},
 ) {
     val verseLocation = word.audioLocation?.let(QuranVerseAudioLocation::fromWord)
     PronunciationControl(
@@ -93,7 +91,6 @@ fun VersePronunciationButton(
                 playbackRate = playbackRate,
                 repeatCount = repeatCount,
                 onPlaybackResult = onPlaybackResult,
-                onPlaybackProgress = onPlaybackProgress,
             )
         },
         modifier = modifier,

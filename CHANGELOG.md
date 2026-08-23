@@ -3,6 +3,17 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.29.1 — 2026-08-23
+
+- Split the Arabic alphabet reference into seven compact four-letter pages and
+  added search by Arabic symbol, transliterated name, or vowel form.
+- Corrected the initial alif vowel forms to use hamza (`أَ`, `إِ`, `أُ`, `أْ`),
+  with matching transliterations and device-voice playback text.
+- Restored the full inline explanations and status details in Settings, removing
+  the compact per-setting information buttons and dialogs.
+- Removed approximate proportional word highlighting during Al-Hussary audio
+  while preserving complete-ayah playback and the static word explorer.
+
 ## 0.29.0 — 2026-08-22
 
 - Added an always-available Arabic alphabet table in Basics with all 28 letters,

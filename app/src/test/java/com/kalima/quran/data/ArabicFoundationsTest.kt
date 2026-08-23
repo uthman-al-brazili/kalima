@@ -81,8 +81,33 @@ class ArabicFoundationsTest {
                 row.vowelVariants.map { it.arabic.last() },
             )
             assertTrue(row.vowelVariants.all { it.spokenArabic == it.arabic })
-            assertTrue(row.vowelVariants.take(3).all { it.transliteration.isNotBlank() })
+            assertTrue(row.vowelVariants.all { it.transliteration.isNotBlank() })
         }
+    }
+
+    @Test
+    fun `alphabet reference uses accurate hamza forms for initial alif vowels`() {
+        val alif = ArabicFoundations.alphabetReference.first()
+
+        assertEquals(listOf("أَ", "إِ", "أُ", "أْ"), alif.vowelVariants.map(FoundationSymbol::arabic))
+        assertEquals(listOf("ʾa", "ʾi", "ʾu", "ʾ"), alif.vowelVariants.map(FoundationSymbol::transliteration))
+    }
+
+    @Test
+    fun `alphabet reference search accepts Arabic and transliterated letter names`() {
+        assertEquals(listOf("ق"), ArabicFoundations.alphabetReferenceMatching("ق").map { it.letter.arabic })
+        assertEquals(listOf("ق"), ArabicFoundations.alphabetReferenceMatching("qaf").map { it.letter.arabic })
+        assertEquals(listOf("ح"), ArabicFoundations.alphabetReferenceMatching("ḥāʾ").map { it.letter.arabic })
+        assertEquals(ArabicFoundations.alphabetReference, ArabicFoundations.alphabetReferenceMatching(""))
+    }
+
+    @Test
+    fun `alphabet reference has compact pages of four letters`() {
+        val pages = ArabicFoundations.alphabetReference.chunked(ArabicFoundations.alphabetReferencePageSize)
+
+        assertEquals(7, pages.size)
+        assertTrue(pages.all { it.size == ArabicFoundations.alphabetReferencePageSize })
+        assertEquals(listOf("ا", "ب", "ت", "ث"), pages.first().map { it.letter.arabic })
     }
 
     @Test

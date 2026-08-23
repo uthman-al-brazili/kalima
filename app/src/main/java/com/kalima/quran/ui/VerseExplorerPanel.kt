@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,9 +32,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
-import com.kalima.quran.audio.ArabicPronouncer
-import com.kalima.quran.audio.VerseAudioPlaybackProgress
-import com.kalima.quran.audio.verseWordIndexAt
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.WordRepository
 
@@ -44,7 +40,6 @@ import com.kalima.quran.data.WordRepository
 fun VerseExplorerPanel(
     word: QuranWord,
     onOpenWord: ((String) -> Unit)? = null,
-    highlightedTokenIndex: Int? = null,
 ) {
     val tokens = remember(word.id, word.verseArabic) { WordRepository.verseTokens(word) }
     var selectedTokenIndex by rememberSaveable(word.id) { mutableStateOf<Int?>(null) }
@@ -80,9 +75,7 @@ fun VerseExplorerPanel(
                     val linkedWord = token.word
                     Surface(
                         onClick = { selectedTokenIndex = token.index },
-                        color = if (token.index == highlightedTokenIndex) {
-                            MaterialTheme.colorScheme.tertiaryContainer
-                        } else if (linkedWord?.id == word.id) {
+                        color = if (linkedWord?.id == word.id) {
                             MaterialTheme.colorScheme.secondaryContainer
                         } else {
                             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
@@ -92,17 +85,8 @@ fun VerseExplorerPanel(
                         Text(
                             token.text,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
-                            color = if (token.index == highlightedTokenIndex) {
-                                MaterialTheme.colorScheme.onTertiaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.primary
-                            },
+                            color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = if (token.index == highlightedTokenIndex) {
-                                FontWeight.Bold
-                            } else {
-                                FontWeight.Normal
-                            },
                         )
                     }
                 }
@@ -116,48 +100,6 @@ fun VerseExplorerPanel(
             indexed = selectedToken?.word != null,
             onDismiss = { selectedTokenIndex = null },
             onOpenWord = if (selectedToken?.word != null) onOpenWord else null,
-        )
-    }
-}
-
-@Composable
-fun RecitableVerseExplorer(
-    word: QuranWord,
-    pronouncer: ArabicPronouncer,
-    modifier: Modifier = Modifier,
-    onOpenWord: ((String) -> Unit)? = null,
-) {
-    val tokenCount = remember(word.id, word.verseArabic) {
-        WordRepository.verseTokens(word).size
-    }
-    var playbackProgress by remember(word.id) {
-        mutableStateOf(VerseAudioPlaybackProgress())
-    }
-    DisposableEffect(word.id, pronouncer) {
-        onDispose(pronouncer::stopVerse)
-    }
-    val highlightedTokenIndex = if (playbackProgress.isPlaying) {
-        verseWordIndexAt(
-            positionMs = playbackProgress.positionMs,
-            durationMs = playbackProgress.durationMs,
-            wordCount = tokenCount,
-        )
-    } else {
-        null
-    }
-
-    Column(modifier) {
-        VerseExplorerPanel(
-            word = word,
-            onOpenWord = onOpenWord,
-            highlightedTokenIndex = highlightedTokenIndex,
-        )
-        VersePronunciationButton(
-            word = word,
-            pronouncer = pronouncer,
-            modifier = Modifier.fillMaxWidth(),
-            labelRes = R.string.hussary_verse_recitation,
-            onPlaybackProgress = { playbackProgress = it },
         )
     }
 }

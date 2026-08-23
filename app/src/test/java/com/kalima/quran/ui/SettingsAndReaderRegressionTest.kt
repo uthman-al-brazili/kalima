@@ -7,11 +7,13 @@ import org.junit.Test
 
 class SettingsAndReaderRegressionTest {
     @Test
-    fun `settings expose on demand information and no donation action`() {
+    fun `settings keep descriptions inline and no donation action`() {
         val settings = source("ui/SettingsScreen.kt")
         val activity = source("MainActivity.kt")
 
-        assertTrue(settings.contains("SettingInfoButton"))
+        assertFalse(settings.contains("SettingInfoButton"))
+        assertFalse(settings.contains("visibleSettingInfo"))
+        assertFalse(settings.contains("showSettingInfo"))
         assertTrue(settings.contains("R.string.open_website"))
         assertFalse(settings.contains("onDonate"))
         assertFalse(activity.contains("DONATION_URL"))
@@ -27,6 +29,18 @@ class SettingsAndReaderRegressionTest {
         assertFalse(availabilityBlock.contains("WordRepository.prepareReaderIndex()"))
         assertTrue(reader.contains("WordRepository.prepareReaderIndex()"))
         assertTrue(reader.contains("if (readerIndexReady)"))
+    }
+
+    @Test
+    fun `hussary recitation keeps static verse styling without proportional timing`() {
+        val player = source("audio/HussaryVerseAudioPlayer.kt")
+        val versePanel = source("ui/VerseExplorerPanel.kt")
+
+        assertFalse(player.contains("onProgress"))
+        assertFalse(player.contains("PROGRESS_INTERVAL_MS"))
+        assertFalse(versePanel.contains("verseWordIndexAt"))
+        assertFalse(versePanel.contains("highlightedTokenIndex"))
+        assertFalse(versePanel.contains("RecitableVerseExplorer"))
     }
 
     private fun source(relative: String): String = sequenceOf(

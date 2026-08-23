@@ -357,10 +357,12 @@ private fun LibraryWordCard(
             if (expanded) {
                 Spacer(Modifier.height(14.dp))
                 if (showCompleteAyah) {
-                    RecitableVerseExplorer(
+                    VerseExplorerPanel(word)
+                    VersePronunciationButton(
                         word = word,
                         pronouncer = pronouncer,
                         modifier = Modifier.fillMaxWidth(),
+                        labelRes = R.string.hussary_verse_recitation,
                     )
                     OutlinedButton(
                         onClick = { onShowCompleteAyahChange(false) },

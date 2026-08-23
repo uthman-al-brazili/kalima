@@ -164,7 +164,6 @@
     <string name="daily_reminder">Lembrete diário</string>
     <string name="daily_reminder_description">Notificação diária às 8h, respeitando as permissões do Android.</string>
     <string name="daily_goal">Meta diária</string>
-    <string name="daily_goal_info">Define quantas palavras você pretende estudar por dia. A meta orienta o indicador diário, mas não bloqueia estudos adicionais.</string>
     <string name="language">Idioma</string>
     <string name="language_description">Escolha o idioma da interface e dos significados das palavras.</string>
     <string name="language_portuguese">Português</string>
@@ -187,14 +186,6 @@
     <string name="lock_screen_features_description">Ferramentas opcionais de estudo exibidas sobre a tela de bloqueio.</string>
     <string name="android_app_settings">Ajustes do Android</string>
     <string name="limit_new_words">Limitar palavras novas</string>
-    <string name="setting_info_content_description">Mais informações sobre %1$s</string>
-    <string name="spaced_repetition_info">Programa cada revisão perto do momento em que a palavra pode ser esquecida. Ao desativar, as palavras apenas se alternam sem uma agenda de revisão.</string>
-    <string name="lock_screen_study_info">Mostra cartões quando a tela bloqueada acende. Requer a permissão “Aparecer sobre outros apps” e mantém um serviço leve ativo.</string>
-    <string name="quiet_hours_info">Impede que cartões apareçam no intervalo escolhido, mesmo quando o recurso da tela de bloqueio está ativo.</string>
-    <string name="daily_card_limit_info">Limita quantos cartões podem aparecer na tela de bloqueio em um dia. O estudo normal dentro do app continua disponível.</string>
-    <string name="card_cooldown_info">Define o tempo mínimo entre dois cartões da tela de bloqueio para evitar interrupções muito frequentes.</string>
-    <string name="lock_screen_quiz_info">Intercala perguntas de quatro alternativas com os cartões da tela de bloqueio depois do número de palavras escolhido.</string>
-    <string name="quiz_interval_info">Define quantos cartões de palavras aparecem antes de cada quiz na tela de bloqueio.</string>
 
     <string name="choose_surahs">Escolher suras</string>
     <plurals name="surahs_selected">
@@ -451,7 +442,6 @@
     <string name="backup_title">Backup e recuperação</string>
     <string name="backup_description">Exporte todo o progresso e os ajustes, ou restaure-os neste aparelho.</string>
     <string name="backup_local_note">Os backups são arquivos locais sob seu controle. O Kalima também cria uma cópia de recuperação antes da restauração.</string>
-    <string name="backup_info">Exporte o progresso e os ajustes para um arquivo local sob seu controle, ou restaure um arquivo neste aparelho. Antes de restaurar, o Kalima cria uma cópia local de recuperação.</string>
     <string name="export_backup">Exportar backup</string>
     <string name="import_backup">Importar backup</string>
     <string name="restore_backup">Restaurar backup</string>
@@ -471,7 +461,11 @@
     </plurals>
     <string name="lock_safety_status">Última abertura: %1$s ms (meta ≤ %2$d ms) · %3$d bloqueios de segurança</string>
     <string name="alphabet_reference_title">Tabela do alfabeto árabe</string>
-    <string name="alphabet_reference_description">Consulte as 28 letras com fatḥa (a), kasra (i), ḍamma (u) e sukūn (sem vogal). Toque no alto-falante de cada forma para ouvir.</string>
+    <string name="alphabet_reference_description">Encontre cada uma das 28 letras por símbolo ou nome. Cada página mostra quatro letras com fatḥa (a), kasra (i), ḍamma (u) e sukūn. Toque no alto-falante de cada forma para ouvir; no alif, as vogais iniciais são escritas com hamza (أ/إ).</string>
+    <string name="alphabet_reference_search_label">Buscar letra</string>
+    <string name="alphabet_reference_search_hint">Ex.: ب, ba, qaf ou ق</string>
+    <string name="alphabet_reference_no_results">Nenhuma letra encontrada. Tente o símbolo árabe ou o nome transliterado.</string>
+    <string name="alphabet_reference_page">Página %1$d de %2$d</string>
     <string name="open_alphabet_reference">Consultar tabela completa do alfabeto</string>
     <string name="hide_alphabet_reference">Ocultar tabela do alfabeto</string>
     <string name="tap_verse_word">Toque em qualquer palavra do ayah completo</string>
