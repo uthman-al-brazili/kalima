@@ -3,6 +3,7 @@
 .gradle-cache/
 .gradle-wrapper/
 .android-home/
+.pnpm-store/
 .kotlin/
 /local.properties
 /.idea/

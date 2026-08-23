@@ -461,7 +461,7 @@
     </plurals>
     <string name="lock_safety_status">Last launch: %1$s ms (budget ≤ %2$d ms) · %3$d safety skips</string>
     <string name="alphabet_reference_title">Arabic alphabet table</string>
-    <string name="alphabet_reference_description">Browse all 28 letters from right to left. Each page shows four letters with fatḥa (a), kasra (i), ḍamma (u), and sukūn. Tap each form’s speaker to hear its Arabic sound; initial vowels on alif use hamza (أ/إ).</string>
+    <string name="alphabet_reference_description">Browse all 28 letters from right to left. Each page shows four letters with fatḥa (a), kasra (i), ḍamma (u), and sukūn. Initial vowels on alif use hamza (أ/إ).</string>
     <string name="alphabet_reference_page">Page %1$d of %2$d</string>
     <string name="open_alphabet_reference">Open the complete alphabet table</string>
     <string name="hide_alphabet_reference">Hide the alphabet table</string>

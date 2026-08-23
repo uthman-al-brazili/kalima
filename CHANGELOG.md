@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.29.3 — 2026-08-23
+
+- Removed text-to-speech controls from the Arabic alphabet reference table while
+  keeping pronunciation audio available throughout the guided lessons and the
+  rest of the app.
+
 ## 0.29.2 — 2026-08-23
 
 - Removed search from the Arabic alphabet reference and laid out each row from

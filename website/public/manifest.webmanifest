@@ -1,0 +1,15 @@
+{
+  "name": "Kalima — Learn Quranic Arabic",
+  "short_name": "Kalima",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffdf7",
+  "theme_color": "#123d32",
+  "icons": [
+    {
+      "src": "/kalima-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

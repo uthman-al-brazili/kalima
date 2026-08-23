@@ -15,6 +15,10 @@ class AlphabetReferenceRegressionTest {
 
         assertFalse(table.contains("OutlinedTextField"))
         assertFalse(table.contains("alphabetReferenceMatching"))
+        assertFalse(table.contains("FoundationPronunciationButton"))
+        assertFalse(table.contains("pronouncer"))
+        assertFalse(resource("values-en/strings.xml").contains("Tap each form’s speaker"))
+        assertFalse(resource("values/strings.xml").contains("Toque no alto-falante de cada forma"))
         assertTrue(
             table.contains(
                 "CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl)",
@@ -37,4 +41,10 @@ class AlphabetReferenceRegressionTest {
         File("app/src/main/java/com/kalima/quran/$relative"),
     ).firstOrNull(File::isFile)?.readText()
         ?: error("Android source not found: $relative")
+
+    private fun resource(relative: String): String = sequenceOf(
+        File("src/main/res/$relative"),
+        File("app/src/main/res/$relative"),
+    ).firstOrNull(File::isFile)?.readText()
+        ?: error("Android resource not found: $relative")
 }

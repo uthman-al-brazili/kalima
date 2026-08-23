@@ -16,8 +16,8 @@ Official references checked on 2026-08-20:
 - Plain-language permission disclosure.
 - `PRIVACY_POLICY.md`, a bilingual public-ready privacy policy identifying
   Uthman (Gustavo) and the public support email.
-- Five current portrait screenshots captured from the final Android UI in the
-  emulator.
+- Current English and Brazilian Portuguese portrait screenshots captured from
+  the final Android UI in the emulator.
 
 ## Developer-controlled steps before submission
 
@@ -34,9 +34,13 @@ Official references checked on 2026-08-20:
   APK from `releases/` as the long-term public package.
 - Upload the APK and select Android, Education, Free, Beta, no ads, no country
   restrictions, and English + Portuguese.
+- Before every screenshot upload, capture from the candidate APK, record its
+  SHA-256 in `website/screenshots-manifest.json`, run the website's `pnpm check`,
+  and visually confirm each capture reflects the final UI. Never reuse a
+  screenshot from an older UI without this check.
 - Upload the icon, featured image, and at least four accurate portrait
-  screenshots. English screenshots can serve as the default for other locales;
-  Portuguese screenshots can be added for that locale.
+  screenshots. Use `screenshots/en/` as the default set and `screenshots/pt-BR/`
+  for the Brazilian Portuguese locale.
 - Paste both descriptions and both localized version-note sets from this
   directory.
 - Submit for review and answer any permission, content-license, or support

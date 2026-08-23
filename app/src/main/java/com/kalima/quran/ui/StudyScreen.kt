@@ -381,7 +381,7 @@ fun FoundationsScreen(
             NumberAccessCard(onStartNumberFoundation = onStartNumberFoundation)
         }
         Spacer(Modifier.height(22.dp))
-        AlphabetReferenceTable(pronouncer = pronouncer)
+        AlphabetReferenceTable()
         Spacer(Modifier.height(24.dp))
     }
 }
@@ -468,7 +468,7 @@ private fun AlphabetFoundationScreen(
             )
         }
         if (showReference) {
-            AlphabetReferenceTable(pronouncer = pronouncer)
+            AlphabetReferenceTable()
             Spacer(Modifier.height(14.dp))
         }
         Spacer(Modifier.height(14.dp))
@@ -774,7 +774,7 @@ private fun AlphabetFoundationScreen(
 }
 
 @Composable
-private fun AlphabetReferenceTable(pronouncer: ArabicPronouncer) {
+private fun AlphabetReferenceTable() {
     var requestedPage by rememberSaveable { mutableStateOf(0) }
     val pages = remember {
         ArabicFoundations.alphabetReference.chunked(ArabicFoundations.alphabetReferencePageSize)
@@ -840,12 +840,6 @@ private fun AlphabetReferenceTable(pronouncer: ArabicPronouncer) {
                                 Text(
                                     variant.transliteration.ifEmpty { "—" },
                                     style = MaterialTheme.typography.labelSmall,
-                                )
-                                FoundationPronunciationButton(
-                                    text = variant.spokenArabic,
-                                    pronouncer = pronouncer,
-                                    labelRes = R.string.hear_letter,
-                                    compact = true,
                                 )
                             }
                         }
