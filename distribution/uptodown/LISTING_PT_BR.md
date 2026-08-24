@@ -38,10 +38,12 @@ O Kalima não tem anúncios, conta nem ferramentas de análise. O progresso fica
 
 Significados e informações gramaticais são recursos de estudo ligados ao contexto corânico; não substituem uma tradução especializada nem orientação religiosa qualificada.
 
-## Novidades da versão 0.30.2
+## Novidades da versão 0.30.3
 
+- Remove os círculos decorativos do widget, mantendo o gradiente verde profundo
+  e o conteúdo de aprendizagem centralizado.
 - Centraliza o conteúdo do widget Palavra corânica do dia e adiciona um fundo
-  verde profundo mais rico, com detalhes sutis em dourado e verde-menta.
+  verde profundo mais rico.
 - Corrige o widget Palavra corânica do dia para que um toque sempre abra exatamente a palavra exibida.
 - Torna o aprendizado na tela bloqueada o centro da configuração inicial e da área Estudo, com uma explicação mais clara e opt-in para a lição curta quando o visor bloqueado acende ou quando você volta ao celular.
 - Adiciona o widget Palavra corânica do dia, com árabe, transliteração, significado no contexto, referência corânica, ação Próxima e acesso direto à lição no Kalima.

@@ -1,6 +1,7 @@
 package com.kalima.quran.widget
 
 import java.io.File
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -18,13 +19,12 @@ class DailyQuranWordWidgetLayoutTest {
     }
 
     @Test
-    fun `widget background has gradient depth and subtle decorative rings`() {
+    fun `widget background keeps gradient depth without circular decoration`() {
         val background = source("res/drawable/widget_daily_word_background.xml")
 
-        assertTrue(background.contains("<layer-list"))
         assertTrue(background.contains("<gradient"))
-        assertTrue(background.contains("widget_daily_word_pattern_gold"))
-        assertTrue(background.contains("widget_daily_word_pattern_mint"))
+        assertFalse(background.contains("android:shape=\"oval\""))
+        assertFalse(background.contains("widget_daily_word_pattern"))
     }
 
     @Test

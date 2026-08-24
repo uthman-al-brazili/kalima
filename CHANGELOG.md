@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.3 — 2026-08-24
+
+- Removed the circular decoration from the Daily Quran Word widget background,
+  retaining the centered layout and subtle deep-green gradient.
+
 ## 0.30.2 — 2026-08-24
 
 - Centered the Daily Quran Word widget content and added a richer deep-green
