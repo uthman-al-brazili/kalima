@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="widget_daily_word_surface">#12372A</color>
+    <color name="widget_daily_word_surface_glow">#174A38</color>
+    <color name="widget_daily_word_surface_deep">#0D2B21</color>
     <color name="widget_daily_word_button">#276749</color>
     <color name="widget_daily_word_accent">#F1C76E</color>
     <color name="widget_daily_word_text">#FFF9F5</color>
     <color name="widget_daily_word_muted">#D5E2D8</color>
+    <color name="widget_daily_word_pattern_gold">#26F1C76E</color>
+    <color name="widget_daily_word_pattern_mint">#263FE7C4</color>
+    <color name="widget_daily_word_pattern_fill">#0DF1C76E</color>
 </resources>

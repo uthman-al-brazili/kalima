@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.2 — 2026-08-24
+
+- Centered the Daily Quran Word widget content and added a richer deep-green
+  gradient with subtle gold and mint details while preserving legibility.
+- Kept the word card and next-word control as distinct actions, so tapping the
+  card still opens the exact word displayed in Kalima.
+
 ## 0.30.1 — 2026-08-24
 
 - Fixed the Daily Quran Word widget so every tap opens the exact word currently
