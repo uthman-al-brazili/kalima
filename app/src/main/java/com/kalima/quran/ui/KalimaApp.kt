@@ -101,6 +101,7 @@ fun KalimaApp(
     onDownloadOfflineWordAudio: (List<QuranWordAudioLocation>, List<QuranVerseAudioLocation>) -> Unit,
     onCancelOfflineWordAudio: () -> Unit,
     studyLaunchTarget: StudyLaunchTarget? = null,
+    onStudyLaunchTargetHandled: (Long) -> Unit = {},
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
     var handledStudyRequestId by rememberSaveable { mutableLongStateOf(NO_STUDY_REQUEST) }
@@ -185,6 +186,11 @@ fun KalimaApp(
                             onShowCompleteAyahChange = onShowCompleteAyahChange,
                             onOpenFoundations = { selectedName = AppTab.Foundations.name },
                             launchTarget = studyLaunchTarget,
+                            onLaunchTargetHandled = { requestId ->
+                                selectedName = AppTab.Study.name
+                                handledStudyRequestId = requestId
+                                onStudyLaunchTargetHandled(requestId)
+                            },
                         )
                         AppTab.Quran -> QuranReaderScreen(
                             fontSizeSp = progress.quranFontSizeSp,

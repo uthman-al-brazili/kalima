@@ -38,8 +38,9 @@ Kalima has no ads, account, or analytics. Progress stays in local app storage an
 
 Meanings and grammar are learning aids tied to Quran context and do not replace a scholarly translation or qualified religious instruction.
 
-## Version notes — 0.30.0
+## Version notes — 0.30.1
 
+- Fixes the Daily Quran Word widget so tapping it always opens the exact word shown.
 - Makes lock-screen learning the central onboarding and Study experience, with clearer opt-in messaging for a short lesson when the locked display turns on or you return to your phone.
 - Adds the Daily Quran Word home-screen widget with Arabic, transliteration, contextual meaning, Quran reference, a Next action, and a direct route to that lesson in Kalima.
 - Keeps PIN, password, pattern, biometrics, and other Android device security controls untouched; lock-screen learning remains optional.

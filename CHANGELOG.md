@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.1 — 2026-08-24
+
+- Fixed the Daily Quran Word widget so every tap opens the exact word currently
+  displayed, including repeated taps and launches that restore an older Study
+  screen state.
+
 ## 0.30.0 — 2026-08-24
 
 - Added a bilingual Daily Quran Word home-screen widget with Arabic,

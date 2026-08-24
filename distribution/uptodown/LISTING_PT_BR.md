@@ -38,8 +38,9 @@ O Kalima não tem anúncios, conta nem ferramentas de análise. O progresso fica
 
 Significados e informações gramaticais são recursos de estudo ligados ao contexto corânico; não substituem uma tradução especializada nem orientação religiosa qualificada.
 
-## Novidades da versão 0.30.0
+## Novidades da versão 0.30.1
 
+- Corrige o widget Palavra corânica do dia para que um toque sempre abra exatamente a palavra exibida.
 - Torna o aprendizado na tela bloqueada o centro da configuração inicial e da área Estudo, com uma explicação mais clara e opt-in para a lição curta quando o visor bloqueado acende ou quando você volta ao celular.
 - Adiciona o widget Palavra corânica do dia, com árabe, transliteração, significado no contexto, referência corânica, ação Próxima e acesso direto à lição no Kalima.
 - Mantém intactos o PIN, a senha, o padrão, a biometria e os demais controles de segurança do Android; o aprendizado na tela bloqueada continua opcional.

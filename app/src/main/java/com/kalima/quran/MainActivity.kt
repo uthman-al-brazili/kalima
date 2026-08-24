@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var progressStore: ProgressStore
     private var loadedProgressStore by mutableStateOf<ProgressStore?>(null)
     private var studyLaunchTarget by mutableStateOf<StudyLaunchTarget?>(null)
+    private var lastStudyLaunchRequestId = 0L
     private var pendingBackupImport by mutableStateOf<DecodedProgressBackup?>(null)
     private val offlineWordAudioManager by lazy { OfflineWordAudioManager(applicationContext) }
     private var offlineWordAudioJob: Job? = null
@@ -157,6 +158,7 @@ class MainActivity : ComponentActivity() {
                 },
                 onCancelOfflineWordAudio = { offlineWordAudioJob?.cancel() },
                 studyLaunchTarget = studyLaunchTarget,
+                onStudyLaunchTargetHandled = ::consumeStudyLaunchTarget,
             )
         }
 
@@ -371,24 +373,32 @@ class MainActivity : ComponentActivity() {
     private fun updateStudyLaunchTarget(intent: Intent) {
         val wordId = intent.getStringExtra(EXTRA_STUDY_WORD_ID) ?: return
         if (!WordRepository.containsWord(wordId)) return
-        val requestId = intent.getLongExtra(EXTRA_STUDY_REQUEST_ID, 0L)
-            .takeIf { it != 0L }
-            ?: SystemClock.elapsedRealtimeNanos()
-        studyLaunchTarget = StudyLaunchTarget(wordId, requestId)
+        lastStudyLaunchRequestId = nextStudyLaunchRequestId(
+            previousId = lastStudyLaunchRequestId,
+            nowNanos = SystemClock.elapsedRealtimeNanos(),
+        )
+        studyLaunchTarget = StudyLaunchTarget(wordId, lastStudyLaunchRequestId)
+    }
+
+    private fun consumeStudyLaunchTarget(requestId: Long) {
+        if (studyLaunchTarget?.requestId == requestId) {
+            studyLaunchTarget = null
+        }
     }
 
     companion object {
         private const val TAG = "KalimaMain"
         private const val POST_RENDER_WORK_DELAY_MS = 500L
         private const val EXTRA_STUDY_WORD_ID = "com.kalima.quran.extra.STUDY_WORD_ID"
-        private const val EXTRA_STUDY_REQUEST_ID = "com.kalima.quran.extra.STUDY_REQUEST_ID"
         private const val WEBSITE_URL = "https://kalima-h1f.pages.dev/"
         private const val SUPPORT_EMAIL = "uthman-al-brazili@proton.me"
 
         fun createStudyIntent(context: Context, wordId: String): Intent =
             Intent(context, MainActivity::class.java).apply {
                 putExtra(EXTRA_STUDY_WORD_ID, wordId)
-                putExtra(EXTRA_STUDY_REQUEST_ID, SystemClock.elapsedRealtimeNanos())
             }
     }
 }
+
+internal fun nextStudyLaunchRequestId(previousId: Long, nowNanos: Long): Long =
+    if (nowNanos > previousId) nowNanos else previousId + 1L

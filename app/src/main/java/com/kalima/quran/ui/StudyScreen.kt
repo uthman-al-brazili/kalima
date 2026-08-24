@@ -80,6 +80,7 @@ fun StudyScreen(
     onOpenFoundations: () -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
+    onLaunchTargetHandled: (Long) -> Unit = {},
 ) {
     if (progress.needsAlphabetFoundation) {
         WordStudyLockedScreen(onOpenFoundations = onOpenFoundations)
@@ -111,7 +112,12 @@ fun StudyScreen(
     ) {
         progress.limitNewWords(selectedWords)
     }
-    if (availableWords.isEmpty()) {
+    var routedStudyWordId by rememberSaveable(scopeKey, selectionKey) {
+        mutableStateOf<String?>(null)
+    }
+    val requestedWordId = launchTarget?.wordId ?: routedStudyWordId
+    val requestedWord = requestedWordId?.let(WordRepository::wordById)
+    if (availableWords.isEmpty() && requestedWord == null) {
         Box(Modifier.fillMaxSize()) {
             when {
                 selectedWords.isNotEmpty() && selectedWords.all { it.id in progress.alreadyKnownIds } ->
@@ -132,25 +138,28 @@ fun StudyScreen(
     var activeIntroductionId by rememberSaveable(scopeKey, selectionKey) {
         mutableStateOf<String?>(null)
     }
+    val queueSourceWords = remember(availableWords, requestedWord?.id) {
+        studyQueueSourceWords(availableWords, requestedWord)
+    }
     val queuedWords = remember(
-        availableWords,
+        queueSourceWords,
         progress.reviewSchedules,
         progress.spacedRepetitionEnabled,
     ) {
         val dailyStart = LocalDate.now().toEpochDay().toInt()
         if (progress.spacedRepetitionEnabled) {
             ReviewQueue.ordered(
-                words = availableWords,
+                words = queueSourceWords,
                 schedules = progress.reviewSchedules,
                 now = Instant.now(),
                 newStartIndex = dailyStart,
             )
         } else {
-            ReviewQueue.rotated(availableWords, dailyStart)
+            ReviewQueue.rotated(queueSourceWords, dailyStart)
         }
     }
-    val words = remember(queuedWords, availableWords, activeIntroductionId) {
-        studyWordsForPresentation(queuedWords, availableWords, activeIntroductionId)
+    val words = remember(queuedWords, queueSourceWords, activeIntroductionId) {
+        studyWordsForPresentation(queuedWords, queueSourceWords, activeIntroductionId)
     }
     if (words.isEmpty()) {
         Box(Modifier.fillMaxSize()) {
@@ -162,9 +171,7 @@ fun StudyScreen(
         }
         return
     }
-    val session = remember(words, launchTarget?.wordId) {
-        val requestedWord = launchTarget?.wordId
-            ?.let(WordRepository::wordById)
+    val session = remember(words, requestedWord?.id) {
         val resumedWord = progress.currentStudyWordId
             ?.let { currentId -> words.firstOrNull { it.id == currentId } }
         buildStudySession(
@@ -176,9 +183,9 @@ fun StudyScreen(
     var currentWordId by rememberSaveable(
         scopeKey,
         selectionKey,
-        launchTarget?.requestId,
     ) { mutableStateOf(session.first().id) }
-    val word = WordRepository.wordById(currentWordId) ?: session.first()
+    val displayedWordId = displayedStudyWordId(currentWordId, launchTarget)
+    val word = WordRepository.wordById(displayedWordId) ?: session.first()
     val isNewPresentation = rememberSaveable(word.id) {
         progress.statusFor(word.id) == WordStatus.New
     }
@@ -186,6 +193,7 @@ fun StudyScreen(
         mutableStateOf(shouldRevealMeaningInitially(progress.statusFor(word.id)))
     }
     val moveToNextWord = {
+        routedStudyWordId = null
         val currentIndex = session.indexOfFirst { it.id == word.id }
         val nextWord = if (currentIndex < 0) session.first() else session[(currentIndex + 1) % session.size]
         currentWordId = nextWord.id
@@ -194,6 +202,16 @@ fun StudyScreen(
     val scrollState = rememberScrollState()
     var scrollPositionWordId by rememberSaveable(scopeKey, selectionKey) {
         mutableStateOf<String?>(null)
+    }
+
+    LaunchedEffect(launchTarget?.requestId) {
+        val target = launchTarget ?: return@LaunchedEffect
+        if (WordRepository.containsWord(target.wordId)) {
+            routedStudyWordId = target.wordId
+            currentWordId = target.wordId
+            onCurrentWordChange(target.wordId)
+        }
+        onLaunchTargetHandled(target.requestId)
     }
 
     LaunchedEffect(word.id) {
@@ -257,6 +275,7 @@ fun StudyScreen(
                 showCompleteAyah = progress.showCompleteAyah,
                 onShowCompleteAyahChange = onShowCompleteAyahChange,
                 onOpenWord = { wordId ->
+                    routedStudyWordId = null
                     currentWordId = wordId
                     onCurrentWordChange(wordId)
                 },
@@ -1231,6 +1250,16 @@ internal fun buildStudySession(
         else -> words
     }
 }
+
+internal fun displayedStudyWordId(
+    savedWordId: String,
+    launchTarget: StudyLaunchTarget?,
+): String = launchTarget?.wordId ?: savedWordId
+
+internal fun studyQueueSourceWords(
+    availableWords: List<QuranWord>,
+    requestedWord: QuranWord?,
+): List<QuranWord> = availableWords.ifEmpty { listOfNotNull(requestedWord) }
 
 @Composable
 private fun StudyHeader(progress: StudyProgress, dueCount: Int) {
