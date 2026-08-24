@@ -219,35 +219,11 @@ fun StudyScreen(
                 progress = progress,
                 dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
             )
-            if (!progress.lockScreenEnabled) {
-                Spacer(Modifier.height(16.dp))
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(20.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                stringResource(R.string.study_lock_screen_title),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Text(
-                                stringResource(R.string.study_lock_screen_description),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f),
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                        Spacer(Modifier.width(12.dp))
-                        Button(onClick = onEnableLockScreen) {
-                            Text(stringResource(R.string.enable))
-                        }
-                    }
-                }
-            }
+            Spacer(Modifier.height(16.dp))
+            LockScreenLearningCard(
+                progress = progress,
+                onEnableLockScreen = onEnableLockScreen,
+            )
             Spacer(Modifier.height(20.dp))
             WordCard(
                 word = word,
@@ -325,6 +301,68 @@ fun StudyScreen(
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 20.dp, vertical = 148.dp),
         )
+    }
+}
+
+@Composable
+private fun LockScreenLearningCard(
+    progress: StudyProgress,
+    onEnableLockScreen: () -> Unit,
+) {
+    Surface(
+        color = if (progress.lockScreenEnabled) {
+            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.72f)
+        } else {
+            MaterialTheme.colorScheme.primaryContainer
+        },
+        shape = RoundedCornerShape(20.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(
+                        if (progress.lockScreenEnabled) {
+                            R.string.study_lock_screen_active_title
+                        } else {
+                            R.string.study_lock_screen_title
+                        },
+                    ),
+                    color = if (progress.lockScreenEnabled) {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    },
+                    fontWeight = FontWeight.Bold,
+                )
+                val description = if (progress.lockScreenEnabled) {
+                    stringResource(
+                        R.string.study_lock_screen_active_description,
+                        progress.lockScreenCardsToday,
+                        progress.lockScreenDailyLimit,
+                    )
+                } else {
+                    stringResource(R.string.study_lock_screen_description)
+                }
+                Text(
+                    description,
+                    color = if (progress.lockScreenEnabled) {
+                        MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.78f)
+                    } else {
+                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            if (!progress.lockScreenEnabled) {
+                Spacer(Modifier.width(12.dp))
+                Button(onClick = onEnableLockScreen) {
+                    Text(stringResource(R.string.study_lock_screen_enable))
+                }
+            }
+        }
     }
 }
 

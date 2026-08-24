@@ -3,6 +3,17 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.0 — 2026-08-24
+
+- Added a bilingual Daily Quran Word home-screen widget with Arabic,
+  transliteration, contextual meaning, Quran reference, a safe next-word action,
+  and a deep link to the exact Study card.
+- Made optional lock-screen learning the clearest part of onboarding and the
+  Study screen, with a direct activation action or a daily card-status summary.
+- Clarified throughout the Android app that lock-screen cards require explicit
+  permission and never unlock the device or bypass its PIN, password, or
+  biometrics.
+
 ## 0.29.3 — 2026-08-23
 
 - Removed text-to-speech controls from the Arabic alphabet reference table while

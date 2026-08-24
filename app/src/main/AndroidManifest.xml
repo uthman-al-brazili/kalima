@@ -48,6 +48,17 @@
 
         <receiver android:name=".notifications.ReminderReceiver" android:exported="false" />
         <receiver
+            android:name=".widget.DailyQuranWordWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_daily_word_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/daily_quran_word_widget_info" />
+        </receiver>
+        <receiver
             android:name=".notifications.BootReceiver"
             android:enabled="true"
             android:exported="false">

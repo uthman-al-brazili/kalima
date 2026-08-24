@@ -47,8 +47,11 @@
     <string name="pronunciation_failed">The pronunciation could not be played. Please try again.</string>
     <string name="offline_word_audio_missing">Not connected to the internet, and this word recording has not been saved yet. Connect and try again, or download the selected audio in Settings.</string>
     <string name="offline_verse_audio_missing">Not connected to the internet, and this Al-Hussary ayah recitation has not been saved yet. Connect and try again, or download the selected audio in Settings.</string>
-    <string name="study_lock_screen_title">Study when you return to your phone</string>
-    <string name="study_lock_screen_description">Receive a word directly on the lock screen when the display turns on.</string>
+    <string name="study_lock_screen_title">Learn when you return to your phone</string>
+    <string name="study_lock_screen_description">Opt in to a short Quranic Arabic card when the locked display turns on. Android requires the “Display over other apps” permission; Kalima never unlocks or bypasses device security.</string>
+    <string name="study_lock_screen_enable">Turn on cards</string>
+    <string name="study_lock_screen_active_title">Return-to-phone learning is on</string>
+    <string name="study_lock_screen_active_description">%1$d of %2$d cards shown today. Your lock screen and biometrics remain protected by Android.</string>
     <string name="enable">Enable</string>
     <string name="review_again">Still learning</string>
     <string name="review_again_timing">Review in 10 min</string>
@@ -146,9 +149,9 @@
     <string name="all_words_already_known_title">You already know this set</string>
     <string name="all_words_already_known_description">These words will stay out of study, quizzes, reminders, and lock-screen cards. Open Excluded words to add any word back.</string>
     <string name="routine">Routine</string>
-    <string name="lock_screen_study">Return-to-phone study</string>
-    <string name="lock_screen_study_enabled">Active: a new card may appear over the lock screen.</string>
-    <string name="lock_screen_study_disabled">Requires the “Display over other apps” permission and keeps a service active.</string>
+    <string name="lock_screen_study">Lock-screen learning</string>
+    <string name="lock_screen_study_enabled">Active: a short Quranic Arabic card may appear when the locked display turns on.</string>
+    <string name="lock_screen_study_disabled">Optional. Android requires the “Display over other apps” permission and Kalima keeps a service active to prepare cards.</string>
     <string name="preview_card">Preview card</string>
     <string name="lock_screen_quiz">Lock-screen quiz</string>
     <plurals name="lock_screen_quiz_enabled">
@@ -182,8 +185,8 @@
     <string name="spaced_repetition">Spaced repetition</string>
     <string name="spaced_repetition_enabled_description">Enabled (recommended): schedules each review near the time you are likely to forget.</string>
     <string name="spaced_repetition_disabled_observation">Disabled — not recommended: words rotate without timed reviews, which may make learning less efficient and easier to forget.</string>
-    <string name="lock_screen_features">Return-to-phone cards</string>
-    <string name="lock_screen_features_description">Optional study tools displayed over the device lock screen.</string>
+    <string name="lock_screen_features">Lock-screen learning</string>
+    <string name="lock_screen_features_description">Optional Quranic Arabic cards for the moments you turn on or return to your phone. Kalima never unlocks or bypasses device security.</string>
     <string name="android_app_settings">Android settings</string>
     <string name="limit_new_words">Limit new words</string>
 
@@ -234,8 +237,10 @@
     <string name="disable">Disable</string>
     <string name="lock_screen_channel">Return-to-phone study</string>
     <string name="lock_screen_channel_description">Keeps study cards ready for the next locked-display wake</string>
-    <string name="onboarding_title">Start with a clear path</string>
-    <string name="onboarding_subtitle">Tell Kalima where you are starting, then choose the vocabulary that best matches your goal.</string>
+    <string name="onboarding_title">Start a Quranic Arabic habit</string>
+    <string name="onboarding_subtitle">Tell Kalima where you are starting, then choose vocabulary and a pace that fit your goal.</string>
+    <string name="onboarding_lock_screen_title">A small lesson when you return</string>
+    <string name="onboarding_lock_screen_description">After setup, you can opt in to short cards on the locked display when you turn on your phone. Android requires permission; Kalima never unlocks or bypasses your device security.</string>
     <string name="onboarding_foundations_title">First, the foundations</string>
     <string name="onboarding_foundations_description">Your answers create a study plan that starts at the right level.</string>
     <string name="onboarding_knows_alphabet">Do you already know the Arabic alphabet?</string>

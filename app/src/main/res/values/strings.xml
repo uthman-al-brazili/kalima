@@ -47,8 +47,11 @@
     <string name="pronunciation_failed">Não foi possível reproduzir a pronúncia. Tente novamente.</string>
     <string name="offline_word_audio_missing">Sem conexão com a internet, e a gravação desta palavra ainda não foi salva. Conecte-se e tente novamente ou baixe o áudio selecionado em Ajustes.</string>
     <string name="offline_verse_audio_missing">Sem conexão com a internet, e esta recitação do ayah por Al-Hussary ainda não foi salva. Conecte-se e tente novamente ou baixe o áudio selecionado em Ajustes.</string>
-    <string name="study_lock_screen_title">Estude ao voltar para o celular</string>
-    <string name="study_lock_screen_description">Receba uma palavra diretamente na tela de bloqueio quando a tela acender.</string>
+    <string name="study_lock_screen_title">Aprenda ao voltar para o celular</string>
+    <string name="study_lock_screen_description">Ative, se quiser, um cartão curto de árabe corânico quando a tela bloqueada acender. O Android exige a permissão “Aparecer sobre outros apps”; o Kalima nunca desbloqueia nem contorna a segurança do aparelho.</string>
+    <string name="study_lock_screen_enable">Ativar cartões</string>
+    <string name="study_lock_screen_active_title">Aprendizado ao voltar para o celular ativo</string>
+    <string name="study_lock_screen_active_description">%1$d de %2$d cartões mostrados hoje. O bloqueio e a biometria continuam protegidos pelo Android.</string>
     <string name="enable">Ativar</string>
     <string name="review_again">Ainda aprendendo</string>
     <string name="review_again_timing">Rever em 10 min</string>
@@ -146,9 +149,9 @@
     <string name="all_words_already_known_title">Você já conhece este conjunto</string>
     <string name="all_words_already_known_description">Estas palavras não aparecerão no estudo, quiz, lembretes nem nos cartões da tela de bloqueio. Abra Palavras excluídas para devolver qualquer palavra aos estudos.</string>
     <string name="routine">Rotina</string>
-    <string name="lock_screen_study">Estudo ao voltar para o celular</string>
-    <string name="lock_screen_study_enabled">Ativo: um novo cartão pode aparecer sobre a tela de bloqueio.</string>
-    <string name="lock_screen_study_disabled">Requer a permissão “Aparecer sobre outros apps” e mantém um serviço ativo.</string>
+    <string name="lock_screen_study">Aprendizado na tela de bloqueio</string>
+    <string name="lock_screen_study_enabled">Ativo: um cartão curto de árabe corânico pode aparecer quando a tela bloqueada acender.</string>
+    <string name="lock_screen_study_disabled">Opcional. O Android exige a permissão “Aparecer sobre outros apps”, e o Kalima mantém um serviço ativo para preparar os cartões.</string>
     <string name="preview_card">Testar cartão</string>
     <string name="lock_screen_quiz">Quiz na tela de bloqueio</string>
     <plurals name="lock_screen_quiz_enabled">
@@ -182,8 +185,8 @@
     <string name="spaced_repetition">Repetição espaçada</string>
     <string name="spaced_repetition_enabled_description">Ativa (recomendado): programa cada revisão perto do momento em que você provavelmente esqueceria.</string>
     <string name="spaced_repetition_disabled_observation">Desativada — não recomendado: as palavras se alternam sem revisões programadas, o que pode tornar o aprendizado menos eficiente e facilitar o esquecimento.</string>
-    <string name="lock_screen_features">Cartões ao voltar para o celular</string>
-    <string name="lock_screen_features_description">Ferramentas opcionais de estudo exibidas sobre a tela de bloqueio.</string>
+    <string name="lock_screen_features">Aprendizado na tela de bloqueio</string>
+    <string name="lock_screen_features_description">Cartões opcionais de árabe corânico para os momentos em que você acende ou volta ao celular. O Kalima nunca desbloqueia nem contorna a segurança do aparelho.</string>
     <string name="android_app_settings">Ajustes do Android</string>
     <string name="limit_new_words">Limitar palavras novas</string>
 
@@ -234,8 +237,10 @@
     <string name="disable">Desativar</string>
     <string name="lock_screen_channel">Estudo ao voltar para o celular</string>
     <string name="lock_screen_channel_description">Mantém os cartões prontos para a próxima ativação da tela bloqueada</string>
-    <string name="onboarding_title">Comece com um caminho claro</string>
-    <string name="onboarding_subtitle">Conte ao Kalima de onde você está começando e escolha o vocabulário que mais combina com sua meta.</string>
+    <string name="onboarding_title">Comece um hábito de árabe corânico</string>
+    <string name="onboarding_subtitle">Conte ao Kalima de onde você está começando e escolha o vocabulário e o ritmo que combinam com sua meta.</string>
+    <string name="onboarding_lock_screen_title">Uma pequena lição quando você volta</string>
+    <string name="onboarding_lock_screen_description">Depois da configuração, você poderá optar por cartões curtos na tela bloqueada ao acender o celular. O Android exige permissão; o Kalima nunca desbloqueia nem contorna a segurança do aparelho.</string>
     <string name="onboarding_foundations_title">Primeiro, os fundamentos</string>
     <string name="onboarding_foundations_description">Suas respostas criam um plano de estudo que começa no nível certo.</string>
     <string name="onboarding_knows_alphabet">Você já conhece o alfabeto árabe?</string>

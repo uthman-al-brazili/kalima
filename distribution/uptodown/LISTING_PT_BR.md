@@ -20,56 +20,26 @@
 
 ## Descrição curta
 
-Aprenda vocabulário, alfabeto e números do árabe corânico.
+Aprenda árabe corânico na tela bloqueada com microlições opcionais e privadas.
 
 ## Descrição completa
 
-O Kalima ajuda iniciantes a construir uma base prática no árabe corânico por
-meio de sessões curtas e tranquilas. Comece pelo alfabeto árabe quando precisar,
-aprenda os algarismos árabes junto com as outras lições e avance para o
-vocabulário encontrado no Alcorão no seu próprio ritmo.
+O Kalima é uma forma de aprender árabe corânico com foco na tela bloqueada, em português do Brasil ou inglês. Depois que você autoriza o recurso, uma lição curta pode aparecer sobre a tela ainda bloqueada quando o visor acende ou quando você volta ao celular. É possível responder ou ouvir o áudio enquanto o aparelho continua bloqueado; para abrir a lição completa, o Android pede sua autenticação primeiro. O Kalima nunca desbloqueia o celular nem contorna PIN, senha, padrão, impressão digital ou reconhecimento facial; a segurança do aparelho continua sob controle do Android. O aprendizado na tela bloqueada é opcional e fica desativado até você ativá-lo.
 
-Na primeira abertura, o Kalima pergunta se você já conhece o alfabeto e os
-números árabes. Se ainda não conhece o alfabeto, o aplicativo cria um caminho
-de fundamentos que apresenta as 28 letras, suas ligações e as vogais breves
-antes do início do estudo de palavras completas. O caminho dos números de ٠ a ٩
-aparece em paralelo às letras ou ao vocabulário e não impede o restante do
-aprendizado.
+O fluxo de lições usa o corpus offline original do Kalima, com 42.117 cartões de palavras indexados do Alcorão. Cada cartão relaciona o texto árabe à transliteração, ao significado no contexto, à gramática, à raiz e à referência corânica. O widget Palavra corânica do dia oferece outra forma opcional e rápida de rever uma palavra entre as lições.
 
-Cada cartão de vocabulário inclui texto árabe, transliteração, significado
-contextual, gramática, raiz, referência corânica e o contexto opcional da ayah
-completa. Ouça gravações reais palavra por palavra do Quran.com e a recitação
-Murattal de Mahmoud Khalil Al-Hussary para as ayahs completas. O áudio do
-conteúdo escolhido pode ser salvo para uso offline.
+O Kalima usa repetição espaçada para reapresentar as palavras na hora certa. Escolha palavras essenciais, vocabulário de oração, suras curtas, o corpus completo, suras específicas ou uma lista pessoal. Os quizzes de cinco perguntas incluem modos misto, escuta, lacunas, raízes, revisões pendentes e palavras difíceis. As perguntas contextuais podem pedir a palavra que completa uma ayah ou o significado de um termo destacado do Alcorão.
 
-O Kalima usa repetição espaçada para apresentar novamente cada palavra no
-momento certo. Você pode escolher palavras essenciais, vocabulário da oração,
-suras curtas, o corpus completo, suras específicas ou uma lista pessoal. O quiz
-de cinco perguntas oferece modos misto, escuta, lacunas e raízes, agora com um
-botão de pronúncia diretamente nas perguntas que mostram uma palavra árabe.
+Quem está começando pode seguir os fundamentos do árabe: as 28 letras, suas ligações, vogais breves e algarismos arábico-indianos. O aplicativo também inclui o Alcorão árabe completo para leitura offline: 114 suras e 6.236 ayahs, com tamanho de texto ajustável e detalhes ao tocar em cada palavra.
 
-O texto árabe completo do Alcorão está incluído para leitura offline, com 114
-suras, 6.236 ayahs, tamanho ajustável e detalhes ao tocar em cada palavra.
-Lembretes e cartões opcionais ao voltar ao celular podem integrar o estudo à
-rotina, mas permanecem desativados até você escolher usá-los.
+Ouça gravações humanas do Alcorão: gravações palavra por palavra do Quran.com e a recitação Murattal de Mahmoud Khalil Al-Hussary para ayahs completas. O áudio selecionado pode ser baixado para reprodução offline.
 
-O Kalima não tem anúncios, conta nem ferramentas de análise. O progresso fica
-no armazenamento local do aplicativo e pode ser exportado ou restaurado
-manualmente. A internet é usada apenas para transmitir ou baixar áudio do
-Alcorão e para abrir links escolhidos por você, como o apoio opcional ao
-desenvolvedor.
+O Kalima não tem anúncios, conta nem ferramentas de análise. O progresso fica no armazenamento local e pode ser exportado ou restaurado manualmente. A internet é usada apenas para transmitir ou baixar áudio do Alcorão e para abrir links que você escolher.
 
-Os significados e dados gramaticais são recursos de estudo ligados ao contexto
-corânico e não substituem uma tradução especializada nem orientação religiosa
-qualificada.
+Significados e informações gramaticais são recursos de estudo ligados ao contexto corânico; não substituem uma tradução especializada nem orientação religiosa qualificada.
 
-## Novidades da versão 0.26.0
+## Novidades da versão 0.30.0
 
-- Adiciona planos personalizados para aprender o alfabeto e os números árabes.
-- Mantém palavras completas e quizzes bloqueados até o fim das lições de
-  alfabeto necessárias, enquanto os números avançam junto com outras lições.
-- Adiciona um botão de pronúncia às perguntas do quiz com palavra árabe.
-- Simplifica o áudio do cartão para um único ícone e move “Já conheço esta
-  palavra” para uma ação compacta no topo.
-- Esclarece que as doações opcionais apoiam o desenvolvedor independente do
-  Kalima e a criação futura de mais aplicativos para os muçulmanos.
+- Torna o aprendizado na tela bloqueada o centro da configuração inicial e da área Estudo, com uma explicação mais clara e opt-in para a lição curta quando o visor bloqueado acende ou quando você volta ao celular.
+- Adiciona o widget Palavra corânica do dia, com árabe, transliteração, significado no contexto, referência corânica, ação Próxima e acesso direto à lição no Kalima.
+- Mantém intactos o PIN, a senha, o padrão, a biometria e os demais controles de segurança do Android; o aprendizado na tela bloqueada continua opcional.

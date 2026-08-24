@@ -20,53 +20,26 @@
 
 ## Short description
 
-Learn Quranic Arabic words, alphabet, and numbers offline.
+Learn Quranic Arabic from your lock screen with optional, private micro-lessons.
 
 ## Full description
 
-Kalima helps beginners build a practical foundation in Quranic Arabic through
-short, calm study sessions. Start with the Arabic alphabet if you need it,
-learn Arabic-Indic digits alongside your other lessons, and then move into
-vocabulary taken from the Quran at your own pace.
+Kalima is a lock-screen-first way to learn Quranic Arabic in English or Brazilian Portuguese. After you opt in, a short lesson can appear over the still-locked keyguard when the display turns on or when you return to your phone. You can answer or listen while the device stays locked; opening the full lesson asks Android to authenticate you first. Kalima never unlocks your phone or bypasses a PIN, password, pattern, fingerprint, or face authentication; Android keeps your device security in control. Lock-screen learning is optional and remains off until you enable it.
 
-On first launch, Kalima asks whether you already know the Arabic alphabet and
-numbers. If you do not know the alphabet, the app creates a short foundation
-path covering all 28 letters, joining, and short vowels before full-word study
-begins. The ٠–٩ number path runs alongside alphabet or vocabulary practice, so
-it never holds back the rest of your learning.
+The lesson stream is built from Kalima’s original offline Quran corpus of 42,117 indexed word cards. Each card connects Arabic text with transliteration, contextual meaning, grammar, root information, and a Quran reference. The Daily Quran Word home-screen widget adds another opt-in way to revisit a word between lessons.
 
-Each vocabulary card includes Arabic text, transliteration, a contextual
-meaning, grammar, root information, Quran reference, and optional complete-ayah
-context. Listen to real word-by-word recordings from Quran.com and to
-Mahmoud Khalil Al-Hussary’s Murattal recitation for complete ayahs. Audio can be
-saved for offline use for your selected content.
+Kalima uses spaced repetition to bring words back when they are due. Choose essential words, prayer vocabulary, short surahs, the complete corpus, specific surahs, or a personal list. Five-question quizzes include mixed, listening, cloze, root, due-review, and difficult-word modes. Contextual questions can ask which word completes a verse or what a highlighted Quran word means.
 
-Kalima uses spaced repetition to bring words back when they are due. You can
-choose essential words, prayer vocabulary, short surahs, the complete corpus,
-specific surahs, or a personal list. A five-question quiz offers mixed,
-listening, cloze, and root modes, with a pronunciation button available directly
-on Arabic-word questions.
+Beginners can start with Arabic foundations: all 28 letters, joining, short vowels, and Arabic-Indic digits. The app also includes the complete Arabic Quran for offline reading: 114 surahs and 6,236 ayahs, with adjustable text size and tappable word details.
 
-The full Arabic Quran is included for offline reading, with 114 surahs, 6,236
-ayahs, adjustable text size, and tappable word details. Optional reminders and
-return-to-phone study cards can make practice part of your routine, but both
-features remain off until you enable them.
+Listen to human Quran recordings: word-by-word recordings from Quran.com and Mahmoud Khalil Al-Hussary’s Murattal recitation for complete ayahs. Selected audio can be downloaded for offline playback.
 
-Kalima has no ads, account, or analytics. Learning progress stays in local app
-storage and can be exported or restored manually. Internet access is only used
-for streaming or downloading Quran audio and for opening links you explicitly
-choose, such as optional developer support.
+Kalima has no ads, account, or analytics. Progress stays in local app storage and can be exported or restored manually. Internet access is used only for streaming or downloading Quran audio and links that you explicitly open.
 
-Meanings and grammar are learning aids tied to their Quran context and do not
-replace a scholarly translation or qualified religious instruction.
+Meanings and grammar are learning aids tied to Quran context and do not replace a scholarly translation or qualified religious instruction.
 
-## Version notes — 0.26.0
+## Version notes — 0.30.0
 
-- Added personalized Arabic alphabet and Arabic-number foundation plans.
-- Kept complete-word study and quizzes locked until required alphabet lessons
-  are complete, while numbers are learned alongside other lessons.
-- Added a pronunciation button to Arabic-word quiz questions.
-- Simplified study-card audio to one icon and moved “I already know this” to a
-  compact action at the top of the card.
-- Clarified that optional donations support Kalima’s independent developer and
-  future apps for Muslims.
+- Makes lock-screen learning the central onboarding and Study experience, with clearer opt-in messaging for a short lesson when the locked display turns on or you return to your phone.
+- Adds the Daily Quran Word home-screen widget with Arabic, transliteration, contextual meaning, Quran reference, a Next action, and a direct route to that lesson in Kalima.
+- Keeps PIN, password, pattern, biometrics, and other Android device security controls untouched; lock-screen learning remains optional.

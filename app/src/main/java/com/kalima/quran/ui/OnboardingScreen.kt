@@ -91,6 +91,27 @@ fun OnboardingScreen(onComplete: (StudyScope, Int, Boolean, Boolean) -> Unit) {
                 stringResource(R.string.onboarding_subtitle),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Spacer(Modifier.height(18.dp))
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = RoundedCornerShape(20.dp),
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        stringResource(R.string.onboarding_lock_screen_title),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(R.string.onboarding_lock_screen_description),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.82f),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
             Spacer(Modifier.height(24.dp))
             Text(
                 stringResource(R.string.onboarding_foundations_title),

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_daily_word_name">Daily Quran Word</string>
+    <string name="widget_daily_word_title">YOUR QURAN WORD</string>
+    <string name="widget_daily_word_context">Quran • %1$s</string>
+    <string name="widget_open_word_description">Open %1$s — %2$s in Kalima</string>
+    <string name="widget_next_description">Show next word</string>
+</resources>

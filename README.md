@@ -1,9 +1,20 @@
-# Kalima — árabe corânico em pequenos momentos
+# Kalima — árabe corânico na tela bloqueada e em pequenos momentos
 
-Kalima é um aplicativo para Android e Windows inspirado na ideia de aprendizado frequente do WordBit, mas com identidade, interface e implementação próprias. O foco é vocabulário do árabe clássico encontrado no Alcorão, apresentado em português ou inglês e dentro de contexto.
+Kalima é um aplicativo Android de árabe corânico centrado em uma forma própria de
+estudo: cartões curtos e quizzes opcionais podem aparecer sobre a tela ainda
+bloqueada quando o display acende. Assim, o retorno ao celular vira uma pequena
+oportunidade de aprender antes mesmo do desbloqueio, sem contornar o PIN, a senha
+ou a biometria do Android. O mesmo corpus e progresso também estão disponíveis em
+um aplicativo Windows separado.
 
 ## O que já funciona
 
+- cartões opcionais de palavra e quiz sobre a tela ainda bloqueada quando o
+  display acende, com horário silencioso, limite diário e pausas;
+- proteção integral da tela de bloqueio: o Kalima nunca desbloqueia o aparelho
+  nem contorna PIN, senha ou biometria;
+- widget Android **Palavra diária do Alcorão**, com árabe, transliteração,
+  significado contextual, referência, próxima palavra e abertura da lição exata;
 - cartão de recordação que apresenta imediatamente o significado de palavras
   novas e o oculta primeiro nas revisões para testar a memória;
 - gravação humana palavra por palavra do Quran.com, salva após a primeira
@@ -45,14 +56,10 @@ Kalima é um aplicativo para Android e Windows inspirado na ideia de aprendizado
   de raiz e somente revisões vencidas;
 - feedback do quiz com a data relativa da próxima revisão e sessões sem
   repetição artificial quando há menos de cinco cartões pendentes;
-- quiz opcional ao ligar a tela, com intervalo configurável entre 1 e 10 palavras;
 - filtros de palavras novas, em revisão, aprendidas e favoritas;
 - painel de progresso com precisão em 7/30 dias, novas e revisadas no dia,
   calendário de atividade, palavras difíceis e domínio por raiz;
 - persistência local, sem conta e sem coleta de dados;
-- estudo automático a cada tela ligada, com horário silencioso, limite diário e
-  pausa por uma hora ou até o dia seguinte;
-- cartão em tela cheia sobre o bloqueio, fechado ao desbloquear, apagar a tela ou responder;
 - serviço em primeiro plano opt-in e permissão explícita “Aparecer sobre outros apps”;
 - lembrete diário opcional às 8h, exibido como notificação e compatível com a tela bloqueada conforme as configurações do Android;
 - status editorial visível por cartão e relatório de correção compartilhável,
