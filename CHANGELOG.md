@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.5 — 2026-08-25
+
+- Removed the Arabic greeting from the top of the Study screen, allowing the
+  daily-word heading and study details to begin at the top of the content.
+
 ## 0.30.4 — 2026-08-25
 
 - Prevented lock-screen study cards from keeping the display session open
