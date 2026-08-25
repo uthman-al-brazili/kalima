@@ -20,8 +20,8 @@ android {
         applicationId = "com.kalima.quran"
         minSdk = 26
         targetSdk = 36
-        versionCode = 76
-        versionName = "0.30.3"
+        versionCode = 77
+        versionName = "0.30.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -85,7 +85,7 @@ val startupContractFiles = mapOf(
 
 val verifyLockScreenRegression by tasks.registering {
     group = "verification"
-    description = "Verifies that return-to-phone cards still open over the locked keyguard."
+    description = "Verifies that cards open over the keyguard without waking or holding the display."
     inputs.files(lockScreenContractFiles.values)
 
     doLast {
@@ -123,6 +123,16 @@ val verifyLockScreenRegression by tasks.registering {
         )
         requireContract(
             "activity",
+            "WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON",
+            "the activity no longer explicitly clears the keep-screen-on flag",
+        )
+        requireContract(
+            "activity",
+            "inactivityHandler.postDelayed(finishAfterInactivity, CARD_INACTIVITY_TIMEOUT_MS)",
+            "an untouched lock-screen card can remain visible indefinitely",
+        )
+        requireContract(
+            "activity",
             "LockScreenSystemSafety.blockReason(this, allowLockedDevice = true)",
             "the activity incorrectly rejects the still-locked keyguard",
         )
@@ -153,6 +163,13 @@ val verifyLockScreenRegression by tasks.registering {
         )
         check(!sources.getValue("service").contains("Intent.ACTION_USER_PRESENT")) {
             "Lock-screen regression: the service must not wait for ACTION_USER_PRESENT."
+        }
+        check(
+            !sources.getValue("activity").contains(
+                "addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON",
+            ),
+        ) {
+            "Lock-screen regression: the activity must never keep the display awake."
         }
     }
 }

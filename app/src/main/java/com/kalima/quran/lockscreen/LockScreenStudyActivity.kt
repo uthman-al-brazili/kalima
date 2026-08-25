@@ -7,7 +7,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
+import android.view.MotionEvent
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -25,6 +28,7 @@ import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
 
 class LockScreenStudyActivity : ComponentActivity() {
+    private val inactivityHandler = Handler(Looper.getMainLooper())
     private lateinit var progressStore: ProgressStore
     private lateinit var currentSession: LockScreenSession
     private var studyRememberedSelection: Boolean? = null
@@ -34,6 +38,10 @@ class LockScreenStudyActivity : ComponentActivity() {
     private var answerCommitted = false
     private var preview = false
     private var firstWordPresentation = false
+
+    private val finishAfterInactivity = Runnable {
+        if (!preview && !openingMainApp && !answerCommitted && !isFinishing) finish()
+    }
 
     private val closeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
@@ -192,7 +200,18 @@ class LockScreenStudyActivity : ComponentActivity() {
         receiverRegistered = true
     }
 
+    override fun onResume() {
+        super.onResume()
+        scheduleInactivityTimeout()
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) scheduleInactivityTimeout()
+        return super.dispatchTouchEvent(event)
+    }
+
     override fun onPause() {
+        inactivityHandler.removeCallbacks(finishAfterInactivity)
         super.onPause()
         if (!preview && !openingMainApp && !answerCommitted && !isChangingConfigurations) {
             finish()
@@ -205,6 +224,11 @@ class LockScreenStudyActivity : ComponentActivity() {
             receiverRegistered = false
         }
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        inactivityHandler.removeCallbacks(finishAfterInactivity)
+        super.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -249,15 +273,26 @@ class LockScreenStudyActivity : ComponentActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun configureWindowForLockScreen() {
+        window.clearFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON,
+        )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(false)
         } else {
-            @Suppress("DEPRECATION")
             window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
         }
         WindowCompat.setDecorFitsSystemWindows(window, false)
+    }
+
+    private fun scheduleInactivityTimeout() {
+        inactivityHandler.removeCallbacks(finishAfterInactivity)
+        if (!preview) {
+            inactivityHandler.postDelayed(finishAfterInactivity, CARD_INACTIVITY_TIMEOUT_MS)
+        }
     }
 
     private fun openMainApp() {
@@ -319,5 +354,6 @@ class LockScreenStudyActivity : ComponentActivity() {
         private const val STATE_SELECTED_OPTION = "selected_option"
         private const val CONTENT_WORD = "word"
         private const val CONTENT_QUIZ = "quiz"
+        private const val CARD_INACTIVITY_TIMEOUT_MS = 30_000L
     }
 }

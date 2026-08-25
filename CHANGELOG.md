@@ -3,6 +3,14 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.4 — 2026-08-25
+
+- Prevented lock-screen study cards from keeping the display session open
+  indefinitely: untouched cards now close after 30 seconds, while interaction
+  restarts that limit and Android remains free to turn the screen off sooner.
+- Explicitly cleared Android window flags that could wake or hold the display,
+  while preserving cards over the still-locked keyguard when the user wakes it.
+
 ## 0.30.3 — 2026-08-24
 
 - Removed the circular decoration from the Daily Quran Word widget background,
