@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.8 — 2026-08-26
+
+- Replaced only the offline pronunciation of **غَيْنْ** with the clearer
+  user-approved Adam recording; the other 27 Arabic-letter clips are unchanged.
+
 ## 0.30.7 — 2026-08-26
 
 - Replaced all 28 offline Arabic alphabet pronunciations with the
