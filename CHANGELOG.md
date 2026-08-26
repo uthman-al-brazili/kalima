@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.11 — 2026-08-26
+
+- Replaced the full-width “Share with citation” text action with a compact,
+  accessible share icon throughout word details, while preserving citation
+  content and the Android share chooser.
+
 ## 0.30.10 — 2026-08-26
 
 - Removed the active lock-screen-learning status card from the Study screen,
