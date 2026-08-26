@@ -301,7 +301,6 @@
     <string name="study_after_foundations_description">Seu curso de letras está na aba Básico. Conclua-o lá ou pule por enquanto para começar a estudar palavras do Alcorão.</string>
     <string name="open_foundations">Abrir Básico</string>
     <string name="hear_letter">Ouvir esta letra</string>
-    <string name="hear_letter_named">Ouvir a pronúncia de %1$s</string>
     <string name="letter_audio_matches_name">A gravação offline pronuncia exatamente o nome em árabe mostrado acima.</string>
     <string name="hear_number">Ouvir este número</string>
     <string name="foundation_voice_unavailable">Instale ou ative uma voz em árabe nas configurações de conversão de texto em voz do aparelho para ouvir formas vocálicas e números. Os nomes das 28 letras já estão disponíveis offline.</string>

@@ -301,7 +301,6 @@
     <string name="study_after_foundations_description">Your letter course is in Basics. Finish it there, or skip it for now, to begin studying Quranic words.</string>
     <string name="open_foundations">Open Basics</string>
     <string name="hear_letter">Hear this letter</string>
-    <string name="hear_letter_named">Hear the pronunciation of %1$s</string>
     <string name="letter_audio_matches_name">The offline recording says the exact Arabic name shown above.</string>
     <string name="hear_number">Hear this number</string>
     <string name="foundation_voice_unavailable">Install or enable an Arabic voice in your device’s text-to-speech settings to hear vowel forms and numbers. All 28 letter names are already available offline.</string>

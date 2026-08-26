@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.9 — 2026-08-26
+
+- Removed the ElevenLabs pronunciation controls from the Arabic alphabet
+  reference table. Existing audio files remain available to guided lessons and
+  preserved backups are unchanged.
+
 ## 0.30.8 — 2026-08-26
 
 - Replaced only the offline pronunciation of **غَيْنْ** with the clearer

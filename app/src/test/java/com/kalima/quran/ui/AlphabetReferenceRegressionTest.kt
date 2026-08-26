@@ -15,9 +15,8 @@ class AlphabetReferenceRegressionTest {
 
         assertFalse(table.contains("OutlinedTextField"))
         assertFalse(table.contains("alphabetReferenceMatching"))
-        assertTrue(table.contains("FoundationPronunciationButton"))
-        assertTrue(table.contains("pronouncer: ArabicPronouncer"))
-        assertTrue(table.contains("R.string.hear_letter_named"))
+        assertFalse(table.contains("FoundationPronunciationButton"))
+        assertFalse(table.contains("pronouncer"))
         assertFalse(resource("values-en/strings.xml").contains("Tap each form’s speaker"))
         assertFalse(resource("values/strings.xml").contains("Toque no alto-falante de cada forma"))
         assertTrue(
