@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.10 — 2026-08-26
+
+- Removed the active lock-screen-learning status card from the Study screen,
+  including its daily counter and security reminder. The activation card still
+  appears when the feature is off, and lock-screen behavior is unchanged.
+
 ## 0.30.9 — 2026-08-26
 
 - Removed the ElevenLabs pronunciation controls from the Arabic alphabet

@@ -50,8 +50,6 @@
     <string name="study_lock_screen_title">Learn when you return to your phone</string>
     <string name="study_lock_screen_description">Opt in to a short Quranic Arabic card when the locked display turns on. Android requires the “Display over other apps” permission; Kalima never unlocks or bypasses device security.</string>
     <string name="study_lock_screen_enable">Turn on cards</string>
-    <string name="study_lock_screen_active_title">Return-to-phone learning is on</string>
-    <string name="study_lock_screen_active_description">%1$d of %2$d cards shown today. Your lock screen and biometrics remain protected by Android.</string>
     <string name="enable">Enable</string>
     <string name="review_again">Still learning</string>
     <string name="review_again_timing">Review in 10 min</string>

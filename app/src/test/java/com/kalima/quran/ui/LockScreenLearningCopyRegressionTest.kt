@@ -12,12 +12,12 @@ class LockScreenLearningCopyRegressionTest {
     }
 
     @Test
-    fun `study keeps a visible status or activation card without changing settings controls`() {
+    fun `study hides the status card when active and keeps the activation path`() {
         val study = source("java/com/kalima/quran/ui/StudyScreen.kt")
         val settings = source("java/com/kalima/quran/ui/SettingsScreen.kt")
 
+        assertTrue(study.contains("if (!progress.lockScreenEnabled)"))
         assertTrue(study.contains("LockScreenLearningCard("))
-        assertTrue(study.contains("progress.lockScreenEnabled"))
         assertTrue(study.contains("onEnableLockScreen"))
         assertTrue(settings.contains("onLockScreenChange"))
         assertTrue(settings.contains("onLockScreenQuizChange"))
@@ -27,7 +27,7 @@ class LockScreenLearningCopyRegressionTest {
     private fun assertRequiredLockScreenCopy(strings: String) {
         assertTrue(strings.contains("onboarding_lock_screen_title"))
         assertTrue(strings.contains("onboarding_lock_screen_description"))
-        assertTrue(strings.contains("study_lock_screen_active_description"))
+        assertTrue(strings.contains("lock_screen_security_note"))
         assertTrue(strings.contains("permission") || strings.contains("permissão"))
         assertTrue(strings.contains("bypasses") || strings.contains("contorna"))
     }
