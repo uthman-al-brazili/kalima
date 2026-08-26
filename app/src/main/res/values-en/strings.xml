@@ -301,9 +301,10 @@
     <string name="study_after_foundations_description">Your letter course is in Basics. Finish it there, or skip it for now, to begin studying Quranic words.</string>
     <string name="open_foundations">Open Basics</string>
     <string name="hear_letter">Hear this letter</string>
-    <string name="letter_audio_matches_name">The audio says the exact Arabic name shown above.</string>
+    <string name="hear_letter_named">Hear the pronunciation of %1$s</string>
+    <string name="letter_audio_matches_name">The offline recording says the exact Arabic name shown above.</string>
     <string name="hear_number">Hear this number</string>
-    <string name="foundation_voice_unavailable">Install or enable an Arabic voice in your device’s text-to-speech settings to hear letters and numbers.</string>
+    <string name="foundation_voice_unavailable">Install or enable an Arabic voice in your device’s text-to-speech settings to hear vowel forms and numbers. All 28 letter names are already available offline.</string>
     <string name="finish_alphabet_first">Finish the Arabic alphabet foundation before enabling word study outside the app.</string>
     <string name="quiz_after_alphabet_title">The quiz starts after the alphabet</string>
     <string name="quiz_after_alphabet_description">Continue the alphabet plan in Basics. Once it is complete, word quizzes will unlock automatically.</string>
@@ -466,7 +467,7 @@
     </plurals>
     <string name="lock_safety_status">Last launch: %1$s ms (budget ≤ %2$d ms) · %3$d safety skips</string>
     <string name="alphabet_reference_title">Arabic alphabet table</string>
-    <string name="alphabet_reference_description">Browse all 28 letters from right to left. Each page shows four letters with fatḥa (a), kasra (i), ḍamma (u), and sukūn. Initial vowels on alif use hamza (أ/إ).</string>
+    <string name="alphabet_reference_description">Browse and hear all 28 letters offline from right to left. Each page shows four letters with fatḥa (a), kasra (i), ḍamma (u), and sukūn. Initial vowels on alif use hamza (أ/إ).</string>
     <string name="alphabet_reference_page">Page %1$d of %2$d</string>
     <string name="open_alphabet_reference">Open the complete alphabet table</string>
     <string name="hide_alphabet_reference">Hide the alphabet table</string>

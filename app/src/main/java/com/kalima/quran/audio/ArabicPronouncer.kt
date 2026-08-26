@@ -3,6 +3,7 @@ package com.kalima.quran.audio
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import com.kalima.quran.data.AlphabetAudio
 import com.kalima.quran.data.QuranVerseAudioLocation
 import com.kalima.quran.data.QuranWordAudioLocation
 
@@ -17,6 +18,7 @@ class ArabicPronouncer(context: Context) {
     private val applicationContext = context.applicationContext
     private val wordAudioPlayer = QuranComWordAudioPlayer(applicationContext)
     private val verseAudioPlayer = HussaryVerseAudioPlayer(applicationContext)
+    private val alphabetAudioPlayer = OfflineAlphabetAudioPlayer(applicationContext)
     private val foundationVoice = ArabicFoundationVoice(applicationContext)
     private val connectivityManager = applicationContext.getSystemService(ConnectivityManager::class.java)
 
@@ -27,6 +29,7 @@ class ArabicPronouncer(context: Context) {
         onPlaybackResult: (PronunciationResult) -> Unit = {},
     ): PronunciationResult {
         verseAudioPlayer.stop()
+        alphabetAudioPlayer.stop()
         foundationVoice.stop()
         val source = selectWordAudioSource(
             hasQuranComLocation = location != null,
@@ -60,6 +63,7 @@ class ArabicPronouncer(context: Context) {
         onPlaybackResult: (PronunciationResult) -> Unit = {},
     ): PronunciationResult {
         wordAudioPlayer.stop()
+        alphabetAudioPlayer.stop()
         foundationVoice.stop()
         val hasOfflineAudio = location?.let(verseAudioPlayer::hasOfflineAudio) == true
         if (location == null) return PronunciationResult.Failed
@@ -86,6 +90,15 @@ class ArabicPronouncer(context: Context) {
     ): PronunciationResult {
         wordAudioPlayer.stop()
         verseAudioPlayer.stop()
+        val alphabetAudio = AlphabetAudio.fromSpokenArabic(text)
+        if (alphabetAudio != null) {
+            foundationVoice.stop()
+            return alphabetAudioPlayer.play(
+                audio = alphabetAudio,
+                onFailure = { onPlaybackResult(PronunciationResult.Failed) },
+            )
+        }
+        alphabetAudioPlayer.stop()
         return foundationVoice.speak(text, playbackRate, onPlaybackResult)
     }
 
@@ -99,6 +112,7 @@ class ArabicPronouncer(context: Context) {
     fun shutdown() {
         wordAudioPlayer.stop()
         verseAudioPlayer.stop()
+        alphabetAudioPlayer.stop()
         foundationVoice.shutdown()
     }
 

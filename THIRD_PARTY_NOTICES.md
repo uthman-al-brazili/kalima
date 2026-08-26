@@ -48,6 +48,17 @@ estudo selecionado podem ser baixadas para uso offline. O uso em produção deve
 continuar respeitando os termos vigentes do EveryAyah e dos titulares das
 gravações.
 
+## Voz do alfabeto árabe
+
+- Serviço de geração: ElevenLabs
+- Voz selecionada: Haytham
+- Uso no Android: 28 clipes MP3 incorporados ao APK, um para o nome de cada
+  letra do alfabeto árabe, sem transmissão pela internet e sem Google TTS.
+
+Os clipes foram separados da gravação completa aprovada, sem regenerar ou
+alterar as pronúncias. A distribuição deve respeitar os termos aplicáveis à
+conta ElevenLabs usada para gerar a gravação.
+
 ## Significados em português
 
 Os glossários em inglês foram convertidos em um primeiro rascunho em português e receberam correções editoriais pontuais. Eles são apresentados como apoio contextual, não como tradução oficial do Alcorão. O cache em `tools/pt_gloss_cache.json` e cada cartão devem passar por revisão linguística e religiosa antes da publicação.

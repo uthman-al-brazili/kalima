@@ -110,6 +110,7 @@ fun FoundationPronunciationButton(
     modifier: Modifier = Modifier,
     @StringRes labelRes: Int,
     compact: Boolean = false,
+    contentDescription: String? = null,
 ) {
     PronunciationControl(
         play = { onPlaybackResult ->
@@ -122,6 +123,7 @@ fun FoundationPronunciationButton(
         compact = compact,
         dense = true,
         labelRes = labelRes,
+        contentDescription = contentDescription,
         offlineMessageRes = R.string.foundation_voice_unavailable,
         contentColor = MaterialTheme.colorScheme.primary,
         borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
@@ -135,6 +137,7 @@ private fun PronunciationControl(
     compact: Boolean,
     dense: Boolean,
     @StringRes labelRes: Int,
+    contentDescription: String? = null,
     @StringRes offlineMessageRes: Int,
     contentColor: Color,
     borderColor: Color,
@@ -151,6 +154,7 @@ private fun PronunciationControl(
     }
     val context = LocalContext.current
     val label = stringResource(labelRes)
+    val accessibilityLabel = contentDescription ?: label
     val failedMessage = stringResource(R.string.pronunciation_failed)
     val offlineAudioMissingMessage = stringResource(offlineMessageRes)
     val deviceVoiceUnavailableMessage = stringResource(R.string.foundation_voice_unavailable)
@@ -174,7 +178,7 @@ private fun PronunciationControl(
         IconButton(onClick = onClick, modifier = modifier) {
             Icon(
                 painter = painterResource(R.drawable.ic_volume_up),
-                contentDescription = label,
+                contentDescription = accessibilityLabel,
                 modifier = Modifier.size(22.dp),
                 tint = resolvedContentColor,
             )

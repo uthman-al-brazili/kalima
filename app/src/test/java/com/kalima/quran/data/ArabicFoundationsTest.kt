@@ -8,15 +8,18 @@ import org.junit.Test
 class ArabicFoundationsTest {
     @Test
     fun `alphabet plan covers every letter once before the vowel lesson`() {
-        val letters = ArabicFoundations.alphabetLessons
+        val symbols = ArabicFoundations.alphabetLessons
             .filterNot(AlphabetLesson::teachesVowels)
             .flatMap(AlphabetLesson::symbols)
-            .map(FoundationSymbol::arabic)
+        val letters = symbols.map(FoundationSymbol::arabic)
+        val recordings = symbols.map { AlphabetAudio.fromSpokenArabic(it.spokenArabic) }
 
         assertEquals(28, letters.size)
         assertEquals(28, letters.toSet().size)
         assertEquals("ا", letters.first())
         assertEquals("ي", letters.last())
+        assertTrue(recordings.all { it != null })
+        assertEquals(28, recordings.toSet().size)
     }
 
     @Test

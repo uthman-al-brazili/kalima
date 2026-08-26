@@ -3,6 +3,13 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.6 — 2026-08-26
+
+- Added approved male-voice recordings for all 28 Arabic letter names, bundled
+  in the Android app for clear playback without internet access or device TTS.
+- Added an accessible speaker control to every row of the Arabic alphabet
+  table; the guided alphabet lessons use the same offline recordings.
+
 ## 0.30.5 — 2026-08-25
 
 - Removed the Arabic greeting from the top of the Study screen, allowing the

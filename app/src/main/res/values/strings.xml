@@ -301,9 +301,10 @@
     <string name="study_after_foundations_description">Seu curso de letras está na aba Básico. Conclua-o lá ou pule por enquanto para começar a estudar palavras do Alcorão.</string>
     <string name="open_foundations">Abrir Básico</string>
     <string name="hear_letter">Ouvir esta letra</string>
-    <string name="letter_audio_matches_name">O áudio pronuncia exatamente o nome em árabe mostrado acima.</string>
+    <string name="hear_letter_named">Ouvir a pronúncia de %1$s</string>
+    <string name="letter_audio_matches_name">A gravação offline pronuncia exatamente o nome em árabe mostrado acima.</string>
     <string name="hear_number">Ouvir este número</string>
-    <string name="foundation_voice_unavailable">Instale ou ative uma voz em árabe nas configurações de conversão de texto em voz do aparelho para ouvir letras e números.</string>
+    <string name="foundation_voice_unavailable">Instale ou ative uma voz em árabe nas configurações de conversão de texto em voz do aparelho para ouvir formas vocálicas e números. Os nomes das 28 letras já estão disponíveis offline.</string>
     <string name="finish_alphabet_first">Conclua os fundamentos do alfabeto árabe antes de ativar o estudo de palavras fora do app.</string>
     <string name="quiz_after_alphabet_title">O quiz começa depois do alfabeto</string>
     <string name="quiz_after_alphabet_description">Continue o plano de alfabeto em Básico. Ao concluir, os quizzes de palavras serão liberados automaticamente.</string>
@@ -466,7 +467,7 @@
     </plurals>
     <string name="lock_safety_status">Última abertura: %1$s ms (meta ≤ %2$d ms) · %3$d bloqueios de segurança</string>
     <string name="alphabet_reference_title">Tabela do alfabeto árabe</string>
-    <string name="alphabet_reference_description">Consulte as 28 letras da direita para a esquerda. Cada página mostra quatro letras com fatḥa (a), kasra (i), ḍamma (u) e sukūn. No alif, as vogais iniciais são escritas com hamza (أ/إ).</string>
+    <string name="alphabet_reference_description">Consulte e ouça offline as 28 letras da direita para a esquerda. Cada página mostra quatro letras com fatḥa (a), kasra (i), ḍamma (u) e sukūn. No alif, as vogais iniciais são escritas com hamza (أ/إ).</string>
     <string name="alphabet_reference_page">Página %1$d de %2$d</string>
     <string name="open_alphabet_reference">Consultar tabela completa do alfabeto</string>
     <string name="hide_alphabet_reference">Ocultar tabela do alfabeto</string>
