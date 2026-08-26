@@ -51,13 +51,14 @@ gravações.
 ## Voz do alfabeto árabe
 
 - Serviço de geração: ElevenLabs
-- Voz selecionada: Haytham
+- Voz selecionada: Adam — Warm & Classic
 - Uso no Android: 28 clipes MP3 incorporados ao APK, um para o nome de cada
   letra do alfabeto árabe, sem transmissão pela internet e sem Google TTS.
 
-Os clipes foram separados da gravação completa aprovada, sem regenerar ou
-alterar as pronúncias. A distribuição deve respeitar os termos aplicáveis à
-conta ElevenLabs usada para gerar a gravação.
+Os clipes foram separados da gravação completa aprovada, gerada com os nomes
+das letras integralmente vocalizados em Fuṣḥā, sem alterar as pronúncias. A
+distribuição deve respeitar os termos aplicáveis à conta ElevenLabs usada para
+gerar a gravação.
 
 ## Significados em português
 

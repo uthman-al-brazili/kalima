@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.7 — 2026-08-26
+
+- Replaced all 28 offline Arabic alphabet pronunciations with the
+  user-approved Adam male voice, generated from fully vocalized Fuṣḥā letter
+  names and trimmed into clean individual clips.
+
 ## 0.30.6 — 2026-08-26
 
 - Added approved male-voice recordings for all 28 Arabic letter names, bundled
