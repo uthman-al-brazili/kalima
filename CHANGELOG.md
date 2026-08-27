@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.31.2 — 2026-08-27
+
+- Reset the active Today’s Arabic mission when the local day changes, so a
+  study session left open overnight starts the new day with fresh progress and
+  can still show the Quran-understanding payoff after reaching the new goal.
+
 ## 0.31.1 — 2026-08-27
 
 - Added a focused Today’s Arabic mission to Study with daily word progress,

@@ -34,6 +34,7 @@ class StudyMissionTest {
             ),
             reviewEvents = listOf(
                 ReviewEvent(yesterday, completed.id, true, false, ReviewSource.Study),
+                ReviewEvent(now, completed.id, true, false, ReviewSource.Study),
             ),
         )
 
@@ -54,6 +55,30 @@ class StudyMissionTest {
         assertEquals(LocalDate.of(2026, 8, 27), mission.activity.last().date)
         assertTrue(mission.activity.last().isToday)
         assertEquals(1, mission.activity[5].completedReviews)
+    }
+
+    @Test
+    fun `daily mission excludes answered ids from the prior local day`() {
+        val stale = word("stale")
+        val progress = StudyProgress(
+            todayAnsweredIds = setOf(stale.id),
+            dailyGoal = 3,
+            reviewEvents = listOf(
+                ReviewEvent(now.minusSeconds(86_400), stale.id, true, false, ReviewSource.Study),
+            ),
+        )
+
+        val mission = buildDailyMissionState(
+            progress = progress,
+            availableWords = listOf(stale),
+            now = now,
+            zoneId = zone,
+        )
+
+        assertEquals(emptySet<String>(), mission.answeredWordIds)
+        assertEquals(0, mission.completedWords)
+        assertEquals(3, mission.remainingWords)
+        assertFalse(mission.goalComplete)
     }
 
     @Test
@@ -135,6 +160,19 @@ class StudyMissionTest {
         assertTrue(source.contains("delay(MISSION_REFRESH_MILLIS)"))
         assertTrue(source.contains("Lifecycle.Event.ON_RESUME"))
         assertTrue(source.contains("now = missionNow"))
+    }
+
+    @Test
+    fun `mission session resets when the local day changes`() {
+        val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
+        val dateKeyedState = "rememberSaveable(scopeKey, selectionKey, missionDate)"
+
+        assertTrue(source.contains("val missionDate = missionNow.atZone(ZoneId.systemDefault()).toLocalDate()"))
+        assertEquals(4, Regex(Regex.escape(dateKeyedState)).findAll(source).count())
+        assertTrue(source.contains("DisposableEffect(lifecycleOwner)"))
+        assertTrue(source.contains("if (event == Lifecycle.Event.ON_RESUME)"))
+        assertTrue(source.contains("LaunchedEffect(Unit)"))
+        assertTrue(source.contains("if (missionSessionDate != missionDate.toString())"))
     }
 
     private fun word(id: String) = QuranWord(

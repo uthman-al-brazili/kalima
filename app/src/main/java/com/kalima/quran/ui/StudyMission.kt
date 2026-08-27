@@ -16,6 +16,7 @@ internal data class DailyMissionActivity(
 )
 
 internal data class DailyMissionState(
+    val answeredWordIds: Set<String>,
     val completedWords: Int,
     val goalWords: Int,
     val remainingWords: Int,
@@ -37,9 +38,13 @@ internal fun buildDailyMissionState(
     now: Instant = Instant.now(),
     zoneId: ZoneId = ZoneId.systemDefault(),
 ): DailyMissionState {
-    val completedWords = progress.todayCompleted
-    val goalWords = progress.dailyGoal
     val today = now.atZone(zoneId).toLocalDate()
+    val answeredWordIds = progress.reviewEvents
+        .asSequence()
+        .filter { event -> event.timestamp.atZone(zoneId).toLocalDate() == today }
+        .mapTo(mutableSetOf()) { event -> event.wordId }
+    val completedWords = answeredWordIds.size
+    val goalWords = progress.dailyGoal
     val countsByDay = ReviewHistory.countByDay(progress.reviewEvents, zoneId)
     val activity = (6L downTo 0L).map { daysAgo ->
         val date = today.minusDays(daysAgo)
@@ -50,6 +55,7 @@ internal fun buildDailyMissionState(
         )
     }
     return DailyMissionState(
+        answeredWordIds = answeredWordIds,
         completedWords = completedWords,
         goalWords = goalWords,
         remainingWords = (goalWords - completedWords).coerceAtLeast(0),

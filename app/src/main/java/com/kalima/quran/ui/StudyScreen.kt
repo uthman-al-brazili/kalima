@@ -69,6 +69,7 @@ import com.kalima.quran.data.hasAlphabetFoundationLesson
 import com.kalima.quran.data.needsAlphabetFoundation
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -169,33 +170,46 @@ fun StudyScreen(
     val words = remember(queuedWords, queueSourceWords, activeIntroductionId) {
         studyWordsForPresentation(queuedWords, queueSourceWords, activeIntroductionId)
     }
-    var showMission by rememberSaveable(scopeKey, selectionKey) { mutableStateOf(true) }
-    var showCompletion by rememberSaveable(scopeKey, selectionKey) { mutableStateOf(false) }
-    var sessionStartedAtCount by rememberSaveable(scopeKey, selectionKey) {
+    var missionNow by remember { mutableStateOf(Instant.now()) }
+    val missionDate = missionNow.atZone(ZoneId.systemDefault()).toLocalDate()
+    var showMission by rememberSaveable(scopeKey, selectionKey, missionDate) { mutableStateOf(true) }
+    var showCompletion by rememberSaveable(scopeKey, selectionKey, missionDate) { mutableStateOf(false) }
+    var sessionStartedAtCount by rememberSaveable(scopeKey, selectionKey, missionDate) {
         mutableIntStateOf(progress.todayCompleted)
     }
-    var sessionWordIds by rememberSaveable(scopeKey, selectionKey) {
+    var sessionWordIds by rememberSaveable(scopeKey, selectionKey, missionDate) {
         mutableStateOf(arrayListOf<String>())
     }
-    var missionNow by remember { mutableStateOf(Instant.now()) }
+    var missionSessionDate by rememberSaveable(scopeKey, selectionKey) {
+        mutableStateOf(missionDate.toString())
+    }
     val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner, showMission) {
+    DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (showMission && event == Lifecycle.Event.ON_RESUME) {
+            if (event == Lifecycle.Event.ON_RESUME) {
                 missionNow = Instant.now()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
-    LaunchedEffect(showMission) {
-        while (showMission) {
+    LaunchedEffect(Unit) {
+        while (true) {
             missionNow = Instant.now()
             delay(MISSION_REFRESH_MILLIS)
         }
     }
     val mission = remember(progress, availableWords, missionNow) {
         buildDailyMissionState(progress, availableWords, now = missionNow)
+    }
+    LaunchedEffect(missionDate) {
+        if (missionSessionDate != missionDate.toString()) {
+            missionSessionDate = missionDate.toString()
+            showMission = true
+            showCompletion = false
+            sessionStartedAtCount = mission.completedWords
+            sessionWordIds = arrayListOf()
+        }
     }
     if (showMission && launchTarget == null) {
         DailyMissionScreen(
@@ -205,7 +219,7 @@ fun StudyScreen(
             lockScreenEnabled = progress.lockScreenEnabled,
             onEnableLockScreen = onEnableLockScreen,
             onStart = {
-                sessionStartedAtCount = progress.todayCompleted
+                sessionStartedAtCount = mission.completedWords
                 sessionWordIds = arrayListOf()
                 showMission = false
             },
@@ -377,7 +391,7 @@ fun StudyScreen(
             onRevealMeaning = { meaningRevealed = true },
             onNextWord = {
                 activeIntroductionId = null
-                val answeredBeforeIntroduction = progress.todayAnsweredIds - word.id
+                val answeredBeforeIntroduction = mission.answeredWordIds - word.id
                 sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
                 if (
                     shouldShowDailyMissionCompletion(
@@ -393,7 +407,7 @@ fun StudyScreen(
                 }
             },
             onAgain = {
-                val answeredBeforeAction = progress.todayAnsweredIds
+                val answeredBeforeAction = mission.answeredWordIds
                 onAnswer(word.id, false)
                 sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
                 if (
@@ -410,7 +424,7 @@ fun StudyScreen(
                 }
             },
             onRemembered = {
-                val answeredBeforeAction = progress.todayAnsweredIds
+                val answeredBeforeAction = mission.answeredWordIds
                 onAnswer(word.id, true)
                 sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
                 if (
