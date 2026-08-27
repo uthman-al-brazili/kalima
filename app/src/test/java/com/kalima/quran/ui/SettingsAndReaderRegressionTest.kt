@@ -25,7 +25,9 @@ class SettingsAndReaderRegressionTest {
         val reader = source("ui/QuranReaderScreen.kt")
         val availabilityBlock = reader.substringBefore("// Word lookup is useful")
 
+        assertTrue(availabilityBlock.contains("preloadQuranFirstPage(context)"))
         assertTrue(availabilityBlock.contains("initializeQuranReader(context)"))
+        assertTrue(availabilityBlock.contains("initialValue = QuranReaderRepository.isInitialized"))
         assertFalse(availabilityBlock.contains("WordRepository.prepareReaderIndex()"))
         assertTrue(reader.contains("WordRepository.prepareReaderIndex()"))
         assertTrue(reader.contains("if (readerIndexReady)"))

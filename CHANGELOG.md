@@ -3,6 +3,12 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.30.12 — 2026-08-27
+
+- Preloaded the first offline Quran page after the app's initial render, so the
+  Quran tab opens directly to readable Arabic while the remaining pages finish
+  loading in the background.
+
 ## 0.30.11 — 2026-08-26
 
 - Replaced the full-width “Share with citation” text action with a compact,

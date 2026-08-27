@@ -1,5 +1,6 @@
 package com.kalima.quran.data
 
+import java.io.ByteArrayInputStream
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -7,6 +8,34 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class QuranTextAssetLoaderTest {
+    @Test
+    fun preloadsOnlyTheFirstQuranPage() {
+        val tokens = QuranTextAssetLoader.loadFirstPage(findAsset().inputStream())
+
+        assertTrue(tokens.isNotEmpty())
+        assertTrue(tokens.all { it.pageNumber == 1 })
+        assertEquals(1, tokens.first().surahNumber)
+        assertEquals(1, tokens.first().ayahNumber)
+        assertTrue(tokens.last().isAyahMarker)
+    }
+
+    @Test
+    fun firstPagePreloadStopsBeforeReadingTheRestOfTheAsset() {
+        val input = listOf(
+            "#kalima-quran-pages-v2",
+            "1\t1\t1\t1\t1\tend\tبِسْمِ",
+            "2\t1\t2\t1\t1\tword\tالم",
+            "malformed later page record",
+        ).joinToString("\n")
+
+        val tokens = QuranTextAssetLoader.loadFirstPage(
+            ByteArrayInputStream(input.toByteArray(Charsets.UTF_8)),
+        )
+
+        assertEquals(1, tokens.size)
+        assertEquals(1, tokens.single().pageNumber)
+    }
+
     @Test
     fun containsTheCompleteQuranInStandardPageAndWordOrder() {
         val tokens = QuranTextAssetLoader.load(findAsset().inputStream())

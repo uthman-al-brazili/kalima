@@ -25,22 +25,43 @@ internal object QuranTextAssetLoader {
         decoded(input).bufferedReader(Charsets.UTF_8).use { reader ->
             require(reader.readLine() == FORMAT_HEADER) { "Unrecognized Quran text format" }
             reader.lineSequence().forEachIndexed { index, line ->
-                val fields = line.split('\t', limit = FIELD_COUNT)
-                require(fields.size == FIELD_COUNT) {
-                    "Invalid Quran text record on line ${index + 2}: ${fields.size} fields"
-                }
-                tokens += QuranPageToken(
-                    pageNumber = fields[0].toInt(),
-                    lineNumber = fields[1].toInt(),
-                    surahNumber = fields[2].toInt(),
-                    ayahNumber = fields[3].toInt(),
-                    wordNumber = fields[4].toInt(),
-                    isAyahMarker = fields[5] == "end",
-                    arabic = fields[6],
-                )
+                tokens += parseRecord(line, index + 2)
             }
         }
         return tokens
+    }
+
+    fun loadFirstPage(input: InputStream): List<QuranPageToken> {
+        val tokens = ArrayList<QuranPageToken>()
+        decoded(input).bufferedReader(Charsets.UTF_8).use { reader ->
+            require(reader.readLine() == FORMAT_HEADER) { "Unrecognized Quran text format" }
+            var sourceLineNumber = 2
+            while (true) {
+                val line = reader.readLine() ?: break
+                val token = parseRecord(line, sourceLineNumber)
+                if (token.pageNumber != 1) break
+                tokens += token
+                sourceLineNumber += 1
+            }
+        }
+        require(tokens.isNotEmpty()) { "Quran reader does not contain page 1" }
+        return tokens
+    }
+
+    private fun parseRecord(line: String, sourceLineNumber: Int): QuranPageToken {
+        val fields = line.split('\t', limit = FIELD_COUNT)
+        require(fields.size == FIELD_COUNT) {
+            "Invalid Quran text record on line $sourceLineNumber: ${fields.size} fields"
+        }
+        return QuranPageToken(
+            pageNumber = fields[0].toInt(),
+            lineNumber = fields[1].toInt(),
+            surahNumber = fields[2].toInt(),
+            ayahNumber = fields[3].toInt(),
+            wordNumber = fields[4].toInt(),
+            isAyahMarker = fields[5] == "end",
+            arabic = fields[6],
+        )
     }
 
     private fun decoded(input: InputStream): InputStream {

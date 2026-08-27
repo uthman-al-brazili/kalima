@@ -20,8 +20,8 @@ android {
         applicationId = "com.kalima.quran"
         minSdk = 26
         targetSdk = 36
-        versionCode = 84
-        versionName = "0.30.11"
+        versionCode = 85
+        versionName = "0.30.12"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -78,6 +78,7 @@ val lockScreenContractFiles = mapOf(
 )
 
 val startupContractFiles = mapOf(
+    "activity" to file("src/main/java/com/kalima/quran/MainActivity.kt"),
     "progress" to file("src/main/java/com/kalima/quran/data/ProgressStore.kt"),
     "words" to file("src/main/java/com/kalima/quran/data/WordRepository.kt"),
     "reader" to file("src/main/java/com/kalima/quran/ui/QuranReaderScreen.kt"),
@@ -184,6 +185,12 @@ val verifyStartupRegression by tasks.registering {
         check(!sources.getValue("progress").contains("QuranReaderRepository.initialize")) {
             "Startup regression: ProgressStore must not load all Quran pages before first render."
         }
+        check(sources.getValue("activity").contains("preloadQuranFirstPage(applicationContext)")) {
+            "Startup regression: the first Quran page is no longer preloaded after first render."
+        }
+        check(!sources.getValue("activity").contains("initializeQuranReader(applicationContext)")) {
+            "Startup regression: app startup must preload only page 1, not all Quran pages."
+        }
         check(sources.getValue("words").contains("readerIndex = null")) {
             "Startup regression: the Quran reader word index must remain deferred."
         }
@@ -191,7 +198,7 @@ val verifyStartupRegression by tasks.registering {
             "Startup regression: the deferred Quran reader word index entry point is missing."
         }
         check(sources.getValue("reader").contains("initializeQuranReader(context)")) {
-            "Startup regression: the Quran tab no longer loads its offline pages on demand."
+            "Startup regression: the Quran tab no longer loads the remaining offline pages on demand."
         }
         check(sources.getValue("reader").contains("WordRepository.prepareReaderIndex()")) {
             "Startup regression: the Quran tab no longer prepares word lookups off the startup path."

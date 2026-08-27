@@ -58,6 +58,7 @@ import com.kalima.quran.R
 import com.kalima.quran.data.QuranPageToken
 import com.kalima.quran.data.QuranReaderRepository
 import com.kalima.quran.data.initializeQuranReader
+import com.kalima.quran.data.preloadQuranFirstPage
 import com.kalima.quran.data.QuranReaderTypography
 import com.kalima.quran.data.QuranSurah
 import com.kalima.quran.data.QuranWordAudioLocation
@@ -75,24 +76,36 @@ fun QuranReaderScreen(
     onToggleCustomList: (String) -> Unit,
 ) {
     val context = LocalContext.current.applicationContext
-    val readerAvailable by produceState<Boolean?>(
-        initialValue = true.takeIf { QuranReaderRepository.pageCount > 0 },
+    val firstPageAvailable by produceState<Boolean?>(
+        initialValue = true.takeIf { QuranReaderRepository.hasFirstPage },
         key1 = context,
     ) {
         if (value != true) {
             withContext(Dispatchers.IO) {
-                initializeQuranReader(context)
+                preloadQuranFirstPage(context)
             }
-            value = QuranReaderRepository.pageCount > 0
+            value = QuranReaderRepository.hasFirstPage
         }
     }
-    if (readerAvailable == null) {
+    if (firstPageAvailable == null) {
         QuranReaderLoading()
         return
     }
-    if (readerAvailable == false) {
+    if (firstPageAvailable == false) {
         QuranReaderUnavailable()
         return
+    }
+
+    val readerReady by produceState(
+        initialValue = QuranReaderRepository.isInitialized,
+        key1 = context,
+    ) {
+        if (!value) {
+            withContext(Dispatchers.IO) {
+                initializeQuranReader(context)
+            }
+            value = QuranReaderRepository.isInitialized
+        }
     }
 
     // Word lookup is useful after a tap, but it must not delay the first readable Quran page.
@@ -108,9 +121,9 @@ fun QuranReaderScreen(
         }
     }
 
-    val pageCount = QuranReaderRepository.pageCount
+    val availablePageCount = if (readerReady) QuranReaderRepository.pageCount else 1
 
-    val pagerState = rememberPagerState(pageCount = { pageCount })
+    val pagerState = rememberPagerState(pageCount = { availablePageCount })
     val scope = rememberCoroutineScope()
     var surahPickerVisible by rememberSaveable { mutableStateOf(false) }
     var pagePickerVisible by rememberSaveable { mutableStateOf(false) }
@@ -127,6 +140,7 @@ fun QuranReaderScreen(
         ReaderHeader(
             currentSurahs = currentSurahs,
             fontSizeSp = fontSizeSp,
+            surahSelectionEnabled = readerReady,
             onChooseSurah = { surahPickerVisible = true },
             onFontSizeChange = onFontSizeChange,
         )
@@ -148,7 +162,8 @@ fun QuranReaderScreen(
 
         PageNavigation(
             pageNumber = currentPageNumber,
-            pageCount = pageCount,
+            pageCount = QuranReaderRepository.TOTAL_PAGES,
+            navigationEnabled = readerReady,
             onPrevious = {
                 scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
             },
@@ -193,7 +208,7 @@ fun QuranReaderScreen(
     if (pagePickerVisible) {
         PagePickerSheet(
             currentPage = currentPageNumber,
-            pageCount = pageCount,
+            pageCount = QuranReaderRepository.TOTAL_PAGES,
             onSelect = { pageNumber ->
                 pagePickerVisible = false
                 scope.launch { pagerState.scrollToPage(pageNumber - 1) }
@@ -207,6 +222,7 @@ fun QuranReaderScreen(
 private fun ReaderHeader(
     currentSurahs: List<Int>,
     fontSizeSp: Int,
+    surahSelectionEnabled: Boolean,
     onChooseSurah: () -> Unit,
     onFontSizeChange: (Int) -> Unit,
 ) {
@@ -236,6 +252,7 @@ private fun ReaderHeader(
             )
             TextButton(
                 onClick = onChooseSurah,
+                enabled = surahSelectionEnabled,
                 modifier = Modifier.weight(1f),
             ) {
                 Text(
@@ -413,6 +430,7 @@ private fun QuranPageTextBlock(
 private fun PageNavigation(
     pageNumber: Int,
     pageCount: Int,
+    navigationEnabled: Boolean,
     onPrevious: () -> Unit,
     onChoosePage: () -> Unit,
     onNext: () -> Unit,
@@ -426,12 +444,15 @@ private fun PageNavigation(
     ) {
         TextButton(
             onClick = onNext,
-            enabled = pageNumber < pageCount,
+            enabled = navigationEnabled && pageNumber < pageCount,
             modifier = Modifier.semantics { contentDescription = nextDescription },
         ) {
             Text("‹", style = MaterialTheme.typography.headlineSmall)
         }
-        TextButton(onClick = onChoosePage) {
+        TextButton(
+            onClick = onChoosePage,
+            enabled = navigationEnabled,
+        ) {
             Text(
                 stringResource(R.string.quran_page_indicator, pageNumber, pageCount),
                 fontWeight = FontWeight.SemiBold,
@@ -439,7 +460,7 @@ private fun PageNavigation(
         }
         TextButton(
             onClick = onPrevious,
-            enabled = pageNumber > 1,
+            enabled = navigationEnabled && pageNumber > 1,
             modifier = Modifier.semantics { contentDescription = previousDescription },
         ) {
             Text("›", style = MaterialTheme.typography.headlineSmall)

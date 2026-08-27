@@ -26,6 +26,7 @@ import com.kalima.quran.data.ProgressBackupCodec
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.needsAlphabetFoundation
+import com.kalima.quran.data.preloadQuranFirstPage
 import com.kalima.quran.audio.OfflineWordAudioManager
 import com.kalima.quran.lockscreen.LockScreenStudyService
 import com.kalima.quran.lockscreen.LockScreenStudyActivity
@@ -177,6 +178,10 @@ class MainActivity : ComponentActivity() {
             launch(Dispatchers.Default) {
                 delay(POST_RENDER_WORK_DELAY_MS)
                 WordRepository.prepareDeferredIndexes()
+            }
+            launch(Dispatchers.IO) {
+                delay(POST_RENDER_WORK_DELAY_MS)
+                preloadQuranFirstPage(applicationContext)
             }
         }
     }
