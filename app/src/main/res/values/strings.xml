@@ -86,7 +86,10 @@
         <item quantity="one">revisão pendente</item>
         <item quantity="other">revisões pendentes</item>
     </plurals>
-    <string name="mission_new_word_ready">palavra nova pronta</string>
+    <plurals name="mission_new_words_ready">
+        <item quantity="one">palavra nova pronta</item>
+        <item quantity="other">palavras novas prontas</item>
+    </plurals>
     <string name="mission_no_new_word">nenhuma palavra nova</string>
     <string name="activity_7_days">Seus últimos 7 dias</string>
     <plurals name="continue_words">

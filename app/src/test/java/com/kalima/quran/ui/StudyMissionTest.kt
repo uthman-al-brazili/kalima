@@ -49,12 +49,27 @@ class StudyMissionTest {
         assertEquals(3, mission.goalWords)
         assertEquals(2, mission.remainingWords)
         assertEquals(1, mission.dueReviews)
-        assertTrue(mission.newWordReady)
+        assertEquals(1, mission.newWordsReady)
         assertFalse(mission.goalComplete)
         assertEquals(7, mission.activity.size)
         assertEquals(LocalDate.of(2026, 8, 27), mission.activity.last().date)
         assertTrue(mission.activity.last().isToday)
         assertEquals(1, mission.activity[5].completedReviews)
+    }
+
+    @Test
+    fun `new word readiness matches the remaining daily mission`() {
+        val freshWords = (1..6).map { index -> word("fresh-$index") }
+
+        val mission = buildDailyMissionState(
+            progress = StudyProgress(dailyGoal = 5),
+            availableWords = freshWords,
+            now = now,
+            zoneId = zone,
+        )
+
+        assertEquals(5, mission.newWordsReady)
+        assertEquals(5, mission.remainingWords)
     }
 
     @Test

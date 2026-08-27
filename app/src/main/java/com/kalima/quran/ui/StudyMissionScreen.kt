@@ -137,14 +137,15 @@ internal fun DailyMissionScreen(
                         modifier = Modifier.weight(1f),
                     )
                     MissionStat(
-                        value = if (mission.newWordReady) "+1" else "—",
-                        label = stringResource(
-                            if (mission.newWordReady) {
-                                R.string.mission_new_word_ready
-                            } else {
-                                R.string.mission_no_new_word
-                            },
-                        ),
+                        value = if (mission.newWordsReady > 0) "+${mission.newWordsReady}" else "—",
+                        label = if (mission.newWordsReady > 0) {
+                            pluralStringResource(
+                                R.plurals.mission_new_words_ready,
+                                mission.newWordsReady,
+                            )
+                        } else {
+                            stringResource(R.string.mission_no_new_word)
+                        },
                         modifier = Modifier.weight(1f),
                     )
                 }

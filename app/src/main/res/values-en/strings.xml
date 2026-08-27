@@ -86,7 +86,10 @@
         <item quantity="one">review due</item>
         <item quantity="other">reviews due</item>
     </plurals>
-    <string name="mission_new_word_ready">new word ready</string>
+    <plurals name="mission_new_words_ready">
+        <item quantity="one">new word ready</item>
+        <item quantity="other">new words ready</item>
+    </plurals>
     <string name="mission_no_new_word">no new word due</string>
     <string name="activity_7_days">Your last 7 days</string>
     <plurals name="continue_words">

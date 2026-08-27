@@ -21,7 +21,7 @@ internal data class DailyMissionState(
     val goalWords: Int,
     val remainingWords: Int,
     val dueReviews: Int,
-    val newWordReady: Boolean,
+    val newWordsReady: Int,
     val goalComplete: Boolean,
     val activity: List<DailyMissionActivity>,
 )
@@ -45,6 +45,14 @@ internal fun buildDailyMissionState(
         .mapTo(mutableSetOf()) { event -> event.wordId }
     val completedWords = answeredWordIds.size
     val goalWords = progress.dailyGoal
+    val remainingWords = (goalWords - completedWords).coerceAtLeast(0)
+    val newWordsReady = availableWords
+        .asSequence()
+        .filter { word -> progress.statusFor(word.id) == WordStatus.New }
+        .map(QuranWord::id)
+        .distinct()
+        .count()
+        .coerceAtMost(remainingWords)
     val countsByDay = ReviewHistory.countByDay(progress.reviewEvents, zoneId)
     val activity = (6L downTo 0L).map { daysAgo ->
         val date = today.minusDays(daysAgo)
@@ -58,12 +66,12 @@ internal fun buildDailyMissionState(
         answeredWordIds = answeredWordIds,
         completedWords = completedWords,
         goalWords = goalWords,
-        remainingWords = (goalWords - completedWords).coerceAtLeast(0),
+        remainingWords = remainingWords,
         dueReviews = progress.dueReviewCount(
             availableWords.mapTo(mutableSetOf(), QuranWord::id),
             now,
         ),
-        newWordReady = availableWords.any { progress.statusFor(it.id) == WordStatus.New },
+        newWordsReady = newWordsReady,
         goalComplete = completedWords >= goalWords,
         activity = activity,
     )

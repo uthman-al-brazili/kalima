@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.31.3 — 2026-08-27
+
+- Replaced the mission dashboard's hard-coded “+1 new word ready” indicator
+  with the actual number of new words available for the remaining daily goal.
+
 ## 0.31.2 — 2026-08-27
 
 - Reset the active Today’s Arabic mission when the local day changes, so a
