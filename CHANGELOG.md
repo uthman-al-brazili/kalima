@@ -3,6 +3,11 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.31.4 — 2026-08-27
+
+- Removed the duplicate full-ayah display from the daily-goal payoff by
+  replacing the static ayah with its interactive word-by-word rendering.
+
 ## 0.31.3 — 2026-08-27
 
 - Replaced the mission dashboard's hard-coded “+1 new word ready” indicator

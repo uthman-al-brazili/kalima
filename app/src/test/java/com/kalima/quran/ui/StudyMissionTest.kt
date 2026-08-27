@@ -190,6 +190,19 @@ class StudyMissionTest {
         assertTrue(source.contains("if (missionSessionDate != missionDate.toString())"))
     }
 
+    @Test
+    fun `interactive ayah replaces the static ayah`() {
+        val source = File("src/main/java/com/kalima/quran/ui/StudyMissionScreen.kt").readText()
+
+        assertTrue(
+            source.contains(
+                "if (!showInteractiveAyah) {\n" +
+                    "                    ArabicText(\n" +
+                    "                        payoff.featuredWord.verseArabic",
+            ),
+        )
+    }
+
     private fun word(id: String) = QuranWord(
         id = id,
         arabic = "كَلِمَة",

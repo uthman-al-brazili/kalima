@@ -338,13 +338,15 @@ internal fun StudyCompletionScreen(
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(Modifier.height(10.dp))
-                ArabicText(
-                    payoff.featuredWord.verseArabic,
-                    modifier = Modifier.fillMaxWidth(),
-                    size = 32,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(Modifier.height(8.dp))
+                if (!showInteractiveAyah) {
+                    ArabicText(
+                        payoff.featuredWord.verseArabic,
+                        modifier = Modifier.fillMaxWidth(),
+                        size = 32,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                }
                 Text(
                     payoff.featuredWord.verseMeaning,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
