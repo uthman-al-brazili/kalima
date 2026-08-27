@@ -3,6 +3,15 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.31.1 — 2026-08-27
+
+- Added a focused Today’s Arabic mission to Study with daily word progress,
+  due-review and new-word context, a seven-day activity strip, and one clear
+  action to continue the remaining goal.
+- Added a Quran-understanding payoff when the daily goal is completed, showing
+  the words practiced and an ayah where the learner can recognize them, with
+  interactive word highlighting and Al-Hussary recitation.
+
 ## 0.30.12 — 2026-08-27
 
 - Preloaded the first offline Quran page after the app's initial render, so the

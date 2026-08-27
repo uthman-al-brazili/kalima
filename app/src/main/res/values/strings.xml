@@ -78,6 +78,31 @@
     </plurals>
     <string name="context_meaning_note">O significado acompanha este contexto. Uma mesma palavra pode mudar de nuance em outro versículo.</string>
     <string name="today_word">Sua palavra de hoje</string>
+    <string name="today_mission_title">Missão de árabe de hoje</string>
+    <string name="today_mission_subtitle">Desenvolva o reconhecimento do árabe corânico em uma sessão focada.</string>
+    <string name="mission_words_completed">%1$d de %2$d palavras concluídas</string>
+    <string name="daily_arabic_goal_complete">Meta diária de árabe concluída</string>
+    <plurals name="mission_reviews_due">
+        <item quantity="one">revisão pendente</item>
+        <item quantity="other">revisões pendentes</item>
+    </plurals>
+    <string name="mission_new_word_ready">palavra nova pronta</string>
+    <string name="mission_no_new_word">nenhuma palavra nova</string>
+    <string name="activity_7_days">Seus últimos 7 dias</string>
+    <plurals name="continue_words">
+        <item quantity="one">Continuar — %1$d palavra</item>
+        <item quantity="other">Continuar — %1$d palavras</item>
+    </plurals>
+    <string name="keep_practicing">Continuar praticando</string>
+    <string name="mission_all_caught_up">Tudo em dia</string>
+    <string name="completion_payoff_subtitle">Veja o que a prática de hoje ajuda você a reconhecer no Alcorão.</string>
+    <string name="words_practiced">Palavras praticadas</string>
+    <plurals name="words_recognized_in_ayah">
+        <item quantity="one">Agora você reconhece %1$d palavra neste ayah</item>
+        <item quantity="other">Agora você reconhece %1$d palavras neste ayah</item>
+    </plurals>
+    <string name="read_the_ayah">Ler o ayah</string>
+    <string name="finish_action">Concluir</string>
     <string name="scope_all_description">Todo o conteúdo disponível</string>
     <string name="scope_frequent_description">100 palavras mais frequentes</string>
     <string name="scope_surah_list">Suras %1$s</string>

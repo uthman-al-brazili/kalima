@@ -31,9 +31,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,6 +49,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QuranWord
@@ -64,7 +69,10 @@ import com.kalima.quran.data.hasAlphabetFoundationLesson
 import com.kalima.quran.data.needsAlphabetFoundation
 import java.time.Instant
 import java.time.LocalDate
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+private const val MISSION_REFRESH_MILLIS = 60_000L
 
 @Composable
 fun StudyScreen(
@@ -161,6 +169,72 @@ fun StudyScreen(
     val words = remember(queuedWords, queueSourceWords, activeIntroductionId) {
         studyWordsForPresentation(queuedWords, queueSourceWords, activeIntroductionId)
     }
+    var showMission by rememberSaveable(scopeKey, selectionKey) { mutableStateOf(true) }
+    var showCompletion by rememberSaveable(scopeKey, selectionKey) { mutableStateOf(false) }
+    var sessionStartedAtCount by rememberSaveable(scopeKey, selectionKey) {
+        mutableIntStateOf(progress.todayCompleted)
+    }
+    var sessionWordIds by rememberSaveable(scopeKey, selectionKey) {
+        mutableStateOf(arrayListOf<String>())
+    }
+    var missionNow by remember { mutableStateOf(Instant.now()) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, showMission) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (showMission && event == Lifecycle.Event.ON_RESUME) {
+                missionNow = Instant.now()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(showMission) {
+        while (showMission) {
+            missionNow = Instant.now()
+            delay(MISSION_REFRESH_MILLIS)
+        }
+    }
+    val mission = remember(progress, availableWords, missionNow) {
+        buildDailyMissionState(progress, availableWords, now = missionNow)
+    }
+    if (showMission && launchTarget == null) {
+        DailyMissionScreen(
+            mission = mission,
+            streakDays = progress.streakDays,
+            canStart = words.isNotEmpty(),
+            lockScreenEnabled = progress.lockScreenEnabled,
+            onEnableLockScreen = onEnableLockScreen,
+            onStart = {
+                sessionStartedAtCount = progress.todayCompleted
+                sessionWordIds = arrayListOf()
+                showMission = false
+            },
+        )
+        return
+    }
+    if (showCompletion && sessionWordIds.isNotEmpty()) {
+        val reviewedWords = sessionWordIds.mapNotNull(WordRepository::wordById)
+        val recognizedWordIds = progress.learnedIds + progress.reviewingIds +
+            progress.alreadyKnownIds + sessionWordIds
+        val payoff = remember(reviewedWords, recognizedWordIds) {
+            buildStudyCompletionPayoff(
+                reviewedWords = reviewedWords,
+                recognizedWordIds = recognizedWordIds,
+                tokensFor = WordRepository::verseTokens,
+            )
+        }
+        StudyCompletionScreen(
+            payoff = payoff,
+            recognizedWordIds = recognizedWordIds,
+            pronouncer = pronouncer,
+            onFinish = {
+                showCompletion = false
+                showMission = true
+                sessionWordIds = arrayListOf()
+            },
+        )
+        return
+    }
     if (words.isEmpty()) {
         Box(Modifier.fillMaxSize()) {
             AllCaughtUpState(Modifier.fillMaxSize())
@@ -206,6 +280,7 @@ fun StudyScreen(
 
     LaunchedEffect(launchTarget?.requestId) {
         val target = launchTarget ?: return@LaunchedEffect
+        showMission = false
         if (WordRepository.containsWord(target.wordId)) {
             routedStudyWordId = target.wordId
             currentWordId = target.wordId
@@ -218,6 +293,7 @@ fun StudyScreen(
         onCurrentWordChange(word.id)
         if (isNewPresentation) {
             activeIntroductionId = word.id
+            sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
             onIntroduce(word.id)
         }
         if (scrollPositionWordId != word.id) {
@@ -301,15 +377,54 @@ fun StudyScreen(
             onRevealMeaning = { meaningRevealed = true },
             onNextWord = {
                 activeIntroductionId = null
-                moveToNextWord()
+                val answeredBeforeIntroduction = progress.todayAnsweredIds - word.id
+                sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
+                if (
+                    shouldShowDailyMissionCompletion(
+                        sessionStartedAtCount = sessionStartedAtCount,
+                        dailyGoal = progress.dailyGoal,
+                        answeredBeforeAction = answeredBeforeIntroduction,
+                        completedWordId = word.id,
+                    )
+                ) {
+                    showCompletion = true
+                } else {
+                    moveToNextWord()
+                }
             },
             onAgain = {
+                val answeredBeforeAction = progress.todayAnsweredIds
                 onAnswer(word.id, false)
-                moveToNextWord()
+                sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
+                if (
+                    shouldShowDailyMissionCompletion(
+                        sessionStartedAtCount = sessionStartedAtCount,
+                        dailyGoal = progress.dailyGoal,
+                        answeredBeforeAction = answeredBeforeAction,
+                        completedWordId = word.id,
+                    )
+                ) {
+                    showCompletion = true
+                } else {
+                    moveToNextWord()
+                }
             },
             onRemembered = {
+                val answeredBeforeAction = progress.todayAnsweredIds
                 onAnswer(word.id, true)
-                moveToNextWord()
+                sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
+                if (
+                    shouldShowDailyMissionCompletion(
+                        sessionStartedAtCount = sessionStartedAtCount,
+                        dailyGoal = progress.dailyGoal,
+                        answeredBeforeAction = answeredBeforeAction,
+                        completedWordId = word.id,
+                    )
+                ) {
+                    showCompletion = true
+                } else {
+                    moveToNextWord()
+                }
             },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
@@ -323,7 +438,7 @@ fun StudyScreen(
 }
 
 @Composable
-private fun LockScreenLearningCard(
+internal fun LockScreenLearningCard(
     onEnableLockScreen: () -> Unit,
 ) {
     Surface(

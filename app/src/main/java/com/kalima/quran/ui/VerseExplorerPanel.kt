@@ -40,6 +40,7 @@ import com.kalima.quran.data.WordRepository
 fun VerseExplorerPanel(
     word: QuranWord,
     onOpenWord: ((String) -> Unit)? = null,
+    highlightedWordIds: Set<String> = emptySet(),
 ) {
     val tokens = remember(word.id, word.verseArabic) { WordRepository.verseTokens(word) }
     var selectedTokenIndex by rememberSaveable(word.id) { mutableStateOf<Int?>(null) }
@@ -75,7 +76,9 @@ fun VerseExplorerPanel(
                     val linkedWord = token.word
                     Surface(
                         onClick = { selectedTokenIndex = token.index },
-                        color = if (linkedWord?.id == word.id) {
+                        color = if (
+                            linkedWord?.id == word.id || linkedWord?.id in highlightedWordIds
+                        ) {
                             MaterialTheme.colorScheme.secondaryContainer
                         } else {
                             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)

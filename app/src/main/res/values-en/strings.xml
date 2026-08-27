@@ -78,6 +78,31 @@
     </plurals>
     <string name="context_meaning_note">The meaning shown is specific to this context. The same word may have a different nuance in another verse.</string>
     <string name="today_word">Your word for today</string>
+    <string name="today_mission_title">Today’s Arabic mission</string>
+    <string name="today_mission_subtitle">Build Quranic Arabic recognition in one focused session.</string>
+    <string name="mission_words_completed">%1$d of %2$d words completed</string>
+    <string name="daily_arabic_goal_complete">Daily Arabic goal complete</string>
+    <plurals name="mission_reviews_due">
+        <item quantity="one">review due</item>
+        <item quantity="other">reviews due</item>
+    </plurals>
+    <string name="mission_new_word_ready">new word ready</string>
+    <string name="mission_no_new_word">no new word due</string>
+    <string name="activity_7_days">Your last 7 days</string>
+    <plurals name="continue_words">
+        <item quantity="one">Continue — %1$d word</item>
+        <item quantity="other">Continue — %1$d words</item>
+    </plurals>
+    <string name="keep_practicing">Keep practicing</string>
+    <string name="mission_all_caught_up">All caught up</string>
+    <string name="completion_payoff_subtitle">See what today’s practice helps you recognize in the Quran.</string>
+    <string name="words_practiced">Words practiced</string>
+    <plurals name="words_recognized_in_ayah">
+        <item quantity="one">You now recognize %1$d word in this ayah</item>
+        <item quantity="other">You now recognize %1$d words in this ayah</item>
+    </plurals>
+    <string name="read_the_ayah">Read the ayah</string>
+    <string name="finish_action">Finish</string>
     <string name="scope_all_description">All available content</string>
     <string name="scope_frequent_description">100 most frequent words</string>
     <string name="scope_surah_list">Surahs %1$s</string>
