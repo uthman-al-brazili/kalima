@@ -129,6 +129,36 @@ class VocabularyAssetLoaderTest {
     }
 
     @Test
+    fun everyCompleteAyahTokenResolvesBeforeTheQuranReaderIsLoaded() {
+        AppLanguage.entries.forEach { language ->
+            val corpus = VocabularyAssetLoader.load(findCorpusAsset().inputStream(), language)
+            val index = QuranReaderWordIndex(corpus)
+            val failures = corpus
+                .filterNot(QuranWord::isFrequent)
+                .groupBy { word -> requireNotNull(word.audioLocation).let { it.surah to it.ayah } }
+                .mapNotNull { (location, words) ->
+                    val selectedWord = words.last()
+                    val exploredTokens = VerseExplorer.buildIndexedTextTokens(
+                        verseArabic = selectedWord.verseArabic,
+                        surahNumber = location.first,
+                        ayahNumber = location.second,
+                        selectedWord = selectedWord,
+                        resolve = index::find,
+                    )
+                    exploredTokens
+                        .mapNotNull { token -> token.takeIf { it.word == null }?.text }
+                        .takeIf(List<String>::isNotEmpty)
+                        ?.let { missing -> "${location.first}:${location.second} missing $missing" }
+                }
+
+            assertTrue(
+                "$language: ${failures.take(20)}",
+                failures.isEmpty(),
+            )
+        }
+    }
+
+    @Test
     fun everySurahCanGenerateACompleteQuizSession() {
         val corpus = VocabularyAssetLoader.load(findCorpusAsset().inputStream())
 

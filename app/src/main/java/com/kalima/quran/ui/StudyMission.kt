@@ -77,17 +77,6 @@ internal fun buildDailyMissionState(
     )
 }
 
-internal fun shouldShowDailyMissionCompletion(
-    sessionStartedAtCount: Int,
-    dailyGoal: Int,
-    answeredBeforeAction: Set<String>,
-    completedWordId: String,
-): Boolean =
-    sessionStartedAtCount < dailyGoal &&
-        answeredBeforeAction.size < dailyGoal &&
-        completedWordId !in answeredBeforeAction &&
-        (answeredBeforeAction + completedWordId).size >= dailyGoal
-
 internal fun buildStudyCompletionPayoff(
     reviewedWords: List<QuranWord>,
     recognizedWordIds: Set<String>,

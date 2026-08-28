@@ -35,6 +35,7 @@ data class StudyProgress(
     val lockScreenQuizInterval: Int = 3,
     val themeMode: AppThemeMode = AppThemeMode.Auto,
     val quranFontSizeSp: Int = QuranReaderTypography.DEFAULT_FONT_SIZE_SP,
+    val quranLearningOverlayEnabled: Boolean = false,
     val advancedSettingsVisible: Boolean = false,
     val showCompleteAyah: Boolean = false,
     val spacedRepetitionEnabled: Boolean = true,

@@ -25,6 +25,7 @@ class ProgressBackupCodecTest {
             lockScreenCooldownMinutes = 15,
             showCompleteAyah = true,
             quranFontSizeSp = 34,
+            quranLearningOverlayEnabled = true,
             alphabetCourseRequested = true,
             alphabetFoundationRequired = true,
             numberCourseRequested = true,
@@ -44,6 +45,7 @@ class ProgressBackupCodecTest {
         assertEquals(15, decoded.progress.lockScreenCooldownMinutes)
         assertEquals(true, decoded.progress.showCompleteAyah)
         assertEquals(34, decoded.progress.quranFontSizeSp)
+        assertEquals(true, decoded.progress.quranLearningOverlayEnabled)
         assertEquals(true, decoded.progress.alphabetCourseRequested)
         assertEquals(true, decoded.progress.alphabetFoundationRequired)
         assertEquals(true, decoded.progress.numberCourseRequested)
@@ -147,6 +149,25 @@ class ProgressBackupCodecTest {
         assertEquals(
             QuranReaderTypography.DEFAULT_FONT_SIZE_SP,
             ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress.quranFontSizeSp,
+        )
+    }
+
+    @Test
+    fun backupsCreatedBeforeLearningOverlayDefaultToOff() {
+        val legacy = withoutPayloadField(
+            ProgressBackupCodec.encode(
+                StudyProgress(quranLearningOverlayEnabled = true),
+                "0.31.4",
+                "corpus",
+                now,
+            ),
+            "quranLearningOverlayEnabled",
+        )
+
+        assertEquals(
+            false,
+            ProgressBackupCodec.decode(legacy, "corpus", knownIds)
+                .progress.quranLearningOverlayEnabled,
         )
     }
 

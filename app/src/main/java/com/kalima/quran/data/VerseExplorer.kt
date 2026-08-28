@@ -43,6 +43,76 @@ object VerseExplorer {
         }
         .toList()
 
+    internal fun buildIndexedTextTokens(
+        verseArabic: String,
+        surahNumber: Int,
+        ayahNumber: Int,
+        selectedWord: QuranWord,
+        resolve: (QuranPageToken) -> QuranWord?,
+    ): List<VerseToken> {
+        val rawTokens = verseArabic
+            .trim()
+            .split(Regex("\\s+"))
+            .filter { token -> token.any(Char::isLetter) }
+        val tokens = buildList {
+            var rawIndex = 0
+            var wordNumber = 1
+            while (rawIndex < rawTokens.size) {
+                val probe = textToken(
+                    arabic = rawTokens[rawIndex],
+                    surahNumber = surahNumber,
+                    ayahNumber = ayahNumber,
+                    wordNumber = wordNumber,
+                )
+                val exactWord = resolve(probe)?.takeIf { word ->
+                    word.audioLocation?.let { location ->
+                        location.surah == surahNumber &&
+                            location.ayah == ayahNumber &&
+                            location.word == wordNumber
+                    } == true
+                }
+                val exactParts = exactWord?.arabic
+                    ?.trim()
+                    ?.split(Regex("\\s+"))
+                    ?.filter { part -> part.any(Char::isLetter) }
+                    .orEmpty()
+                val partCount = exactParts.size.takeIf { count ->
+                    count > 1 &&
+                        rawIndex + count <= rawTokens.size &&
+                        exactParts.indices.all { offset ->
+                            normalizeArabic(exactParts[offset]) ==
+                                normalizeArabic(rawTokens[rawIndex + offset])
+                        }
+                } ?: 1
+                add(
+                    probe.copy(
+                        arabic = rawTokens
+                            .subList(rawIndex, rawIndex + partCount)
+                            .joinToString(" "),
+                    ),
+                )
+                rawIndex += partCount
+                wordNumber += 1
+            }
+        }
+        return buildIndexedTokens(tokens, selectedWord, resolve)
+    }
+
+    private fun textToken(
+        arabic: String,
+        surahNumber: Int,
+        ayahNumber: Int,
+        wordNumber: Int,
+    ) = QuranPageToken(
+        pageNumber = 0,
+        lineNumber = 0,
+        surahNumber = surahNumber,
+        ayahNumber = ayahNumber,
+        wordNumber = wordNumber,
+        arabic = arabic,
+        isAyahMarker = false,
+    )
+
     fun normalizeArabic(value: String): String = Normalizer.normalize(value, Normalizer.Form.NFD)
         .replace(arabicMarks, "")
         .replace('ٱ', 'ا')

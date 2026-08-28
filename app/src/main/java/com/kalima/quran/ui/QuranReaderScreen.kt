@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,9 +39,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.VerbatimTtsAnnotation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
@@ -50,6 +53,7 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -63,17 +67,24 @@ import com.kalima.quran.data.QuranReaderTypography
 import com.kalima.quran.data.QuranSurah
 import com.kalima.quran.data.QuranWordAudioLocation
 import com.kalima.quran.data.QuranWord
+import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.WordRepository
+import java.time.Instant
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
 fun QuranReaderScreen(
+    progress: StudyProgress,
     fontSizeSp: Int,
     customStudyIds: Set<String>,
+    learningOverlayEnabled: Boolean,
     onFontSizeChange: (Int) -> Unit,
+    onLearningOverlayChange: (Boolean) -> Unit,
     onToggleCustomList: (String) -> Unit,
+    onStudyWord: (String) -> Unit,
 ) {
     val context = LocalContext.current.applicationContext
     val firstPageAvailable by produceState<Boolean?>(
@@ -120,6 +131,16 @@ fun QuranReaderScreen(
             value = WordRepository.isReaderIndexPrepared()
         }
     }
+    val learningNow by produceState(
+        initialValue = Instant.now(),
+        key1 = learningOverlayEnabled,
+    ) {
+        if (!learningOverlayEnabled) return@produceState
+        while (true) {
+            delay(LEARNING_STATE_REFRESH_MILLIS)
+            value = Instant.now()
+        }
+    }
 
     val availablePageCount = if (readerReady) QuranReaderRepository.pageCount else 1
 
@@ -127,6 +148,7 @@ fun QuranReaderScreen(
     val scope = rememberCoroutineScope()
     var surahPickerVisible by rememberSaveable { mutableStateOf(false) }
     var pagePickerVisible by rememberSaveable { mutableStateOf(false) }
+    var learningLegendVisible by rememberSaveable { mutableStateOf(false) }
     var selectedToken by remember { mutableStateOf<QuranPageToken?>(null) }
     val currentPageNumber = pagerState.currentPage + 1
     val currentPage = remember(currentPageNumber) {
@@ -140,9 +162,12 @@ fun QuranReaderScreen(
         ReaderHeader(
             currentSurahs = currentSurahs,
             fontSizeSp = fontSizeSp,
+            learningOverlayEnabled = learningOverlayEnabled,
             surahSelectionEnabled = readerReady,
             onChooseSurah = { surahPickerVisible = true },
             onFontSizeChange = onFontSizeChange,
+            onLearningOverlayChange = onLearningOverlayChange,
+            onOpenLearningLegend = { learningLegendVisible = true },
         )
 
         HorizontalPager(
@@ -156,6 +181,10 @@ fun QuranReaderScreen(
                 pageNumber = pageIndex + 1,
                 tokens = QuranReaderRepository.page(pageIndex + 1),
                 fontSizeSp = fontSizeSp,
+                progress = progress,
+                learningOverlayEnabled = learningOverlayEnabled,
+                readerIndexReady = readerIndexReady,
+                learningNow = learningNow,
                 onWordClick = { selectedToken = it },
             )
         }
@@ -179,11 +208,37 @@ fun QuranReaderScreen(
         val indexedWord = remember(token, verseArabic, readerIndexReady) {
             if (readerIndexReady) WordRepository.readerWordFor(token, verseArabic) else null
         }
+        val learningState = remember(
+            indexedWord?.id,
+            progress.learnedIds,
+            progress.reviewingIds,
+            progress.alreadyKnownIds,
+            progress.reviewSchedules,
+            progress.spacedRepetitionEnabled,
+        ) {
+            classifyQuranReaderWord(indexedWord?.id, progress)
+        }
+        val studyAction = quranReaderStudyActionFor(learningState)
+        val studyActionLabel = studyAction?.let { action ->
+            stringResource(
+                when (action) {
+                    QuranReaderStudyAction.Learn -> R.string.learn_this_word
+                    QuranReaderStudyAction.Review -> R.string.practice_from_memory
+                    QuranReaderStudyAction.PracticeAgain -> R.string.practice_again
+                },
+            )
+        }
         WordExplorerSheet(
             word = indexedWord ?: token.asUnindexedWord(verseArabic),
             indexed = indexedWord != null,
             onDismiss = { selectedToken = null },
-            onOpenWord = null,
+            onOpenWord = indexedWord?.let {
+                { wordId ->
+                    launchQuranReaderWordStudy(wordId, learningState, onStudyWord)
+                    Unit
+                }
+            },
+            studyActionLabel = studyActionLabel,
             inCustomList = indexedWord?.id?.let { it in customStudyIds } == true,
             onToggleCustomList = onToggleCustomList,
         )
@@ -216,15 +271,22 @@ fun QuranReaderScreen(
             onDismiss = { pagePickerVisible = false },
         )
     }
+
+    if (learningLegendVisible) {
+        QuranLearningLegendSheet(onDismiss = { learningLegendVisible = false })
+    }
 }
 
 @Composable
 private fun ReaderHeader(
     currentSurahs: List<Int>,
     fontSizeSp: Int,
+    learningOverlayEnabled: Boolean,
     surahSelectionEnabled: Boolean,
     onChooseSurah: () -> Unit,
     onFontSizeChange: (Int) -> Unit,
+    onLearningOverlayChange: (Boolean) -> Unit,
+    onOpenLearningLegend: () -> Unit,
 ) {
     val surahsByNumber = remember {
         WordRepository.selectableSurahs.associateBy(QuranSurah::number)
@@ -239,6 +301,7 @@ private fun ReaderHeader(
     }
     val decreaseTextSizeDescription = stringResource(R.string.decrease_quran_text_size)
     val increaseTextSizeDescription = stringResource(R.string.increase_quran_text_size)
+    val learningOverlayDescription = stringResource(R.string.learning_overlay_toggle_description)
 
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) {
         Row(
@@ -295,6 +358,28 @@ private fun ReaderHeader(
                 Text("A+")
             }
         }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                stringResource(R.string.learning_overlay),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            if (learningOverlayEnabled) {
+                TextButton(onClick = onOpenLearningLegend) {
+                    Text(stringResource(R.string.learning_overlay_legend))
+                }
+            }
+            Switch(
+                checked = learningOverlayEnabled,
+                onCheckedChange = onLearningOverlayChange,
+                modifier = Modifier.semantics {
+                    contentDescription = learningOverlayDescription
+                },
+            )
+        }
     }
 }
 
@@ -303,9 +388,44 @@ private fun QuranPage(
     pageNumber: Int,
     tokens: List<QuranPageToken>,
     fontSizeSp: Int,
+    progress: StudyProgress,
+    learningOverlayEnabled: Boolean,
+    readerIndexReady: Boolean,
+    learningNow: Instant,
     onWordClick: (QuranPageToken) -> Unit,
 ) {
     val sections = remember(tokens) { quranPageSections(tokens) }
+    // Resolve stable vocabulary matches once for this composed page. When the overlay is off,
+    // no page-wide word or verse lookup is performed.
+    val indexedWordIds = remember(tokens, learningOverlayEnabled, readerIndexReady) {
+        if (!learningOverlayEnabled || !readerIndexReady) {
+            null
+        } else {
+            val verseTextByReference = mutableMapOf<Pair<Int, Int>, String>()
+            tokens.asSequence()
+                .filterNot(QuranPageToken::isAyahMarker)
+                .associateWith { token ->
+                    val reference = token.surahNumber to token.ayahNumber
+                    val verseArabic = verseTextByReference.getOrPut(reference) {
+                        QuranReaderRepository.verseText(token.surahNumber, token.ayahNumber)
+                    }
+                    WordRepository.readerWordFor(token, verseArabic)?.id
+                }
+        }
+    }
+    val learningStates = remember(
+        indexedWordIds,
+        progress.learnedIds,
+        progress.reviewingIds,
+        progress.alreadyKnownIds,
+        progress.reviewSchedules,
+        progress.spacedRepetitionEnabled,
+        learningNow,
+    ) {
+        indexedWordIds?.mapValues { (_, wordId) ->
+            classifyQuranReaderWord(wordId, progress, learningNow)
+        }
+    }
     Surface(
         modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 4.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -321,7 +441,13 @@ private fun QuranPage(
                 section.startingSurahNumber?.let { surahNumber ->
                     SurahPageHeader(surahNumber)
                 }
-                QuranPageTextBlock(section.tokens, fontSizeSp, onWordClick)
+                QuranPageTextBlock(
+                    tokens = section.tokens,
+                    fontSizeSp = fontSizeSp,
+                    learningOverlayEnabled = learningOverlayEnabled,
+                    learningStates = learningStates,
+                    onWordClick = onWordClick,
+                )
             }
             Spacer(Modifier.height(8.dp))
             Text(
@@ -372,11 +498,28 @@ private fun SurahPageHeader(surahNumber: Int) {
 private fun QuranPageTextBlock(
     tokens: List<QuranPageToken>,
     fontSizeSp: Int,
+    learningOverlayEnabled: Boolean,
+    learningStates: Map<QuranPageToken, QuranWordLearningState>?,
     onWordClick: (QuranPageToken) -> Unit,
 ) {
     val content = remember(tokens) { quranPageLineContent(tokens) }
     val markerColor = MaterialTheme.colorScheme.primary
-    val line = remember(content, markerColor) {
+    val learningColors = quranLearningColors()
+    val accessibilityLabels = QuranLearningAccessibilityLabels(
+        recognized = stringResource(R.string.recognized_word_accessibility),
+        reviewing = stringResource(R.string.reviewing_word_accessibility),
+        due = stringResource(R.string.review_due_accessibility),
+        unknown = stringResource(R.string.new_word_accessibility),
+        unindexed = stringResource(R.string.unindexed_word_accessibility),
+    )
+    val line = remember(
+        content,
+        markerColor,
+        learningOverlayEnabled,
+        learningStates,
+        learningColors,
+        accessibilityLabels,
+    ) {
         buildAnnotatedString {
             append(content.text)
             content.segments.filter { it.token.isAyahMarker }.forEach { segment ->
@@ -393,6 +536,25 @@ private fun QuranPageTextBlock(
                     start = segment.start,
                     end = segment.endExclusive,
                 )
+                learningStates?.get(segment.token)?.let { classifiedState ->
+                    displayedQuranWordLearningState(
+                        overlayEnabled = learningOverlayEnabled,
+                        state = classifiedState,
+                    )
+                }?.let { state ->
+                    addStyle(
+                        style = quranLearningSpanStyle(state, learningColors),
+                        start = segment.start,
+                        end = segment.endExclusive,
+                    )
+                    addTtsAnnotation(
+                        ttsAnnotation = VerbatimTtsAnnotation(
+                            "${segment.token.arabic}, ${accessibilityLabels.forState(state)}",
+                        ),
+                        start = segment.start,
+                        end = segment.endExclusive,
+                    )
+                }
             }
         }
     }
@@ -423,6 +585,145 @@ private fun QuranPageTextBlock(
                     ?.let(onWordClick)
             },
         )
+    }
+}
+
+private data class QuranLearningColors(
+    val recognized: Color,
+    val reviewing: Color,
+    val due: Color,
+    val unknown: Color,
+    val unindexed: Color,
+)
+
+private data class QuranLearningAccessibilityLabels(
+    val recognized: String,
+    val reviewing: String,
+    val due: String,
+    val unknown: String,
+    val unindexed: String,
+) {
+    fun forState(state: QuranWordLearningState): String = when (state) {
+        QuranWordLearningState.Recognized -> recognized
+        QuranWordLearningState.Reviewing -> reviewing
+        QuranWordLearningState.Due -> due
+        QuranWordLearningState.Unknown -> unknown
+        QuranWordLearningState.Unindexed -> unindexed
+    }
+}
+
+@Composable
+private fun quranLearningColors() = QuranLearningColors(
+    recognized = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.82f),
+    reviewing = MaterialTheme.colorScheme.primary,
+    due = MaterialTheme.colorScheme.error,
+    unknown = MaterialTheme.colorScheme.tertiary,
+    unindexed = MaterialTheme.colorScheme.onSurface,
+)
+
+private fun quranLearningSpanStyle(
+    state: QuranWordLearningState,
+    colors: QuranLearningColors,
+): SpanStyle = when (state) {
+    QuranWordLearningState.Recognized -> SpanStyle(color = colors.recognized)
+    QuranWordLearningState.Reviewing -> SpanStyle(
+        color = colors.reviewing,
+        fontWeight = FontWeight.Medium,
+    )
+    QuranWordLearningState.Due -> SpanStyle(
+        color = colors.due,
+        fontWeight = FontWeight.SemiBold,
+        textDecoration = TextDecoration.Underline,
+    )
+    QuranWordLearningState.Unknown -> SpanStyle(
+        color = colors.unknown,
+        textDecoration = TextDecoration.Underline,
+    )
+    QuranWordLearningState.Unindexed -> SpanStyle(color = colors.unindexed)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun QuranLearningLegendSheet(onDismiss: () -> Unit) {
+    val colors = quranLearningColors()
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+        ) {
+            Text(
+                stringResource(R.string.learning_overlay_legend_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                stringResource(R.string.learning_overlay_legend_description),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(10.dp))
+            QuranLearningLegendRow(
+                state = QuranWordLearningState.Recognized,
+                label = stringResource(R.string.learning_state_recognized),
+                description = stringResource(R.string.learning_state_recognized_description),
+                colors = colors,
+            )
+            QuranLearningLegendRow(
+                state = QuranWordLearningState.Reviewing,
+                label = stringResource(R.string.learning_state_reviewing),
+                description = stringResource(R.string.learning_state_reviewing_description),
+                colors = colors,
+            )
+            QuranLearningLegendRow(
+                state = QuranWordLearningState.Due,
+                label = stringResource(R.string.learning_state_due),
+                description = stringResource(R.string.learning_state_due_description),
+                colors = colors,
+            )
+            QuranLearningLegendRow(
+                state = QuranWordLearningState.Unknown,
+                label = stringResource(R.string.learning_state_unknown),
+                description = stringResource(R.string.learning_state_unknown_description),
+                colors = colors,
+            )
+            QuranLearningLegendRow(
+                state = QuranWordLearningState.Unindexed,
+                label = stringResource(R.string.learning_state_unindexed),
+                description = stringResource(R.string.learning_state_unindexed_description),
+                colors = colors,
+            )
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun QuranLearningLegendRow(
+    state: QuranWordLearningState,
+    label: String,
+    description: String,
+    colors: QuranLearningColors,
+) {
+    val style = quranLearningSpanStyle(state, colors)
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.learning_overlay_sample_word),
+            modifier = Modifier.padding(end = 14.dp),
+            color = style.color,
+            fontWeight = style.fontWeight ?: FontWeight.Normal,
+            textDecoration = style.textDecoration,
+            fontSize = 23.sp,
+        )
+        Column(Modifier.weight(1f)) {
+            Text(label, fontWeight = FontWeight.SemiBold)
+            Text(
+                description,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
     }
 }
 
@@ -661,3 +962,4 @@ private fun QuranPageToken.asUnindexedWord(verseArabic: String): QuranWord {
 private const val BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"
 private const val QURAN_WORD_ANNOTATION = "quran-word"
 private const val QURAN_LINE_HEIGHT_MULTIPLIER = 1.55f
+private const val LEARNING_STATE_REFRESH_MILLIS = 60_000L

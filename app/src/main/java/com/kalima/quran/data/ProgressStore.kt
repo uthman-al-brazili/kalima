@@ -656,6 +656,11 @@ class ProgressStore private constructor(context: Context) {
         persist(_progress.value.copy(quranFontSizeSp = normalized), today())
     }
 
+    fun setQuranLearningOverlayEnabled(enabled: Boolean) {
+        if (_progress.value.quranLearningOverlayEnabled == enabled) return
+        persist(_progress.value.copy(quranLearningOverlayEnabled = enabled), today())
+    }
+
     fun setAdvancedSettingsVisible(visible: Boolean) {
         if (_progress.value.advancedSettingsVisible == visible) return
         persist(_progress.value.copy(advancedSettingsVisible = visible), today())
@@ -803,6 +808,10 @@ class ProgressStore private constructor(context: Context) {
                     QuranReaderTypography.DEFAULT_FONT_SIZE_SP,
                 ),
             ),
+            quranLearningOverlayEnabled = preferences.getBoolean(
+                KEY_QURAN_LEARNING_OVERLAY_ENABLED,
+                false,
+            ),
             advancedSettingsVisible = preferences.getBoolean(
                 KEY_ADVANCED_SETTINGS_VISIBLE,
                 false,
@@ -890,6 +899,10 @@ class ProgressStore private constructor(context: Context) {
             putInt(KEY_LOCK_SCREEN_QUIZ_INTERVAL, progress.lockScreenQuizInterval)
             putString(KEY_THEME_MODE, progress.themeMode.name)
             putInt(KEY_QURAN_FONT_SIZE_SP, progress.quranFontSizeSp)
+            putBoolean(
+                KEY_QURAN_LEARNING_OVERLAY_ENABLED,
+                progress.quranLearningOverlayEnabled,
+            )
             putBoolean(KEY_ADVANCED_SETTINGS_VISIBLE, progress.advancedSettingsVisible)
             putBoolean(KEY_SHOW_COMPLETE_AYAH, progress.showCompleteAyah)
             putBoolean(KEY_SPACED_REPETITION_ENABLED, progress.spacedRepetitionEnabled)
@@ -1005,6 +1018,7 @@ class ProgressStore private constructor(context: Context) {
         private const val KEY_LOCK_SCREEN_QUIZ_SEQUENCE = "lock_screen_quiz_sequence"
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_QURAN_FONT_SIZE_SP = "quran_font_size_sp"
+        private const val KEY_QURAN_LEARNING_OVERLAY_ENABLED = "quran_learning_overlay_enabled"
         private const val KEY_ADVANCED_SETTINGS_VISIBLE = "advanced_settings_visible"
         private const val KEY_SHOW_COMPLETE_AYAH = "show_complete_ayah"
         private const val KEY_SPACED_REPETITION_ENABLED = "spaced_repetition_enabled"

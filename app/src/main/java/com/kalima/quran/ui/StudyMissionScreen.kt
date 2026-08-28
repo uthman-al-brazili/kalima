@@ -375,6 +375,7 @@ internal fun StudyCompletionScreen(
                     VerseExplorerPanel(
                         word = payoff.featuredWord,
                         highlightedWordIds = recognizedWordIds,
+                        showVersePronunciation = false,
                     )
                     Spacer(Modifier.height(10.dp))
                     VersePronunciationButton(
@@ -389,7 +390,10 @@ internal fun StudyCompletionScreen(
                         modifier = Modifier.fillMaxWidth().height(52.dp),
                         shape = RoundedCornerShape(15.dp),
                     ) {
-                        Text(stringResource(R.string.read_the_ayah), fontWeight = FontWeight.Bold)
+                        Text(
+                            stringResource(R.string.explore_ayah_word_by_word),
+                            fontWeight = FontWeight.Bold,
+                        )
                     }
                 }
             }

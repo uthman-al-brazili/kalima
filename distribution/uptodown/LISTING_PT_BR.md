@@ -8,7 +8,8 @@
 - Nome do pacote: `com.kalima.quran`
 - Desenvolvedor/autor: Uthman (Gustavo)
 - E-mail de suporte: uthman-al-brazili@proton.me
-- Site: https://sites.google.com/view/kalimaapp
+- Site: https://kalima-h1f.pages.dev/
+- Política de privacidade: https://kalima-h1f.pages.dev/privacy
 - Classificação recomendada: Livre
 - Anúncios: Não
 - Restrições por país: Nenhuma
@@ -20,13 +21,13 @@
 
 ## Descrição curta
 
-Aprenda árabe corânico na tela bloqueada com microlições opcionais e privadas.
+Aprenda árabe corânico na tela bloqueada, offline e sem anúncios.
 
 ## Descrição completa
 
-O Kalima é uma forma de aprender árabe corânico com foco na tela bloqueada, em português do Brasil ou inglês. Depois que você autoriza o recurso, uma lição curta pode aparecer sobre a tela ainda bloqueada quando o visor acende ou quando você volta ao celular. É possível responder ou ouvir o áudio enquanto o aparelho continua bloqueado; para abrir a lição completa, o Android pede sua autenticação primeiro. O Kalima nunca desbloqueia o celular nem contorna PIN, senha, padrão, impressão digital ou reconhecimento facial; a segurança do aparelho continua sob controle do Android. O aprendizado na tela bloqueada é opcional e fica desativado até você ativá-lo.
+Transforme os momentos em que você olha o celular em pequenas lições de árabe corânico. O Kalima é um aplicativo de aprendizagem com foco na tela bloqueada, em português do Brasil ou inglês. Depois que você ativa o recurso, um cartão de palavra ou quiz pode aparecer sobre a tela ainda bloqueada quando o visor acende. Revise o árabe, ouça a pronúncia ou responda a uma pergunta enquanto o Android mantém o aparelho bloqueado. Para abrir a lição completa, use a autenticação normal do Android. O Kalima nunca contorna PIN, senha, padrão, impressão digital ou reconhecimento facial. O recurso é opcional, vem desativado e constitui a experiência central de aprendizagem, não apenas uma notificação de lembrete.
 
-O fluxo de lições usa o corpus offline original do Kalima, com 42.117 cartões de palavras indexados do Alcorão. Cada cartão relaciona o texto árabe à transliteração, ao significado no contexto, à gramática, à raiz e à referência corânica. O widget Palavra corânica do dia oferece outra forma opcional e rápida de rever uma palavra entre as lições.
+O sistema de aprendizagem foi criado especificamente para o árabe corânico e usa um corpus offline com 42.117 cartões de palavras indexados. Cada cartão relaciona o texto árabe à transliteração, ao significado no contexto, à gramática, à raiz e à referência corânica. O widget Palavra corânica do dia oferece outra forma opcional de rever uma palavra e abre exatamente a lição correspondente no aplicativo.
 
 O Kalima usa repetição espaçada para reapresentar as palavras na hora certa. Escolha palavras essenciais, vocabulário de oração, suras curtas, o corpus completo, suras específicas ou uma lista pessoal. Os quizzes de cinco perguntas incluem modos misto, escuta, lacunas, raízes, revisões pendentes e palavras difíceis. As perguntas contextuais podem pedir a palavra que completa uma ayah ou o significado de um termo destacado do Alcorão.
 
@@ -40,11 +41,8 @@ Significados e informações gramaticais são recursos de estudo ligados ao cont
 
 ## Novidades da versão 0.30.3
 
-- Remove os círculos decorativos do widget, mantendo o gradiente verde profundo
-  e o conteúdo de aprendizagem centralizado.
-- Centraliza o conteúdo do widget Palavra corânica do dia e adiciona um fundo
-  verde profundo mais rico.
-- Corrige o widget Palavra corânica do dia para que um toque sempre abra exatamente a palavra exibida.
-- Torna o aprendizado na tela bloqueada o centro da configuração inicial e da área Estudo, com uma explicação mais clara e opt-in para a lição curta quando o visor bloqueado acende ou quando você volta ao celular.
-- Adiciona o widget Palavra corânica do dia, com árabe, transliteração, significado no contexto, referência corânica, ação Próxima e acesso direto à lição no Kalima.
-- Mantém intactos o PIN, a senha, o padrão, a biometria e os demais controles de segurança do Android; o aprendizado na tela bloqueada continua opcional.
+- Torna as lições opcionais de árabe corânico na tela bloqueada o centro da configuração inicial e da área Estudo.
+- Adiciona o widget Palavra corânica do dia com árabe, transliteração, significado no contexto, referência corânica e acesso à lição exata.
+- Adiciona a ação Próxima, que troca a palavra do widget sem alterar o progresso de aprendizagem.
+- Melhora o visual verde profundo do widget e centraliza seu conteúdo educativo.
+- Preserva as proteções do Android por PIN, senha, padrão, impressão digital e reconhecimento facial.

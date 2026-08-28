@@ -25,4 +25,40 @@ class VerseExplorerTest {
         assertNull(tokens[1].word)
         assertNull(tokens[2].word)
     }
+
+    @Test
+    fun indexedTextTokensIgnoreStandalonePauseMarksWithoutShiftingWordLocations() {
+        val selected = word("selected", "نُورٌ").copy(
+            audioLocation = QuranWordAudioLocation(1, 1, 2),
+        )
+
+        val tokens = VerseExplorer.buildIndexedTextTokens(
+            verseArabic = "قُلْ ۞ نُورٌ",
+            surahNumber = 1,
+            ayahNumber = 1,
+            selectedWord = selected,
+            resolve = { null },
+        )
+
+        assertEquals(listOf("قُلْ", "نُورٌ"), tokens.map(VerseToken::text))
+        assertEquals(selected.id, tokens.last().word?.id)
+    }
+
+    @Test
+    fun indexedTextTokensKeepCorpusCompoundsTogether() {
+        val selected = word("ilyasin", "إِلْ يَاسِينَ").copy(
+            audioLocation = QuranWordAudioLocation(37, 130, 3),
+        )
+
+        val tokens = VerseExplorer.buildIndexedTextTokens(
+            verseArabic = "سَلَـٰمٌ عَلَىٰٓ إِلْ يَاسِينَ",
+            surahNumber = 37,
+            ayahNumber = 130,
+            selectedWord = selected,
+            resolve = { token -> selected.takeIf { token.wordNumber == 3 } },
+        )
+
+        assertEquals(listOf("سَلَـٰمٌ", "عَلَىٰٓ", "إِلْ يَاسِينَ"), tokens.map(VerseToken::text))
+        assertEquals(selected.id, tokens.last().word?.id)
+    }
 }

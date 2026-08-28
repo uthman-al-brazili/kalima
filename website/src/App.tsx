@@ -1,7 +1,9 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 type Language = 'en' | 'pt';
 type Route = '/' | '/privacy' | '/support';
+
+const artworkRevision = '0.30.5-2026-08-25';
 
 const facts = {
   email: 'uthman-al-brazili@proton.me',
@@ -10,96 +12,98 @@ const facts = {
 
 const content = {
   en: {
-    nav: { learn: 'How it works', features: 'Features', privacy: 'Privacy', support: 'Support', cta: 'Get Kalima' },
+    seo: { title: 'Kalima — Learn Quranic Arabic on your lock screen', description: 'Learn Quranic Arabic on your lock screen when your screen turns on. Kalima is private, offline-first, and never bypasses your PIN, password, or biometrics.' },
+    nav: { learn: 'Lock-screen learning', features: 'Features', privacy: 'Privacy', support: 'Support', cta: 'Get Kalima' },
     hero: {
-      eyebrow: 'Quranic Arabic • Android',
-      title: 'Quranic Arabic, one meaningful word at a time.',
-      body: 'Build a useful vocabulary with short lessons, real Quran audio, and a learning path that meets you where you are.',
+      eyebrow: 'Quranic Arabic • On your lock screen',
+      title: 'Learn Quranic Arabic before you unlock.',
+      body: 'Turn screen-on moments into short Quranic Arabic lessons. Kalima keeps your device locked and never bypasses your PIN, password, or biometrics.',
       cta: 'Get Kalima',
-      secondary: 'See how it works',
+      secondary: 'See lock-screen learning',
       note: 'Free • No ads • Android 8+',
     },
-    card: { label: 'A word from the Quran', transliteration: 'hudā', meaning: 'guidance', again: 'Again', gotIt: 'Got it', ready: 'Choose how this word felt.', saved: 'Nice. Kalima will bring it back at the right time.', retry: 'No pressure. This word will return sooner.' },
+    card: { label: 'Lock-screen word', date: 'Tuesday, August 24', security: 'Device stays locked', transliteration: 'hudā', meaning: 'guidance', again: 'Again', gotIt: 'Got it', ready: 'Choose how this word felt.', saved: 'Nice. Kalima will bring it back at the right time.', retry: 'No pressure. This word will return sooner.' },
     proof: [
+      ['Screen-on', 'Quranic Arabic practice'],
       ['42,117', 'offline study cards'],
-      ['114', 'surahs to read'],
       ['0', 'ads or trackers'],
     ],
-    promise: 'A calm path from first letters to Quranic context.',
-    promiseBody: 'Kalima combines clear foundations, focused recall, and the full Arabic Quran in one private learning space.',
+    promise: 'Make every screen-on moment count.',
+    promiseBody: 'Kalima brings short Quranic Arabic practice to the lock screen, then connects each word to its Quran context.',
     steps: [
-      ['01', 'Start at your level', 'Choose whether you already know the Arabic alphabet and numbers. Kalima shapes the foundation path around your answer.'],
-      ['02', 'Learn in context', 'Study Arabic text, transliteration, meaning, grammar, root, and the Quran reference together.'],
-      ['03', 'Return at the right time', 'Spaced repetition brings words back when they are due—without streak anxiety or noisy rewards.'],
+      ['01', 'Meet a Quranic Arabic word', 'See the Arabic, transliteration, pronunciation, and meaning directly on your lock screen.'],
+      ['02', 'Recall it with a quick quiz', 'Answer listening, context, cloze, and root questions when the screen turns on.'],
+      ['03', 'Continue in Quran context', 'Open the exact lesson, listen to real Quran audio, and explore the ayah, grammar, root, and related occurrences.'],
     ],
-    screensTitle: 'The learning experience, not a marketing mockup.',
-    screensBody: 'Real screens from Kalima show a guided start, focused vocabulary practice, varied quizzes, and an offline Quran reader.',
+    screensTitle: 'From the lock screen into Quran context.',
+    screensBody: 'Start with a screen-on card, then continue with focused word study, Quran reading, and Arabic foundations.',
     screens: [
-      ['foundations.png', 'Arabic foundations at hand', 'Review the alphabet, vowel forms, joining, and numbers whenever you need them.'],
-      ['study.png', 'One clear study card', 'See the word, listen, and explore its Quranic context.'],
-      ['quiz.png', 'Practice that changes shape', 'Mixed, listening, cloze, and root questions keep recall active.'],
-      ['quran.png', 'Read all 114 surahs', 'The full Arabic Quran is included for offline reading.'],
+      ['lock-screen-learning.png', 'Quranic Arabic word shown on the lock screen inside a simulated Android phone', 'Review a Quranic Arabic word at screen-on while Android keeps your PIN and biometrics in control.'],
+      ['word-study.png', 'Kalima daily Quranic word study screen with Arabic, pronunciation, and review controls', 'Build vocabulary one word at a time with pronunciation, contextual meaning, and spaced review.'],
+      ['quran-reading.png', 'Kalima Quran reader with tappable Arabic words', 'Tap any word anywhere in the Quran to connect vocabulary with its ayah and deeper context.'],
+      ['arabic-foundations.png', 'Kalima Arabic basics screen with alphabet and Arabic-Indic number lessons', 'Practice the alphabet and Arabic-Indic numbers separately whenever you need the foundation.'],
     ],
-    featuresTitle: 'Serious learning can still feel inviting.',
+    featuresTitle: 'Built around small moments that add up.',
     features: [
-      ['↻', 'Spaced repetition', 'Review what is due instead of restarting from the beginning.'],
+      ['▣', 'Lock-screen lessons', 'Practice when the screen turns on while Android keeps the device keyguard fully in control.'],
+      ['?', 'Quick lock-screen quizzes', 'Listening, context, cloze, and root questions turn brief moments into active recall.'],
+      ['◫', 'Daily Quran word widget', 'See one word at a glance and open its exact lesson without altering your progress.'],
       ['◖', 'Real Quran audio', 'Hear word recordings and Al-Hussary’s complete-ayah recitation. Played audio can be saved locally.'],
-      ['◇', 'Flexible study sets', 'Choose essential words, prayer vocabulary, short surahs, specific surahs, or the complete corpus.'],
-      ['☼', 'Gentle routine tools', 'Optional reminders and return-to-phone cards help practice fit naturally into your day.'],
-      ['أ', 'Foundations included', 'Learn all 28 Arabic letters, joining, short vowels, and Arabic-Indic digits from ٠ to ٩.'],
       ['⌁', 'Context, not isolation', 'Open the ayah, inspect roots and grammar, and find other indexed occurrences offline.'],
+      ['↻', 'Spaced repetition', 'Review what is due instead of restarting from the beginning.'],
     ],
     trustTitle: 'Your learning belongs to you.',
     trustBody: 'No account, advertising, analytics, or remote learning database. Progress stays on your device and can be exported manually.',
     trustLinks: ['Read the privacy policy', 'See support details'],
-    availability: { kicker: 'Kalima for Android', title: 'Learn with clarity. Continue with purpose.', body: 'Kalima is free, bilingual, and available as a universal Android app.', cta: 'Release information', secondary: 'Contact support' },
+    availability: { kicker: 'Kalima for Android', title: 'Turn unlock moments into Quranic Arabic practice.', body: 'Kalima is free, bilingual, and puts lock-screen learning at the center of a private, offline-first study experience.', cta: 'Release information', secondary: 'Contact support' },
     footer: 'Independent, thoughtful software for Quranic Arabic learners.',
     legal: 'Kalima is a learning aid and does not replace a scholarly translation or qualified religious instruction.',
   },
   pt: {
-    nav: { learn: 'Como funciona', features: 'Recursos', privacy: 'Privacidade', support: 'Suporte', cta: 'Conheça o Kalima' },
+    seo: { title: 'Kalima — Aprenda árabe corânico na tela bloqueada', description: 'Aprenda árabe corânico na tela bloqueada quando a tela acende. O Kalima prioriza a privacidade e nunca contorna seu PIN, senha ou biometria.' },
+    nav: { learn: 'Tela bloqueada', features: 'Recursos', privacy: 'Privacidade', support: 'Suporte', cta: 'Conheça o Kalima' },
     hero: {
-      eyebrow: 'Árabe corânico • Android',
-      title: 'Árabe corânico, uma palavra significativa de cada vez.',
-      body: 'Construa um vocabulário útil com lições curtas, áudio real do Alcorão e um caminho que começa no seu nível.',
+      eyebrow: 'Árabe corânico • Na tela bloqueada',
+      title: 'Aprenda árabe corânico antes de desbloquear.',
+      body: 'Transforme o acender da tela em lições curtas de árabe corânico. O Kalima mantém o aparelho bloqueado e nunca contorna seu PIN, senha ou biometria.',
       cta: 'Conheça o Kalima',
-      secondary: 'Veja como funciona',
+      secondary: 'Veja o aprendizado na tela bloqueada',
       note: 'Grátis • Sem anúncios • Android 8+',
     },
-    card: { label: 'Uma palavra do Alcorão', transliteration: 'hudā', meaning: 'orientação', again: 'De novo', gotIt: 'Entendi', ready: 'Como esta palavra pareceu?', saved: 'Muito bem. O Kalima vai trazê-la de volta no momento certo.', retry: 'Sem pressão. Esta palavra voltará mais cedo.' },
+    card: { label: 'Palavra na tela bloqueada', date: 'Terça-feira, 24 de agosto', security: 'Aparelho permanece bloqueado', transliteration: 'hudā', meaning: 'orientação', again: 'De novo', gotIt: 'Entendi', ready: 'Como esta palavra pareceu?', saved: 'Muito bem. O Kalima vai trazê-la de volta no momento certo.', retry: 'Sem pressão. Esta palavra voltará mais cedo.' },
     proof: [
+      ['Ao acender', 'prática de árabe corânico'],
       ['42.117', 'cartões offline'],
-      ['114', 'suras para ler'],
       ['0', 'anúncios ou rastreadores'],
     ],
-    promise: 'Um caminho tranquilo das primeiras letras ao contexto do Alcorão.',
-    promiseBody: 'O Kalima reúne fundamentos claros, memorização focada e o Alcorão completo em árabe em um só espaço privado.',
+    promise: 'Faça cada acender da tela valer a pena.',
+    promiseBody: 'O Kalima leva práticas curtas de árabe corânico à tela bloqueada e conecta cada palavra ao contexto do Alcorão.',
     steps: [
-      ['01', 'Comece no seu nível', 'Diga se você já conhece o alfabeto árabe e os números. O Kalima adapta o caminho inicial à sua resposta.'],
-      ['02', 'Aprenda no contexto', 'Estude o texto árabe, transliteração, significado, gramática, raiz e referência juntos.'],
-      ['03', 'Revise no momento certo', 'A repetição espaçada traz cada palavra de volta quando ela precisa ser revisada, sem ansiedade por sequências.'],
+      ['01', 'Conheça uma palavra do Alcorão', 'Veja o árabe, a transliteração, a pronúncia e o significado diretamente na tela bloqueada.'],
+      ['02', 'Relembre com um quiz rápido', 'Responda a questões de áudio, contexto, lacunas e raízes quando a tela acender.'],
+      ['03', 'Continue no contexto do Alcorão', 'Abra a lição exata, ouça áudio real e explore o ayah, a gramática, a raiz e ocorrências relacionadas.'],
     ],
-    screensTitle: 'A experiência real, não uma tela de marketing.',
-    screensBody: 'Telas do próprio Kalima mostram o início guiado, o estudo focado, os quizzes variados e o leitor offline do Alcorão.',
+    screensTitle: 'Da tela bloqueada ao contexto do Alcorão.',
+    screensBody: 'Comece com um cartão ao acender a tela e continue com estudo de palavras, leitura do Alcorão e fundamentos do árabe.',
     screens: [
-      ['foundations.png', 'Fundamentos sempre à mão', 'Revise o alfabeto, as vogais, as ligações e os números quando precisar.'],
-      ['study.png', 'Um cartão claro', 'Veja a palavra, ouça e explore seu contexto no Alcorão.'],
-      ['quiz.png', 'Prática variada', 'Questões mistas, de áudio, lacunas e raízes mantêm a memória ativa.'],
-      ['quran.png', 'Leia as 114 suras', 'O Alcorão completo em árabe está incluído para leitura offline.'],
+      ['lock-screen-learning.png', 'Palavra do Alcorão exibida na tela bloqueada dentro de um telefone Android simulado', 'Revise uma palavra do Alcorão ao acender a tela, com o PIN e a biometria sob o controle do Android.'],
+      ['word-study.png', 'Tela do Kalima para estudar a palavra corânica do dia, com áudio e controles de revisão', 'Construa vocabulário uma palavra de cada vez, com pronúncia, significado em contexto e revisão espaçada.'],
+      ['quran-reading.png', 'Leitor do Alcorão do Kalima com palavras árabes tocáveis', 'Toque em qualquer palavra, em qualquer parte do Alcorão, para conectá-la ao ayah e ao seu contexto.'],
+      ['arabic-foundations.png', 'Tela de fundamentos do árabe do Kalima com alfabeto e números indo-arábicos', 'Pratique o alfabeto e os números indo-arábicos separadamente quando precisar reforçar a base.'],
     ],
-    featuresTitle: 'Aprendizado sério também pode ser acolhedor.',
+    featuresTitle: 'Pequenos momentos que constroem conhecimento.',
     features: [
-      ['↻', 'Repetição espaçada', 'Revise o que está pendente em vez de sempre recomeçar do início.'],
+      ['▣', 'Lições na tela bloqueada', 'Pratique quando a tela acender enquanto o bloqueio do Android continua totalmente no controle.'],
+      ['?', 'Quizzes rápidos na tela bloqueada', 'Questões de áudio, contexto, lacunas e raízes transformam momentos breves em recordação ativa.'],
+      ['◫', 'Widget da palavra diária', 'Veja uma palavra num relance e abra sua lição exata sem alterar seu progresso.'],
       ['◖', 'Áudio real do Alcorão', 'Ouça palavras e a recitação de ayahs completas por Al-Hussary. Os áudios tocados podem ser salvos.'],
-      ['◇', 'Conjuntos flexíveis', 'Escolha palavras essenciais, vocabulário da oração, suras curtas, suras específicas ou o corpus completo.'],
-      ['☼', 'Rotina sem pressão', 'Lembretes e cartões opcionais ao voltar ao celular ajudam o estudo a caber no seu dia.'],
-      ['أ', 'Fundamentos incluídos', 'Aprenda as 28 letras, ligações, vogais breves e os algarismos arábico-indianos de ٠ a ٩.'],
       ['⌁', 'Palavras em contexto', 'Abra o ayah, consulte raiz e gramática e encontre outras ocorrências offline.'],
+      ['↻', 'Repetição espaçada', 'Revise o que está pendente em vez de sempre recomeçar do início.'],
     ],
     trustTitle: 'Seu aprendizado pertence a você.',
     trustBody: 'Sem conta, publicidade, análises ou banco remoto de atividades. O progresso fica no aparelho e pode ser exportado manualmente.',
     trustLinks: ['Leia a política de privacidade', 'Veja os detalhes de suporte'],
-    availability: { kicker: 'Kalima para Android', title: 'Aprenda com clareza. Continue com propósito.', body: 'O Kalima é gratuito, bilíngue e distribuído como app Android universal.', cta: 'Informações do app', secondary: 'Falar com o suporte' },
+    availability: { kicker: 'Kalima para Android', title: 'Transforme o desbloqueio em prática de árabe corânico.', body: 'O Kalima é gratuito, bilíngue e coloca o aprendizado na tela bloqueada no centro de uma experiência privada que prioriza o uso offline.', cta: 'Informações do app', secondary: 'Falar com o suporte' },
     footer: 'Software independente e cuidadoso para estudantes de árabe corânico.',
     legal: 'O Kalima é um auxílio de aprendizagem e não substitui uma tradução acadêmica ou orientação religiosa qualificada.',
   },
@@ -148,6 +152,11 @@ function App() {
       // Keep the current in-memory choice without requiring storage access.
     }
     document.documentElement.lang = language === 'pt' ? 'pt-BR' : 'en';
+    const seo = content[language].seo;
+    document.title = seo.title;
+    document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', seo.description);
+    document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.setAttribute('content', seo.title);
+    document.querySelector<HTMLMetaElement>('meta[property="og:description"]')?.setAttribute('content', seo.description);
   }, [language]);
 
   return (
@@ -196,20 +205,45 @@ function Header({ language, setLanguage, route }: { language: Language; setLangu
 function StudyCard({ language }: { language: Language }) {
   const t = content[language].card;
   const [status, setStatus] = useState<'ready' | 'saved' | 'retry'>('ready');
+  const phoneRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const phone = phoneRef.current;
+    if (!phone) return;
+
+    const resizePhone = () => {
+      phone.style.setProperty('--phone-scale', String(phone.getBoundingClientRect().width / 316));
+    };
+    const observer = new ResizeObserver(resizePhone);
+    observer.observe(phone);
+    resizePhone();
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="study-stage" aria-label="Interactive study card preview">
+    <div className="study-stage" aria-label={language === 'pt' ? 'Prévia interativa do aprendizado na tela bloqueada' : 'Interactive lock-screen learning preview'}>
       <span className="orbit-dot dot-one" />
       <span className="orbit-dot dot-two" />
-      <div className="study-card">
-        <div className="study-card-top"><span>{t.label}</span><span className="audio-mark" aria-hidden="true">◖</span></div>
-        <div className="arabic" lang="ar" dir="rtl">هُدًى</div>
-        <div className="transliteration">{t.transliteration}</div>
-        <div className="meaning">{t.meaning}</div>
-        <div className="card-divider" />
-        <p className="card-status" aria-live="polite">{t[status]}</p>
-        <div className="card-actions">
-          <button className="study-button secondary" onClick={() => setStatus('retry')}>{t.again}</button>
-          <button className="study-button primary" onClick={() => setStatus('saved')}>{t.gotIt}</button>
+      <div className="lockscreen-preview" ref={phoneRef}>
+        <div className="lockscreen-canvas">
+          <div className="lockscreen-status" aria-hidden="true"><span>9:44</span><span>● ◢ ▮</span></div>
+          <span className="lockscreen-lock" aria-hidden="true" />
+          <div className="lockscreen-time" aria-hidden="true">9:44</div>
+          <div className="lockscreen-date">{t.date}</div>
+          <div className="study-card">
+            <div className="study-card-top"><span>{t.label}</span><span className="audio-mark" aria-hidden="true">◖</span></div>
+            <div className="arabic" lang="ar" dir="rtl">هُدًى</div>
+            <div className="transliteration">{t.transliteration}</div>
+            <div className="meaning">{t.meaning}</div>
+            <div className="card-divider" />
+            <p className="card-status" aria-live="polite">{t[status]}</p>
+            <div className="card-actions">
+              <button className="study-button secondary" onClick={() => setStatus('retry')}>{t.again}</button>
+              <button className="study-button primary" onClick={() => setStatus('saved')}>{t.gotIt}</button>
+            </div>
+          </div>
+          <div className="lockscreen-security"><span className="security-lock" aria-hidden="true" />{t.security}</div>
         </div>
       </div>
     </div>
@@ -218,7 +252,7 @@ function StudyCard({ language }: { language: Language }) {
 
 function Home({ language }: { language: Language }) {
   const t = content[language];
-  const screenshotLocale = language === 'pt' ? 'pt-BR' : 'en';
+  const artworkLocale = language === 'pt' ? 'pt-BR' : 'en';
   return <>
     <section className="hero section-pad">
       <div className="hero-copy">
@@ -238,8 +272,8 @@ function Home({ language }: { language: Language }) {
       {t.proof.map(([value, label]) => <div className="proof-item" key={label}><strong>{value}</strong><span>{label}</span></div>)}
     </section>
 
-    <section className="path-section section-pad" id="how">
-      <div className="section-heading centered">
+    <section className="path-section section-pad">
+      <div className="section-heading centered" id="how">
         <span className="section-kicker">{language === 'en' ? 'A path with purpose' : 'Um caminho com propósito'}</span>
         <h2>{t.promise}</h2>
         <p>{t.promiseBody}</p>
@@ -255,19 +289,19 @@ function Home({ language }: { language: Language }) {
 
     <section className="screens-section" aria-labelledby="screens-title">
       <div className="section-pad screens-intro">
-        <div className="section-heading"><span className="section-kicker">{language === 'en' ? 'Inside the app' : 'Por dentro do app'}</span><h2 id="screens-title">{t.screensTitle}</h2></div>
+        <div className="section-heading"><span className="section-kicker">{language === 'en' ? 'Lock-screen learning' : 'Aprendizado na tela bloqueada'}</span><h2 id="screens-title">{t.screensTitle}</h2></div>
         <p>{t.screensBody}</p>
       </div>
       <div className="screen-rail section-pad">
-        {t.screens.map(([image, title, body], index) => <article className={`screen-card screen-tone-${index + 1}`} key={image}>
-          <div className="phone-frame"><img src={`/screens/${screenshotLocale}/${image}`} alt={`${title} — ${language === 'pt' ? 'Tela do Kalima para Android' : 'Kalima Android screen'}`} loading="lazy" /></div>
-          <div className="screen-copy"><span>0{index + 1}</span><h3>{title}</h3><p>{body}</p></div>
+        {t.screens.map(([image, alt, body], index) => <article className={`screen-card screen-tone-${index + 1}`} key={image}>
+          <div className="phone-frame"><img src={`/screens/${artworkLocale}/${image}?v=${artworkRevision}`} alt={alt} width={1080} height={1350} loading="lazy" decoding="async" /></div>
+          <div className="screen-copy"><span>0{index + 1}</span><p>{body}</p></div>
         </article>)}
       </div>
     </section>
 
-    <section className="features-section section-pad" id="features">
-      <div className="section-heading centered"><span className="section-kicker">{language === 'en' ? 'Built for real study' : 'Feito para estudar de verdade'}</span><h2>{t.featuresTitle}</h2></div>
+    <section className="features-section section-pad">
+      <div className="section-heading centered" id="features"><span className="section-kicker">{language === 'en' ? 'Built for real study' : 'Feito para estudar de verdade'}</span><h2>{t.featuresTitle}</h2></div>
       <div className="feature-grid">
         {t.features.map(([icon, title, body]) => <article className="feature-card" key={title}><span className="feature-icon" aria-hidden="true">{icon}</span><h3>{title}</h3><p>{body}</p></article>)}
       </div>
@@ -300,9 +334,9 @@ const policy = {
       ['What stays on your device', 'Study progress and preferences are stored locally. This may include learned and reviewing words, study selections, foundation progress, reminders, downloaded audio, and display preferences. The developer does not receive this information.'],
       ['Backups you control', 'You may export a progress backup to a file location you choose and import it later. Kalima does not upload that backup. You control any external service or device location where you copy it.'],
       ['Network access and audio', 'Core lessons, study data, and Quran text are bundled for offline use. When you choose to stream or download Quran audio, word recordings come from QuranCDN and complete-ayah recitations come from EveryAyah. Those providers may receive normal connection information such as an IP address and request metadata.'],
-      ['Optional permissions', 'Notifications are used only for reminders you enable. Display-over-other-apps and foreground-service access support the optional return-to-phone study card. Boot access restores features you previously enabled after a restart. These features remain off until you turn them on.'],
+      ['Feature permissions', 'Lock-screen lessons can appear when the screen turns on after you enable them. They never bypass the device keyguard, PIN, password, or biometrics. Display-over-other-apps and foreground-service access support this feature, while boot access restores features you previously enabled after a restart. Everything remains off until you turn it on.'],
       ['Email, deletion, and retention', 'If you email support, your address and message are used to respond and troubleshoot. Delete local data by clearing Kalima’s app data or uninstalling it; exported backups must be deleted separately. Support correspondence is retained only as needed for the conversation, troubleshooting, legal obligations, or abuse prevention.'],
-      ['Children and changes', 'Kalima does not knowingly request or collect personal information from children. A parent or guardian should supervise optional email or external-site use. Material policy changes will be published here with a new effective date.'],
+      ['Children and changes', 'Kalima does not knowingly request or collect personal information from children. A parent or guardian should supervise email or external-site use. Material policy changes will be published here with a new effective date.'],
     ],
   },
   pt: {
@@ -311,7 +345,7 @@ const policy = {
       ['O que fica no seu aparelho', 'O progresso e as preferências ficam armazenados localmente. Isso pode incluir palavras aprendidas ou em revisão, seleções de estudo, progresso inicial, lembretes, áudios baixados e preferências visuais. O desenvolvedor não recebe essas informações.'],
       ['Backups sob seu controle', 'Você pode exportar um backup do progresso para um local escolhido e importá-lo depois. O Kalima não envia esse arquivo. Você controla qualquer serviço externo ou aparelho para onde decida copiá-lo.'],
       ['Internet e áudio', 'As lições principais, os dados de estudo e o texto do Alcorão vêm incluídos para uso offline. Quando você escolhe ouvir ou baixar áudio, as palavras vêm do QuranCDN e as recitações de ayahs completas vêm do EveryAyah. Esses serviços podem receber informações normais da conexão, como endereço IP e metadados.'],
-      ['Permissões opcionais', 'Notificações são usadas apenas para lembretes ativados por você. Exibição sobre outros apps e serviço em primeiro plano permitem o cartão opcional ao voltar ao celular. O acesso após a inicialização restaura recursos antes ativados. Tudo permanece desligado até você ativar.'],
+      ['Permissões opcionais', 'Lições opcionais na tela bloqueada podem aparecer quando a tela acende depois que você as ativa. Elas nunca contornam o bloqueio do aparelho, PIN, senha ou biometria. A exibição sobre outros apps e o serviço em primeiro plano dão suporte a esse recurso, enquanto o acesso após a inicialização restaura recursos antes ativados. Tudo permanece desligado até você ativar.'],
       ['E-mail, exclusão e retenção', 'Ao enviar e-mail ao suporte, seu endereço e mensagem são usados para responder e investigar o problema. Exclua os dados locais limpando os dados do app ou desinstalando-o; backups exportados devem ser apagados separadamente. A correspondência é mantida somente enquanto necessária.'],
       ['Crianças e alterações', 'O Kalima não solicita nem coleta intencionalmente informações pessoais de crianças. Um responsável deve supervisionar contatos opcionais por e-mail ou sites externos. Mudanças relevantes serão publicadas aqui com uma nova data.'],
     ],
@@ -332,7 +366,7 @@ function Support({ language }: { language: Language }) {
     <div className="support-grid">
       <div className="support-card"><span>01</span><h2>{pt ? 'Informações úteis' : 'Helpful details'}</h2><ul><li>{pt ? 'O que você estava tentando fazer' : 'What you were trying to do'}</li><li>{pt ? 'O que aconteceu' : 'What happened instead'}</li><li>{pt ? 'Modelo e versão do Android' : 'Device model and Android version'}</li><li>{pt ? 'Uma captura de tela, se possível' : 'A screenshot, if possible'}</li></ul></div>
       <div className="support-card"><span>02</span><h2>{pt ? 'Sobre o app' : 'About the app'}</h2><dl><div><dt>{pt ? 'Plataforma' : 'Platform'}</dt><dd>Android 8+</dd></div><div><dt>{pt ? 'Idiomas' : 'Languages'}</dt><dd>English · Português</dd></div><div><dt>{pt ? 'Preço' : 'Price'}</dt><dd>{pt ? 'Grátis, sem anúncios' : 'Free, no ads'}</dd></div></dl></div>
-      <div className="support-card support-card-dark"><span>03</span><h2>{pt ? 'Apoie o desenvolvimento' : 'Support development'}</h2><p>{pt ? 'Se o Kalima ajuda você, uma contribuição opcional apoia o desenvolvimento independente e futuros apps para muçulmanos.' : 'If Kalima helps you, an optional contribution supports independent development and future apps for Muslims.'}</p><a href={facts.support}>{pt ? 'Perguntar como apoiar' : 'Ask how to contribute'} →</a></div>
+      <div className="support-card support-card-dark"><span>03</span><h2>{pt ? 'Apoie o desenvolvimento' : 'Support development'}</h2><p>{pt ? 'Se o Kalima ajuda você, uma contribuição apoia o desenvolvimento independente e futuros apps para muçulmanos.' : 'If Kalima helps you, a contribution supports independent development and future apps for Muslims.'}</p><a href={facts.support}>{pt ? 'Perguntar como apoiar' : 'Ask how to contribute'} →</a></div>
     </div>
   </article>;
 }

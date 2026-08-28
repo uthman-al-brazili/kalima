@@ -118,6 +118,7 @@ class MainActivity : ComponentActivity() {
                 onMaximumWordsChange = store::setMaximumWords,
                 onThemeModeChange = store::setThemeMode,
                 onQuranFontSizeChange = store::setQuranFontSize,
+                onQuranLearningOverlayChange = store::setQuranLearningOverlayEnabled,
                 onAdvancedSettingsVisibleChange = store::setAdvancedSettingsVisible,
                 onShowCompleteAyahChange = store::setShowCompleteAyah,
                 onSpacedRepetitionEnabledChange = store::setSpacedRepetitionEnabled,

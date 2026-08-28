@@ -59,6 +59,7 @@ object ProgressBackupCodec {
             "lockScreenQuizInterval" to progress.lockScreenQuizInterval.toString(),
             "themeMode" to progress.themeMode.name,
             "quranFontSizeSp" to progress.quranFontSizeSp.toString(),
+            "quranLearningOverlayEnabled" to progress.quranLearningOverlayEnabled.toString(),
             "advancedSettingsVisible" to progress.advancedSettingsVisible.toString(),
             "showCompleteAyah" to progress.showCompleteAyah.toString(),
             "spacedRepetitionEnabled" to progress.spacedRepetitionEnabled.toString(),
@@ -208,6 +209,10 @@ object ProgressBackupCodec {
                     "quranFontSizeSp",
                     QuranReaderTypography.DEFAULT_FONT_SIZE_SP,
                 ),
+            ),
+            quranLearningOverlayEnabled = values.optionalBoolean(
+                "quranLearningOverlayEnabled",
+                false,
             ),
             advancedSettingsVisible = values.boolean("advancedSettingsVisible"),
             showCompleteAyah = values.optionalBoolean("showCompleteAyah", false),

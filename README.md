@@ -205,6 +205,13 @@ O arquivo `tools/pt_gloss_cache.json` deve ser revisado por um especialista ante
 
 Cada versão concluída deve ser preservada com commit, tag Git, APK e arquivo ZIP do código-fonte. As mudanças de cada atualização ficam em [CHANGELOG.md](CHANGELOG.md). Os artefatos locais ficam em `releases/` e o procedimento completo está documentado em [RELEASE_PROCESS.md](RELEASE_PROCESS.md).
 
+## Contribuindo
+
+Consulte [CONTRIBUTING.md](CONTRIBUTING.md) antes de enviar uma mudança. Pull
+requests executam automaticamente os testes unitários Android e os contratos de
+regressão de inicialização e tela bloqueada. Vulnerabilidades devem seguir a
+política de divulgação em [SECURITY.md](SECURITY.md).
+
 ## Próximas etapas
 
 - revisão acadêmica/religiosa do conteúdo inicial;

@@ -97,42 +97,6 @@ class StudyMissionTest {
     }
 
     @Test
-    fun `completion appears only when this session crosses the daily goal`() {
-        assertTrue(
-            shouldShowDailyMissionCompletion(
-                sessionStartedAtCount = 2,
-                dailyGoal = 3,
-                answeredBeforeAction = setOf("one", "two"),
-                completedWordId = "three",
-            ),
-        )
-        assertFalse(
-            shouldShowDailyMissionCompletion(
-                sessionStartedAtCount = 3,
-                dailyGoal = 3,
-                answeredBeforeAction = setOf("one", "two", "three"),
-                completedWordId = "four",
-            ),
-        )
-        assertFalse(
-            shouldShowDailyMissionCompletion(
-                sessionStartedAtCount = 2,
-                dailyGoal = 3,
-                answeredBeforeAction = setOf("one", "two"),
-                completedWordId = "two",
-            ),
-        )
-        assertFalse(
-            shouldShowDailyMissionCompletion(
-                sessionStartedAtCount = 2,
-                dailyGoal = 3,
-                answeredBeforeAction = setOf("one", "two", "external"),
-                completedWordId = "four",
-            ),
-        )
-    }
-
-    @Test
     fun `completion payoff chooses the reviewed ayah with the most recognized words`() {
         val first = word("first")
         val second = word("second")
@@ -169,6 +133,26 @@ class StudyMissionTest {
     }
 
     @Test
+    fun `next word always advances instead of opening daily completion`() {
+        val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
+        val nextWordHandler = source.substringAfter("onNextWord = {").substringBefore("onAgain = {")
+
+        assertTrue(nextWordHandler.contains("moveToNextWord()"))
+        assertFalse(nextWordHandler.contains("showCompletion = true"))
+        assertFalse(nextWordHandler.contains("shouldShowDailyMissionCompletion("))
+    }
+
+    @Test
+    fun `daily completion opens only from the explicit results button`() {
+        val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
+
+        assertTrue(source.contains("mission.goalComplete && sessionWordIds.isNotEmpty()"))
+        assertTrue(source.contains("onViewTodayResults = if"))
+        assertTrue(source.contains("onClick = onViewTodayResults"))
+        assertEquals(1, Regex("showCompletion = true").findAll(source).count())
+    }
+
+    @Test
     fun `mission time refreshes while visible and when the app resumes`() {
         val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
 
@@ -183,7 +167,7 @@ class StudyMissionTest {
         val dateKeyedState = "rememberSaveable(scopeKey, selectionKey, missionDate)"
 
         assertTrue(source.contains("val missionDate = missionNow.atZone(ZoneId.systemDefault()).toLocalDate()"))
-        assertEquals(4, Regex(Regex.escape(dateKeyedState)).findAll(source).count())
+        assertEquals(3, Regex(Regex.escape(dateKeyedState)).findAll(source).count())
         assertTrue(source.contains("DisposableEffect(lifecycleOwner)"))
         assertTrue(source.contains("if (event == Lifecycle.Event.ON_RESUME)"))
         assertTrue(source.contains("LaunchedEffect(Unit)"))
@@ -194,6 +178,8 @@ class StudyMissionTest {
     fun `interactive ayah replaces the static ayah`() {
         val source = File("src/main/java/com/kalima/quran/ui/StudyMissionScreen.kt").readText()
 
+        assertTrue(source.contains("R.string.explore_ayah_word_by_word"))
+        assertFalse(source.contains("R.string.read_the_ayah"))
         assertTrue(
             source.contains(
                 "if (!showInteractiveAyah) {\n" +
@@ -201,6 +187,13 @@ class StudyMissionTest {
                     "                        payoff.featuredWord.verseArabic",
             ),
         )
+    }
+
+    @Test
+    fun `daily completion word sheet omits duplicate ayah audio action`() {
+        val source = File("src/main/java/com/kalima/quran/ui/StudyMissionScreen.kt").readText()
+
+        assertTrue(source.contains("showVersePronunciation = false"))
     }
 
     private fun word(id: String) = QuranWord(

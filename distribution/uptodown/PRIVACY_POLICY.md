@@ -3,7 +3,8 @@
 - **Effective date / Data de vigência:** 2026-08-20
 - **Developer / Desenvolvedor:** Uthman (Gustavo)
 - **Contact / Contato:** uthman-al-brazili@proton.me
-- **Website / Site:** https://sites.google.com/view/kalimaapp
+- **Website / Site:** https://kalima-h1f.pages.dev/
+- **Public policy / Política pública:** https://kalima-h1f.pages.dev/privacy
 
 ## English
 

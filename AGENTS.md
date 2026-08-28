@@ -1,43 +1,103 @@
 # Kalima workspace instructions
 
-Use subagents for concrete, bounded subtasks whenever project work can be
-usefully divided or parallelized. The primary agent remains responsible for
-integrating the results and verifying the completed work. Trivial atomic tasks
-do not need artificial delegation.
+## Scope
 
-For every delegated subtask, explicitly select the subagent's model and
-reasoning effort using current official OpenAI model guidance. Choose the least
-costly available model and the lowest effort reasonably expected to meet the
-subtask's acceptance criteria, considering complexity, risk, required quality,
-latency, and expected token use. Escalate the model or effort only when the
-task's difficulty, impact, or verification results justify it. Do not hard-code
-a model/effort matrix that may become stale; re-check the official guidance as
-the available model lineup changes.
+Application work targets Android only unless the user explicitly requests
+Windows work. Preserve all Windows source and release artifacts. Preserve
+unrelated user changes in the working tree.
 
-Application changes target the Android version only by default. Do not change,
-version, build, test, package, or release the Windows version unless the user
-explicitly requests Windows work. Preserve the existing Windows source and
-release artifacts when completing Android changes.
+## Low-token default
 
-For every completed Android application change that produces a new version:
+Use the development fast path unless the user explicitly requests a release,
+exhaustive verification, or work whose risk clearly requires more scrutiny.
 
-1. Increment Android `versionCode` and `versionName` in `app/build.gradle.kts`.
-2. Add a dated section for the version at the top of `CHANGELOG.md`, summarizing its user-visible features and fixes.
-3. Run the relevant unit tests, Android lint, and APK assembly.
-4. Never overwrite or delete an existing file in `releases/`.
-5. Copy the validated APK to `releases/kalima-<version>-debug.apk`.
-6. Commit the complete source state and create the matching annotated Git tag `v<version>`.
+- Inspect only affected files and nearby code. Prefer targeted `rg` searches and
+  small excerpts over repository-wide reads or complete logs.
+- Use the lowest adequate reasoning effort when it can be selected: `low` for
+  mechanical lookups, `medium` for routine changes, `high` for non-obvious or
+  cross-cutting work, and `xhigh` only for especially difficult, high-impact,
+  security-sensitive, or release-critical work. Reserve `max` for exceptional
+  quality-first work.
+- Do not create a detailed plan for a straightforward change. Keep commentary
+  to a short starting update, material findings or blockers, and a concise final
+  report.
+- During implementation, run the smallest relevant check after the source is
+  stable. Do not repeat unchanged checks or the complete verification gate.
+- Capture verbose command output in a temporary log and inspect only summaries
+  and relevant errors. Diagnose failures before retrying.
+- Keep context lean. After a completed milestone, retain the objective,
+  decisions, changed files, verification results, and remaining work; do not
+  reload or restate completed work.
+
+## Delegation and model choice
+
+Use the primary agent alone for routine discovery, focused edits, ordinary
+testing, log inspection, and documentation. Use subagents only when the user
+explicitly requests them or when the task contains at least two substantial,
+independent workstreams whose parallel execution will materially reduce elapsed
+time. Coordination overhead must not exceed the expected benefit.
+
+For every delegated subtask, explicitly select its model and reasoning effort.
+Never use Terra. Use Luna for concrete, bounded, low-risk work with clear
+acceptance criteria. Use Sol for ambiguous, cross-cutting, architectural,
+difficult, security-sensitive, or release-sensitive work. Select the lowest
+reasoning effort expected to satisfy the subtask and escalate only after the
+scope, risk, ambiguity, or failed verification justifies it.
+
+Do not browse or fetch documentation merely to refresh this saved model policy.
+
+## Development verification
+
+For an ordinary Android change:
+
+1. Inspect the affected code and existing Gradle task names before running
+   Gradle.
+2. Run the smallest tests or compilation check that validates the changed
+   surface.
+3. Run `verifyLockScreenRegression` once after the final source edit. This check
+   remains mandatory for every Android application change.
+4. Run Android lint or APK assembly during development only when needed to
+   validate the affected build, resource, manifest, packaging, or integration
+   surface, or when the user explicitly requests it.
+
+Do not bump versions, edit release notes, create release artifacts, commit, or
+tag as part of an ordinary development change.
+
+## Explicit release workflow
+
+Treat work as a release only when the user explicitly asks to release, package,
+version, or publish it. Once the source is stable:
+
+1. Confirm the requested version does not already exist in `releases/`; stop
+   rather than overwrite an existing artifact.
+2. Increment Android `versionCode` and `versionName` in
+   `app/build.gradle.kts`.
+3. Add a dated section at the top of `CHANGELOG.md` summarizing user-visible
+   changes.
+4. In one Gradle invocation where practical, run the relevant unit tests,
+   Android lint, `verifyLockScreenRegression`, and APK assembly.
+5. Copy the validated APK to `releases/kalima-<version>-debug.apk` without
+   deleting or replacing other release files.
+6. Commit the complete intended source state and create annotated tag
+   `v<version>`.
 7. Create `releases/kalima-<version>-source.zip` from that tag.
-8. Update `releases/SHA256SUMS.txt` with checksums for the APK and source archive.
+8. Update `releases/SHA256SUMS.txt` with the APK and source archive checksums.
 
-Preserve existing progress-compatible identifiers and unrelated user changes. If a requested release name already exists, stop instead of replacing the backup.
+## Lock-screen regression contract
 
-Lock-screen cards are a critical Android regression contract. They must launch
-over the still-locked keyguard when the display turns on, including on a Samsung
-Galaxy M23 5G running Android 14; they must not wait for `ACTION_USER_PRESENT`.
-For every Android application change, run `verifyLockScreenRegression` in
-addition to the relevant tests, lint, and assembly. Never remove or bypass the
-manifest/window `showWhenLocked` declarations, the `ACTION_SCREEN_ON` launch
-path, or the explicit locked-device safety allowance. When a compatible Android
-14 device is connected, also install the candidate APK and exercise a real
-screen-off/screen-on cycle before completing the release.
+Lock-screen cards must launch over the still-locked keyguard when the display
+turns on, including on a Samsung Galaxy M23 5G running Android 14. They must not
+wait for `ACTION_USER_PRESENT`. Never remove or bypass the manifest/window
+`showWhenLocked` declarations, the `ACTION_SCREEN_ON` launch path, or the
+explicit locked-device safety allowance. For a release, when a compatible
+Android 14 device is connected, install the candidate APK and exercise a real
+screen-off/screen-on cycle.
+
+## External information
+
+Never use a browser, in-app browser, web search, webpage fetching, or URL
+navigation without the user's explicit permission for the current task. First
+use installed purpose-built connectors, local project files and documentation,
+and available local command-line or API tools. If browser access is still
+necessary, explain what is missing and wait for permission. When permission is
+granted, reuse the current tab and open the minimum number of pages required.

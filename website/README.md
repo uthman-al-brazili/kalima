@@ -1,6 +1,6 @@
 # Kalima website
 
-A static React and Vite website for Kalima. It includes English and Brazilian Portuguese content, real app screenshots, privacy and support pages, and no analytics or remote fonts.
+A static React and Vite website for Kalima. It includes English and Brazilian Portuguese content, edited promotional artwork based on the Android experience, privacy and support pages, and no analytics or remote fonts.
 
 ## Local development
 
@@ -19,8 +19,10 @@ The deployable output is generated in `dist/`.
 
 ## Publishing
 
-The production website is always published to the existing Cloudflare Pages
-project at `https://kalima-h1f.pages.dev/`:
+Publishing is manual and requires the user's explicit approval. For review,
+run the website only on localhost; do not create a public preview deployment.
+After approval, the production target is the existing Cloudflare Pages project
+at `https://kalima-h1f.pages.dev/`:
 
 ```powershell
 pnpm deploy:cloudflare
@@ -28,20 +30,28 @@ pnpm deploy:cloudflare
 
 Do not publish this website through ChatGPT Sites or another hosting provider.
 
-## App screenshots
+## Promotional artwork
 
-The website keeps separate, real Android captures in `public/screens/en/` and
-`public/screens/pt-BR/`. Portuguese visitors automatically receive the pt-BR
-set. Do not reuse screenshots from an older app release.
+The website keeps separate English and pt-BR promotional artwork in
+`public/screens/en/` and `public/screens/pt-BR/`. Portuguese visitors
+automatically receive the pt-BR set. These website-specific compositions place
+real app captures inside a simulated phone and add only the website's geometric
+background details. They must remain faithful to the shipped Android experience.
+
+Regenerate the website compositions from the source captures with:
+
+```powershell
+.\scripts\render-website-screens.ps1
+```
 
 For every Android UI release:
 
-1. Install the candidate APK and capture the four named screens in both app
-   languages.
-2. Replace the website images and any matching Uptodown listing images.
-3. Record the candidate APK SHA-256, capture date, device, and image SHA-256
-   values in `screenshots-manifest.json`. This internal record is not published
-   or displayed on the website.
+1. Review the four promotional images in both app languages against the
+   candidate APK and current product claims.
+2. Replace the website images and the matching Uptodown listing images.
+3. Record the release version, candidate APK SHA-256, artwork date, and image
+   SHA-256 values in `artwork-manifest.json`. This internal record is not
+   published or displayed on the website.
 4. Run `pnpm check`. It fails if an image differs from its recorded checksum or
    if either language set is incomplete.
 

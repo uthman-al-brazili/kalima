@@ -16,6 +16,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,6 +42,7 @@ fun VerseExplorerPanel(
     word: QuranWord,
     onOpenWord: ((String) -> Unit)? = null,
     highlightedWordIds: Set<String> = emptySet(),
+    showVersePronunciation: Boolean = true,
 ) {
     val tokens = remember(word.id, word.verseArabic) { WordRepository.verseTokens(word) }
     var selectedTokenIndex by rememberSaveable(word.id) { mutableStateOf<Int?>(null) }
@@ -103,6 +105,7 @@ fun VerseExplorerPanel(
             indexed = selectedToken?.word != null,
             onDismiss = { selectedTokenIndex = null },
             onOpenWord = if (selectedToken?.word != null) onOpenWord else null,
+            showVersePronunciation = showVersePronunciation,
         )
     }
 }
@@ -114,6 +117,8 @@ internal fun WordExplorerSheet(
     indexed: Boolean,
     onDismiss: () -> Unit,
     onOpenWord: ((String) -> Unit)?,
+    studyActionLabel: String? = null,
+    showVersePronunciation: Boolean = true,
     inCustomList: Boolean = false,
     onToggleCustomList: ((String) -> Unit)? = null,
 ) {
@@ -147,13 +152,26 @@ internal fun WordExplorerSheet(
                 pronouncer = pronouncer,
                 modifier = Modifier.fillMaxWidth(),
             )
-            VersePronunciationButton(
-                word = word,
-                pronouncer = pronouncer,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            if (indexed && onToggleCustomList != null) {
+            if (showVersePronunciation) {
+                VersePronunciationButton(
+                    word = word,
+                    pronouncer = pronouncer,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            if (onOpenWord != null) {
                 Button(
+                    onClick = {
+                        onOpenWord(word.id)
+                        onDismiss()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(studyActionLabel ?: stringResource(R.string.open_word_for_study))
+                }
+            }
+            if (indexed && onToggleCustomList != null) {
+                OutlinedButton(
                     onClick = { onToggleCustomList(word.id) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -166,17 +184,6 @@ internal fun WordExplorerSheet(
                             },
                         ),
                     )
-                }
-            }
-            if (onOpenWord != null) {
-                Button(
-                    onClick = {
-                        onOpenWord(word.id)
-                        onDismiss()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.open_word_for_study))
                 }
             }
             if (occurrences.isNotEmpty()) {

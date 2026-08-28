@@ -7,11 +7,11 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "node scripts/verify-screenshots.mjs && tsc --noEmit && vite build",
+    "build": "node scripts/verify-artwork.mjs && tsc --noEmit && vite build",
     "deploy:cloudflare": "pnpm build && wrangler pages deploy dist --project-name kalima --branch main",
     "preview": "vite preview --host 127.0.0.1",
-    "check": "node scripts/verify-screenshots.mjs && tsc --noEmit",
-    "verify:screenshots": "node scripts/verify-screenshots.mjs"
+    "check": "node scripts/verify-artwork.mjs && tsc --noEmit",
+    "verify:artwork": "node scripts/verify-artwork.mjs"
   },
   "dependencies": {
     "react": "19.2.6",

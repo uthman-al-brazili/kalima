@@ -459,15 +459,24 @@ object WordRepository {
     @Synchronized
     fun prepareDeferredIndexes() {
         val source = words
-        if (searchIndex != null && referenceIndex != null && lemmaIndex != null) return
+        if (
+            searchIndex != null &&
+            referenceIndex != null &&
+            lemmaIndex != null &&
+            readerIndex != null
+        ) {
+            return
+        }
 
         val preparedSearchIndex = buildSearchIndex(source)
         val preparedReferenceIndex = source.groupBy(QuranWord::reference)
         val preparedLemmaIndex = source.groupBy(::lemmaKey)
+        val preparedReaderIndex = QuranReaderWordIndex(source)
         if (corpusWords !== source) return
         searchIndex = preparedSearchIndex
         referenceIndex = preparedReferenceIndex
         lemmaIndex = preparedLemmaIndex
+        readerIndex = preparedReaderIndex
     }
 
     @Synchronized
@@ -611,6 +620,16 @@ object WordRepository {
             .orEmpty()
         if (readerTokens.isNotEmpty()) {
             return VerseExplorer.buildIndexedTokens(readerTokens, word) { token ->
+                readerWordFor(token, word.verseArabic)
+            }
+        }
+        if (location != null) {
+            return VerseExplorer.buildIndexedTextTokens(
+                verseArabic = word.verseArabic,
+                surahNumber = location.surah,
+                ayahNumber = location.ayah,
+                selectedWord = word,
+            ) { token ->
                 readerWordFor(token, word.verseArabic)
             }
         }

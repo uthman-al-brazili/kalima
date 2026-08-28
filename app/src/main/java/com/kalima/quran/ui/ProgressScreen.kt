@@ -33,13 +33,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.HijriCalendar
 import com.kalima.quran.data.HijriCalendarDate
+import com.kalima.quran.data.QuranVocabularyCoverage
+import com.kalima.quran.data.SurahVocabularyCoverage
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.VocabularyCoverage
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.ReviewHistory
 import com.kalima.quran.data.limitNewWords
@@ -81,6 +85,12 @@ fun ProgressScreen(
     }
     val dueInScope = progress.dueReviewCount(learningWords.mapTo(mutableSetOf()) { it.id })
     val learnedFraction = if (activeWords.isEmpty()) 0f else learnedInScope.toFloat() / activeWords.size
+    val recognizedWordIds = remember(progress.learnedIds, progress.alreadyKnownIds) {
+        progress.learnedIds + progress.alreadyKnownIds
+    }
+    val vocabularyCoverage = remember(recognizedWordIds) {
+        VocabularyCoverage.calculate(WordRepository.words, recognizedWordIds)
+    }
     val selectedPathSummary = progress.studyScopes
         .sortedBy(StudyScope::ordinal)
         .map { scope -> studyScopeDescription(scope) }
@@ -184,6 +194,8 @@ fun ProgressScreen(
                 )
             }
         }
+        Spacer(Modifier.height(24.dp))
+        VocabularyCoverageSummary(vocabularyCoverage)
         Spacer(Modifier.height(24.dp))
         Text(
             stringResource(R.string.guided_paths),
@@ -316,23 +328,92 @@ fun ProgressScreen(
         Spacer(Modifier.height(24.dp))
         RootMastery(activeWords, progress)
         Spacer(Modifier.height(24.dp))
-        SurahMastery(activeWords, progress)
+        VocabularyCoverageBySurah(vocabularyCoverage)
         Spacer(Modifier.height(24.dp))
     }
 }
 
 @Composable
-private fun SurahMastery(words: List<com.kalima.quran.data.QuranWord>, progress: StudyProgress) {
-    val surahs = remember(words, progress.learnedIds, progress.reviewingIds, progress.alreadyKnownIds) {
-        words.filter { it.surahNumber != null }
-            .groupBy { requireNotNull(it.surahNumber) }
-            .map { (surah, surahWords) ->
-                Triple(surah, surahWords.count { progress.statusFor(it.id) != com.kalima.quran.data.WordStatus.New }, surahWords.size)
+private fun VocabularyCoverageSummary(coverage: QuranVocabularyCoverage) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        shape = RoundedCornerShape(22.dp),
+    ) {
+        Column(Modifier.padding(18.dp)) {
+            Text(
+                stringResource(R.string.vocabulary_coverage_title),
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Spacer(Modifier.height(5.dp))
+            Text(
+                stringResource(R.string.vocabulary_coverage_note),
+                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.82f),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(14.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    stringResource(R.string.vocabulary_coverage_percent, coverage.percent),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineMedium,
+                )
+                Text(
+                    stringResource(
+                        R.string.vocabulary_coverage_occurrences,
+                        coverage.recognizedOccurrences,
+                        coverage.totalOccurrences,
+                    ),
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    textAlign = TextAlign.End,
+                    style = MaterialTheme.typography.labelMedium,
+                )
             }
-            .sortedWith(compareByDescending<Triple<Int, Int, Int>> { it.second }.thenBy { it.first })
+            Spacer(Modifier.height(9.dp))
+            LinearProgressIndicator(
+                progress = { coverage.percent / 100f },
+                modifier = Modifier.fillMaxWidth().height(9.dp),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.12f),
+            )
+            Spacer(Modifier.height(9.dp))
+            Text(
+                coverage.nextMilestonePercent?.let { milestone ->
+                    stringResource(R.string.vocabulary_coverage_next_milestone, milestone)
+                } ?: stringResource(R.string.vocabulary_coverage_top_milestone),
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.labelMedium,
+            )
+        }
+    }
+}
+
+@Composable
+private fun VocabularyCoverageBySurah(coverage: QuranVocabularyCoverage) {
+    val surahs = remember(coverage) {
+        coverage.surahs
+            .filter { it.recognizedOccurrences > 0 }
+            .sortedWith(
+                compareByDescending<SurahVocabularyCoverage> { it.percent }
+                    .thenByDescending { it.recognizedOccurrences }
+                    .thenBy { it.surahNumber },
+            )
             .take(5)
     }
-    Text(stringResource(R.string.surah_mastery), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    Text(
+        stringResource(R.string.surah_mastery),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+    )
     Text(
         stringResource(R.string.surah_mastery_note),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -341,24 +422,38 @@ private fun SurahMastery(words: List<com.kalima.quran.data.QuranWord>, progress:
     Spacer(Modifier.height(10.dp))
     if (surahs.isEmpty()) {
         Text(stringResource(R.string.no_history_yet), color = MaterialTheme.colorScheme.onSurfaceVariant)
-    } else surahs.forEach { (surah, familiar, total) ->
+    } else surahs.forEach { surah ->
         Column(modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    stringResource(R.string.surah_number, surah),
+                    stringResource(R.string.surah_number, surah.surahNumber),
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                 )
-                Text(stringResource(R.string.mastery_value, familiar, total), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    stringResource(R.string.vocabulary_coverage_percent, surah.percent),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold,
+                )
             }
             Spacer(Modifier.height(5.dp))
             LinearProgressIndicator(
-                progress = { if (total == 0) 0f else familiar.toFloat() / total },
+                progress = { surah.percent / 100f },
                 modifier = Modifier.fillMaxWidth().height(6.dp),
                 trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                stringResource(
+                    R.string.vocabulary_coverage_occurrences,
+                    surah.recognizedOccurrences,
+                    surah.totalOccurrences,
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall,
             )
         }
     }

@@ -8,7 +8,8 @@
 - Package name: `com.kalima.quran`
 - Developer/author: Uthman (Gustavo)
 - Support email: uthman-al-brazili@proton.me
-- Website: https://sites.google.com/view/kalimaapp
+- Website: https://kalima-h1f.pages.dev/
+- Privacy policy: https://kalima-h1f.pages.dev/privacy
 - Recommended age: PEGI 3 / Everyone
 - Ads: No
 - Country restrictions: None
@@ -20,13 +21,13 @@
 
 ## Short description
 
-Learn Quranic Arabic from your lock screen with optional, private micro-lessons.
+Learn Quranic Arabic from your lock screen, offline and ad-free.
 
 ## Full description
 
-Kalima is a lock-screen-first way to learn Quranic Arabic in English or Brazilian Portuguese. After you opt in, a short lesson can appear over the still-locked keyguard when the display turns on or when you return to your phone. You can answer or listen while the device stays locked; opening the full lesson asks Android to authenticate you first. Kalima never unlocks your phone or bypasses a PIN, password, pattern, fingerprint, or face authentication; Android keeps your device security in control. Lock-screen learning is optional and remains off until you enable it.
+Turn the moments when you check your phone into short Quranic Arabic lessons. Kalima is a lock-screen-first learning app in English and Brazilian Portuguese. After you opt in, a word card or quiz can appear over the still-locked screen when the display turns on. Review Arabic, hear the pronunciation, or answer a question while Android keeps the device locked. Opening the complete lesson requires normal Android authentication. Kalima never bypasses your PIN, password, pattern, fingerprint, or face authentication. Lock-screen learning is optional, off by default, and is the app’s central learning experience rather than a simple reminder notification.
 
-The lesson stream is built from Kalima’s original offline Quran corpus of 42,117 indexed word cards. Each card connects Arabic text with transliteration, contextual meaning, grammar, root information, and a Quran reference. The Daily Quran Word home-screen widget adds another opt-in way to revisit a word between lessons.
+Kalima’s learning system is designed specifically for Quranic Arabic and uses an offline corpus of 42,117 indexed word cards. Each card connects Arabic text with transliteration, contextual meaning, grammar, root information, and its Quran reference. The Daily Quran Word home-screen widget provides another optional way to revisit a word and opens the exact matching lesson in the app.
 
 Kalima uses spaced repetition to bring words back when they are due. Choose essential words, prayer vocabulary, short surahs, the complete corpus, specific surahs, or a personal list. Five-question quizzes include mixed, listening, cloze, root, due-review, and difficult-word modes. Contextual questions can ask which word completes a verse or what a highlighted Quran word means.
 
@@ -40,11 +41,8 @@ Meanings and grammar are learning aids tied to Quran context and do not replace 
 
 ## Version notes — 0.30.3
 
-- Removes the circular widget decorations while retaining the subtle deep-green
-  gradient and centered learning content.
-- Centers the Daily Quran Word widget content and adds a richer deep-green
-  background.
-- Fixes the Daily Quran Word widget so tapping it always opens the exact word shown.
-- Makes lock-screen learning the central onboarding and Study experience, with clearer opt-in messaging for a short lesson when the locked display turns on or you return to your phone.
-- Adds the Daily Quran Word home-screen widget with Arabic, transliteration, contextual meaning, Quran reference, a Next action, and a direct route to that lesson in Kalima.
-- Keeps PIN, password, pattern, biometrics, and other Android device security controls untouched; lock-screen learning remains optional.
+- Makes optional lock-screen Quranic Arabic lessons the central onboarding and Study experience.
+- Adds the Daily Quran Word home-screen widget with Arabic, transliteration, contextual meaning, Quran reference, and a direct route to the exact lesson.
+- Adds a Next action that changes the widget word without altering learning progress.
+- Improves the widget’s deep-green visual design and centered learning content.
+- Preserves Android’s PIN, password, pattern, fingerprint, and face-authentication protections.

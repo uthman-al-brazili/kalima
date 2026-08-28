@@ -66,6 +66,7 @@ fun KalimaApp(
     onMaximumWordsChange: (Int) -> Unit,
     onThemeModeChange: (AppThemeMode) -> Unit,
     onQuranFontSizeChange: (Int) -> Unit,
+    onQuranLearningOverlayChange: (Boolean) -> Unit,
     onAdvancedSettingsVisibleChange: (Boolean) -> Unit,
     onShowCompleteAyahChange: (Boolean) -> Unit,
     onSpacedRepetitionEnabledChange: (Boolean) -> Unit,
@@ -106,9 +107,14 @@ fun KalimaApp(
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
     var handledStudyRequestId by rememberSaveable { mutableLongStateOf(NO_STUDY_REQUEST) }
     var excludedWordsRequestId by rememberSaveable { mutableLongStateOf(0L) }
+    var readerStudyWordId by rememberSaveable { mutableStateOf<String?>(null) }
+    var readerStudyRequestId by rememberSaveable { mutableLongStateOf(-1L) }
     val hasPendingStudyRequest = studyLaunchTarget != null &&
         studyLaunchTarget.requestId != handledStudyRequestId
     val selected = if (hasPendingStudyRequest) AppTab.Study else AppTab.valueOf(selectedName)
+    val activeStudyLaunchTarget = studyLaunchTarget ?: readerStudyWordId?.let { wordId ->
+        StudyLaunchTarget(wordId, readerStudyRequestId)
+    }
     val pronouncer = rememberArabicPronouncer()
     val screenStateHolder = rememberSaveableStateHolder()
 
@@ -185,18 +191,30 @@ fun KalimaApp(
                             onToggleAlreadyKnown = onToggleAlreadyKnown,
                             onShowCompleteAyahChange = onShowCompleteAyahChange,
                             onOpenFoundations = { selectedName = AppTab.Foundations.name },
-                            launchTarget = studyLaunchTarget,
+                            launchTarget = activeStudyLaunchTarget,
                             onLaunchTargetHandled = { requestId ->
                                 selectedName = AppTab.Study.name
-                                handledStudyRequestId = requestId
-                                onStudyLaunchTargetHandled(requestId)
+                                if (requestId == readerStudyRequestId) {
+                                    readerStudyWordId = null
+                                } else {
+                                    handledStudyRequestId = requestId
+                                    onStudyLaunchTargetHandled(requestId)
+                                }
                             },
                         )
                         AppTab.Quran -> QuranReaderScreen(
+                            progress = progress,
                             fontSizeSp = progress.quranFontSizeSp,
                             customStudyIds = progress.customStudyIds,
+                            learningOverlayEnabled = progress.quranLearningOverlayEnabled,
                             onFontSizeChange = onQuranFontSizeChange,
+                            onLearningOverlayChange = onQuranLearningOverlayChange,
                             onToggleCustomList = onToggleCustomList,
+                            onStudyWord = { wordId ->
+                                readerStudyRequestId -= 1L
+                                readerStudyWordId = wordId
+                                selectedName = AppTab.Study.name
+                            },
                         )
                         AppTab.Library -> LibraryScreen(
                             progress = progress,

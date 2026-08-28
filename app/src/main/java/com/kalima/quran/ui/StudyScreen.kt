@@ -35,7 +35,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -174,9 +173,6 @@ fun StudyScreen(
     val missionDate = missionNow.atZone(ZoneId.systemDefault()).toLocalDate()
     var showMission by rememberSaveable(scopeKey, selectionKey, missionDate) { mutableStateOf(true) }
     var showCompletion by rememberSaveable(scopeKey, selectionKey, missionDate) { mutableStateOf(false) }
-    var sessionStartedAtCount by rememberSaveable(scopeKey, selectionKey, missionDate) {
-        mutableIntStateOf(progress.todayCompleted)
-    }
     var sessionWordIds by rememberSaveable(scopeKey, selectionKey, missionDate) {
         mutableStateOf(arrayListOf<String>())
     }
@@ -207,7 +203,6 @@ fun StudyScreen(
             missionSessionDate = missionDate.toString()
             showMission = true
             showCompletion = false
-            sessionStartedAtCount = mission.completedWords
             sessionWordIds = arrayListOf()
         }
     }
@@ -219,7 +214,6 @@ fun StudyScreen(
             lockScreenEnabled = progress.lockScreenEnabled,
             onEnableLockScreen = onEnableLockScreen,
             onStart = {
-                sessionStartedAtCount = mission.completedWords
                 sessionWordIds = arrayListOf()
                 showMission = false
             },
@@ -326,6 +320,11 @@ fun StudyScreen(
             StudyHeader(
                 progress = progress,
                 dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
+                onViewTodayResults = if (mission.goalComplete && sessionWordIds.isNotEmpty()) {
+                    { showCompletion = true }
+                } else {
+                    null
+                },
             )
             Spacer(Modifier.height(16.dp))
             if (!progress.lockScreenEnabled) {
@@ -391,54 +390,18 @@ fun StudyScreen(
             onRevealMeaning = { meaningRevealed = true },
             onNextWord = {
                 activeIntroductionId = null
-                val answeredBeforeIntroduction = mission.answeredWordIds - word.id
                 sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
-                if (
-                    shouldShowDailyMissionCompletion(
-                        sessionStartedAtCount = sessionStartedAtCount,
-                        dailyGoal = progress.dailyGoal,
-                        answeredBeforeAction = answeredBeforeIntroduction,
-                        completedWordId = word.id,
-                    )
-                ) {
-                    showCompletion = true
-                } else {
-                    moveToNextWord()
-                }
+                moveToNextWord()
             },
             onAgain = {
-                val answeredBeforeAction = mission.answeredWordIds
                 onAnswer(word.id, false)
                 sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
-                if (
-                    shouldShowDailyMissionCompletion(
-                        sessionStartedAtCount = sessionStartedAtCount,
-                        dailyGoal = progress.dailyGoal,
-                        answeredBeforeAction = answeredBeforeAction,
-                        completedWordId = word.id,
-                    )
-                ) {
-                    showCompletion = true
-                } else {
-                    moveToNextWord()
-                }
+                moveToNextWord()
             },
             onRemembered = {
-                val answeredBeforeAction = mission.answeredWordIds
                 onAnswer(word.id, true)
                 sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
-                if (
-                    shouldShowDailyMissionCompletion(
-                        sessionStartedAtCount = sessionStartedAtCount,
-                        dailyGoal = progress.dailyGoal,
-                        answeredBeforeAction = answeredBeforeAction,
-                        completedWordId = word.id,
-                    )
-                ) {
-                    showCompletion = true
-                } else {
-                    moveToNextWord()
-                }
+                moveToNextWord()
             },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
@@ -1360,7 +1323,11 @@ internal fun studyQueueSourceWords(
 ): List<QuranWord> = availableWords.ifEmpty { listOfNotNull(requestedWord) }
 
 @Composable
-private fun StudyHeader(progress: StudyProgress, dueCount: Int) {
+private fun StudyHeader(
+    progress: StudyProgress,
+    dueCount: Int,
+    onViewTodayResults: (() -> Unit)?,
+) {
     val fraction = (progress.todayCompleted.toFloat() / progress.dailyGoal).coerceIn(0f, 1f)
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
@@ -1432,6 +1399,16 @@ private fun StudyHeader(progress: StudyProgress, dueCount: Int) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelMedium,
         )
+    }
+    if (onViewTodayResults != null) {
+        Spacer(Modifier.height(8.dp))
+        OutlinedButton(
+            onClick = onViewTodayResults,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
+        ) {
+            Text(stringResource(R.string.view_today_results), fontWeight = FontWeight.SemiBold)
+        }
     }
 }
 

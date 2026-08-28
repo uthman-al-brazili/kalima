@@ -16,7 +16,37 @@ desktop/build/
 tools/cache/
 __pycache__/
 *.pyc
+
+# Local automation and generated working files
+/.codex-tmp/
+/outputs/
+/audio-review/
+/Open Kalima Website Preview.cmd
+/update android apk for debug.cmd
+/distribution/uptodown/screenshots/device-captures/*.xml
+*.hprof
+
+# Credentials and signing material
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+google-services.json
+
+# Build and distribution packages belong in local backups or GitHub Releases
+*.apk
+*.aab
+*.apks
 /releases/*.apk
 /releases/*.zip
 /releases/*.exe
 /releases/SHA256SUMS.txt
+
+# Loose audio experiments; reviewed or application audio belongs in a named folder
+/*.mp3
+/*.wav
