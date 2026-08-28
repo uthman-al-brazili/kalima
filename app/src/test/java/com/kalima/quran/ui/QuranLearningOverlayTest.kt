@@ -4,7 +4,9 @@ import com.kalima.quran.data.ReviewSchedule
 import com.kalima.quran.data.StudyProgress
 import java.time.Instant
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class QuranLearningOverlayTest {
@@ -108,6 +110,14 @@ class QuranLearningOverlayTest {
             listOf("new-word", "review-word", "due-word", "learned-word"),
             routedIds,
         )
+    }
+
+    @Test
+    fun `reader conceals details only for recall actions`() {
+        assertFalse(shouldConcealQuranReaderWordDetails(QuranReaderStudyAction.Learn))
+        assertTrue(shouldConcealQuranReaderWordDetails(QuranReaderStudyAction.Review))
+        assertTrue(shouldConcealQuranReaderWordDetails(QuranReaderStudyAction.PracticeAgain))
+        assertFalse(shouldConcealQuranReaderWordDetails(null))
     }
 
     @Test

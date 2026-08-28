@@ -49,6 +49,11 @@ internal fun quranReaderStudyActionFor(
     QuranWordLearningState.Unindexed -> null
 }
 
+internal fun shouldConcealQuranReaderWordDetails(
+    action: QuranReaderStudyAction?,
+): Boolean = action == QuranReaderStudyAction.Review ||
+    action == QuranReaderStudyAction.PracticeAgain
+
 internal fun launchQuranReaderWordStudy(
     indexedWordId: String?,
     state: QuranWordLearningState,

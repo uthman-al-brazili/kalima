@@ -118,11 +118,15 @@ internal fun WordExplorerSheet(
     onDismiss: () -> Unit,
     onOpenWord: ((String) -> Unit)?,
     studyActionLabel: String? = null,
+    concealDetailsForRecall: Boolean = false,
     showVersePronunciation: Boolean = true,
     inCustomList: Boolean = false,
     onToggleCustomList: ((String) -> Unit)? = null,
 ) {
     val pronouncer = rememberArabicPronouncer()
+    var detailsRevealed by remember(word.id, concealDetailsForRecall) {
+        mutableStateOf(!concealDetailsForRecall)
+    }
     val occurrences = remember(word.id, indexed) {
         if (indexed) WordRepository.concordance(word) else emptyList()
     }
@@ -136,7 +140,19 @@ internal fun WordExplorerSheet(
             ArabicText(word.arabic, modifier = Modifier.fillMaxWidth(), size = 42)
             if (indexed) {
                 Text(word.transliteration, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(word.meaning, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                if (detailsRevealed) {
+                    Text(
+                        word.meaning,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                } else {
+                    Text(
+                        stringResource(R.string.recall_before_reveal),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             } else {
                 Text(
                     stringResource(R.string.word_details_not_indexed),
@@ -144,15 +160,21 @@ internal fun WordExplorerSheet(
                 )
             }
             Spacer(Modifier.height(8.dp))
-            if (indexed) RootAndGrammar(word.root, word.grammar)
-            Text(word.reference, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-            CitationActions(word)
+            if (indexed && detailsRevealed) RootAndGrammar(word.root, word.grammar)
+            if (detailsRevealed) {
+                Text(
+                    word.reference,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+                CitationActions(word)
+            }
             PronunciationButton(
                 word = word,
                 pronouncer = pronouncer,
                 modifier = Modifier.fillMaxWidth(),
             )
-            if (showVersePronunciation) {
+            if (showVersePronunciation && detailsRevealed) {
                 VersePronunciationButton(
                     word = word,
                     pronouncer = pronouncer,
@@ -167,7 +189,25 @@ internal fun WordExplorerSheet(
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(studyActionLabel ?: stringResource(R.string.open_word_for_study))
+                    Text(
+                        if (concealDetailsForRecall && detailsRevealed) {
+                            stringResource(R.string.open_word_for_study)
+                        } else {
+                            studyActionLabel ?: stringResource(R.string.open_word_for_study)
+                        },
+                    )
+                }
+            }
+            if (concealDetailsForRecall) {
+                OutlinedButton(
+                    onClick = { detailsRevealed = !detailsRevealed },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        stringResource(
+                            if (detailsRevealed) R.string.hide_meaning else R.string.reveal_meaning,
+                        ),
+                    )
                 }
             }
             if (indexed && onToggleCustomList != null) {
@@ -186,7 +226,7 @@ internal fun WordExplorerSheet(
                     )
                 }
             }
-            if (occurrences.isNotEmpty()) {
+            if (detailsRevealed && occurrences.isNotEmpty()) {
                 Spacer(Modifier.height(18.dp))
                 HorizontalDivider()
                 Spacer(Modifier.height(14.dp))

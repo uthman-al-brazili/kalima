@@ -239,6 +239,7 @@ fun QuranReaderScreen(
                 }
             },
             studyActionLabel = studyActionLabel,
+            concealDetailsForRecall = shouldConcealQuranReaderWordDetails(studyAction),
             inCustomList = indexedWord?.id?.let { it in customStudyIds } == true,
             onToggleCustomList = onToggleCustomList,
         )
