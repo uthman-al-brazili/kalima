@@ -2,25 +2,23 @@ package com.kalima.quran.ui
 
 import java.io.File
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CitationActionsRegressionTest {
     @Test
-    fun `share action uses an accessible icon without a visible text label`() {
-        val source = source("ui/CitationActions.kt")
+    fun `app exposes no share controls`() {
+        val uiSource = sourceDirectory().walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .joinToString("\n", transform = File::readText)
 
-        assertTrue(source.contains("IconButton("))
-        assertTrue(source.contains("painterResource(R.drawable.ic_share)"))
-        assertTrue(
-            source.contains("contentDescription = stringResource(R.string.share_citation)"),
-        )
-        assertFalse(source.contains("Text(stringResource(R.string.share_citation))"))
+        assertFalse(uiSource.contains("Intent.ACTION_SEND"))
+        assertFalse(uiSource.contains("CitationActions("))
+        assertFalse(uiSource.contains("R.drawable.ic_share"))
     }
 
-    private fun source(relative: String): String = sequenceOf(
-        File("src/main/java/com/kalima/quran/$relative"),
-        File("app/src/main/java/com/kalima/quran/$relative"),
-    ).firstOrNull(File::isFile)?.readText()
-        ?: error("Android source not found: $relative")
+    private fun sourceDirectory(): File = sequenceOf(
+        File("src/main/java/com/kalima/quran/ui"),
+        File("app/src/main/java/com/kalima/quran/ui"),
+    ).firstOrNull(File::isDirectory)
+        ?: error("Android UI source directory not found")
 }

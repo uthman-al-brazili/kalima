@@ -107,14 +107,9 @@ fun KalimaApp(
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
     var handledStudyRequestId by rememberSaveable { mutableLongStateOf(NO_STUDY_REQUEST) }
     var excludedWordsRequestId by rememberSaveable { mutableLongStateOf(0L) }
-    var readerStudyWordId by rememberSaveable { mutableStateOf<String?>(null) }
-    var readerStudyRequestId by rememberSaveable { mutableLongStateOf(-1L) }
     val hasPendingStudyRequest = studyLaunchTarget != null &&
         studyLaunchTarget.requestId != handledStudyRequestId
     val selected = if (hasPendingStudyRequest) AppTab.Study else AppTab.valueOf(selectedName)
-    val activeStudyLaunchTarget = studyLaunchTarget ?: readerStudyWordId?.let { wordId ->
-        StudyLaunchTarget(wordId, readerStudyRequestId)
-    }
     val pronouncer = rememberArabicPronouncer()
     val screenStateHolder = rememberSaveableStateHolder()
 
@@ -191,15 +186,11 @@ fun KalimaApp(
                             onToggleAlreadyKnown = onToggleAlreadyKnown,
                             onShowCompleteAyahChange = onShowCompleteAyahChange,
                             onOpenFoundations = { selectedName = AppTab.Foundations.name },
-                            launchTarget = activeStudyLaunchTarget,
+                            launchTarget = studyLaunchTarget,
                             onLaunchTargetHandled = { requestId ->
                                 selectedName = AppTab.Study.name
-                                if (requestId == readerStudyRequestId) {
-                                    readerStudyWordId = null
-                                } else {
-                                    handledStudyRequestId = requestId
-                                    onStudyLaunchTargetHandled(requestId)
-                                }
+                                handledStudyRequestId = requestId
+                                onStudyLaunchTargetHandled(requestId)
                             },
                         )
                         AppTab.Quran -> QuranReaderScreen(
@@ -210,12 +201,6 @@ fun KalimaApp(
                             onFontSizeChange = onQuranFontSizeChange,
                             onLearningOverlayChange = onQuranLearningOverlayChange,
                             onToggleCustomList = onToggleCustomList,
-                            onAddToStudy = onIntroduce,
-                            onStudyWord = { wordId ->
-                                readerStudyRequestId -= 1L
-                                readerStudyWordId = wordId
-                                selectedName = AppTab.Study.name
-                            },
                         )
                         AppTab.Library -> LibraryScreen(
                             progress = progress,

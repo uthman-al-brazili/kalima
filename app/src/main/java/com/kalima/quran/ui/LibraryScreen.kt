@@ -19,8 +19,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -203,31 +203,6 @@ fun LibraryScreen(
                 shape = RoundedCornerShape(16.dp),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedButton(
-                onClick = {
-                    query = ""
-                    filterName = LibraryFilter.AlreadyKnown.name
-                    expandedId = null
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    pluralStringResource(
-                        R.plurals.excluded_words_count,
-                        progress.alreadyKnownIds.size,
-                        progress.alreadyKnownIds.size,
-                    ),
-                )
-            }
-            if (filter == LibraryFilter.AlreadyKnown) {
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    stringResource(R.string.excluded_words_description),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            Spacer(Modifier.height(10.dp))
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -239,6 +214,14 @@ fun LibraryScreen(
                         label = { Text(stringResource(option.labelRes)) },
                     )
                 }
+            }
+            if (filter == LibraryFilter.AlreadyKnown) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.excluded_words_description),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
         }
         if (words.isEmpty()) {
@@ -392,7 +375,6 @@ private fun LibraryWordCard(
                     onToggleAlreadyKnown = onToggleAlreadyKnown,
                     showAlreadyKnown = !alreadyKnown,
                 )
-                CitationActions(word)
                 EditorialReviewPanel(word)
             }
         }

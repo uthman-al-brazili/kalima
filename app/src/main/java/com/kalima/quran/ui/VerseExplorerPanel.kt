@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -20,7 +18,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -30,18 +27,25 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.intl.LocaleList
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.quiz.VerseExcerptBuilder
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun VerseExplorerPanel(
     word: QuranWord,
-    onOpenWord: ((String) -> Unit)? = null,
     highlightedWordIds: Set<String> = emptySet(),
     showVersePronunciation: Boolean = true,
 ) {
@@ -105,7 +109,6 @@ fun VerseExplorerPanel(
             word = selectedWord,
             indexed = selectedToken?.word != null,
             onDismiss = { selectedTokenIndex = null },
-            onOpenWord = if (selectedToken?.word != null) onOpenWord else null,
             showVersePronunciation = showVersePronunciation,
         )
     }
@@ -117,11 +120,7 @@ internal fun WordExplorerSheet(
     word: QuranWord,
     indexed: Boolean,
     onDismiss: () -> Unit,
-    onOpenWord: ((String) -> Unit)?,
-    studyActionLabel: String? = null,
-    studyActionConfirmation: String? = null,
     concealDetailsForRecall: Boolean = false,
-    dismissOnOpenWord: Boolean = true,
     showVersePronunciation: Boolean = true,
     inCustomList: Boolean = false,
     onToggleCustomList: ((String) -> Unit)? = null,
@@ -170,7 +169,6 @@ internal fun WordExplorerSheet(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                 )
-                CitationActions(word)
             }
             PronunciationButton(
                 word = word,
@@ -183,38 +181,6 @@ internal fun WordExplorerSheet(
                     pronouncer = pronouncer,
                     modifier = Modifier.fillMaxWidth(),
                 )
-            }
-            if (studyActionConfirmation != null) {
-                Button(
-                    onClick = {},
-                    enabled = false,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        disabledContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    ),
-                ) {
-                    Text(
-                        studyActionConfirmation,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            } else if (onOpenWord != null) {
-                Button(
-                    onClick = {
-                        onOpenWord(word.id)
-                        if (dismissOnOpenWord) onDismiss()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        if (concealDetailsForRecall && detailsRevealed) {
-                            stringResource(R.string.open_word_for_study)
-                        } else {
-                            studyActionLabel ?: stringResource(R.string.open_word_for_study)
-                        },
-                    )
-                }
             }
             if (concealDetailsForRecall) {
                 OutlinedButton(
@@ -271,16 +237,7 @@ internal fun WordExplorerSheet(
                                 fontWeight = FontWeight.Bold,
                             )
                             Text(occurrence.meaning, fontWeight = FontWeight.SemiBold)
-                            ArabicText(
-                                occurrence.verseArabic,
-                                modifier = Modifier.fillMaxWidth(),
-                                size = 23,
-                            )
-                            if (onOpenWord != null) {
-                                TextButton(onClick = { selectedOccurrenceAction(onOpenWord, occurrence, onDismiss) }) {
-                                    Text(stringResource(R.string.open_word_for_study))
-                                }
-                            }
+                            HighlightedOccurrenceAyah(occurrence)
                         }
                     }
                 }
@@ -290,11 +247,49 @@ internal fun WordExplorerSheet(
     }
 }
 
-private fun selectedOccurrenceAction(
-    onOpenWord: ((String) -> Unit)?,
-    occurrence: QuranWord,
-    onDismiss: () -> Unit,
-) {
-    onOpenWord?.invoke(occurrence.id)
-    onDismiss()
+@Composable
+private fun HighlightedOccurrenceAyah(occurrence: QuranWord) {
+    val highlightRange = remember(
+        occurrence.id,
+        occurrence.arabic,
+        occurrence.lemma,
+        occurrence.verseArabic,
+    ) {
+        VerseExcerptBuilder.findRange(occurrence.verseArabic, occurrence.arabic)
+            ?: VerseExcerptBuilder.findRange(occurrence.verseArabic, occurrence.lemma)
+    }
+    val highlightBackground = MaterialTheme.colorScheme.secondary.copy(alpha = 0.42f)
+    val highlightContent = MaterialTheme.colorScheme.primary
+    val annotatedAyah = remember(
+        occurrence.verseArabic,
+        highlightRange,
+        highlightBackground,
+        highlightContent,
+    ) {
+        buildAnnotatedString {
+            append(occurrence.verseArabic)
+            highlightRange?.let { range ->
+                addStyle(
+                    SpanStyle(
+                        background = highlightBackground,
+                        color = highlightContent,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    range.first,
+                    range.last + 1,
+                )
+            }
+        }
+    }
+    Text(
+        text = annotatedAyah,
+        modifier = Modifier.fillMaxWidth(),
+        fontSize = 23.sp,
+        lineHeight = (23 * 1.55).sp,
+        textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.headlineLarge.copy(
+            textDirection = TextDirection.Rtl,
+            localeList = LocaleList(Locale("ar")),
+        ),
+    )
 }

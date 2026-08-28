@@ -1,6 +1,5 @@
 package com.kalima.quran.ui
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
@@ -80,16 +78,7 @@ fun WordCollectionActions(
 fun EditorialReviewPanel(
     word: QuranWord,
 ) {
-    val context = LocalContext.current
     var expanded by rememberSaveable(word.id) { mutableStateOf(false) }
-    val chooserTitle = stringResource(R.string.report_card)
-    val subject = stringResource(R.string.report_card_subject, word.id)
-    val body = stringResource(
-        R.string.report_card_body,
-        word.id,
-        word.reference,
-        word.arabic,
-    )
     val showDetailsDescription = listOf(
         stringResource(R.string.editorial_compact_title),
         stringResource(R.string.editorial_show_details),
@@ -153,18 +142,6 @@ fun EditorialReviewPanel(
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
-                    TextButton(
-                        onClick = {
-                            val report = Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_SUBJECT, subject)
-                                putExtra(Intent.EXTRA_TEXT, body)
-                            }
-                            context.startActivity(Intent.createChooser(report, chooserTitle))
-                        },
-                    ) {
-                        Text(stringResource(R.string.report_card))
-                    }
                 }
             }
         }

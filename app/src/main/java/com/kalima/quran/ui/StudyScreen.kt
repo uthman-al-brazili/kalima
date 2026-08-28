@@ -362,11 +362,6 @@ fun StudyScreen(
                 },
                 showCompleteAyah = progress.showCompleteAyah,
                 onShowCompleteAyahChange = onShowCompleteAyahChange,
-                onOpenWord = { wordId ->
-                    routedStudyWordId = null
-                    currentWordId = wordId
-                    onCurrentWordChange(wordId)
-                },
             )
             Spacer(Modifier.height(18.dp))
             Text(
@@ -1424,7 +1419,6 @@ private fun WordCard(
     onToggleAlreadyKnown: (String) -> Unit,
     showCompleteAyah: Boolean,
     onShowCompleteAyahChange: (Boolean) -> Unit,
-    onOpenWord: (String) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1516,7 +1510,7 @@ private fun WordCard(
                         )
                         Spacer(Modifier.height(8.dp))
                         if (showCompleteAyah) {
-                            VerseExplorerPanel(word = word, onOpenWord = onOpenWord)
+                            VerseExplorerPanel(word = word)
                             VersePronunciationButton(
                                 word = word,
                                 pronouncer = pronouncer,
@@ -1553,7 +1547,6 @@ private fun WordCard(
                     )
                 }
                 Spacer(Modifier.height(14.dp))
-                CitationActions(word)
                 TextButton(onClick = { onRevealChange(false) }) {
                     Text(stringResource(R.string.hide_meaning))
                 }

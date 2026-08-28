@@ -406,9 +406,6 @@
     <string name="editorial_hide_details">Hide</string>
     <string name="editorial_details">Structural sources: the app corpus and verse reference. Translations, transliterations, and notes must be validated by a qualified reviewer before public promotion.</string>
     <string name="editorial_metadata">Card %1$s · %2$s · reviewer pending</string>
-    <string name="report_card">Share correction</string>
-    <string name="report_card_subject">Kalima content report: %1$s</string>
-    <string name="report_card_body">Card: %1$s\nReference: %2$s\nArabic: %3$s\n\nField to correct:\nSuggested correction:\nSource/reason:</string>
     <string name="quiz_mode_mixed">Mixed</string>
     <string name="quiz_mode_listening">Listening</string>
     <string name="quiz_mode_cloze">Cloze</string>
@@ -531,5 +528,4 @@
     <string name="open_word_for_study">Open word for study</string>
     <string name="other_occurrences">Other occurrences</string>
     <string name="other_occurrences_description">More indexed occurrences of this word form in Kalima’s offline corpus.</string>
-    <string name="share_citation">Share with citation</string>
 </resources>

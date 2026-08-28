@@ -46,6 +46,19 @@ class SettingsAndReaderRegressionTest {
         assertFalse(versePanel.contains("RecitableVerseExplorer"))
     }
 
+    @Test
+    fun `word explorer removes study buttons but keeps occurrence marking`() {
+        val reader = source("ui/QuranReaderScreen.kt")
+        val versePanel = source("ui/VerseExplorerPanel.kt")
+
+        assertFalse(reader.contains("onOpenOccurrence"))
+        assertFalse(versePanel.contains("open_word_for_study"))
+        assertFalse(versePanel.contains("add_to_study"))
+        assertTrue(versePanel.contains("onToggleCustomList"))
+        assertTrue(versePanel.contains("VerseExcerptBuilder.findRange(occurrence.verseArabic, occurrence.arabic)"))
+        assertTrue(versePanel.contains("background = highlightBackground"))
+    }
+
     private fun source(relative: String): String = sequenceOf(
         File("src/main/java/com/kalima/quran/$relative"),
         File("app/src/main/java/com/kalima/quran/$relative"),

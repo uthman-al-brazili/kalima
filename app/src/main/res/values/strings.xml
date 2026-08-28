@@ -406,9 +406,6 @@
     <string name="editorial_hide_details">Ocultar</string>
     <string name="editorial_details">Fontes estruturais: corpus do app e referência do versículo. Traduções, transliterações e notas devem ser validadas por revisor qualificado antes de promoção pública.</string>
     <string name="editorial_metadata">Cartão %1$s · %2$s · revisor pendente</string>
-    <string name="report_card">Compartilhar correção</string>
-    <string name="report_card_subject">Relato de conteúdo Kalima: %1$s</string>
-    <string name="report_card_body">Cartão: %1$s\nReferência: %2$s\nÁrabe: %3$s\n\nCampo a corrigir:\nCorreção sugerida:\nFonte/justificativa:</string>
     <string name="quiz_mode_mixed">Misto</string>
     <string name="quiz_mode_listening">Escuta</string>
     <string name="quiz_mode_cloze">Lacuna</string>
@@ -531,5 +528,4 @@
     <string name="open_word_for_study">Abrir palavra para estudar</string>
     <string name="other_occurrences">Outras ocorrências</string>
     <string name="other_occurrences_description">Mais ocorrências indexadas desta forma no corpus offline do Kalima.</string>
-    <string name="share_citation">Compartilhar com citação</string>
 </resources>

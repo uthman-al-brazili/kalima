@@ -85,8 +85,6 @@ fun QuranReaderScreen(
     onFontSizeChange: (Int) -> Unit,
     onLearningOverlayChange: (Boolean) -> Unit,
     onToggleCustomList: (String) -> Unit,
-    onAddToStudy: (String) -> Unit,
-    onStudyWord: (String) -> Unit,
 ) {
     val context = LocalContext.current.applicationContext
     val firstPageAvailable by produceState<Boolean?>(
@@ -152,7 +150,6 @@ fun QuranReaderScreen(
     var pagePickerVisible by rememberSaveable { mutableStateOf(false) }
     var learningLegendVisible by rememberSaveable { mutableStateOf(false) }
     var selectedToken by remember { mutableStateOf<QuranPageToken?>(null) }
-    var addedFromWordSheetId by remember { mutableStateOf<String?>(null) }
     val currentPageNumber = pagerState.currentPage + 1
     val currentPage = remember(currentPageNumber) {
         QuranReaderRepository.page(currentPageNumber)
@@ -192,7 +189,6 @@ fun QuranReaderScreen(
                     readerIndexReady = readerIndexReady,
                     learningNow = learningNow,
                     onWordClick = {
-                        addedFromWordSheetId = null
                         selectedToken = it
                     },
                 )
@@ -229,45 +225,11 @@ fun QuranReaderScreen(
             classifyQuranReaderWord(indexedWord?.id, progress)
         }
         val studyAction = quranReaderStudyActionFor(learningState)
-        val studyActionLabel = studyAction?.let { action ->
-            stringResource(
-                when (action) {
-                    QuranReaderStudyAction.Learn -> R.string.add_to_study
-                    QuranReaderStudyAction.Review,
-                    QuranReaderStudyAction.PracticeAgain,
-                    -> R.string.open_word_for_study
-                },
-            )
-        }
-        val addedToStudyConfirmation = stringResource(R.string.added_to_study)
         WordExplorerSheet(
             word = indexedWord ?: token.asUnindexedWord(verseArabic),
             indexed = indexedWord != null,
-            onDismiss = {
-                addedFromWordSheetId = null
-                selectedToken = null
-            },
-            onOpenWord = indexedWord?.let {
-                { wordId ->
-                    val performedAction = performQuranReaderStudyAction(
-                        indexedWordId = wordId,
-                        state = learningState,
-                        onAddToStudy = onAddToStudy,
-                        onStudyWord = onStudyWord,
-                    )
-                    if (performedAction == QuranReaderStudyAction.Learn) {
-                        addedFromWordSheetId = wordId
-                    }
-                    Unit
-                }
-            },
-            studyActionLabel = studyActionLabel,
-            studyActionConfirmation = addedToStudyConfirmation.takeIf {
-                indexedWord?.id == addedFromWordSheetId
-            },
-            concealDetailsForRecall = shouldConcealQuranReaderWordDetails(studyAction) &&
-                indexedWord?.id != addedFromWordSheetId,
-            dismissOnOpenWord = studyAction != QuranReaderStudyAction.Learn,
+            onDismiss = { selectedToken = null },
+            concealDetailsForRecall = shouldConcealQuranReaderWordDetails(studyAction),
             inCustomList = indexedWord?.id?.let { it in customStudyIds } == true,
             onToggleCustomList = onToggleCustomList,
         )
