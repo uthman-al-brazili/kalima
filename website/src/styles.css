@@ -146,10 +146,25 @@ h1, h2, h3, p { margin-top: 0; }
 .inline-links a { color: var(--gold); font-size: 14px; font-weight: 850; text-decoration: none; }
 
 .availability { padding-bottom: 126px; }
-.availability-card { min-height: 390px; padding: 62px 8%; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 70px; border: 1.5px solid var(--line); border-radius: 30px; background: var(--sand); }
+.availability-card { min-height: 390px; padding: 62px 8%; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 58px 70px; border: 1.5px solid var(--line); border-radius: 30px; background: var(--sand); }
 .availability-card > div { max-width: 730px; }
 .availability-card p { max-width: 690px; color: var(--muted); font-size: 17px; line-height: 1.65; }
-.availability-card img { width: 190px; border-radius: 42px; box-shadow: 0 16px 0 rgba(18,61,50,0.12); transform: rotate(3deg); }
+.availability-card > img { width: 190px; border-radius: 42px; box-shadow: 0 16px 0 rgba(18,61,50,0.12); transform: rotate(3deg); }
+.availability-card .install-guide { max-width: none; padding-top: 48px; grid-column: 1 / -1; border-top: 1px solid var(--line); }
+.install-guide-heading { max-width: 780px; }
+.install-guide-heading h3 { margin: 14px 0 14px; font-size: clamp(1.9rem, 3vw, 2.75rem); line-height: 1.12; letter-spacing: -0.045em; }
+.install-guide-heading p { margin-bottom: 0; }
+.install-steps { margin: 36px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; list-style: none; }
+.install-steps li { min-width: 0; padding: 23px; display: flex; gap: 16px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,0.62); }
+.install-steps li > span { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 10px; color: white; background: var(--forest); font-size: 10px; font-weight: 900; letter-spacing: 0.08em; }
+.install-steps h4 { margin: 4px 0 9px; font-size: 16px; letter-spacing: -0.02em; }
+.install-steps p { margin: 0; font-size: 13px; line-height: 1.58; }
+.update-actions { margin-top: 18px; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: stretch; gap: 14px; }
+.repository-address { min-width: 0; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; gap: 4px; border: 1px solid var(--line); border-radius: 13px; background: white; }
+.repository-address span { color: var(--muted); font-size: 10px; font-weight: 850; letter-spacing: 0.08em; text-transform: uppercase; }
+.repository-address code { overflow-wrap: anywhere; color: var(--forest); font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; font-size: 12px; font-weight: 700; }
+.install-warning { margin: 18px 0 0; padding: 15px 17px; display: flex; align-items: flex-start; gap: 12px; border-radius: 14px; color: #6c5015 !important; background: rgba(242,206,103,0.28); font-size: 13px !important; line-height: 1.55 !important; }
+.install-warning > span { width: 22px; height: 22px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; color: var(--forest); background: var(--gold); font-size: 12px; font-weight: 900; }
 
 .legal-page, .support-page { padding-block: 90px 125px; }
 .legal-hero, .support-hero { max-width: 830px; margin-inline: auto; text-align: center; }
@@ -235,8 +250,11 @@ a:focus-visible, button:focus-visible { outline: 3px solid #e49e3c; outline-offs
   .privacy-seal { width: 175px; height: 175px; }
   .availability { padding-bottom: 90px; }
   .availability-card { padding: 42px 25px; grid-template-columns: 1fr; gap: 42px; }
-  .availability-card img { width: 130px; grid-row: 1; }
+  .availability-card > img { width: 130px; grid-row: 1; }
   .availability-card .hero-actions { align-items: stretch; }
+  .install-steps { grid-template-columns: 1fr; }
+  .update-actions { grid-template-columns: 1fr; }
+  .update-actions .button { width: 100%; }
   .legal-page, .support-page { padding-block: 65px 90px; }
   .legal-grid { margin-top: 60px; grid-template-columns: 1fr; }
   .contact-strip { align-items: flex-start; flex-direction: column; }

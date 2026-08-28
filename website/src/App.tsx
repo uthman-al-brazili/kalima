@@ -8,6 +8,10 @@ const artworkRevision = '0.30.5-2026-08-25';
 const facts = {
   email: 'uthman-al-brazili@proton.me',
   support: 'mailto:uthman-al-brazili@proton.me?subject=Supporting%20Kalima',
+  repository: 'https://github.com/uthman-al-brazili/kalima',
+  release: 'https://github.com/uthman-al-brazili/kalima/releases/tag/v0.31.5',
+  apk: 'https://github.com/uthman-al-brazili/kalima/releases/download/v0.31.5/kalima-0.31.5-release.apk',
+  obtainium: 'https://github.com/ImranR98/Obtainium/releases',
 };
 
 const content = {
@@ -55,7 +59,24 @@ const content = {
     trustTitle: 'Your learning belongs to you.',
     trustBody: 'No account, advertising, analytics, or remote learning database. Progress stays on your device and can be exported manually.',
     trustLinks: ['Read the privacy policy', 'See support details'],
-    availability: { kicker: 'Kalima for Android', title: 'Turn unlock moments into Quranic Arabic practice.', body: 'Kalima is free, bilingual, and puts lock-screen learning at the center of a private, offline-first study experience.', cta: 'Release information', secondary: 'Contact support' },
+    availability: {
+      kicker: 'Kalima for Android',
+      title: 'Turn unlock moments into Quranic Arabic practice.',
+      body: 'Download the official signed APK from GitHub. Kalima is free, bilingual, private, and built for offline-first study.',
+      cta: 'Download Kalima 0.31.5',
+      secondary: 'View the GitHub release',
+      installKicker: 'Updates through GitHub',
+      installTitle: 'Install once. Keep future updates simple.',
+      installBody: 'The GitHub app does not update installed Android apps by itself. Obtainium can watch Kalima’s GitHub Releases, check for new versions automatically, and guide you through each update.',
+      installSteps: [
+        ['01', 'Install the signed APK', 'Download Kalima above and allow your browser to install unknown apps when Android asks.'],
+        ['02', 'Install Obtainium', 'Get Obtainium from its official GitHub Releases page and allow it to install unknown apps.'],
+        ['03', 'Add the Kalima repository', 'Paste the repository address into Obtainium. It will check for releases automatically; Android normally asks you to confirm each installation.'],
+      ],
+      obtainium: 'Open Obtainium releases',
+      repositoryLabel: 'Repository address for Obtainium',
+      warning: 'Already using an older debug build? Export any progress you want to keep, uninstall that build once, then install this signed release. Future signed Kalima releases can update it normally.',
+    },
     footer: 'Independent, thoughtful software for Quranic Arabic learners.',
     legal: 'Kalima is a learning aid and does not replace a scholarly translation or qualified religious instruction.',
   },
@@ -103,7 +124,24 @@ const content = {
     trustTitle: 'Seu aprendizado pertence a você.',
     trustBody: 'Sem conta, publicidade, análises ou banco remoto de atividades. O progresso fica no aparelho e pode ser exportado manualmente.',
     trustLinks: ['Leia a política de privacidade', 'Veja os detalhes de suporte'],
-    availability: { kicker: 'Kalima para Android', title: 'Transforme o desbloqueio em prática de árabe corânico.', body: 'O Kalima é gratuito, bilíngue e coloca o aprendizado na tela bloqueada no centro de uma experiência privada que prioriza o uso offline.', cta: 'Informações do app', secondary: 'Falar com o suporte' },
+    availability: {
+      kicker: 'Kalima para Android',
+      title: 'Transforme o desbloqueio em prática de árabe corânico.',
+      body: 'Baixe o APK oficial assinado pelo GitHub. O Kalima é gratuito, bilíngue, privado e feito para estudar mesmo sem internet.',
+      cta: 'Baixar Kalima 0.31.5',
+      secondary: 'Ver a versão no GitHub',
+      installKicker: 'Atualizações pelo GitHub',
+      installTitle: 'Instale uma vez. Simplifique as próximas atualizações.',
+      installBody: 'O aplicativo do GitHub não atualiza sozinho os apps instalados no Android. O Obtainium pode acompanhar as versões do Kalima no GitHub, verificar novidades automaticamente e orientar cada atualização.',
+      installSteps: [
+        ['01', 'Instale o APK assinado', 'Baixe o Kalima acima e permita que o navegador instale apps desconhecidos quando o Android solicitar.'],
+        ['02', 'Instale o Obtainium', 'Baixe o Obtainium na página oficial de versões do GitHub e permita que ele instale apps desconhecidos.'],
+        ['03', 'Adicione o repositório do Kalima', 'Cole o endereço do repositório no Obtainium. Ele verificará novas versões automaticamente; normalmente o Android pedirá sua confirmação para cada instalação.'],
+      ],
+      obtainium: 'Abrir versões do Obtainium',
+      repositoryLabel: 'Endereço do repositório para o Obtainium',
+      warning: 'Já usa uma versão debug antiga? Exporte o progresso que deseja manter, desinstale essa versão uma vez e instale o APK assinado. As próximas versões assinadas do Kalima poderão ser instaladas como atualização.',
+    },
     footer: 'Software independente e cuidadoso para estudantes de árabe corânico.',
     legal: 'O Kalima é um auxílio de aprendizagem e não substitui uma tradução acadêmica ou orientação religiosa qualificada.',
   },
@@ -319,9 +357,20 @@ function Home({ language }: { language: Language }) {
     <section className="availability section-pad" id="availability">
       <div className="availability-card">
         <div><span className="section-kicker">{t.availability.kicker}</span><h2>{t.availability.title}</h2><p>{t.availability.body}</p>
-          <div className="hero-actions"><SmartLink className="button dark" href="/support">{t.availability.cta}</SmartLink><a className="button ghost" href={`mailto:${facts.email}`}>{t.availability.secondary}</a></div>
+          <div className="hero-actions"><a className="button dark" href={facts.apk}>{t.availability.cta}<span aria-hidden="true">↓</span></a><a className="button ghost" href={facts.release}>{t.availability.secondary}</a></div>
         </div>
         <img src="/kalima-icon.png" alt="Kalima app icon" />
+        <div className="install-guide">
+          <div className="install-guide-heading"><span className="section-kicker">{t.availability.installKicker}</span><h3>{t.availability.installTitle}</h3><p>{t.availability.installBody}</p></div>
+          <ol className="install-steps">
+            {t.availability.installSteps.map(([number, title, body]) => <li key={number}><span>{number}</span><div><h4>{title}</h4><p>{body}</p></div></li>)}
+          </ol>
+          <div className="update-actions">
+            <a className="button gold" href={facts.obtainium}>{t.availability.obtainium}<span aria-hidden="true">↗</span></a>
+            <div className="repository-address"><span>{t.availability.repositoryLabel}</span><code>{facts.repository}</code></div>
+          </div>
+          <p className="install-warning"><span aria-hidden="true">!</span>{t.availability.warning}</p>
+        </div>
       </div>
     </section>
   </>;
