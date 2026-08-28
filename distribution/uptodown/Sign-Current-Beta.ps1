@@ -171,8 +171,24 @@ $environmentNames = @(
     "KALIMA_KEYSTORE_FILE",
     "KALIMA_KEYSTORE_PASSWORD",
     "KALIMA_KEY_ALIAS",
-    "KALIMA_KEY_PASSWORD"
+    "KALIMA_KEY_PASSWORD",
+    "ANDROID_HOME",
+    "ANDROID_SDK_ROOT"
 )
+
+$sdkCandidates = @(
+    $env:ANDROID_HOME,
+    $env:ANDROID_SDK_ROOT,
+    (Join-Path $env:LOCALAPPDATA "Android\Sdk"),
+    (Join-Path $env:USERPROFILE "android-sdk")
+) | Where-Object {
+    -not [string]::IsNullOrWhiteSpace($_) -and
+    (Test-Path -LiteralPath (Join-Path $_ "build-tools") -PathType Container)
+}
+$sdkRoot = $sdkCandidates | Select-Object -First 1
+if ([string]::IsNullOrWhiteSpace($sdkRoot)) {
+    throw "An Android SDK with build-tools was not found."
+}
 
 try {
     [Environment]::SetEnvironmentVariable("KALIMA_KEYSTORE_FILE", $keystorePath, "Process")
@@ -180,6 +196,8 @@ try {
     [Environment]::SetEnvironmentVariable("KALIMA_KEY_ALIAS", $keyAlias, "Process")
     [Environment]::SetEnvironmentVariable("KALIMA_KEY_PASSWORD", $keyPassword, "Process")
     [Environment]::SetEnvironmentVariable("ANDROID_USER_HOME", (Join-Path $repositoryRoot ".android-home"), "Process")
+    [Environment]::SetEnvironmentVariable("ANDROID_HOME", $sdkRoot, "Process")
+    [Environment]::SetEnvironmentVariable("ANDROID_SDK_ROOT", $sdkRoot, "Process")
 
     Write-Host ""
     Write-Host "Running tests, lint, lock-screen verification, and the signed release build..." -ForegroundColor Cyan
@@ -206,19 +224,6 @@ try {
         throw "The signed APK was not created."
     }
 
-    $sdkCandidates = @(
-        $env:ANDROID_HOME,
-        $env:ANDROID_SDK_ROOT,
-        (Join-Path $env:LOCALAPPDATA "Android\Sdk"),
-        (Join-Path $env:USERPROFILE "android-sdk")
-    ) | Where-Object {
-        -not [string]::IsNullOrWhiteSpace($_) -and
-        (Test-Path -LiteralPath (Join-Path $_ "build-tools") -PathType Container)
-    }
-    $sdkRoot = $sdkCandidates | Select-Object -First 1
-    if ([string]::IsNullOrWhiteSpace($sdkRoot)) {
-        throw "An Android SDK with build-tools was not found."
-    }
     $apkSigner = Get-ChildItem -LiteralPath (Join-Path $sdkRoot "build-tools") `
         -Recurse -Filter "apksigner.bat" -File -ErrorAction Stop |
         Sort-Object { [version]$_.Directory.Name } -Descending |

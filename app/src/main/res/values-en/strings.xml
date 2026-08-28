@@ -437,7 +437,7 @@
     <string name="vocabulary_coverage_percent">%1$d%%</string>
     <string name="vocabulary_coverage_occurrences">%1$d of %2$d word occurrences</string>
     <string name="vocabulary_coverage_next_milestone">Next milestone: %1$d%%</string>
-    <string name="vocabulary_coverage_top_milestone">90%+ milestone reached</string>
+    <string name="vocabulary_coverage_top_milestone" formatted="false">90%+ milestone reached</string>
     <string name="surah_mastery">Recognized vocabulary by surah</string>
     <string name="surah_mastery_note">Your five strongest surahs by recognized word occurrences. Reviewing words count after they graduate to learned.</string>
     <string name="surah_number">Surah %1$d</string>

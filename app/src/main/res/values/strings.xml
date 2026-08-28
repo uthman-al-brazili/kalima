@@ -437,7 +437,7 @@
     <string name="vocabulary_coverage_percent">%1$d%%</string>
     <string name="vocabulary_coverage_occurrences">%1$d de %2$d ocorrências de palavras</string>
     <string name="vocabulary_coverage_next_milestone">Próximo marco: %1$d%%</string>
-    <string name="vocabulary_coverage_top_milestone">Marco de 90%+ alcançado</string>
+    <string name="vocabulary_coverage_top_milestone" formatted="false">Marco de 90%+ alcançado</string>
     <string name="surah_mastery">Vocabulário reconhecido por surata</string>
     <string name="surah_mastery_note">Suas cinco suratas mais fortes por ocorrências de palavras reconhecidas. Palavras em revisão contam depois de passarem para aprendidas.</string>
     <string name="surah_number">Surata %1$d</string>

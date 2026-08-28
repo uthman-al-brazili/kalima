@@ -3,6 +3,17 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.31.5 — 2026-08-28
+
+- Added a Quran learning overlay that marks recognized, reviewing, due, new,
+  and unindexed words directly in the reader, with an accessible legend.
+- Added Quran vocabulary-recognition coverage and per-surah progress based on
+  matched word occurrences.
+- Let learners add new reader words directly to study while keeping the reader
+  open, and conceal word details during recall until the answer is revealed.
+- Simplified word and verse exploration and highlighted matching words in
+  occurrence ayahs.
+
 ## 0.31.4 — 2026-08-27
 
 - Removed the duplicate full-ayah display from the daily-goal payoff by
