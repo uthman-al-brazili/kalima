@@ -54,12 +54,21 @@ internal fun shouldConcealQuranReaderWordDetails(
 ): Boolean = action == QuranReaderStudyAction.Review ||
     action == QuranReaderStudyAction.PracticeAgain
 
-internal fun launchQuranReaderWordStudy(
+internal fun performQuranReaderStudyAction(
     indexedWordId: String?,
     state: QuranWordLearningState,
+    onAddToStudy: (String) -> Unit,
     onStudyWord: (String) -> Unit,
 ): QuranReaderStudyAction? {
     val action = quranReaderStudyActionFor(state)
-    if (indexedWordId != null && action != null) onStudyWord(indexedWordId)
+    if (indexedWordId != null) {
+        when (action) {
+            QuranReaderStudyAction.Learn -> onAddToStudy(indexedWordId)
+            QuranReaderStudyAction.Review,
+            QuranReaderStudyAction.PracticeAgain,
+            -> onStudyWord(indexedWordId)
+            null -> Unit
+        }
+    }
     return action
 }

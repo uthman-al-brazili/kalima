@@ -79,36 +79,53 @@ class QuranLearningOverlayTest {
     }
 
     @Test
-    fun `indexed actions route the exact word with state-specific action`() {
-        val routedIds = mutableListOf<String>()
+    fun `new words are added in place while recall actions open study`() {
+        val addedIds = mutableListOf<String>()
+        val studyIds = mutableListOf<String>()
 
         assertEquals(
             QuranReaderStudyAction.Learn,
-            launchQuranReaderWordStudy("new-word", QuranWordLearningState.Unknown, routedIds::add),
-        )
-        assertEquals(
-            QuranReaderStudyAction.Review,
-            launchQuranReaderWordStudy(
-                "review-word",
-                QuranWordLearningState.Reviewing,
-                routedIds::add,
+            performQuranReaderStudyAction(
+                "new-word",
+                QuranWordLearningState.Unknown,
+                addedIds::add,
+                studyIds::add,
             ),
         )
         assertEquals(
             QuranReaderStudyAction.Review,
-            launchQuranReaderWordStudy("due-word", QuranWordLearningState.Due, routedIds::add),
+            performQuranReaderStudyAction(
+                "review-word",
+                QuranWordLearningState.Reviewing,
+                addedIds::add,
+                studyIds::add,
+            ),
+        )
+        assertEquals(
+            QuranReaderStudyAction.Review,
+            performQuranReaderStudyAction(
+                "due-word",
+                QuranWordLearningState.Due,
+                addedIds::add,
+                studyIds::add,
+            ),
         )
         assertEquals(
             QuranReaderStudyAction.PracticeAgain,
-            launchQuranReaderWordStudy(
+            performQuranReaderStudyAction(
                 "learned-word",
                 QuranWordLearningState.Recognized,
-                routedIds::add,
+                addedIds::add,
+                studyIds::add,
             ),
         )
         assertEquals(
-            listOf("new-word", "review-word", "due-word", "learned-word"),
-            routedIds,
+            listOf("new-word"),
+            addedIds,
+        )
+        assertEquals(
+            listOf("review-word", "due-word", "learned-word"),
+            studyIds,
         )
     }
 
@@ -122,12 +139,19 @@ class QuranLearningOverlayTest {
 
     @Test
     fun `unindexed word has no study action or callback`() {
-        var routedId: String? = null
+        var addedId: String? = null
+        var studyId: String? = null
 
         assertNull(
-            launchQuranReaderWordStudy(null, QuranWordLearningState.Unindexed) { routedId = it },
+            performQuranReaderStudyAction(
+                null,
+                QuranWordLearningState.Unindexed,
+                { addedId = it },
+                { studyId = it },
+            ),
         )
-        assertNull(routedId)
+        assertNull(addedId)
+        assertNull(studyId)
     }
 
     private fun reviewingProgress(dueAt: Instant) = StudyProgress(

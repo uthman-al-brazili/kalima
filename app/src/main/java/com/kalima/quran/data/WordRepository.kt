@@ -666,6 +666,19 @@ object WordRepository {
         )
     }
 
+    fun readerWordIdFor(token: QuranPageToken): String? {
+        if (token.isAyahMarker) return null
+        if (readerIndex == null) prepareReaderIndex()
+        return readerIndex?.find(token)?.id
+    }
+
+    internal fun readerWordIdsForPage(
+        tokens: List<QuranPageToken>,
+    ): Map<QuranPageToken, String?> {
+        val pageIndex = QuranReaderPageWordIndex(words, tokens)
+        return tokens.associateWith(pageIndex::findId)
+    }
+
     fun corpusIdentity(): String = corpusIdentityValue
 
     private fun buildCorpusIdentity(source: List<QuranWord>): String {
@@ -732,23 +745,33 @@ object WordRepository {
 
 }
 
+private data class ReaderLocation(
+    val surah: Int,
+    val ayah: Int,
+    val word: Int,
+)
+
+private data class ReaderForm(
+    val surah: Int,
+    val arabic: String,
+)
+
 internal class QuranReaderWordIndex(source: List<QuranWord>) {
-    private val byLocation = source
-        .mapNotNull { word ->
+    private val byLocation = HashMap<ReaderLocation, QuranWord>(source.size)
+    private val bySurahForm = HashMap<ReaderForm, QuranWord>(source.size)
+    private val byGlobalForm = HashMap<String, QuranWord>(source.size)
+
+    init {
+        source.forEach { word ->
             word.audioLocation?.let { location ->
-                ReaderLocation(location.surah, location.ayah, location.word) to word
+                byLocation[ReaderLocation(location.surah, location.ayah, location.word)] = word
             }
-        }
-        .toMap()
-    private val bySurahForm = source
-        .mapNotNull { word ->
+            val normalizedArabic = VerseExplorer.normalizeArabic(word.arabic)
             word.surahNumber?.let { surah ->
-                ReaderForm(surah, VerseExplorer.normalizeArabic(word.arabic)) to word
+                bySurahForm[ReaderForm(surah, normalizedArabic)] = word
             }
+            byGlobalForm[normalizedArabic] = word
         }
-        .toMap()
-    private val byGlobalForm = source.associateBy { word ->
-        VerseExplorer.normalizeArabic(word.arabic)
     }
 
     fun find(token: QuranPageToken): QuranWord? {
@@ -759,17 +782,44 @@ internal class QuranReaderWordIndex(source: List<QuranWord>) {
         )
         return byLocation[location] ?: bySurahForm[form] ?: byGlobalForm[form.arabic]
     }
+}
 
-    private data class ReaderLocation(
-        val surah: Int,
-        val ayah: Int,
-        val word: Int,
-    )
+/** Resolves only the visible page while the complete reader index is still being prepared. */
+internal class QuranReaderPageWordIndex(
+    source: List<QuranWord>,
+    tokens: List<QuranPageToken>,
+) {
+    private val byLocation = HashMap<ReaderLocation, String>()
+    private val bySurahForm = HashMap<ReaderForm, String>()
 
-    private data class ReaderForm(
-        val surah: Int,
-        val arabic: String,
-    )
+    init {
+        val tappableTokens = tokens.filterNot(QuranPageToken::isAyahMarker)
+        val pageSurahs = tappableTokens.mapTo(HashSet(), QuranPageToken::surahNumber)
+        val requestedLocations = tappableTokens.mapTo(HashSet()) { token ->
+            ReaderLocation(token.surahNumber, token.ayahNumber, token.wordNumber)
+        }
+        val requestedForms = tappableTokens.mapTo(HashSet()) { token ->
+            ReaderForm(token.surahNumber, VerseExplorer.normalizeArabic(token.arabic))
+        }
+
+        source.forEach { word ->
+            word.audioLocation?.takeIf { it.surah in pageSurahs }?.let { location ->
+                val key = ReaderLocation(location.surah, location.ayah, location.word)
+                if (key in requestedLocations) byLocation[key] = word.id
+            }
+            word.surahNumber?.takeIf { it in pageSurahs }?.let { surah ->
+                val key = ReaderForm(surah, VerseExplorer.normalizeArabic(word.arabic))
+                if (key in requestedForms) bySurahForm[key] = word.id
+            }
+        }
+    }
+
+    fun findId(token: QuranPageToken): String? {
+        if (token.isAyahMarker) return null
+        val location = ReaderLocation(token.surahNumber, token.ayahNumber, token.wordNumber)
+        val form = ReaderForm(token.surahNumber, VerseExplorer.normalizeArabic(token.arabic))
+        return byLocation[location] ?: bySurahForm[form]
+    }
 }
 
 data class QuranSurah(

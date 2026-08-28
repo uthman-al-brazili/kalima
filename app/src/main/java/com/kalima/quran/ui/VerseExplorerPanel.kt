@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -118,7 +119,9 @@ internal fun WordExplorerSheet(
     onDismiss: () -> Unit,
     onOpenWord: ((String) -> Unit)?,
     studyActionLabel: String? = null,
+    studyActionConfirmation: String? = null,
     concealDetailsForRecall: Boolean = false,
+    dismissOnOpenWord: Boolean = true,
     showVersePronunciation: Boolean = true,
     inCustomList: Boolean = false,
     onToggleCustomList: ((String) -> Unit)? = null,
@@ -181,11 +184,26 @@ internal fun WordExplorerSheet(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
-            if (onOpenWord != null) {
+            if (studyActionConfirmation != null) {
+                Button(
+                    onClick = {},
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        disabledContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
+                ) {
+                    Text(
+                        studyActionConfirmation,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            } else if (onOpenWord != null) {
                 Button(
                     onClick = {
                         onOpenWord(word.id)
-                        onDismiss()
+                        if (dismissOnOpenWord) onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {

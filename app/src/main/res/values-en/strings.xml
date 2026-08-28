@@ -45,9 +45,8 @@
     <string name="review_due_accessibility">word review due</string>
     <string name="new_word_accessibility">new word</string>
     <string name="unindexed_word_accessibility">learning status unavailable</string>
-    <string name="learn_this_word">Learn this word</string>
-    <string name="practice_from_memory">Practice from memory</string>
-    <string name="practice_again">Practice again</string>
+    <string name="add_to_study">Add to study</string>
+    <string name="added_to_study">Added to study</string>
     <string name="quran_selected_surah">%1$d. %2$s · %3$s</string>
     <string name="previous_surah">Previous</string>
     <string name="next_surah">Next</string>

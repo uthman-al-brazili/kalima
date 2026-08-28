@@ -28,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -84,6 +85,7 @@ fun QuranReaderScreen(
     onFontSizeChange: (Int) -> Unit,
     onLearningOverlayChange: (Boolean) -> Unit,
     onToggleCustomList: (String) -> Unit,
+    onAddToStudy: (String) -> Unit,
     onStudyWord: (String) -> Unit,
 ) {
     val context = LocalContext.current.applicationContext
@@ -150,6 +152,7 @@ fun QuranReaderScreen(
     var pagePickerVisible by rememberSaveable { mutableStateOf(false) }
     var learningLegendVisible by rememberSaveable { mutableStateOf(false) }
     var selectedToken by remember { mutableStateOf<QuranPageToken?>(null) }
+    var addedFromWordSheetId by remember { mutableStateOf<String?>(null) }
     val currentPageNumber = pagerState.currentPage + 1
     val currentPage = remember(currentPageNumber) {
         QuranReaderRepository.page(currentPageNumber)
@@ -177,16 +180,23 @@ fun QuranReaderScreen(
             reverseLayout = true,
             key = { it },
         ) { pageIndex ->
-            QuranPage(
-                pageNumber = pageIndex + 1,
-                tokens = QuranReaderRepository.page(pageIndex + 1),
-                fontSizeSp = fontSizeSp,
-                progress = progress,
-                learningOverlayEnabled = learningOverlayEnabled,
-                readerIndexReady = readerIndexReady,
-                learningNow = learningNow,
-                onWordClick = { selectedToken = it },
-            )
+            // Pager content may already be retained when the deferred word index becomes ready.
+            // Recreate the visible page at that boundary so a saved-on overlay cannot stay stale.
+            key(pageIndex, readerIndexReady) {
+                QuranPage(
+                    pageNumber = pageIndex + 1,
+                    tokens = QuranReaderRepository.page(pageIndex + 1),
+                    fontSizeSp = fontSizeSp,
+                    progress = progress,
+                    learningOverlayEnabled = learningOverlayEnabled,
+                    readerIndexReady = readerIndexReady,
+                    learningNow = learningNow,
+                    onWordClick = {
+                        addedFromWordSheetId = null
+                        selectedToken = it
+                    },
+                )
+            }
         }
 
         PageNavigation(
@@ -222,24 +232,42 @@ fun QuranReaderScreen(
         val studyActionLabel = studyAction?.let { action ->
             stringResource(
                 when (action) {
-                    QuranReaderStudyAction.Learn -> R.string.learn_this_word
-                    QuranReaderStudyAction.Review -> R.string.practice_from_memory
-                    QuranReaderStudyAction.PracticeAgain -> R.string.practice_again
+                    QuranReaderStudyAction.Learn -> R.string.add_to_study
+                    QuranReaderStudyAction.Review,
+                    QuranReaderStudyAction.PracticeAgain,
+                    -> R.string.open_word_for_study
                 },
             )
         }
+        val addedToStudyConfirmation = stringResource(R.string.added_to_study)
         WordExplorerSheet(
             word = indexedWord ?: token.asUnindexedWord(verseArabic),
             indexed = indexedWord != null,
-            onDismiss = { selectedToken = null },
+            onDismiss = {
+                addedFromWordSheetId = null
+                selectedToken = null
+            },
             onOpenWord = indexedWord?.let {
                 { wordId ->
-                    launchQuranReaderWordStudy(wordId, learningState, onStudyWord)
+                    val performedAction = performQuranReaderStudyAction(
+                        indexedWordId = wordId,
+                        state = learningState,
+                        onAddToStudy = onAddToStudy,
+                        onStudyWord = onStudyWord,
+                    )
+                    if (performedAction == QuranReaderStudyAction.Learn) {
+                        addedFromWordSheetId = wordId
+                    }
                     Unit
                 }
             },
             studyActionLabel = studyActionLabel,
-            concealDetailsForRecall = shouldConcealQuranReaderWordDetails(studyAction),
+            studyActionConfirmation = addedToStudyConfirmation.takeIf {
+                indexedWord?.id == addedFromWordSheetId
+            },
+            concealDetailsForRecall = shouldConcealQuranReaderWordDetails(studyAction) &&
+                indexedWord?.id != addedFromWordSheetId,
+            dismissOnOpenWord = studyAction != QuranReaderStudyAction.Learn,
             inCustomList = indexedWord?.id?.let { it in customStudyIds } == true,
             onToggleCustomList = onToggleCustomList,
         )
@@ -398,20 +426,20 @@ private fun QuranPage(
     val sections = remember(tokens) { quranPageSections(tokens) }
     // Resolve stable vocabulary matches once for this composed page. When the overlay is off,
     // no page-wide word or verse lookup is performed.
-    val indexedWordIds = remember(tokens, learningOverlayEnabled, readerIndexReady) {
-        if (!learningOverlayEnabled || !readerIndexReady) {
-            null
-        } else {
-            val verseTextByReference = mutableMapOf<Pair<Int, Int>, String>()
-            tokens.asSequence()
-                .filterNot(QuranPageToken::isAyahMarker)
-                .associateWith { token ->
-                    val reference = token.surahNumber to token.ayahNumber
-                    val verseArabic = verseTextByReference.getOrPut(reference) {
-                        QuranReaderRepository.verseText(token.surahNumber, token.ayahNumber)
-                    }
-                    WordRepository.readerWordFor(token, verseArabic)?.id
-                }
+    val indexedWordIds by produceState<Map<QuranPageToken, String?>?>(
+        initialValue = null,
+        key1 = tokens,
+        key2 = learningOverlayEnabled,
+        key3 = readerIndexReady,
+    ) {
+        value = when {
+            !learningOverlayEnabled -> null
+            readerIndexReady -> withContext(Dispatchers.Default) {
+                tokens.associateWith(WordRepository::readerWordIdFor)
+            }
+            else -> withContext(Dispatchers.Default) {
+                WordRepository.readerWordIdsForPage(tokens)
+            }
         }
     }
     val learningStates = remember(

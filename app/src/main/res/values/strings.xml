@@ -45,9 +45,8 @@
     <string name="review_due_accessibility">revisão da palavra pendente</string>
     <string name="new_word_accessibility">palavra nova</string>
     <string name="unindexed_word_accessibility">estado de aprendizado indisponível</string>
-    <string name="learn_this_word">Aprender esta palavra</string>
-    <string name="practice_from_memory">Praticar de memória</string>
-    <string name="practice_again">Praticar novamente</string>
+    <string name="add_to_study">Adicionar ao estudo</string>
+    <string name="added_to_study">Adicionada ao estudo</string>
     <string name="quran_selected_surah">%1$d. %2$s · %3$s</string>
     <string name="previous_surah">Anterior</string>
     <string name="next_surah">Próxima</string>

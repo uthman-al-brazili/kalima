@@ -128,6 +128,25 @@ class WordRepositoryTest {
     }
 
     @Test
+    fun firstQuranPageCanResolveBeforeTheCompleteReaderIndexIsReady() {
+        val corpusAsset = sequenceOf(
+            java.io.File("src/main/assets/${VocabularyAssetLoader.ASSET_NAME}.gz"),
+            java.io.File("app/src/main/assets/${VocabularyAssetLoader.ASSET_NAME}.gz"),
+        ).first(java.io.File::isFile)
+        val quranAsset = sequenceOf(
+            java.io.File("src/main/assets/${QuranTextAssetLoader.ASSET_NAME}.gz"),
+            java.io.File("app/src/main/assets/${QuranTextAssetLoader.ASSET_NAME}.gz"),
+        ).first(java.io.File::isFile)
+        val corpus = VocabularyAssetLoader.load(corpusAsset.inputStream(), AppLanguage.English)
+        val firstPage = QuranTextAssetLoader.loadFirstPage(quranAsset.inputStream())
+        val pageIndex = QuranReaderPageWordIndex(corpus, firstPage)
+
+        assertTrue(
+            firstPage.filterNot(QuranPageToken::isAyahMarker).all { pageIndex.findId(it) != null },
+        )
+    }
+
+    @Test
     fun generatedCorpusContainsFrequentWordsAndEveryLastSurah() {
         assertEquals((1..114).toList(), WordRepository.selectableSurahs.map(QuranSurah::number))
         assertEquals(100, WordRepository.frequentWords.size)

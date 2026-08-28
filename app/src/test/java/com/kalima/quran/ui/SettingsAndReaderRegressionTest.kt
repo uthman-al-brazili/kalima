@@ -31,6 +31,7 @@ class SettingsAndReaderRegressionTest {
         assertFalse(availabilityBlock.contains("WordRepository.prepareReaderIndex()"))
         assertTrue(reader.contains("WordRepository.prepareReaderIndex()"))
         assertTrue(reader.contains("if (readerIndexReady)"))
+        assertTrue(reader.contains("key(pageIndex, readerIndexReady)"))
     }
 
     @Test

@@ -210,6 +210,7 @@ fun KalimaApp(
                             onFontSizeChange = onQuranFontSizeChange,
                             onLearningOverlayChange = onQuranLearningOverlayChange,
                             onToggleCustomList = onToggleCustomList,
+                            onAddToStudy = onIntroduce,
                             onStudyWord = { wordId ->
                                 readerStudyRequestId -= 1L
                                 readerStudyWordId = wordId
