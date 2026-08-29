@@ -23,9 +23,8 @@ $env:ANDROID_USER_HOME = "$PWD\.android-home"
 ```
 
 The build intentionally fails `packageRelease` when any signing value is
-missing. The normal version-backup process still produces its separately named
-debug APK for local restoration and testing; that debug-signed APK must not be
-used as the long-term public Uptodown package.
+missing. Release work does not require a separate debug APK backup; build and
+verify the signed public candidate needed for distribution.
 
 For an interactive local walkthrough that keeps passwords out of chat and
 shell history, run:

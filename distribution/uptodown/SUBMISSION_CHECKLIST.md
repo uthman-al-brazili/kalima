@@ -23,7 +23,7 @@ Official references checked on 2026-08-20:
 - Use the published privacy-policy URL `https://kalima-h1f.pages.dev/privacy` in the Uptodown privacy-policy field.
 - Accept the current Uptodown developer terms.
 - Create and securely back up a long-lived Android release signing key. Every future update to `com.kalima.quran` must use the same key.
-- Build and verify a release-signed APK. Do not upload the debug-signed backup APK from `releases/` as the long-term public package.
+- Build and verify the release-signed APK that will be uploaded. A separate debug APK backup is not required.
 - Upload the APK and select Android, Education, Free, Beta, no ads, no country restrictions, and English + Portuguese.
 - Before every screenshot upload, capture from the candidate APK, record its SHA-256 in `website/screenshots-manifest.json`, run the website's `pnpm check`, and visually confirm each raw capture reflects the final UI. Edited promotional images must preserve the truthful UI and be traceable to that evidence.
 - Upload the icon, featured image, and four accurate portrait promotional images per language from `promotional/final/en/` and `promotional/final/pt-BR/`.

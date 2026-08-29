@@ -75,13 +75,14 @@ version, or publish it. Once the source is stable:
 3. Add a dated section at the top of `CHANGELOG.md` summarizing user-visible
    changes.
 4. In one Gradle invocation where practical, run the relevant unit tests,
-   Android lint, `verifyLockScreenRegression`, and APK assembly.
-5. Copy the validated APK to `releases/kalima-<version>-debug.apk` without
-   deleting or replacing other release files.
-6. Commit the complete intended source state and create annotated tag
+   Android lint, `verifyLockScreenRegression`, and assembly of the requested
+   distributable release artifact. Do not build or copy a separate debug APK
+   as a release backup.
+5. Commit the complete intended source state and create annotated tag
    `v<version>`.
-7. Create `releases/kalima-<version>-source.zip` from that tag.
-8. Update `releases/SHA256SUMS.txt` with the APK and source archive checksums.
+6. Create `releases/kalima-<version>-source.zip` from that tag.
+7. Update `releases/SHA256SUMS.txt` with the source archive checksum and the
+   checksum of any distributable artifact retained for the release.
 
 ## Lock-screen regression contract
 

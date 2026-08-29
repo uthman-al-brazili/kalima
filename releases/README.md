@@ -1,6 +1,9 @@
 # Backups locais do Kalima
 
-Os arquivos APK e ZIP desta pasta são preservados por versão e não devem ser sobrescritos.
+Os arquivos APK e ZIP existentes nesta pasta são preservados por versão e não
+devem ser sobrescritos. Os APKs de debug são backups históricos; novas versões
+não precisam criar outro APK de debug separado, apenas o ZIP do código-fonte e
+os checksums dos artefatos efetivamente distribuídos ou preservados.
 
 ## Windows
 
