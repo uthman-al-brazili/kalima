@@ -33,10 +33,11 @@ publicar o aplicativo Windows, salvo quando o usuário pedir isso explicitamente
 
 7. Calcular o SHA-256 do ZIP e de qualquer artefato distribuível retido para a
    versão e registrá-los em `releases/SHA256SUMS.txt`.
-8. Publicar a release e seus artefatos no GitHub. Somente depois que o link do
-   APK estiver disponível, compilar e implantar `website/` no projeto existente
-   do Cloudflare Pages e confirmar que o site público anuncia e baixa a nova
-   versão. Essa implantação é obrigatória em toda release publicada do app.
+8. Publicar a release e seus artefatos no GitHub e validar localmente a
+   compilação do site. Nunca implantar `website/` nem criar uma prévia pública
+   sem autorização explícita do usuário para essa publicação no pedido atual.
+   Um pedido geral para publicar uma release do app não autoriza a implantação
+   do site.
 
 Os artefatos gerados e checksums são ignorados pelo Git para evitar aumentar o
 repositório, mas permanecem na pasta local compartilhada. O arquivo

@@ -89,10 +89,11 @@ version, or publish it. Once the source is stable:
 7. Create `releases/kalima-<version>-source.zip` from that tag.
 8. Update `releases/SHA256SUMS.txt` with the source archive checksum and the
    checksum of any distributable artifact retained for the release.
-9. Publish the GitHub release and its retained assets. Only after its APK URL
-   is live, build and deploy `website/` to the existing Cloudflare Pages
-   project, then verify that the public site advertises and downloads the new
-   version. Website deployment is required for every published app release.
+9. Publish the GitHub release and its retained assets. Prepare and verify the
+   website build locally, but never deploy `website/` or create a public preview
+   unless the user explicitly authorizes that website publication in the
+   current request. A general request to publish an app release does not grant
+   website-deployment permission.
 
 ## Lock-screen regression contract
 

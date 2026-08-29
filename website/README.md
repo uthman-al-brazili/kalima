@@ -35,8 +35,9 @@ and English and Portuguese download labels in `src/App.tsx`, and include those
 website changes in the release commit. Do not change promotional artwork,
 screenshots, or `artwork-manifest.json` unless the user explicitly requests it.
 After the GitHub release assets are publicly available, run the production
-Cloudflare deployment and verify that the live download button resolves to the
-new APK. A release is not complete until this website deployment succeeds.
+build locally. Deploy it to Cloudflare and verify the live download button only
+when the user explicitly authorizes that website publication in the current
+request. Never infer deployment permission from a general app-release request.
 
 ## Promotional artwork
 
