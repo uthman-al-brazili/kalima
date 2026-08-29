@@ -48,6 +48,7 @@ internal fun DailyMissionScreen(
     canStart: Boolean,
     lockScreenEnabled: Boolean,
     onEnableLockScreen: () -> Unit,
+    onOpenQuiz: () -> Unit,
     onStart: () -> Unit,
 ) {
     Column(
@@ -179,6 +180,14 @@ internal fun DailyMissionScreen(
                     )
                 }
             }
+        }
+        Spacer(Modifier.height(12.dp))
+        OutlinedButton(
+            onClick = onOpenQuiz,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Text(stringResource(R.string.open_quiz), fontWeight = FontWeight.SemiBold)
         }
         if (!lockScreenEnabled) {
             Spacer(Modifier.height(18.dp))

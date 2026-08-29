@@ -60,6 +60,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun SettingsScreen(
     progress: StudyProgress,
+    showTitle: Boolean = true,
     currentLanguage: AppLanguage,
     onThemeModeChange: (AppThemeMode) -> Unit,
     onLanguageChange: (AppLanguage) -> Unit,
@@ -211,11 +212,13 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
     ) {
-        Text(
-            stringResource(R.string.settings_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-        )
+        if (showTitle) {
+            Text(
+                stringResource(R.string.settings_title),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+            )
+        }
         Text(
             stringResource(R.string.settings_subtitle),
             color = MaterialTheme.colorScheme.onSurfaceVariant,

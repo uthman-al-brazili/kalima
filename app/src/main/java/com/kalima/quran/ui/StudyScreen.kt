@@ -86,6 +86,7 @@ fun StudyScreen(
     onToggleAlreadyKnown: (String) -> Unit,
     onShowCompleteAyahChange: (Boolean) -> Unit,
     onOpenFoundations: () -> Unit,
+    onOpenQuiz: () -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
     onLaunchTargetHandled: (Long) -> Unit = {},
@@ -213,6 +214,7 @@ fun StudyScreen(
             canStart = words.isNotEmpty(),
             lockScreenEnabled = progress.lockScreenEnabled,
             onEnableLockScreen = onEnableLockScreen,
+            onOpenQuiz = onOpenQuiz,
             onStart = {
                 sessionWordIds = arrayListOf()
                 showMission = false

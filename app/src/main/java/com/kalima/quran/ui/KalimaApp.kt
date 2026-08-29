@@ -1,14 +1,24 @@
 package com.kalima.quran.ui
 
 import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,11 +31,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import androidx.core.view.WindowCompat
 import androidx.annotation.StringRes
@@ -44,11 +56,8 @@ import com.kalima.quran.ui.theme.KalimaTheme
 private enum class AppTab(@param:StringRes val labelRes: Int, @param:DrawableRes val iconRes: Int) {
     Study(R.string.tab_study, R.drawable.ic_study),
     Quran(R.string.tab_quran, R.drawable.ic_quran),
-    Library(R.string.tab_words, R.drawable.ic_library),
-    Quiz(R.string.tab_quiz, R.drawable.ic_quiz),
+    Learn(R.string.tab_learn, R.drawable.ic_library),
     Progress(R.string.tab_progress, R.drawable.ic_progress),
-    Foundations(R.string.tab_foundations, R.drawable.ic_foundations),
-    Settings(R.string.tab_settings, R.drawable.ic_settings),
 }
 
 data class StudyLaunchTarget(val wordId: String, val requestId: Long)
@@ -107,11 +116,19 @@ fun KalimaApp(
     onStudyLaunchTargetHandled: (Long) -> Unit = {},
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
+    var selectedLearnSectionName by rememberSaveable { mutableStateOf(LearnSection.Words.name) }
+    var settingsVisible by rememberSaveable { mutableStateOf(false) }
     var handledStudyRequestId by rememberSaveable { mutableLongStateOf(NO_STUDY_REQUEST) }
     var excludedWordsRequestId by rememberSaveable { mutableLongStateOf(0L) }
     val hasPendingStudyRequest = studyLaunchTarget != null &&
         studyLaunchTarget.requestId != handledStudyRequestId
-    val selected = if (hasPendingStudyRequest) AppTab.Study else AppTab.valueOf(selectedName)
+    val selected = if (hasPendingStudyRequest) {
+        AppTab.Study
+    } else {
+        AppTab.entries.firstOrNull { it.name == selectedName } ?: AppTab.Study
+    }
+    val selectedLearnSection = LearnSection.entries
+        .firstOrNull { it.name == selectedLearnSectionName } ?: LearnSection.Words
     val pronouncer = rememberArabicPronouncer()
     val screenStateHolder = rememberSaveableStateHolder()
 
@@ -119,8 +136,13 @@ fun KalimaApp(
         val target = studyLaunchTarget ?: return@LaunchedEffect
         if (target.requestId != handledStudyRequestId) {
             selectedName = AppTab.Study.name
+            settingsVisible = false
             handledStudyRequestId = target.requestId
         }
+    }
+
+    BackHandler(enabled = settingsVisible) {
+        settingsVisible = false
     }
 
     KalimaTheme(themeMode = progress.themeMode) {
@@ -144,101 +166,55 @@ fun KalimaApp(
         }
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
+            topBar = {
+                KalimaTopBar(
+                    settingsVisible = settingsVisible,
+                    onOpenSettings = { settingsVisible = true },
+                    onCloseSettings = { settingsVisible = false },
+                )
+            },
             bottomBar = {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                    AppTab.entries.forEach { tab ->
-                        NavigationBarItem(
-                            selected = selected == tab,
-                            onClick = { selectedName = tab.name },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(tab.iconRes),
-                                    contentDescription = stringResource(tab.labelRes),
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = stringResource(tab.labelRes),
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    autoSize = TextAutoSize.StepBased(
-                                        minFontSize = 8.sp,
-                                        maxFontSize = 11.sp,
-                                        stepSize = 0.5.sp,
-                                    ),
-                                    style = MaterialTheme.typography.labelSmall,
-                                )
-                            },
-                            alwaysShowLabel = false,
-                        )
+                if (!settingsVisible) {
+                    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                        AppTab.entries.forEach { tab ->
+                            NavigationBarItem(
+                                selected = selected == tab,
+                                onClick = {
+                                    selectedName = tab.name
+                                    settingsVisible = false
+                                },
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(tab.iconRes),
+                                        contentDescription = stringResource(tab.labelRes),
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = stringResource(tab.labelRes),
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        autoSize = TextAutoSize.StepBased(
+                                            minFontSize = 8.sp,
+                                            maxFontSize = 11.sp,
+                                            stepSize = 0.5.sp,
+                                        ),
+                                        style = MaterialTheme.typography.labelSmall,
+                                    )
+                                },
+                                alwaysShowLabel = true,
+                            )
+                        }
                     }
                 }
             },
         ) { padding ->
             Box(Modifier.padding(padding)) {
-                TabStateProvider(selected, screenStateHolder) {
-                    when (selected) {
-                        AppTab.Study -> StudyScreen(
+                if (settingsVisible) {
+                    screenStateHolder.SaveableStateProvider(SETTINGS_STATE_KEY) {
+                        SettingsScreen(
                             progress = progress,
-                            onIntroduce = onIntroduce,
-                            onAnswer = onAnswer,
-                            onCurrentWordChange = onCurrentStudyWordChange,
-                            onEnableLockScreen = { onLockScreenChange(true) },
-                            onOpenExcludedWords = {
-                                excludedWordsRequestId += 1L
-                                selectedName = AppTab.Library.name
-                            },
-                            pronouncer = pronouncer,
-                            onToggleCustomList = onToggleCustomList,
-                            onToggleAlreadyKnown = onToggleAlreadyKnown,
-                            onShowCompleteAyahChange = onShowCompleteAyahChange,
-                            onOpenFoundations = { selectedName = AppTab.Foundations.name },
-                            launchTarget = studyLaunchTarget,
-                            onLaunchTargetHandled = { requestId ->
-                                selectedName = AppTab.Study.name
-                                handledStudyRequestId = requestId
-                                onStudyLaunchTargetHandled(requestId)
-                            },
-                        )
-                        AppTab.Quran -> QuranReaderScreen(
-                            progress = progress,
-                            fontSizeSp = progress.quranFontSizeSp,
-                            customStudyIds = progress.customStudyIds,
-                            learningOverlayEnabled = progress.quranLearningOverlayEnabled,
-                            onFontSizeChange = onQuranFontSizeChange,
-                            onLearningOverlayChange = onQuranLearningOverlayChange,
-                            onToggleCustomList = onToggleCustomList,
-                        )
-                        AppTab.Library -> LibraryScreen(
-                            progress = progress,
-                            pronouncer = pronouncer,
-                            onToggleCustomList = onToggleCustomList,
-                            onToggleAlreadyKnown = onToggleAlreadyKnown,
-                            onShowCompleteAyahChange = onShowCompleteAyahChange,
-                            openExcludedWordsRequestId = excludedWordsRequestId,
-                        )
-                        AppTab.Quiz -> QuizScreen(
-                            progress = progress,
-                            onAnswer = onQuizAnswer,
-                            pronouncer = pronouncer,
-                        )
-                        AppTab.Progress -> ProgressScreen(
-                            progress = progress,
-                            onStudyScopeChange = onStudyScopeChange,
-                            onToggleSurah = onToggleSurah,
-                            pronouncer = pronouncer,
-                        )
-                        AppTab.Foundations -> FoundationsScreen(
-                            progress = progress,
-                            onCompleteAlphabetLesson = onCompleteAlphabetLesson,
-                            onStartAlphabetFoundation = onStartAlphabetFoundation,
-                            onSkipAlphabetFoundation = onSkipAlphabetFoundation,
-                            onCompleteNumberLesson = onCompleteNumberLesson,
-                            onStartNumberFoundation = onStartNumberFoundation,
-                            pronouncer = pronouncer,
-                        )
-                        AppTab.Settings -> SettingsScreen(
-                            progress = progress,
+                            showTitle = false,
                             currentLanguage = currentLanguage,
                             onThemeModeChange = onThemeModeChange,
                             onLanguageChange = onLanguageChange,
@@ -271,6 +247,118 @@ fun KalimaApp(
                             onCancelOfflineWordAudio = onCancelOfflineWordAudio,
                         )
                     }
+                } else {
+                    TabStateProvider(selected, screenStateHolder) {
+                        when (selected) {
+                        AppTab.Study -> StudyScreen(
+                            progress = progress,
+                            onIntroduce = onIntroduce,
+                            onAnswer = onAnswer,
+                            onCurrentWordChange = onCurrentStudyWordChange,
+                            onEnableLockScreen = { onLockScreenChange(true) },
+                            onOpenExcludedWords = {
+                                excludedWordsRequestId += 1L
+                                selectedLearnSectionName = LearnSection.Words.name
+                                selectedName = AppTab.Learn.name
+                            },
+                            pronouncer = pronouncer,
+                            onToggleCustomList = onToggleCustomList,
+                            onToggleAlreadyKnown = onToggleAlreadyKnown,
+                            onShowCompleteAyahChange = onShowCompleteAyahChange,
+                            onOpenFoundations = {
+                                selectedLearnSectionName = LearnSection.Foundations.name
+                                selectedName = AppTab.Learn.name
+                            },
+                            onOpenQuiz = {
+                                selectedLearnSectionName = LearnSection.Quiz.name
+                                selectedName = AppTab.Learn.name
+                            },
+                            launchTarget = studyLaunchTarget,
+                            onLaunchTargetHandled = { requestId ->
+                                selectedName = AppTab.Study.name
+                                handledStudyRequestId = requestId
+                                onStudyLaunchTargetHandled(requestId)
+                            },
+                        )
+                        AppTab.Quran -> QuranReaderScreen(
+                            progress = progress,
+                            fontSizeSp = progress.quranFontSizeSp,
+                            customStudyIds = progress.customStudyIds,
+                            learningOverlayEnabled = progress.quranLearningOverlayEnabled,
+                            onFontSizeChange = onQuranFontSizeChange,
+                            onLearningOverlayChange = onQuranLearningOverlayChange,
+                            onToggleCustomList = onToggleCustomList,
+                        )
+                        AppTab.Learn -> LearnScreen(
+                            progress = progress,
+                            selectedSection = selectedLearnSection,
+                            onSectionSelected = { selectedLearnSectionName = it.name },
+                            pronouncer = pronouncer,
+                            onToggleCustomList = onToggleCustomList,
+                            onToggleAlreadyKnown = onToggleAlreadyKnown,
+                            onShowCompleteAyahChange = onShowCompleteAyahChange,
+                            openExcludedWordsRequestId = excludedWordsRequestId,
+                            onQuizAnswer = onQuizAnswer,
+                            onCompleteAlphabetLesson = onCompleteAlphabetLesson,
+                            onStartAlphabetFoundation = onStartAlphabetFoundation,
+                            onSkipAlphabetFoundation = onSkipAlphabetFoundation,
+                            onCompleteNumberLesson = onCompleteNumberLesson,
+                            onStartNumberFoundation = onStartNumberFoundation,
+                        )
+                        AppTab.Progress -> ProgressScreen(
+                            progress = progress,
+                            onStudyScopeChange = onStudyScopeChange,
+                            onToggleSurah = onToggleSurah,
+                            pronouncer = pronouncer,
+                        )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun KalimaTopBar(
+    settingsVisible: Boolean,
+    onOpenSettings: () -> Unit,
+    onCloseSettings: () -> Unit,
+) {
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .height(56.dp)
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (settingsVisible) {
+                IconButton(onClick = onCloseSettings) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_back),
+                        contentDescription = stringResource(R.string.navigate_back),
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.tab_settings),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.app_name),
+                    modifier = Modifier.padding(start = 8.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                )
+                Spacer(Modifier.weight(1f))
+                IconButton(onClick = onOpenSettings) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_settings),
+                        contentDescription = stringResource(R.string.tab_settings),
+                    )
                 }
             }
         }
@@ -287,3 +375,4 @@ private fun TabStateProvider(
 }
 
 private const val NO_STUDY_REQUEST = Long.MIN_VALUE
+private const val SETTINGS_STATE_KEY = "Settings"
