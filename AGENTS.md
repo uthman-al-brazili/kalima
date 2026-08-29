@@ -70,6 +70,12 @@ tag as part of an ordinary development change.
 Treat work as a release only when the user explicitly asks to release, package,
 version, or publish it. Once the source is stable:
 
+Creating a commit or tag, or pushing commits or tags, always requires the
+user's explicit permission in the current request. A request to prepare,
+package, release, or publish the app does not by itself grant Git permission.
+Without that permission, prepare and verify the complete release state locally,
+then stop before any commit, tag, or push.
+
 1. Confirm the requested version does not already exist in `releases/`; stop
    rather than overwrite an existing artifact.
 2. Increment Android `versionCode` and `versionName` in
@@ -84,8 +90,8 @@ version, or publish it. Once the source is stable:
    Android lint, `verifyLockScreenRegression`, and assembly of the requested
    distributable release artifact. Do not build or copy a separate debug APK
    as a release backup.
-6. Commit the complete intended source state and create annotated tag
-   `v<version>`.
+6. Only with the user's explicit Git permission, commit the complete intended
+   source state and create annotated tag `v<version>`.
 7. Create `releases/kalima-<version>-source.zip` from that tag.
 8. Update `releases/SHA256SUMS.txt` with the source archive checksum and the
    checksum of any distributable artifact retained for the release.

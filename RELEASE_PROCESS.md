@@ -15,6 +15,12 @@ publicar o aplicativo Windows, salvo quando o usuário pedir isso explicitamente
 
 ## Procedimento
 
+Criar commits ou tags e enviar commits ou tags ao remoto sempre exige
+autorização explícita do usuário no pedido atual. Um pedido para preparar,
+empacotar, lançar ou publicar o aplicativo não concede por si só permissão para
+ações Git. Sem essa autorização, preparar e validar tudo localmente e parar
+antes de qualquer commit, tag ou push.
+
 1. Atualizar `versionCode` e `versionName` em `app/build.gradle.kts`.
 2. Adicionar no topo de `CHANGELOG.md` uma seção datada para a nova versão,
    resumindo as funcionalidades e correções visíveis para o usuário.
@@ -26,7 +32,8 @@ publicar o aplicativo Windows, salvo quando o usuário pedir isso explicitamente
    o lint, `verifyLockScreenRegression` e a montagem do artefato distribuível
    solicitado, seguindo o fluxo de assinatura correspondente. Não montar um APK
    de debug separado apenas para backup.
-5. Criar um commit e a tag anotada `vX.Y.Z`.
+5. Somente com autorização Git explícita do usuário, criar um commit e a tag
+   anotada `vX.Y.Z`.
 6. Gerar o código-fonte restaurável a partir da tag:
 
        git archive --format=zip --output=releases/kalima-X.Y.Z-source.zip vX.Y.Z
