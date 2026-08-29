@@ -64,6 +64,23 @@ gerar a gravação.
 
 Os glossários em inglês foram convertidos em um primeiro rascunho em português e receberam correções editoriais pontuais. Eles são apresentados como apoio contextual, não como tradução oficial do Alcorão. O cache em `tools/pt_gloss_cache.json` e cada cartão devem passar por revisão linguística e religiosa antes da publicação.
 
+## Tilawa e ONNX Runtime
+
+- Projeto: [Tilawa](https://github.com/yazinsai/tilawa), revisão
+  `ec5cdc72c1c48ba29866ca2e3197d6b9a0e2e793`
+- Código e decodificador adaptado: licença MIT, copyright 2026 yazinsai
+- Modelo incorporado: `fastconformer_full_mixed.onnx`, SHA-256
+  `4767182cd92975869f81a7e32700b14ca2b04e8dc97a15ff220a8697f4639488`
+- Modelo-base declarado pelo projeto: NVIDIA
+  `stt_ar_fastconformer_hybrid_large_pcd_v1.0`, licença CC BY 4.0
+- Execução Android: Microsoft ONNX Runtime, licença MIT
+
+O Kalima usa o modelo e um decodificador CTC adaptado somente no aparelho para
+acompanhar as palavras recitadas em um ayah escolhido. O recurso não envia nem
+armazena a gravação e não apresenta o resultado como avaliação de pronúncia ou
+de tajwid. Os avisos e atribuições de licença devem acompanhar qualquer
+distribuição que contenha o modelo.
+
 ## Java Native Access (JNA)
 
 - Projeto: [Java Native Access](https://github.com/java-native-access/jna)

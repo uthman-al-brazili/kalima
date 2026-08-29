@@ -1516,8 +1516,12 @@ private fun WordCard(
                             VersePronunciationButton(
                                 word = word,
                                 pronouncer = pronouncer,
-                                modifier = Modifier.fillMaxWidth(),
-                                labelRes = R.string.hussary_verse_recitation,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .width(112.dp),
+                                dense = true,
+                                centerContentGroup = true,
+                                labelRes = R.string.ayah_audio_short,
                             )
                             TextButton(
                                 onClick = { onShowCompleteAyahChange(false) },

@@ -1,6 +1,6 @@
 # Kalima Privacy Policy / Política de Privacidade do Kalima
 
-- **Effective date / Data de vigência:** 2026-08-20
+- **Effective date / Data de vigência:** 2026-08-28
 - **Developer / Desenvolvedor:** Uthman (Gustavo)
 - **Contact / Contato:** uthman-al-brazili@proton.me
 - **Website / Site:** https://kalima-h1f.pages.dev/
@@ -44,6 +44,11 @@ Display-over-other-apps and foreground-service access are used only for the
 optional return-to-phone study card. Boot-completed access restores enabled
 reminders or study-card scheduling after a device restart. These features are
 off until the user enables them.
+
+Microphone permission is requested only when the user starts the optional Recite
+& Understand exercise. Tilawa processes the captured audio entirely
+on the device with a Quran recognition model bundled in Kalima. Kalima does not
+store the recording, send it to the developer, or upload it to a third party.
 
 ### Contact
 
@@ -113,6 +118,12 @@ são usados apenas pelo cartão opcional de estudo ao voltar ao celular. O acess
 após a inicialização restaura o agendamento de lembretes ou cartões já ativados
 quando o aparelho é reiniciado. Esses recursos ficam desligados até que o
 usuário os ative.
+
+A permissão do microfone é solicitada somente quando o usuário inicia o
+exercício opcional Recite e Entenda. O Tilawa processa o áudio capturado
+inteiramente no aparelho com um modelo de reconhecimento corânico incluído no
+Kalima. O Kalima não armazena a gravação, não a envia ao desenvolvedor nem a
+transmite a terceiros.
 
 ### Contato
 

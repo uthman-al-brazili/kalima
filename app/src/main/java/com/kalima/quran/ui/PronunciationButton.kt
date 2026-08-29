@@ -3,8 +3,12 @@ package com.kalima.quran.ui
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
@@ -16,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -45,6 +50,8 @@ fun PronunciationButton(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
     dense: Boolean = false,
+    centerLabel: Boolean = false,
+    centerContentGroup: Boolean = false,
     @StringRes labelRes: Int = R.string.listen_pronunciation,
     playbackRate: Float = ArabicPronouncer.WORD_DEFAULT_RATE,
     repeatCount: Int = 1,
@@ -63,8 +70,11 @@ fun PronunciationButton(
         modifier = modifier,
         compact = compact,
         dense = dense,
+        centerLabel = centerLabel,
+        centerContentGroup = centerContentGroup,
         labelRes = labelRes,
         offlineMessageRes = R.string.offline_word_audio_missing,
+        enabled = true,
         contentColor = contentColor,
         borderColor = borderColor,
     )
@@ -77,9 +87,12 @@ fun VersePronunciationButton(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
     dense: Boolean = false,
+    centerLabel: Boolean = false,
+    centerContentGroup: Boolean = false,
     @StringRes labelRes: Int = R.string.hussary_verse_recitation,
     playbackRate: Float = ArabicPronouncer.VERSE_DEFAULT_RATE,
     repeatCount: Int = 1,
+    enabled: Boolean = true,
     contentColor: Color = Color.Unspecified,
     borderColor: Color = Color.Unspecified,
 ) {
@@ -96,8 +109,11 @@ fun VersePronunciationButton(
         modifier = modifier,
         compact = compact,
         dense = dense,
+        centerLabel = centerLabel,
+        centerContentGroup = centerContentGroup,
         labelRes = labelRes,
         offlineMessageRes = R.string.offline_verse_audio_missing,
+        enabled = enabled,
         contentColor = contentColor,
         borderColor = borderColor,
     )
@@ -121,8 +137,11 @@ fun FoundationPronunciationButton(
         modifier = modifier,
         compact = compact,
         dense = true,
+        centerLabel = false,
+        centerContentGroup = false,
         labelRes = labelRes,
         offlineMessageRes = R.string.foundation_voice_unavailable,
+        enabled = true,
         contentColor = MaterialTheme.colorScheme.primary,
         borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
     )
@@ -134,8 +153,11 @@ private fun PronunciationControl(
     modifier: Modifier,
     compact: Boolean,
     dense: Boolean,
+    centerLabel: Boolean,
+    centerContentGroup: Boolean,
     @StringRes labelRes: Int,
     @StringRes offlineMessageRes: Int,
+    enabled: Boolean,
     contentColor: Color,
     borderColor: Color,
 ) {
@@ -171,7 +193,7 @@ private fun PronunciationControl(
     val onClick: () -> Unit = { handleResult(play(::handleResult)) }
 
     if (compact) {
-        IconButton(onClick = onClick, modifier = modifier) {
+        IconButton(onClick = onClick, modifier = modifier, enabled = enabled) {
             Icon(
                 painter = painterResource(R.drawable.ic_volume_up),
                 contentDescription = label,
@@ -183,6 +205,7 @@ private fun PronunciationControl(
         OutlinedButton(
             onClick = onClick,
             modifier = modifier,
+            enabled = enabled,
             colors = ButtonDefaults.outlinedButtonColors(contentColor = resolvedContentColor),
             border = BorderStroke(1.dp, resolvedBorderColor),
             contentPadding = if (dense) {
@@ -191,20 +214,47 @@ private fun PronunciationControl(
                 ButtonDefaults.ContentPadding
             },
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_volume_up),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                label,
-                style = if (dense) {
-                    MaterialTheme.typography.labelMedium
-                } else {
-                    MaterialTheme.typography.labelLarge
-                },
-            )
+            val labelStyle = if (dense) {
+                MaterialTheme.typography.labelMedium
+            } else {
+                MaterialTheme.typography.labelLarge
+            }
+            if (centerLabel) {
+                Box(Modifier.fillMaxWidth()) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_volume_up),
+                        contentDescription = null,
+                        modifier = Modifier.align(Alignment.CenterStart).size(20.dp),
+                    )
+                    Text(
+                        label,
+                        modifier = Modifier.align(Alignment.Center),
+                        style = labelStyle,
+                    )
+                }
+            } else if (centerContentGroup) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_volume_up),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(label, style = labelStyle)
+                }
+            } else {
+                Icon(
+                    painter = painterResource(R.drawable.ic_volume_up),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(label, style = labelStyle)
+            }
         }
     }
 }

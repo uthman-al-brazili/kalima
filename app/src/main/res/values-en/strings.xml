@@ -61,6 +61,26 @@
     </plurals>
     <string name="show_complete_ayah">Show complete ayah</string>
     <string name="hide_complete_ayah">Hide complete ayah</string>
+    <string name="read_and_understand_action">Recite &amp; understand this ayah</string>
+    <string name="read_and_understand_title">Recite &amp; Understand</string>
+    <string name="read_and_understand_description">Recite the ayah in order, watch the words appear, then recall its meaning. Recognition checks ordered word progress only.</string>
+    <string name="start_recitation">Start reciting</string>
+    <string name="finish_recitation">Finish</string>
+    <string name="try_recitation_again">Try again</string>
+    <string name="recitation_ready">When you are ready, recite the complete ayah.</string>
+    <string name="recitation_model_loading">Preparing the offline Quran recognizer…</string>
+    <string name="recitation_listening">Listening with Tilawa on this device…</string>
+    <string name="recitation_processing">Checking the words…</string>
+    <string name="recitation_words_heard">%1$d of %2$d words heard. Now recall what the ayah means.</string>
+    <string name="recitation_no_match">Recite this ayah in order. Earlier words are ignored, but inserted or trailing words are not accepted.</string>
+    <string name="recitation_permission_denied">Microphone access is needed only while you choose to recite.</string>
+    <string name="recitation_failed">Recognition stopped unexpectedly. Please try again.</string>
+    <string name="recitation_heard">Heard: %1$s</string>
+    <string name="recall_ayah_meaning">What does this ayah mean?</string>
+    <string name="recall_ayah_meaning_hint">Pause and explain it to yourself before revealing the meaning.</string>
+    <string name="ayah_meaning_not_indexed">A complete contextual meaning is not indexed for this ayah yet.</string>
+    <string name="key_vocabulary">Key vocabulary</string>
+    <string name="recitation_tracking_disclaimer">Word highlighting is a learning aid, not a pronunciation or Tajweed assessment. Tilawa processes the audio entirely on this device; Kalima does not store it.</string>
 
     <string name="status_new">New</string>
     <string name="status_reviewing">Reviewing</string>
@@ -70,6 +90,8 @@
     <string name="root_value">Root  %1$s</string>
     <string name="reference_root">%1$s  •  root %2$s</string>
     <string name="listen_pronunciation">Hear pronunciation</string>
+    <string name="word_audio_short">Word</string>
+    <string name="ayah_audio_short">Ayah</string>
     <string name="pronunciation_failed">The pronunciation could not be played. Please try again.</string>
     <string name="offline_word_audio_missing">Not connected to the internet, and this word recording has not been saved yet. Connect and try again, or download the selected audio in Settings.</string>
     <string name="offline_verse_audio_missing">Not connected to the internet, and this Al-Hussary ayah recitation has not been saved yet. Connect and try again, or download the selected audio in Settings.</string>

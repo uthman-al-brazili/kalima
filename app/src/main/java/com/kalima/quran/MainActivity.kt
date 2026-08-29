@@ -25,6 +25,7 @@ import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.ProgressBackupCodec
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
+import com.kalima.quran.data.initialize
 import com.kalima.quran.data.needsAlphabetFoundation
 import com.kalima.quran.data.preloadQuranFirstPage
 import com.kalima.quran.audio.OfflineWordAudioManager
@@ -204,7 +205,13 @@ class MainActivity : ComponentActivity() {
     private fun changeLanguage(language: AppLanguage) {
         if (LanguageManager.selectedLanguage(this) == language) return
         LanguageManager.setLanguage(applicationContext, language)
-        recreate()
+        loadedProgressStore = null
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                WordRepository.initialize(applicationContext)
+            }
+            recreate()
+        }
     }
 
     private fun changeLockScreen(enabled: Boolean) {

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -124,6 +126,7 @@ internal fun WordExplorerSheet(
     showVersePronunciation: Boolean = true,
     inCustomList: Boolean = false,
     onToggleCustomList: ((String) -> Unit)? = null,
+    onReadAndUnderstand: (() -> Unit)? = null,
 ) {
     val pronouncer = rememberArabicPronouncer()
     var detailsRevealed by remember(word.id, concealDetailsForRecall) {
@@ -132,7 +135,10 @@ internal fun WordExplorerSheet(
     val occurrences = remember(word.id, indexed) {
         if (indexed) WordRepository.concordance(word) else emptyList()
     }
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        scrimColor = Color.Transparent,
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -170,17 +176,36 @@ internal fun WordExplorerSheet(
                     fontWeight = FontWeight.Bold,
                 )
             }
-            PronunciationButton(
-                word = word,
-                pronouncer = pronouncer,
+            if (onReadAndUnderstand != null) {
+                OutlinedButton(
+                    onClick = onReadAndUnderstand,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.read_and_understand_action))
+                }
+            }
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-            )
-            if (showVersePronunciation && detailsRevealed) {
-                VersePronunciationButton(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                PronunciationButton(
                     word = word,
                     pronouncer = pronouncer,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.weight(1f),
+                    dense = true,
+                    centerLabel = true,
+                    labelRes = R.string.word_audio_short,
                 )
+                if (showVersePronunciation && detailsRevealed) {
+                    VersePronunciationButton(
+                        word = word,
+                        pronouncer = pronouncer,
+                        modifier = Modifier.weight(1f),
+                        dense = true,
+                        centerLabel = true,
+                        labelRes = R.string.ayah_audio_short,
+                    )
+                }
             }
             if (concealDetailsForRecall) {
                 OutlinedButton(

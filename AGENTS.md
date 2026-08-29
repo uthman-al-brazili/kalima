@@ -93,12 +93,3 @@ wait for `ACTION_USER_PRESENT`. Never remove or bypass the manifest/window
 explicit locked-device safety allowance. For a release, when a compatible
 Android 14 device is connected, install the candidate APK and exercise a real
 screen-off/screen-on cycle.
-
-## External information
-
-Never use a browser, in-app browser, web search, webpage fetching, or URL
-navigation without the user's explicit permission for the current task. First
-use installed purpose-built connectors, local project files and documentation,
-and available local command-line or API tools. If browser access is still
-necessary, explain what is missing and wait for permission. When permission is
-granted, reuse the current tab and open the minimum number of pages required.

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -341,17 +342,24 @@ private fun LibraryWordCard(
                 Spacer(Modifier.height(14.dp))
                 if (showCompleteAyah) {
                     VerseExplorerPanel(word)
-                    VersePronunciationButton(
-                        word = word,
-                        pronouncer = pronouncer,
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        labelRes = R.string.hussary_verse_recitation,
-                    )
-                    OutlinedButton(
-                        onClick = { onShowCompleteAyahChange(false) },
-                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Text(stringResource(R.string.hide_complete_ayah))
+                        VersePronunciationButton(
+                            word = word,
+                            pronouncer = pronouncer,
+                            modifier = Modifier.width(112.dp),
+                            dense = true,
+                            centerContentGroup = true,
+                            labelRes = R.string.ayah_audio_short,
+                        )
+                        OutlinedButton(
+                            onClick = { onShowCompleteAyahChange(false) },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(stringResource(R.string.hide_complete_ayah))
+                        }
                     }
                 } else {
                     OutlinedButton(

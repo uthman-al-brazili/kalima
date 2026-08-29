@@ -1,0 +1,14 @@
+Kalima includes Tilawa's fastconformer_full_mixed.onnx model for offline Quran
+recitation recognition.
+
+Tilawa project: https://github.com/yazinsai/tilawa
+Integrated revision: ec5cdc72c1c48ba29866ca2e3197d6b9a0e2e793
+Model SHA-256: 4767182cd92975869f81a7e32700b14ca2b04e8dc97a15ff220a8697f4639488
+
+Tilawa identifies the model as Cyberistic's c2c-direct-mixed-tta, based on
+NVIDIA stt_ar_fastconformer_hybrid_large_pcd_v1.0, distributed under the
+Creative Commons Attribution 4.0 International license (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+NVIDIA base model:
+https://huggingface.co/nvidia/stt_ar_fastconformer_hybrid_large_pcd_v1.0

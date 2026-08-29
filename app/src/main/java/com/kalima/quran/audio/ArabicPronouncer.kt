@@ -109,10 +109,15 @@ class ArabicPronouncer(context: Context) {
             capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
-    fun shutdown() {
+    fun stop() {
         wordAudioPlayer.stop()
         verseAudioPlayer.stop()
         alphabetAudioPlayer.stop()
+        foundationVoice.stop()
+    }
+
+    fun shutdown() {
+        stop()
         foundationVoice.shutdown()
     }
 
