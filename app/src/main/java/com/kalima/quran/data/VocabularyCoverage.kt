@@ -25,6 +25,9 @@ data class QuranVocabularyCoverage(
 }
 
 object VocabularyCoverage {
+    @Volatile
+    private var indexedCorpus: IndexedCorpus? = null
+
     /**
      * Measures Quran word occurrences covered by forms the learner has mastered.
      * Matching both the normalized surface form and lemma avoids treating unrelated
@@ -34,33 +37,60 @@ object VocabularyCoverage {
         words: List<QuranWord>,
         recognizedWordIds: Set<String>,
     ): QuranVocabularyCoverage {
-        val recognizedKeys = words
-            .asSequence()
-            .filter { it.id in recognizedWordIds }
-            .map(::recognitionKey)
-            .toSet()
-        val surahs = words
-            .asSequence()
-            .filter { it.surahNumber != null }
-            .groupBy { requireNotNull(it.surahNumber) }
-            .map { (surahNumber, surahWords) ->
-                val total = surahWords.sumOf(QuranWord::frequency)
-                val recognized = surahWords
-                    .asSequence()
-                    .filter { recognitionKey(it) in recognizedKeys }
-                    .sumOf(QuranWord::frequency)
-                SurahVocabularyCoverage(
-                    surahNumber = surahNumber,
-                    recognizedOccurrences = recognized,
-                    totalOccurrences = total,
-                )
+        val index = indexFor(words)
+        val recognizedKeys = recognizedWordIds.mapNotNullTo(mutableSetOf()) {
+            index.recognitionKeyByWordId[it]
+        }
+        val recognizedBySurah = mutableMapOf<Int, Int>()
+        recognizedKeys.forEach { key ->
+            index.occurrencesByKeyAndSurah[key]?.forEach { (surahNumber, occurrences) ->
+                recognizedBySurah[surahNumber] =
+                    recognizedBySurah.getOrDefault(surahNumber, 0) + occurrences
             }
-            .sortedBy(SurahVocabularyCoverage::surahNumber)
+        }
+        val surahs = index.totalOccurrencesBySurah.map { (surahNumber, total) ->
+            SurahVocabularyCoverage(
+                surahNumber = surahNumber,
+                recognizedOccurrences = recognizedBySurah.getOrDefault(surahNumber, 0),
+                totalOccurrences = total,
+            )
+        }
 
         return QuranVocabularyCoverage(
             recognizedOccurrences = surahs.sumOf(SurahVocabularyCoverage::recognizedOccurrences),
             totalOccurrences = surahs.sumOf(SurahVocabularyCoverage::totalOccurrences),
             surahs = surahs,
+        )
+    }
+
+    private fun indexFor(words: List<QuranWord>): IndexedCorpus {
+        indexedCorpus?.takeIf { it.words === words }?.let { return it }
+        return synchronized(this) {
+            indexedCorpus?.takeIf { it.words === words } ?: buildIndex(words).also {
+                indexedCorpus = it
+            }
+        }
+    }
+
+    private fun buildIndex(words: List<QuranWord>): IndexedCorpus {
+        val recognitionKeyByWordId = HashMap<String, RecognitionKey>(words.size)
+        val totalOccurrencesBySurah = sortedMapOf<Int, Int>()
+        val occurrencesByKeyAndSurah = HashMap<RecognitionKey, MutableMap<Int, Int>>()
+        words.forEach { word ->
+            val key = recognitionKey(word)
+            recognitionKeyByWordId[word.id] = key
+            val surahNumber = word.surahNumber ?: return@forEach
+            totalOccurrencesBySurah[surahNumber] =
+                totalOccurrencesBySurah.getOrDefault(surahNumber, 0) + word.frequency
+            val occurrencesBySurah = occurrencesByKeyAndSurah.getOrPut(key, ::mutableMapOf)
+            occurrencesBySurah[surahNumber] =
+                occurrencesBySurah.getOrDefault(surahNumber, 0) + word.frequency
+        }
+        return IndexedCorpus(
+            words = words,
+            recognitionKeyByWordId = recognitionKeyByWordId,
+            totalOccurrencesBySurah = totalOccurrencesBySurah,
+            occurrencesByKeyAndSurah = occurrencesByKeyAndSurah,
         )
     }
 
@@ -72,6 +102,13 @@ object VocabularyCoverage {
     private data class RecognitionKey(
         val form: String,
         val lemma: String,
+    )
+
+    private data class IndexedCorpus(
+        val words: List<QuranWord>,
+        val recognitionKeyByWordId: Map<String, RecognitionKey>,
+        val totalOccurrencesBySurah: Map<Int, Int>,
+        val occurrencesByKeyAndSurah: Map<RecognitionKey, Map<Int, Int>>,
     )
 }
 

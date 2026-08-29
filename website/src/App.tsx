@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 
 type Language = 'en' | 'pt';
 type Route = '/' | '/privacy' | '/support';
+type FeatureIconName = 'study' | 'quiz' | 'widget' | 'audio' | 'quran' | 'progress';
 
 const artworkRevision = '0.30.5-2026-08-25';
 
@@ -13,6 +14,17 @@ const facts = {
   apk: 'https://github.com/uthman-al-brazili/kalima/releases/download/v0.31.6/kalima-0.31.6-release.apk',
   obtainium: 'https://github.com/ImranR98/Obtainium/releases',
 };
+
+const featureIconPaths: Record<FeatureIconName, string> = {
+  study: 'M21,4H3c-1.1,0 -2,0.9 -2,2v13c0,1.1 0.9,2 2,2h18c1.1,0 2,-0.9 2,-2V6c0,-1.1 -0.9,-2 -2,-2zM21,19h-9V6h9v13z',
+  quiz: 'M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM13,19h-2v-2h2v2zM15.07,11.25l-0.9,0.92C13.45,12.9 13,13.5 13,15h-2v-0.5c0,-1.1 0.45,-2.1 1.17,-2.83l1.24,-1.26c0.37,-0.36 0.59,-0.86 0.59,-1.41a2,2 0,0 0,-4 0H8a4,4 0,0 1,8 0c0,0.88 -0.36,1.68 -0.93,2.25z',
+  widget: 'M4,6H2v14c0,1.1 0.9,2 2,2h14v-2H4V6zM20,2H8c-1.1,0 -2,0.9 -2,2v12c0,1.1 0.9,2 2,2h12c1.1,0 2,-0.9 2,-2V4c0,-1.1 -0.9,-2 -2,-2zM19,11H9V9h10v2zM15,15H9v-2h6v2zM19,7H9V5h10v2z',
+  audio: 'M3,9v6h4l5,5V4L7,9H3zM16.5,12c0,-1.77 -1.02,-3.29 -2.5,-4.03v8.05c1.48,-0.73 2.5,-2.25 2.5,-4.02zM14,3.23v2.06c2.89,0.86 5,3.54 5,6.71s-2.11,5.85 -5,6.71v2.06c4.01,-0.91 7,-4.49 7,-8.77s-2.99,-7.86 -7,-8.77z',
+  quran: 'M4,3h6c1.1,0 2,0.9 2,2v15c-0.6,-0.7 -1.5,-1 -2.5,-1H4c-1.1,0 -2,-0.9 -2,-2V5c0,-1.1 0.9,-2 2,-2zM20,3h-6c-1.1,0 -2,0.9 -2,2v15c0.6,-0.7 1.5,-1 2.5,-1H20c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2zM10,7H5v2h5V7zM19,7h-5v2h5V7zM10,11H5v2h5v-2zM19,11h-5v2h5v-2z',
+  progress: 'M3,13h2v8H3v-8zM7,9h2v12H7V9zM11,3h2v18h-2V3zM15,11h2v10h-2V11zM19,6h2v15h-2V6z',
+};
+
+const stepIcons: readonly FeatureIconName[] = ['study', 'quiz', 'quran'];
 
 const content = {
   en: {
@@ -49,12 +61,12 @@ const content = {
     ],
     featuresTitle: 'Built around small moments that add up.',
     features: [
-      ['▣', 'Lock-screen lessons', 'Practice when the screen turns on while Android keeps the device keyguard fully in control.'],
-      ['?', 'Quick lock-screen quizzes', 'Listening, context, cloze, and root questions turn brief moments into active recall.'],
-      ['◫', 'Daily Quran word widget', 'See one word at a glance and open its exact lesson without altering your progress.'],
-      ['◖', 'Real Quran audio', 'Hear word recordings and Al-Hussary’s complete-ayah recitation. Played audio can be saved locally.'],
-      ['⌁', 'Context, not isolation', 'Open the ayah, inspect roots and grammar, and find other indexed occurrences offline.'],
-      ['↻', 'Spaced repetition', 'Review what is due instead of restarting from the beginning.'],
+      ['study', 'Lock-screen lessons', 'Practice when the screen turns on while Android keeps the device keyguard fully in control.'],
+      ['quiz', 'Quick lock-screen quizzes', 'Listening, context, cloze, and root questions turn brief moments into active recall.'],
+      ['widget', 'Daily Quran word widget', 'See one word at a glance and open its exact lesson without altering your progress.'],
+      ['audio', 'Real Quran audio', 'Hear word recordings and Al-Hussary’s complete-ayah recitation. Played audio can be saved locally.'],
+      ['quran', 'Context, not isolation', 'Open the ayah, inspect roots and grammar, and find other indexed occurrences offline.'],
+      ['progress', 'Spaced repetition', 'Review what is due instead of restarting from the beginning.'],
     ],
     trustTitle: 'Your learning belongs to you.',
     trustBody: 'No account, advertising, analytics, or remote learning database. Progress stays on your device and can be exported manually.',
@@ -102,24 +114,24 @@ const content = {
     steps: [
       ['01', 'Conheça uma palavra do Alcorão', 'Veja o árabe, a transliteração, a pronúncia e o significado diretamente na tela bloqueada.'],
       ['02', 'Relembre com um quiz rápido', 'Responda a questões de áudio, contexto, lacunas e raízes quando a tela acender.'],
-      ['03', 'Continue no contexto do Alcorão', 'Abra a lição exata, ouça áudio real e explore o ayah, a gramática, a raiz e ocorrências relacionadas.'],
+      ['03', 'Continue no contexto do Alcorão', 'Abra a lição exata, ouça áudio real e explore a ayah, a gramática, a raiz e ocorrências relacionadas.'],
     ],
     screensTitle: 'Da tela bloqueada ao contexto do Alcorão.',
     screensBody: 'Comece com um cartão ao acender a tela e continue com estudo de palavras, leitura do Alcorão e fundamentos do árabe.',
     screens: [
       ['lock-screen-learning.png', 'Palavra do Alcorão exibida na tela bloqueada dentro de um telefone Android simulado', 'Revise uma palavra do Alcorão ao acender a tela, com o PIN e a biometria sob o controle do Android.'],
       ['word-study.png', 'Tela do Kalima para estudar a palavra corânica do dia, com áudio e controles de revisão', 'Construa vocabulário uma palavra de cada vez, com pronúncia, significado em contexto e revisão espaçada.'],
-      ['quran-reading.png', 'Leitor do Alcorão do Kalima com palavras árabes tocáveis', 'Toque em qualquer palavra, em qualquer parte do Alcorão, para conectá-la ao ayah e ao seu contexto.'],
+      ['quran-reading.png', 'Leitor do Alcorão do Kalima com palavras árabes tocáveis', 'Toque em qualquer palavra, em qualquer parte do Alcorão, para conectá-la à ayah e ao seu contexto.'],
       ['arabic-foundations.png', 'Tela de fundamentos do árabe do Kalima com alfabeto e números indo-arábicos', 'Pratique o alfabeto e os números indo-arábicos separadamente quando precisar reforçar a base.'],
     ],
     featuresTitle: 'Pequenos momentos que constroem conhecimento.',
     features: [
-      ['▣', 'Lições na tela bloqueada', 'Pratique quando a tela acender enquanto o bloqueio do Android continua totalmente no controle.'],
-      ['?', 'Quizzes rápidos na tela bloqueada', 'Questões de áudio, contexto, lacunas e raízes transformam momentos breves em recordação ativa.'],
-      ['◫', 'Widget da palavra diária', 'Veja uma palavra num relance e abra sua lição exata sem alterar seu progresso.'],
-      ['◖', 'Áudio real do Alcorão', 'Ouça palavras e a recitação de ayahs completas por Al-Hussary. Os áudios tocados podem ser salvos.'],
-      ['⌁', 'Palavras em contexto', 'Abra o ayah, consulte raiz e gramática e encontre outras ocorrências offline.'],
-      ['↻', 'Repetição espaçada', 'Revise o que está pendente em vez de sempre recomeçar do início.'],
+      ['study', 'Lições na tela bloqueada', 'Pratique quando a tela acender enquanto o bloqueio do Android continua totalmente no controle.'],
+      ['quiz', 'Quizzes rápidos na tela bloqueada', 'Questões de áudio, contexto, lacunas e raízes transformam momentos breves em recordação ativa.'],
+      ['widget', 'Widget da palavra diária', 'Veja uma palavra num relance e abra sua lição exata sem alterar seu progresso.'],
+      ['audio', 'Áudio real do Alcorão', 'Ouça palavras e a recitação de ayahs completas por Al-Hussary. Os áudios tocados podem ser salvos.'],
+      ['quran', 'Palavras em contexto', 'Abra a ayah, consulte raiz e gramática e encontre outras ocorrências offline.'],
+      ['progress', 'Repetição espaçada', 'Revise o que está pendente em vez de sempre recomeçar do início.'],
     ],
     trustTitle: 'Seu aprendizado pertence a você.',
     trustBody: 'Sem conta, publicidade, análises ou banco remoto de atividades. O progresso fica no aparelho e pode ser exportado manualmente.',
@@ -163,6 +175,14 @@ function SmartLink({ href, children, className, onClick }: { href: string; child
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   return <a href={href} className={className} onClick={handleClick}>{children}</a>;
+}
+
+function FeatureIcon({ name }: { name: FeatureIconName }) {
+  return (
+    <svg viewBox="0 0 24 24" role="presentation" focusable="false">
+      <path d={featureIconPaths[name]} fill="currentColor" />
+    </svg>
+  );
 }
 
 function App() {
@@ -319,7 +339,7 @@ function Home({ language }: { language: Language }) {
       <div className="step-grid">
         {t.steps.map(([number, title, body], index) => <article className={`step-card step-${index + 1}`} key={number}>
           <span className="step-number">{number}</span>
-          <div className="step-icon" aria-hidden="true">{['أ', 'هُدًى', '↻'][index]}</div>
+          <div className="step-icon" aria-hidden="true"><FeatureIcon name={stepIcons[index]} /></div>
           <h3>{title}</h3><p>{body}</p>
         </article>)}
       </div>
@@ -341,13 +361,16 @@ function Home({ language }: { language: Language }) {
     <section className="features-section section-pad">
       <div className="section-heading centered" id="features"><span className="section-kicker">{language === 'en' ? 'Built for real study' : 'Feito para estudar de verdade'}</span><h2>{t.featuresTitle}</h2></div>
       <div className="feature-grid">
-        {t.features.map(([icon, title, body]) => <article className="feature-card" key={title}><span className="feature-icon" aria-hidden="true">{icon}</span><h3>{title}</h3><p>{body}</p></article>)}
+        {t.features.map(([icon, title, body]) => <article className="feature-card" key={title}><span className="feature-icon" aria-hidden="true"><FeatureIcon name={icon} /></span><h3>{title}</h3><p>{body}</p></article>)}
       </div>
     </section>
 
     <section className="trust-wrap section-pad">
       <div className="trust-panel">
-        <div className="privacy-seal" aria-hidden="true"><span>✓</span><small>PRIVATE<br />BY DESIGN</small></div>
+        <div className="privacy-seal" aria-hidden="true">
+          <span>✓</span>
+          <small>{language === 'en' ? <>PRIVATE<br />BY DESIGN</> : <>PRIVACIDADE<br />DESDE O INÍCIO</>}</small>
+        </div>
         <div><span className="section-kicker light">{language === 'en' ? 'Privacy without fine print' : 'Privacidade sem letras miúdas'}</span><h2>{t.trustTitle}</h2><p>{t.trustBody}</p>
           <div className="inline-links"><SmartLink href="/privacy">{t.trustLinks[0]} →</SmartLink><SmartLink href="/support">{t.trustLinks[1]} →</SmartLink></div>
         </div>

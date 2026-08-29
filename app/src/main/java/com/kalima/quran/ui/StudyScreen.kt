@@ -616,8 +616,6 @@ private fun AlphabetFoundationScreen(
                     stringResource(
                         if (recalling) {
                             R.string.alphabet_recall_title
-                        } else if (lesson.teachesVowels) {
-                            R.string.alphabet_vowels_lesson
                         } else {
                             R.string.alphabet_letters_lesson
                         },
@@ -694,13 +692,7 @@ private fun AlphabetFoundationScreen(
                     }
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        stringResource(
-                            if (lesson.teachesVowels) {
-                                R.string.alphabet_vowels_note
-                            } else {
-                                R.string.alphabet_letters_note
-                            },
-                        ),
+                        stringResource(R.string.alphabet_letters_note),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium,
                     )

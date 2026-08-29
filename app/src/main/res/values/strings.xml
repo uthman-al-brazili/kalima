@@ -11,6 +11,7 @@
     <string name="tab_foundations">Básico</string>
     <string name="tab_settings">Ajustes</string>
     <string name="navigate_back">Voltar</string>
+    <string name="current_time">Hora atual: %1$s</string>
 
     <string name="quran_reader_title">Alcorão</string>
     <string name="quran_reader_subtitle">Leia todas as 114 suras em árabe, mesmo sem internet.</string>
@@ -323,7 +324,7 @@
     <string name="yes">Sim</string>
     <string name="no">Não</string>
     <string name="onboarding_your_plan">Seu plano de fundamentos</string>
-    <string name="onboarding_alphabet_plan">• Aprenda as 28 letras, as ligações e as vogais breves antes de estudar palavras completas.</string>
+    <string name="onboarding_alphabet_plan">• Aprenda as 28 letras árabes antes de estudar palavras completas.</string>
     <string name="onboarding_numbers_plan">• Aprenda os algarismos árabes de ٠ a ٩ junto com as outras lições.</string>
     <string name="onboarding_path_title">Seu primeiro caminho</string>
     <string name="path_top_100">100 essenciais</string>
@@ -348,8 +349,6 @@
     <string name="foundation_step_progress">%1$d/%2$d</string>
     <string name="alphabet_letters_lesson">Conheça estas letras</string>
     <string name="alphabet_letters_note">Observe o formato e os pontos da letra. Você terá que lembrar cada nome antes de concluir a lição.</string>
-    <string name="alphabet_vowels_lesson">Ligações e vogais breves</string>
-    <string name="alphabet_vowels_note">As letras árabes se ligam para formar palavras. Os sinais acima ou abaixo indicam os sons breves a, i e u; o sukūn indica que não há vogal depois da letra.</string>
     <string name="alphabet_learn_instruction">Aprenda um símbolo por vez e depois faça uma verificação rápida de reconhecimento.</string>
     <string name="alphabet_symbol_progress">Símbolo %1$d de %2$d</string>
     <string name="previous_symbol">Anterior</string>

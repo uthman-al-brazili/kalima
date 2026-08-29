@@ -39,6 +39,7 @@ import com.kalima.quran.R
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
 import com.kalima.quran.quiz.VerseExcerptBuilder
+import com.kalima.quran.ui.ArabicIndicClock
 import com.kalima.quran.ui.ArabicText
 import com.kalima.quran.ui.PronunciationButton
 import com.kalima.quran.ui.rememberArabicPronouncer
@@ -80,12 +81,18 @@ fun LockScreenQuizScreen(
                         Text(stringResource(R.string.not_now), color = Color.White)
                     }
                 }
+                ArabicIndicClock(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 4.dp),
+                    color = Gold,
+                )
 
                 Column(
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(6.dp))
                     Text(
                         when (question.type) {
                             QuizQuestionType.ArabicToPortuguese -> stringResource(R.string.quiz_arabic_to_meaning)

@@ -184,7 +184,6 @@ class MainActivity : ComponentActivity() {
                 WordRepository.prepareDeferredIndexes()
             }
             launch(Dispatchers.Default) {
-                delay(POST_RENDER_WORK_DELAY_MS)
                 store.progress.collectLatest { progress ->
                     ProgressStatisticsCache.prepare(progress, WordRepository.words)
                 }

@@ -11,6 +11,7 @@
     <string name="tab_foundations">Basics</string>
     <string name="tab_settings">Settings</string>
     <string name="navigate_back">Back</string>
+    <string name="current_time">Current time: %1$s</string>
 
     <string name="quran_reader_title">Quran</string>
     <string name="quran_reader_subtitle">Read all 114 surahs in Arabic, even without internet.</string>
@@ -323,7 +324,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="onboarding_your_plan">Your foundation plan</string>
-    <string name="onboarding_alphabet_plan">• Learn the 28 letters, joining, and short vowels before complete words.</string>
+    <string name="onboarding_alphabet_plan">• Learn the 28 Arabic letters before complete words.</string>
     <string name="onboarding_numbers_plan">• Learn the Arabic digits from ٠ to ٩ alongside your other lessons.</string>
     <string name="onboarding_path_title">Your first path</string>
     <string name="path_top_100">100 essentials</string>
@@ -348,8 +349,6 @@
     <string name="foundation_step_progress">%1$d/%2$d</string>
     <string name="alphabet_letters_lesson">Meet these letters</string>
     <string name="alphabet_letters_note">Focus on the letter’s shape and dots. You will recall every name before this lesson is complete.</string>
-    <string name="alphabet_vowels_lesson">Joining and short vowels</string>
-    <string name="alphabet_vowels_note">Arabic letters join into words. The marks above or below a letter give the short sounds a, i, and u; sukūn means no following vowel.</string>
     <string name="alphabet_learn_instruction">Learn one symbol at a time, then complete a quick recognition check.</string>
     <string name="alphabet_symbol_progress">Symbol %1$d of %2$d</string>
     <string name="previous_symbol">Previous</string>

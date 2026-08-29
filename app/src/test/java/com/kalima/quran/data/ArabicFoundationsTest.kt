@@ -7,15 +7,16 @@ import org.junit.Test
 
 class ArabicFoundationsTest {
     @Test
-    fun `alphabet plan covers every letter once before the vowel lesson`() {
+    fun `alphabet plan covers every letter once`() {
         val symbols = ArabicFoundations.alphabetLessons
-            .filterNot(AlphabetLesson::teachesVowels)
             .flatMap(AlphabetLesson::symbols)
         val letters = symbols.map(FoundationSymbol::arabic)
         val recordings = symbols.map { AlphabetAudio.fromSpokenArabic(it.spokenArabic) }
 
+        assertEquals(7, ArabicFoundations.alphabetLessons.size)
         assertEquals(28, letters.size)
         assertEquals(28, letters.toSet().size)
+        assertTrue(letters.all { it.length == 1 })
         assertEquals("ا", letters.first())
         assertEquals("ي", letters.last())
         assertTrue(recordings.all { it != null })
@@ -68,7 +69,7 @@ class ArabicFoundationsTest {
 
         assertTrue(symbols.all { it.spokenArabic.isNotBlank() })
         assertEquals("أَلِف", symbols.first().spokenArabic)
-        assertEquals("يَاء", symbols.dropLast(4).last().spokenArabic)
+        assertEquals("يَاء", symbols.last().spokenArabic)
     }
 
     @Test

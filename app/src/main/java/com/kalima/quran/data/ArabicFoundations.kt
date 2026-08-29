@@ -8,7 +8,6 @@ data class FoundationSymbol(
 
 data class AlphabetLesson(
     val symbols: List<FoundationSymbol>,
-    val teachesVowels: Boolean = false,
 ) {
     fun practiceQuestions(): List<AlphabetPracticeQuestion> = symbols.mapIndexed { index, symbol ->
         val correctOptionIndex = (index * 3 + 1) % symbols.size
@@ -105,15 +104,6 @@ object ArabicFoundations {
                 FoundationSymbol("ي", "yāʾ", "يَاء"),
             ),
         ),
-        AlphabetLesson(
-            symbols = listOf(
-                FoundationSymbol("بَ", "ba"),
-                FoundationSymbol("بِ", "bi"),
-                FoundationSymbol("بُ", "bu"),
-                FoundationSymbol("بْ", "b"),
-            ),
-            teachesVowels = true,
-        ),
     )
 
     val numberLessons: List<NumberLesson> = listOf(
@@ -139,7 +129,6 @@ object ArabicFoundations {
             "a" to "َ", "i" to "ِ", "u" to "ُ", "" to "ْ",
         )
         alphabetLessons
-            .filterNot(AlphabetLesson::teachesVowels)
             .flatMap(AlphabetLesson::symbols)
             .map { letter ->
                 val stem = letterVowelStem(letter.arabic)

@@ -66,7 +66,8 @@ fun ProgressScreen(
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val corpusWords = WordRepository.words
     val statistics by produceState<ProgressStatistics?>(
-        initialValue = ProgressStatisticsCache.get(progress, corpusWords),
+        initialValue = ProgressStatisticsCache.get(progress, corpusWords)
+            ?: ProgressStatisticsCache.latest(corpusWords),
         corpusWords,
         scopeKey,
         selectionKey,
@@ -82,6 +83,7 @@ fun ProgressScreen(
             value = it
             return@produceState
         }
+        ProgressStatisticsCache.latest(corpusWords)?.let { value = it }
         value = withContext(Dispatchers.Default) {
             ProgressStatisticsCache.prepare(progress, corpusWords)
         }
@@ -364,6 +366,10 @@ internal object ProgressStatisticsCache {
     fun get(progress: StudyProgress, corpusWords: List<QuranWord>): ProgressStatistics? =
         entry?.takeIf { it.matches(progress, corpusWords) }?.statistics
 
+    fun latest(corpusWords: List<QuranWord>): ProgressStatistics? =
+        entry?.takeIf { it.hasCorpus(corpusWords) }?.statistics
+
+    @Synchronized
     fun prepare(progress: StudyProgress, corpusWords: List<QuranWord>): ProgressStatistics {
         get(progress, corpusWords)?.let { return it }
         val statistics = calculateProgressStatistics(progress, corpusWords)
@@ -389,8 +395,10 @@ internal object ProgressStatisticsCache {
         private val reviewSchedules = progress.reviewSchedules
         private val spacedRepetitionEnabled = progress.spacedRepetitionEnabled
 
+        fun hasCorpus(corpusWords: List<QuranWord>): Boolean = this.corpusWords === corpusWords
+
         fun matches(progress: StudyProgress, corpusWords: List<QuranWord>): Boolean =
-            this.corpusWords === corpusWords &&
+            hasCorpus(corpusWords) &&
                 studyScope == progress.studyScope &&
                 selectedStudyScopes === progress.selectedStudyScopes &&
                 selectedSurahs === progress.selectedSurahs &&
