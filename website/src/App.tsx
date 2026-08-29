@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 
 type Language = 'en' | 'pt';
 type Route = '/' | '/privacy' | '/support';
-type FeatureIconName = 'study' | 'quiz' | 'widget' | 'audio' | 'quran' | 'progress';
+type FeatureIconName = 'lockscreen' | 'quiz' | 'widget' | 'audio' | 'quran' | 'progress';
 
 const artworkRevision = '0.30.5-2026-08-25';
 
@@ -15,8 +15,7 @@ const facts = {
   obtainium: 'https://github.com/ImranR98/Obtainium/releases',
 };
 
-const featureIconPaths: Record<FeatureIconName, string> = {
-  study: 'M21,4H3c-1.1,0 -2,0.9 -2,2v13c0,1.1 0.9,2 2,2h18c1.1,0 2,-0.9 2,-2V6c0,-1.1 -0.9,-2 -2,-2zM21,19h-9V6h9v13z',
+const featureIconPaths: Record<Exclude<FeatureIconName, 'lockscreen'>, string> = {
   quiz: 'M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM13,19h-2v-2h2v2zM15.07,11.25l-0.9,0.92C13.45,12.9 13,13.5 13,15h-2v-0.5c0,-1.1 0.45,-2.1 1.17,-2.83l1.24,-1.26c0.37,-0.36 0.59,-0.86 0.59,-1.41a2,2 0,0 0,-4 0H8a4,4 0,0 1,8 0c0,0.88 -0.36,1.68 -0.93,2.25z',
   widget: 'M4,6H2v14c0,1.1 0.9,2 2,2h14v-2H4V6zM20,2H8c-1.1,0 -2,0.9 -2,2v12c0,1.1 0.9,2 2,2h12c1.1,0 2,-0.9 2,-2V4c0,-1.1 -0.9,-2 -2,-2zM19,11H9V9h10v2zM15,15H9v-2h6v2zM19,7H9V5h10v2z',
   audio: 'M3,9v6h4l5,5V4L7,9H3zM16.5,12c0,-1.77 -1.02,-3.29 -2.5,-4.03v8.05c1.48,-0.73 2.5,-2.25 2.5,-4.02zM14,3.23v2.06c2.89,0.86 5,3.54 5,6.71s-2.11,5.85 -5,6.71v2.06c4.01,-0.91 7,-4.49 7,-8.77s-2.99,-7.86 -7,-8.77z',
@@ -24,7 +23,7 @@ const featureIconPaths: Record<FeatureIconName, string> = {
   progress: 'M3,13h2v8H3v-8zM7,9h2v12H7V9zM11,3h2v18h-2V3zM15,11h2v10h-2V11zM19,6h2v15h-2V6z',
 };
 
-const stepIcons: readonly FeatureIconName[] = ['study', 'quiz', 'quran'];
+const stepIcons: readonly FeatureIconName[] = ['lockscreen', 'quiz', 'quran'];
 
 const content = {
   en: {
@@ -61,7 +60,7 @@ const content = {
     ],
     featuresTitle: 'Built around small moments that add up.',
     features: [
-      ['study', 'Lock-screen lessons', 'Practice when the screen turns on while Android keeps the device keyguard fully in control.'],
+      ['lockscreen', 'Lock-screen lessons', 'Practice when the screen turns on while Android keeps the device keyguard fully in control.'],
       ['quiz', 'Quick lock-screen quizzes', 'Listening, context, cloze, and root questions turn brief moments into active recall.'],
       ['widget', 'Daily Quran word widget', 'See one word at a glance and open its exact lesson without altering your progress.'],
       ['audio', 'Real Quran audio', 'Hear word recordings and Al-Hussary’s complete-ayah recitation. Played audio can be saved locally.'],
@@ -126,7 +125,7 @@ const content = {
     ],
     featuresTitle: 'Pequenos momentos que constroem conhecimento.',
     features: [
-      ['study', 'Lições na tela bloqueada', 'Pratique quando a tela acender enquanto o bloqueio do Android continua totalmente no controle.'],
+      ['lockscreen', 'Lições na tela bloqueada', 'Pratique quando a tela acender enquanto o bloqueio do Android continua totalmente no controle.'],
       ['quiz', 'Quizzes rápidos na tela bloqueada', 'Questões de áudio, contexto, lacunas e raízes transformam momentos breves em recordação ativa.'],
       ['widget', 'Widget da palavra diária', 'Veja uma palavra num relance e abra sua lição exata sem alterar seu progresso.'],
       ['audio', 'Áudio real do Alcorão', 'Ouça palavras e a recitação de ayahs completas por Al-Hussary. Os áudios tocados podem ser salvos.'],
@@ -178,6 +177,18 @@ function SmartLink({ href, children, className, onClick }: { href: string; child
 }
 
 function FeatureIcon({ name }: { name: FeatureIconName }) {
+  if (name === 'lockscreen') {
+    return (
+      <svg viewBox="0 0 24 24" role="presentation" focusable="false">
+        <rect x="3" y="1.5" width="14.5" height="21" rx="3" fill="currentColor" />
+        <rect x="5" y="4" width="10.5" height="16" rx="1.5" fill="white" fillOpacity="0.82" />
+        <text x="10.25" y="14.5" fill="currentColor" fontFamily="'Noto Naskh Arabic', 'Amiri', serif" fontSize="8.5" fontWeight="700" textAnchor="middle">ك</text>
+        <circle cx="18.2" cy="17.8" r="4.3" fill="currentColor" />
+        <path d="M16.85 17.1v-1a1.35 1.35 0 0 1 2.7 0v1m-3.35 0h4v3h-4z" fill="none" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.15" />
+      </svg>
+    );
+  }
+
   return (
     <svg viewBox="0 0 24 24" role="presentation" focusable="false">
       <path d={featureIconPaths[name]} fill="currentColor" />
