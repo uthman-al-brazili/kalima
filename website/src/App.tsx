@@ -4,7 +4,7 @@ type Language = 'en' | 'pt';
 type Route = '/' | '/privacy' | '/support';
 type FeatureIconName = 'lockscreen' | 'quiz' | 'widget' | 'audio' | 'quran' | 'progress';
 
-const artworkRevision = '0.30.5-2026-08-29-webp';
+const artworkRevision = '0.30.5-2026-08-29-shared-bezel';
 
 const facts = {
   email: 'uthman-al-brazili@proton.me',
