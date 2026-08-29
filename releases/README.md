@@ -19,6 +19,7 @@ os checksums dos artefatos efetivamente distribuídos ou preservados.
 
 | Versão | Tag Git | APK | Código-fonte |
 |---|---|---|---|
+| 0.32.0 | `v0.32.0` | `kalima-0.32.0-release.apk` | `kalima-0.32.0-source.zip` |
 | 0.31.6 | `v0.31.6` | `kalima-0.31.6-debug.apk` | `kalima-0.31.6-source.zip` |
 | 0.31.5 | `v0.31.5` | `kalima-0.31.5-debug.apk` | `kalima-0.31.5-source.zip` |
 | 0.31.4 | `v0.31.4` | `kalima-0.31.4-debug.apk` | `kalima-0.31.4-source.zip` |

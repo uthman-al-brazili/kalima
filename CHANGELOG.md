@@ -3,6 +3,16 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.32.0 — 2026-08-29
+
+- Added fully offline Quran recitation recognition that follows spoken words
+  and tracks progress through the current ayah without sending audio away.
+- Added read-and-understand study missions with contextual checkpoints that
+  connect vocabulary practice to complete Quran passages.
+- Added an Arabic-Indic clock and streamlined the Arabic foundations journey.
+- Refined pronunciation, ayah audio, study icons, and learning controls for a
+  clearer and more focused experience.
+
 ## 0.31.6 — 2026-08-28
 
 - Consolidated words, quizzes, and Arabic basics under a clearer Learn tab,

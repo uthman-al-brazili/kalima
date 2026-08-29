@@ -199,27 +199,57 @@ try {
     [Environment]::SetEnvironmentVariable("ANDROID_HOME", $sdkRoot, "Process")
     [Environment]::SetEnvironmentVariable("ANDROID_SDK_ROOT", $sdkRoot, "Process")
 
-    Write-Host ""
-    Write-Host "Running tests, lint, lock-screen verification, and the signed release build..." -ForegroundColor Cyan
+    $gradleUserHome = Join-Path $repositoryRoot ".gradle-cache"
+    $gradleVersionCaches = Join-Path $gradleUserHome "caches"
     Push-Location $repositoryRoot
     try {
-        & ".\gradlew.bat" `
+        & "cmd.exe" "/d" "/c" "call" ".\gradlew.bat" "-g" ".gradle-cache" "--stop" | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Gradle daemon shutdown reported an error; continuing with cache cleanup."
+        }
+    }
+    finally {
+        Pop-Location
+    }
+    if (Test-Path -LiteralPath $gradleVersionCaches -PathType Container) {
+        Get-ChildItem -LiteralPath $gradleVersionCaches -Directory | ForEach-Object {
+            $dependencyAccessors = Join-Path $_.FullName "dependencies-accessors"
+            if (Test-Path -LiteralPath $dependencyAccessors -PathType Container) {
+                Remove-Item -LiteralPath $dependencyAccessors -Recurse -Force
+            }
+        }
+    }
+
+    $signedApk = Join-Path $repositoryRoot "app\build\outputs\apk\release\app-release.apk"
+    if (Test-Path -LiteralPath $signedApk -PathType Leaf) {
+        Remove-Item -LiteralPath $signedApk -Force
+    }
+
+    Write-Host ""
+    Write-Host "Running tests, lint, lock-screen verification, and the signed release build..." -ForegroundColor Cyan
+    $releaseBuildLog = Join-Path $env:TEMP "kalima-release-build-$versionName.log"
+    Push-Location $repositoryRoot
+    try {
+        & "cmd.exe" "/d" "/c" "call" ".\gradlew.bat" `
             "-Pkotlin.compiler.execution.strategy=in-process" `
             "-g" ".gradle-cache" `
             "clean" `
             ":app:testDebugUnitTest" `
             ":app:lint" `
             ":app:verifyLockScreenRegression" `
-            ":app:assembleRelease"
-        if ($LASTEXITCODE -ne 0) {
-            throw "Gradle validation or release assembly failed."
+            ":app:assembleRelease" 2>&1 | Tee-Object -FilePath $releaseBuildLog
+        $gradleExitCode = $LASTEXITCODE
+        if ($gradleExitCode -ne 0) {
+            throw (
+                "Gradle validation or release assembly failed with exit code $gradleExitCode. " +
+                "See $releaseBuildLog."
+            )
         }
     }
     finally {
         Pop-Location
     }
 
-    $signedApk = Join-Path $repositoryRoot "app\build\outputs\apk\release\app-release.apk"
     if (-not (Test-Path -LiteralPath $signedApk -PathType Leaf)) {
         throw "The signed APK was not created."
     }
