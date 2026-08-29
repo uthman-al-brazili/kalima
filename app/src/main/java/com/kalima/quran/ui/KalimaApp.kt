@@ -3,6 +3,7 @@ package com.kalima.quran.ui
 import android.app.Activity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
 import androidx.core.view.WindowCompat
 import androidx.annotation.StringRes
@@ -159,6 +161,11 @@ fun KalimaApp(
                                     text = stringResource(tab.labelRes),
                                     maxLines = 1,
                                     softWrap = false,
+                                    autoSize = TextAutoSize.StepBased(
+                                        minFontSize = 8.sp,
+                                        maxFontSize = 11.sp,
+                                        stepSize = 0.5.sp,
+                                    ),
                                     style = MaterialTheme.typography.labelSmall,
                                 )
                             },

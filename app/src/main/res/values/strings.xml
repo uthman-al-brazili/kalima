@@ -421,7 +421,7 @@
     <string name="accuracy_30_days">Precisão · 30 dias</string>
     <string name="new_today">Novas hoje</string>
     <string name="reviewed_today">Revisadas hoje</string>
-    <string name="activity_14_days">Atividade no calendário islâmico · 14 dias</string>
+    <string name="activity_14_days">Atividade hijri · 14 dias</string>
     <string name="activity_14_days_note">Cada quadro mostra o dia da semana em árabe e traduzido, a data hijri e o total de revisões (×).</string>
     <string name="activity_today_key">Contorno dourado = hoje</string>
     <plurals name="activity_day_description">
