@@ -9,10 +9,10 @@ Use the files in `en/` and `pt-BR/` for the current submission.
 - English and pt-BR use the same frame, dimensions, colors, typography, and
   screenshot placement.
 - The first image in each locale is a real Android 14 lock-screen capture from
-  Kalima 0.30.3. Android reported the device locked and the keyguard showing
+  Kalima 0.32.0. Android reported the device locked and the keyguard showing
   while `LockScreenStudyActivity` was focused.
-- The remaining images use the existing real Study, Quran, and Arabic Basics
-  screenshots from `distribution/uptodown/screenshots/`.
+- The remaining images use current real Study, Quran, and Arabic Basics
+  screenshots from Kalima 0.32.0 in `distribution/uptodown/screenshots/`.
 
 Regenerate the frames with:
 
@@ -21,6 +21,4 @@ Regenerate the frames with:
 ```
 
 The pt-BR lock-screen capture intentionally preserves the app exactly as it
-rendered. It currently exposes three untranslated content labels (`Surah 2`,
-`noun`, and `It appears 16 times in this surah.`); those are app-localization
-issues rather than artwork edits.
+rendered.

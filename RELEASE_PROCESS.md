@@ -18,17 +18,25 @@ publicar o aplicativo Windows, salvo quando o usuário pedir isso explicitamente
 1. Atualizar `versionCode` e `versionName` em `app/build.gradle.kts`.
 2. Adicionar no topo de `CHANGELOG.md` uma seção datada para a nova versão,
    resumindo as funcionalidades e correções visíveis para o usuário.
-3. Em uma única invocação Gradle, quando possível, executar os testes unitários,
+3. Atualizar em `website/src/App.tsx` os links versionados da release e do APK,
+   além dos textos de download em inglês e português. Seguir a revisão de artes
+   e do manifesto descrita em `website/README.md`, incluindo o estado completo
+   do site no commit da release.
+4. Em uma única invocação Gradle, quando possível, executar os testes unitários,
    o lint, `verifyLockScreenRegression` e a montagem do artefato distribuível
    solicitado, seguindo o fluxo de assinatura correspondente. Não montar um APK
    de debug separado apenas para backup.
-4. Criar um commit e a tag anotada `vX.Y.Z`.
-5. Gerar o código-fonte restaurável a partir da tag:
+5. Criar um commit e a tag anotada `vX.Y.Z`.
+6. Gerar o código-fonte restaurável a partir da tag:
 
        git archive --format=zip --output=releases/kalima-X.Y.Z-source.zip vX.Y.Z
 
-6. Calcular o SHA-256 do ZIP e de qualquer artefato distribuível retido para a
+7. Calcular o SHA-256 do ZIP e de qualquer artefato distribuível retido para a
    versão e registrá-los em `releases/SHA256SUMS.txt`.
+8. Publicar a release e seus artefatos no GitHub. Somente depois que o link do
+   APK estiver disponível, compilar e implantar `website/` no projeto existente
+   do Cloudflare Pages e confirmar que o site público anuncia e baixa a nova
+   versão. Essa implantação é obrigatória em toda release publicada do app.
 
 Os artefatos gerados e checksums são ignorados pelo Git para evitar aumentar o
 repositório, mas permanecem na pasta local compartilhada. O arquivo

@@ -76,15 +76,23 @@ version, or publish it. Once the source is stable:
    `app/build.gradle.kts`.
 3. Add a dated section at the top of `CHANGELOG.md` summarizing user-visible
    changes.
-4. In one Gradle invocation where practical, run the relevant unit tests,
+4. Update the versioned GitHub release and APK links plus the English and
+   Portuguese download labels in `website/src/App.tsx`. Follow the artwork
+   review and manifest requirements in `website/README.md`, and include the
+   complete website source state in the release commit.
+5. In one Gradle invocation where practical, run the relevant unit tests,
    Android lint, `verifyLockScreenRegression`, and assembly of the requested
    distributable release artifact. Do not build or copy a separate debug APK
    as a release backup.
-5. Commit the complete intended source state and create annotated tag
+6. Commit the complete intended source state and create annotated tag
    `v<version>`.
-6. Create `releases/kalima-<version>-source.zip` from that tag.
-7. Update `releases/SHA256SUMS.txt` with the source archive checksum and the
+7. Create `releases/kalima-<version>-source.zip` from that tag.
+8. Update `releases/SHA256SUMS.txt` with the source archive checksum and the
    checksum of any distributable artifact retained for the release.
+9. Publish the GitHub release and its retained assets. Only after its APK URL
+   is live, build and deploy `website/` to the existing Cloudflare Pages
+   project, then verify that the public site advertises and downloads the new
+   version. Website deployment is required for every published app release.
 
 ## Lock-screen regression contract
 

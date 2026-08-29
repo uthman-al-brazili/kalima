@@ -1,20 +1,20 @@
 {
-  "createdAt": "2026-08-25",
-  "releaseVersion": "0.30.5",
-  "apkSha256": "e905a2493a9392900e64dfdef813f2b1459cd91f03956508b9aefa3222e63470",
+  "createdAt": "2026-08-29",
+  "releaseVersion": "0.32.0",
+  "apkSha256": "fd2e55b51f47270e2388ae020da944da42713797ae962a88d60e3dc550d22426",
   "kind": "edited promotional artwork",
   "locales": {
     "en": {
-      "lock-screen-learning.png": "df6771de984cc76af8aa567f250fe54b8f9cb6c61fefece8ac47c236affbbd20",
-      "word-study.png": "2c7889f9f6b9b115e93aa37d1157e9087c7a37fdc2d158bc02e66de083e53845",
-      "quran-reading.png": "5fdb415e321847379d888dffbaf5202c3a9ae8700d1aa068123f6aef56c658fb",
-      "arabic-foundations.png": "186e021091409bc6c9221971644fe1580e48275f935b86ea7d00f0ecafebcbcb"
+      "lock-screen-learning.png": "1f8b0c456de579699fc00a5137457e83c7b89978e8d4c3803c04a7bdaf0813b0",
+      "word-study.png": "580b846fb98b6efd2263e4da30df98806fd98a3a6ad148fb494940982f4b4cf2",
+      "quran-reading.png": "e7d5c504976c4ff54696aba95ce06766df1bd18441fade546a3d6cea787be8c4",
+      "arabic-foundations.png": "9c0e1c304eacaf9d066b125f973774539bed0ea58c6c77629db31dec80f0e1e7"
     },
     "pt-BR": {
-      "lock-screen-learning.png": "85c2f181a7b3e1c0711d4aba53443f7861a7104cb8bdacd4d8df75163ccf7806",
-      "word-study.png": "6c3072bd44d3b6f8776cb190bc0128e676ba25833b69ae1c9efab6420989bacd",
-      "quran-reading.png": "b245ba5680557f6337d2e0b23107af72cd8ec77238b8bb637e29ce474f112112",
-      "arabic-foundations.png": "034350a12262de2214f1f6ac34223657b2d0b0b610f2fa3dcee9d6e6270e290b"
+      "lock-screen-learning.png": "746fe7496eeaa1e65f6ff7afb614727285eaaf9ff2854ba2001f7f6ff9f75723",
+      "word-study.png": "3fecf986162cd5b72900c685a3543bf19a6a965d54c86bb5f1a38ce1173e8e20",
+      "quran-reading.png": "286f1e03d4e4e147698462069d0a1a11f72ac99f5dd0758ef3a3602ab3c93587",
+      "arabic-foundations.png": "1af0f302b2c180b6ee439540b0a270d3192cceef3b09368890830d5ab901ab1d"
     }
   }
 }

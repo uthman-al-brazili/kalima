@@ -30,6 +30,13 @@ pnpm deploy:cloudflare
 
 Do not publish this website through ChatGPT Sites or another hosting provider.
 
+Every published Android release must update the versioned release URL, APK URL,
+and English and Portuguese download labels in `src/App.tsx`. Complete the
+artwork review below and include the website changes in the release commit.
+After the GitHub release assets are publicly available, run the production
+Cloudflare deployment and verify that the live download button resolves to the
+new APK. A release is not complete until this website deployment succeeds.
+
 ## Promotional artwork
 
 The website keeps separate English and pt-BR promotional artwork in

@@ -168,7 +168,7 @@ function Write-WebsiteScreen {
 $screens = @(
     @{
         Locale = 'en'; Output = 'lock-screen-learning.png'; Background = '#F6E0D0'; Accent = '#F2C94C'
-        Source = Join-Path $captureRoot 'device-captures\lock-screen-en.png'; CropX = 0; CropY = 0; CropWidth = 1080; CropHeight = 1460
+        Source = Join-Path $captureRoot 'device-captures\lock-screen-secure-en.png'; CropX = 0; CropY = 0; CropWidth = 1080; CropHeight = 1460
     },
     @{
         Locale = 'en'; Output = 'word-study.png'; Background = '#DDEFE2'; Accent = '#7BBFA8'
