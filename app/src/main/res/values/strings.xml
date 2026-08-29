@@ -469,8 +469,8 @@
     <string name="mastery_value">%1$d de %2$d vistas</string>
     <string name="today_hijri_calendar">Hoje no calendário hijri</string>
     <string name="hijri_date_translation">%1$s, %2$d de %3$s de %4$d AH</string>
-    <string name="hear_weekday">Ouvir dia</string>
-    <string name="hear_month">Ouvir mês</string>
+    <string name="hear_weekday">Dia da semana</string>
+    <string name="hear_month">Mês</string>
     <string name="weekday_monday">segunda-feira</string>
     <string name="weekday_tuesday">terça-feira</string>
     <string name="weekday_wednesday">quarta-feira</string>
