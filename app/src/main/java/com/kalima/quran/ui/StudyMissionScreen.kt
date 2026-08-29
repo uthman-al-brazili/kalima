@@ -25,6 +25,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -32,10 +33,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
@@ -272,6 +277,225 @@ private fun WeeklyMissionActivity(activity: List<DailyMissionActivity>) {
                 }
             }
         }
+    }
+}
+
+@Composable
+internal fun ContextCheckpointScreen(
+    question: ContextCheckpointQuestion,
+    pronouncer: ArabicPronouncer,
+    onAnswer: (String, Boolean) -> Unit,
+    onContinue: () -> Unit,
+) {
+    var selectedOptionIndex by rememberSaveable(question.word.id) { mutableStateOf<Int?>(null) }
+    val feedback = contextCheckpointFeedbackState(
+        selectedOptionIndex = selectedOptionIndex,
+        correctOptionIndex = question.correctOptionIndex,
+    )
+    val answered = feedback != ContextCheckpointFeedbackState.Unanswered
+    val blankAyahDescription = stringResource(
+        R.string.checkpoint_blank_ayah_description,
+        question.ayah.text,
+    )
+    val restoredAyahDescription = stringResource(
+        R.string.checkpoint_restored_ayah_description,
+        question.ayah.restore(),
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 24.dp),
+    ) {
+        Text(
+            stringResource(R.string.context_checkpoint_title),
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            stringResource(R.string.context_checkpoint_intro),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Spacer(Modifier.height(18.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        ) {
+            Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    stringResource(R.string.quiz_cloze_prompt),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(Modifier.height(14.dp))
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                    ArabicText(
+                        question.ayah.text,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics { contentDescription = blankAyahDescription },
+                        size = 30,
+                        color = MaterialTheme.colorScheme.primary,
+                        align = TextAlign.End,
+                    )
+                }
+                Text(
+                    question.word.reference,
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.End,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+        }
+        Spacer(Modifier.height(14.dp))
+        question.options.forEachIndexed { index, option ->
+            val choiceDescription = stringResource(
+                R.string.checkpoint_choice_description,
+                index + 1,
+                option,
+            )
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                QuizOption(
+                    text = option,
+                    arabic = true,
+                    selected = selectedOptionIndex == index,
+                    correct = index == question.correctOptionIndex,
+                    answered = answered,
+                    accessibilityDescription = choiceDescription,
+                    onClick = {
+                        if (selectedOptionIndex == null) {
+                            selectedOptionIndex = index
+                            onAnswer(question.word.id, index == question.correctOptionIndex)
+                        }
+                    },
+                )
+            }
+            Spacer(Modifier.height(9.dp))
+        }
+
+        if (answered) {
+            Spacer(Modifier.height(7.dp))
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = if (feedback == ContextCheckpointFeedbackState.Correct) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    MaterialTheme.colorScheme.errorContainer
+                },
+                shape = RoundedCornerShape(20.dp),
+            ) {
+                Column(Modifier.padding(18.dp)) {
+                    Text(
+                        stringResource(
+                            if (feedback == ContextCheckpointFeedbackState.Correct) {
+                                R.string.checkpoint_correct
+                            } else {
+                                R.string.checkpoint_incorrect
+                            },
+                        ),
+                        color = if (feedback == ContextCheckpointFeedbackState.Correct) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onErrorContainer
+                        },
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        stringResource(R.string.checkpoint_correct_word),
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = RoundedCornerShape(14.dp),
+                    ) {
+                        ArabicText(
+                            question.word.arabic,
+                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            size = 36,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        stringResource(
+                            R.string.checkpoint_contextual_meaning,
+                            question.word.meaning,
+                        ),
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        stringResource(
+                            R.string.checkpoint_transliteration,
+                            question.word.transliteration,
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Spacer(Modifier.height(18.dp))
+            Text(
+                stringResource(R.string.checkpoint_restored_ayah),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(8.dp))
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                ArabicText(
+                    question.ayah.restore(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = restoredAyahDescription },
+                    size = 30,
+                    color = MaterialTheme.colorScheme.primary,
+                    align = TextAlign.End,
+                )
+            }
+            Text(
+                question.word.verseMeaning,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                stringResource(R.string.checkpoint_scope_note),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(16.dp))
+            VerseExplorerPanel(
+                word = question.word,
+                highlightedWordIds = setOf(question.word.id),
+                showVersePronunciation = false,
+            )
+            Spacer(Modifier.height(10.dp))
+            VersePronunciationButton(
+                word = question.word,
+                pronouncer = pronouncer,
+                modifier = Modifier.fillMaxWidth(),
+                labelRes = R.string.hussary_verse_recitation,
+            )
+            Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = onContinue,
+                modifier = Modifier.fillMaxWidth().height(54.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(stringResource(R.string.continue_action), fontWeight = FontWeight.Bold)
+            }
+        }
+        Spacer(Modifier.height(24.dp))
     }
 }
 

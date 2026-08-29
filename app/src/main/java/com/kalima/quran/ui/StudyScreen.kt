@@ -79,6 +79,7 @@ fun StudyScreen(
     progress: StudyProgress,
     onIntroduce: (String) -> Unit,
     onAnswer: (String, Boolean) -> Unit,
+    onCheckpointAnswer: (String, Boolean) -> Unit,
     onCurrentWordChange: (String) -> Unit,
     onEnableLockScreen: () -> Unit,
     onOpenExcludedWords: () -> Unit,
@@ -174,6 +175,10 @@ fun StudyScreen(
     val missionDate = missionNow.atZone(ZoneId.systemDefault()).toLocalDate()
     var showMission by rememberSaveable(scopeKey, selectionKey, missionDate) { mutableStateOf(true) }
     var showCompletion by rememberSaveable(scopeKey, selectionKey, missionDate) { mutableStateOf(false) }
+    var checkpointComplete by rememberSaveable(scopeKey, selectionKey) { mutableStateOf(false) }
+    var automaticCheckpointEligible by rememberSaveable(scopeKey, selectionKey) {
+        mutableStateOf(false)
+    }
     var sessionWordIds by rememberSaveable(scopeKey, selectionKey, missionDate) {
         mutableStateOf(arrayListOf<String>())
     }
@@ -204,6 +209,8 @@ fun StudyScreen(
             missionSessionDate = missionDate.toString()
             showMission = true
             showCompletion = false
+            checkpointComplete = false
+            automaticCheckpointEligible = false
             sessionWordIds = arrayListOf()
         }
     }
@@ -217,6 +224,8 @@ fun StudyScreen(
             onOpenQuiz = onOpenQuiz,
             onStart = {
                 sessionWordIds = arrayListOf()
+                checkpointComplete = false
+                automaticCheckpointEligible = !mission.goalComplete
                 showMission = false
             },
         )
@@ -226,6 +235,22 @@ fun StudyScreen(
         val reviewedWords = sessionWordIds.mapNotNull(WordRepository::wordById)
         val recognizedWordIds = progress.learnedIds + progress.reviewingIds +
             progress.alreadyKnownIds + sessionWordIds
+        val checkpoint = remember(reviewedWords, availableWords, missionDate) {
+            buildContextCheckpointQuestion(
+                practicedWords = reviewedWords,
+                activeCollection = availableWords,
+                seed = missionDate.toEpochDay().toInt(),
+            )
+        }
+        if (!checkpointComplete && checkpoint != null) {
+            ContextCheckpointScreen(
+                question = checkpoint,
+                pronouncer = pronouncer,
+                onAnswer = onCheckpointAnswer,
+                onContinue = { checkpointComplete = true },
+            )
+            return
+        }
         val payoff = remember(reviewedWords, recognizedWordIds) {
             buildStudyCompletionPayoff(
                 reviewedWords = reviewedWords,
@@ -240,6 +265,8 @@ fun StudyScreen(
             onFinish = {
                 showCompletion = false
                 showMission = true
+                checkpointComplete = false
+                automaticCheckpointEligible = false
                 sessionWordIds = arrayListOf()
             },
         )
@@ -283,6 +310,28 @@ fun StudyScreen(
         currentWordId = nextWord.id
         onCurrentWordChange(nextWord.id)
     }
+    val finishCurrentWord: (Boolean) -> Unit = { wordCompletionAlreadyRecorded ->
+        sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
+        if (
+            shouldOpenContextCheckpoint(
+                mission = mission,
+                wordId = word.id,
+                dailyGoalWasIncompleteAtMissionStart = automaticCheckpointEligible,
+                wordCompletionAlreadyRecorded = wordCompletionAlreadyRecorded,
+            )
+        ) {
+            automaticCheckpointEligible = false
+            showCompletion = true
+        } else {
+            moveToNextWord()
+        }
+    }
+    val nextActionOpensCheckpoint = isNewPresentation && shouldOpenContextCheckpoint(
+        mission = mission,
+        wordId = word.id,
+        dailyGoalWasIncompleteAtMissionStart = automaticCheckpointEligible,
+        wordCompletionAlreadyRecorded = true,
+    )
     val scrollState = rememberScrollState()
     var scrollPositionWordId by rememberSaveable(scopeKey, selectionKey) {
         mutableStateOf<String?>(null)
@@ -322,8 +371,17 @@ fun StudyScreen(
             StudyHeader(
                 progress = progress,
                 dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
-                onViewTodayResults = if (mission.goalComplete && sessionWordIds.isNotEmpty()) {
-                    { showCompletion = true }
+                onViewTodayResults = if (
+                    mission.goalComplete && sessionWordIds.isNotEmpty() &&
+                    !nextActionOpensCheckpoint
+                ) {
+                    {
+                        showMission = true
+                        showCompletion = false
+                        checkpointComplete = false
+                        automaticCheckpointEligible = false
+                        sessionWordIds = arrayListOf()
+                    }
                 } else {
                     null
                 },
@@ -379,6 +437,7 @@ fun StudyScreen(
         StudyActionBar(
             meaningRevealed = meaningRevealed,
             isNewPresentation = isNewPresentation,
+            nextActionOpensCheckpoint = nextActionOpensCheckpoint,
             spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
             goodTiming = goodReviewTiming(
                 spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
@@ -387,18 +446,15 @@ fun StudyScreen(
             onRevealMeaning = { meaningRevealed = true },
             onNextWord = {
                 activeIntroductionId = null
-                sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
-                moveToNextWord()
+                finishCurrentWord(true)
             },
             onAgain = {
                 onAnswer(word.id, false)
-                sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
-                moveToNextWord()
+                finishCurrentWord(false)
             },
             onRemembered = {
                 onAnswer(word.id, true)
-                sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
-                moveToNextWord()
+                finishCurrentWord(false)
             },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
@@ -1147,6 +1203,7 @@ private fun AlphabetAccessCard(
 private fun StudyActionBar(
     meaningRevealed: Boolean,
     isNewPresentation: Boolean,
+    nextActionOpensCheckpoint: Boolean,
     spacedRepetitionEnabled: Boolean,
     goodTiming: String,
     onRevealMeaning: () -> Unit,
@@ -1186,7 +1243,16 @@ private fun StudyActionBar(
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
-                    Text(stringResource(R.string.next_word), fontWeight = FontWeight.Bold)
+                    Text(
+                        stringResource(
+                            if (nextActionOpensCheckpoint) {
+                                R.string.continue_to_context_checkpoint
+                            } else {
+                                R.string.next_word
+                            },
+                        ),
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             } else {
                 Text(

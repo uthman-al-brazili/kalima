@@ -133,23 +133,106 @@ class StudyMissionTest {
     }
 
     @Test
-    fun `next word always advances instead of opening daily completion`() {
+    fun `new word completion checks whether the checkpoint should open`() {
         val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
         val nextWordHandler = source.substringAfter("onNextWord = {").substringBefore("onAgain = {")
 
-        assertTrue(nextWordHandler.contains("moveToNextWord()"))
+        assertTrue(nextWordHandler.contains("finishCurrentWord(true)"))
         assertFalse(nextWordHandler.contains("showCompletion = true"))
-        assertFalse(nextWordHandler.contains("shouldShowDailyMissionCompletion("))
+        assertTrue(source.contains("R.string.continue_to_context_checkpoint"))
+        assertTrue(source.contains("nextActionOpensCheckpoint = nextActionOpensCheckpoint"))
     }
 
     @Test
-    fun `daily completion opens only from the explicit results button`() {
+    fun `daily checkpoint opens automatically from the word that reaches the goal`() {
         val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
 
+        assertTrue(source.contains("automaticCheckpointEligible = !mission.goalComplete"))
+        assertTrue(source.contains("finishCurrentWord(false)"))
+        assertTrue(source.contains("shouldOpenContextCheckpoint("))
         assertTrue(source.contains("mission.goalComplete && sessionWordIds.isNotEmpty()"))
+        assertTrue(source.contains("!nextActionOpensCheckpoint"))
         assertTrue(source.contains("onViewTodayResults = if"))
         assertTrue(source.contains("onClick = onViewTodayResults"))
         assertEquals(1, Regex("showCompletion = true").findAll(source).count())
+    }
+
+    @Test
+    fun `view today results skips context test and completion payoff`() {
+        val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
+        val resultsHandler = source
+            .substringAfter("onViewTodayResults = if")
+            .substringBefore("} else {")
+
+        assertTrue(resultsHandler.contains("showMission = true"))
+        assertTrue(resultsHandler.contains("showCompletion = false"))
+        assertTrue(resultsHandler.contains("sessionWordIds = arrayListOf()"))
+        assertFalse(resultsHandler.contains("showCompletion = true"))
+    }
+
+    @Test
+    fun `final distinct review opens the checkpoint before its answer is recorded`() {
+        val mission = mission(
+            answeredWordIds = setOf("one", "two", "three", "four"),
+            completedWords = 4,
+            goalWords = 5,
+            goalComplete = false,
+        )
+
+        assertTrue(
+            shouldOpenContextCheckpoint(
+                mission = mission,
+                wordId = "five",
+                dailyGoalWasIncompleteAtMissionStart = true,
+                wordCompletionAlreadyRecorded = false,
+            ),
+        )
+    }
+
+    @Test
+    fun `repeating an already completed word does not open the checkpoint`() {
+        val mission = mission(
+            answeredWordIds = setOf("one", "two", "three", "four"),
+            completedWords = 4,
+            goalWords = 5,
+            goalComplete = false,
+        )
+
+        assertFalse(
+            shouldOpenContextCheckpoint(
+                mission = mission,
+                wordId = "four",
+                dailyGoalWasIncompleteAtMissionStart = true,
+                wordCompletionAlreadyRecorded = false,
+            ),
+        )
+    }
+
+    @Test
+    fun `introduced final word opens checkpoint after its completion was recorded`() {
+        val mission = mission(
+            answeredWordIds = setOf("one", "two", "three", "four", "five"),
+            completedWords = 5,
+            goalWords = 5,
+            goalComplete = true,
+        )
+
+        assertTrue(
+            shouldOpenContextCheckpoint(
+                mission = mission,
+                wordId = "five",
+                dailyGoalWasIncompleteAtMissionStart = true,
+                wordCompletionAlreadyRecorded = true,
+            ),
+        )
+        assertFalse(
+            shouldOpenContextCheckpoint(
+                mission = mission,
+                wordId = "five",
+                dailyGoalWasIncompleteAtMissionStart = false,
+                wordCompletionAlreadyRecorded = true,
+            ),
+        )
     }
 
     @Test
@@ -209,5 +292,21 @@ class StudyMissionTest {
         verseArabic = "كَلِمَة كَلِمَة",
         verseMeaning = "test verse",
         insight = "",
+    )
+
+    private fun mission(
+        answeredWordIds: Set<String>,
+        completedWords: Int,
+        goalWords: Int,
+        goalComplete: Boolean,
+    ) = DailyMissionState(
+        answeredWordIds = answeredWordIds,
+        completedWords = completedWords,
+        goalWords = goalWords,
+        remainingWords = (goalWords - completedWords).coerceAtLeast(0),
+        dueReviews = 0,
+        newWordsReady = 0,
+        goalComplete = goalComplete,
+        activity = emptyList(),
     )
 }

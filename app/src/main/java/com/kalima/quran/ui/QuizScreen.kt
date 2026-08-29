@@ -32,6 +32,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -463,12 +465,13 @@ private fun ContextualVerse(question: QuizQuestion) {
 }
 
 @Composable
-private fun QuizOption(
+internal fun QuizOption(
     text: String,
     arabic: Boolean,
     selected: Boolean,
     correct: Boolean,
     answered: Boolean,
+    accessibilityDescription: String? = null,
     onClick: () -> Unit,
 ) {
     val container = when {
@@ -483,7 +486,15 @@ private fun QuizOption(
     }
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (accessibilityDescription != null) {
+                    Modifier.semantics { contentDescription = accessibilityDescription }
+                } else {
+                    Modifier
+                },
+            ),
         enabled = !answered,
         color = container,
         shape = RoundedCornerShape(16.dp),

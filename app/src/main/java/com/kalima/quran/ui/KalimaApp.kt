@@ -254,6 +254,7 @@ fun KalimaApp(
                             progress = progress,
                             onIntroduce = onIntroduce,
                             onAnswer = onAnswer,
+                            onCheckpointAnswer = onQuizAnswer,
                             onCurrentWordChange = onCurrentStudyWordChange,
                             onEnableLockScreen = { onLockScreenChange(true) },
                             onOpenExcludedWords = {

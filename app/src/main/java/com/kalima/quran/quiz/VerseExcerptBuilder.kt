@@ -10,8 +10,17 @@ data class VerseExcerpt(
     val hasHighlight: Boolean get() = highlightStart >= 0 && highlightEnd > highlightStart
 }
 
+data class FullVerseCloze(
+    val text: String,
+    val completeAyah: String,
+    val removedOccurrences: Int,
+) {
+    fun restore(): String = completeAyah
+}
+
 object VerseExcerptBuilder {
     private const val DEFAULT_MAX_CHARS = 180
+    const val CLOZE_BLANK = "________"
 
     fun build(word: QuranWord, maxChars: Int = DEFAULT_MAX_CHARS): VerseExcerpt {
         val verse = word.verseArabic
@@ -43,17 +52,54 @@ object VerseExcerptBuilder {
     fun buildCloze(word: QuranWord, maxChars: Int = DEFAULT_MAX_CHARS): String {
         val excerpt = build(word, maxChars)
         if (!excerpt.hasHighlight) return excerpt.text
-        return excerpt.text.replaceRange(excerpt.highlightStart, excerpt.highlightEnd, "____")
+        return excerpt.text.replaceRange(excerpt.highlightStart, excerpt.highlightEnd, CLOZE_BLANK)
+    }
+
+    /** Builds a checkpoint cloze from the complete ayah, removing every matching occurrence. */
+    fun buildFullCloze(word: QuranWord): FullVerseCloze? {
+        val verse = word.verseArabic
+        val ranges = findRanges(verse, word.arabic).ifEmpty {
+            findRanges(verse, word.lemma)
+        }
+        if (ranges.isEmpty()) return null
+
+        val cloze = ranges.asReversed().fold(verse) { text, range ->
+            text.replaceRange(range.first, range.last + 1, CLOZE_BLANK)
+        }
+        return FullVerseCloze(
+            text = cloze,
+            completeAyah = verse,
+            removedOccurrences = ranges.size,
+        )
     }
 
     internal fun findRange(text: String, target: String): IntRange? {
+        return findRanges(text, target).firstOrNull()
+    }
+
+    private fun findRanges(text: String, target: String): List<IntRange> {
         val normalizedText = normalizeWithIndexes(text)
         val normalizedTarget = normalizeWithIndexes(target).value
-        if (normalizedTarget.isEmpty()) return null
-        val normalizedStart = normalizedText.value.indexOf(normalizedTarget)
-        if (normalizedStart < 0) return null
-        val normalizedEnd = normalizedStart + normalizedTarget.length - 1
-        return normalizedText.originalIndexes[normalizedStart]..normalizedText.originalIndexes[normalizedEnd]
+        if (normalizedTarget.isEmpty()) return emptyList()
+
+        return buildList {
+            var searchStart = 0
+            while (searchStart <= normalizedText.value.length - normalizedTarget.length) {
+                val normalizedStart = normalizedText.value.indexOf(normalizedTarget, searchStart)
+                if (normalizedStart < 0) break
+                val normalizedEnd = normalizedStart + normalizedTarget.length - 1
+                val originalStart = normalizedText.originalIndexes[normalizedStart]
+                var originalEnd = normalizedText.originalIndexes[normalizedEnd]
+                while (
+                    originalEnd + 1 < text.length &&
+                    (text[originalEnd + 1] == 'ـ' || text[originalEnd + 1].isArabicMark())
+                ) {
+                    originalEnd += 1
+                }
+                add(originalStart..originalEnd)
+                searchStart = normalizedEnd + 1
+            }
+        }
     }
 
     private fun normalizeWithIndexes(value: String): NormalizedText {

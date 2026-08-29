@@ -149,6 +149,18 @@
     <string name="keep_practicing">Keep practicing</string>
     <string name="mission_all_caught_up">All caught up</string>
     <string name="completion_payoff_subtitle">See what today’s practice helps you recognize in the Quran.</string>
+    <string name="context_checkpoint_title">Context Test</string>
+    <string name="context_checkpoint_intro">Recognize one word practiced today inside an authentic Quranic ayah.</string>
+    <string name="checkpoint_blank_ayah_description">Arabic ayah with one studied word replaced by a blank: %1$s</string>
+    <string name="checkpoint_choice_description">Choice %1$d: %2$s</string>
+    <string name="checkpoint_correct">Correct — you recognized the word in context.</string>
+    <string name="checkpoint_incorrect">Not this time — see the correct word in context.</string>
+    <string name="checkpoint_correct_word">Correct word</string>
+    <string name="checkpoint_contextual_meaning">Meaning in this context: %1$s</string>
+    <string name="checkpoint_transliteration">Transliteration: %1$s</string>
+    <string name="checkpoint_restored_ayah">Restored complete ayah</string>
+    <string name="checkpoint_restored_ayah_description">Complete Arabic ayah with the studied word restored: %1$s</string>
+    <string name="checkpoint_scope_note">Recognizing this word strengthens contextual comprehension; it does not by itself mean understanding the whole ayah.</string>
     <string name="words_practiced">Words practiced</string>
     <plurals name="words_recognized_in_ayah">
         <item quantity="one">You now recognize %1$d word in this ayah</item>
@@ -402,6 +414,7 @@
     <string name="study_paths_combined">%1$d guided paths combined</string>
     <string name="reveal_meaning">Reveal meaning</string>
     <string name="next_word">Next word</string>
+    <string name="continue_to_context_checkpoint">Continue to Context Test</string>
     <string name="recall_before_reveal">Before revealing it, pause and try to remember the translation.</string>
     <string name="rate_recall_instruction">How easy was it to remember the translation?</string>
     <string name="review_hard">Hard</string>

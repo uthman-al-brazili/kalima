@@ -77,6 +77,18 @@ internal fun buildDailyMissionState(
     )
 }
 
+internal fun shouldOpenContextCheckpoint(
+    mission: DailyMissionState,
+    wordId: String,
+    dailyGoalWasIncompleteAtMissionStart: Boolean,
+    wordCompletionAlreadyRecorded: Boolean,
+): Boolean {
+    if (!dailyGoalWasIncompleteAtMissionStart) return false
+    if (wordCompletionAlreadyRecorded) return mission.goalComplete
+    if (mission.goalComplete || wordId in mission.answeredWordIds) return false
+    return mission.completedWords + 1 >= mission.goalWords
+}
+
 internal fun buildStudyCompletionPayoff(
     reviewedWords: List<QuranWord>,
     recognizedWordIds: Set<String>,

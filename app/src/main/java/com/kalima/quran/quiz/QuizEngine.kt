@@ -67,7 +67,7 @@ object QuizEngine {
         "Não há alternativas distintas suficientes para este conjunto"
     }
 
-    private fun createQuestionOrNull(
+    internal fun createQuestionOrNull(
         word: QuranWord,
         type: QuizQuestionType,
         source: List<QuranWord>,

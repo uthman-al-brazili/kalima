@@ -149,6 +149,18 @@
     <string name="keep_practicing">Continuar praticando</string>
     <string name="mission_all_caught_up">Tudo em dia</string>
     <string name="completion_payoff_subtitle">Veja o que a prática de hoje ajuda você a reconhecer no Alcorão.</string>
+    <string name="context_checkpoint_title">Teste de contexto</string>
+    <string name="context_checkpoint_intro">Reconheça uma palavra praticada hoje dentro de um ayah autêntico do Alcorão.</string>
+    <string name="checkpoint_blank_ayah_description">Ayah em árabe com uma palavra estudada substituída por um espaço em branco: %1$s</string>
+    <string name="checkpoint_choice_description">Opção %1$d: %2$s</string>
+    <string name="checkpoint_correct">Correto — você reconheceu a palavra no contexto.</string>
+    <string name="checkpoint_incorrect">Ainda não — veja a palavra correta no contexto.</string>
+    <string name="checkpoint_correct_word">Palavra correta</string>
+    <string name="checkpoint_contextual_meaning">Significado neste contexto: %1$s</string>
+    <string name="checkpoint_transliteration">Transliteração: %1$s</string>
+    <string name="checkpoint_restored_ayah">Ayah completo restaurado</string>
+    <string name="checkpoint_restored_ayah_description">Ayah completo em árabe com a palavra estudada restaurada: %1$s</string>
+    <string name="checkpoint_scope_note">Reconhecer esta palavra reforça a compreensão do contexto, mas não significa compreender sozinho todo o ayah.</string>
     <string name="words_practiced">Palavras praticadas</string>
     <plurals name="words_recognized_in_ayah">
         <item quantity="one">Agora você reconhece %1$d palavra neste ayah</item>
@@ -402,6 +414,7 @@
     <string name="study_paths_combined">%1$d caminhos guiados combinados</string>
     <string name="reveal_meaning">Revelar significado</string>
     <string name="next_word">Próxima palavra</string>
+    <string name="continue_to_context_checkpoint">Continuar para o teste de contexto</string>
     <string name="recall_before_reveal">Antes de revelar, pare um instante e tente lembrar a tradução.</string>
     <string name="rate_recall_instruction">Como foi lembrar a tradução?</string>
     <string name="review_hard">Difícil</string>
