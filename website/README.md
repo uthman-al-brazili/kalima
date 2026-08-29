@@ -47,7 +47,10 @@ automatically receive the pt-BR set. These website-specific compositions place
 real app captures inside a simulated phone and add only the website's geometric
 background details. They must remain faithful to the shipped Android experience.
 
-Regenerate the website compositions from the source captures with:
+The website serves promotional screenshots as lossless WebP. Keep future
+website raster artwork in WebP unless a platform integration specifically
+requires another format. Regenerate the compositions from the source captures
+with FFmpeg available on `PATH`:
 
 ```powershell
 .\scripts\render-website-screens.ps1

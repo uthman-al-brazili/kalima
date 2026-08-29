@@ -21,8 +21,16 @@ for (const locale of ['en', 'pt-BR']) {
     throw new Error(`Artwork manifest must contain exactly four ${locale} images.`);
   }
   for (const [fileName, expectedHash] of Object.entries(images)) {
+    if (!fileName.endsWith('.webp')) {
+      throw new Error(`${locale}/${fileName} must use the WebP format.`);
+    }
+    const image = readFileSync(join(screensRoot, locale, fileName));
+    if (image.subarray(0, 4).toString('ascii') !== 'RIFF'
+      || image.subarray(8, 12).toString('ascii') !== 'WEBP') {
+      throw new Error(`${locale}/${fileName} is not a valid WebP image.`);
+    }
     const actualHash = createHash('sha256')
-      .update(readFileSync(join(screensRoot, locale, fileName)))
+      .update(image)
       .digest('hex');
     if (actualHash !== expectedHash) {
       throw new Error(`${locale}/${fileName} does not match its recorded artwork checksum.`);

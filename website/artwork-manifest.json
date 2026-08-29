@@ -5,16 +5,16 @@
   "kind": "edited promotional artwork",
   "locales": {
     "en": {
-      "lock-screen-learning.png": "400c1dd877f99ed91fb5c29ce880cded14ba1a39729951eceab13f885fa2a742",
-      "word-study.png": "b51b52f21931d6ff5801c5882f8d2cfc35ad0a9c7b483df42277c812f5f11232",
-      "quran-reading.png": "4020f7a62b13e52a34d9318967cd32f6c6460d42f919f44e12136e1581fb2c25",
-      "arabic-foundations.png": "c5d8f3494956dbd86016a0c7381c1089e0a0761585b5ac729d753b3b5a59e8b9"
+      "lock-screen-learning.webp": "08a86404cf0e669a9bb5bcf42a28897ddb29ad446751e1464f7a639ca3b72d03",
+      "word-study.webp": "9031422975bf7c8f938e1a2f1597bb90878176a886821f3fabac0ad3ef0cd536",
+      "quran-reading.webp": "933d7a1d44d62917de2a76aa52116ead7aa5d801f71e24fc5787ccce22d9c38c",
+      "arabic-foundations.webp": "0e097afdbca99e99ee9c83ee2906cd2a65d66a95fc32b4c298cdd46f1349909d"
     },
     "pt-BR": {
-      "lock-screen-learning.png": "15770ab8294bc9bb6672a62a64c73e51bc6eaddccbdc1ed9c79f4fbf6c035e53",
-      "word-study.png": "955da9cc236286ae67b828372afad24d0132819b276e24694fc1baa2cfd539c4",
-      "quran-reading.png": "1f5edc5cf7182b54bf04ab1d299ba334fec71c654dbaea33fe68231b2384e259",
-      "arabic-foundations.png": "ef3c366a4ae6cd9f65aa53f17782d85157a3b7d65b5bf187dd0e0145a9b70ac9"
+      "lock-screen-learning.webp": "3c2ae9ec1c514385bed85f700cb234cd5c37f7b40a9b4a183f6552fae839f3b9",
+      "word-study.webp": "bda2cc9bbc0f0d843b593d6862ab0f6b988e5e0029d41b6329ff9417dc648aa9",
+      "quran-reading.webp": "f044f41c76fa2b03d0c08ba667d3ea78bbc525b5e0cb360715339bad6cec0ac2",
+      "arabic-foundations.webp": "167157edd0161fd8af0e79d0e22b05c84ed98e1c794a6672bc8fabd1acea6373"
     }
   }
 }

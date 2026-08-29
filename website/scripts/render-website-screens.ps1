@@ -6,6 +6,7 @@ $websiteRoot = Split-Path -Parent $PSScriptRoot
 $workspaceRoot = Split-Path -Parent $websiteRoot
 $captureRoot = Join-Path $workspaceRoot 'distribution\uptodown\screenshots'
 $outputRoot = Join-Path $websiteRoot 'public\screens'
+$ffmpeg = Get-Command 'ffmpeg' -ErrorAction Stop
 
 function New-RoundedPath {
     param(
@@ -158,44 +159,56 @@ function Write-WebsiteScreen {
     $outputDirectory = Join-Path $outputRoot $Screen.Locale
     [System.IO.Directory]::CreateDirectory($outputDirectory) | Out-Null
     $outputPath = Join-Path $outputDirectory $Screen.Output
-    $bitmap.Save($outputPath, [System.Drawing.Imaging.ImageFormat]::Png)
+    $temporaryPngPath = "$outputPath.render.png"
+    $bitmap.Save($temporaryPngPath, [System.Drawing.Imaging.ImageFormat]::Png)
 
     $graphics.Dispose()
     $bitmap.Dispose()
+
+    try {
+        & $ffmpeg.Source -hide_banner -loglevel error -y -i $temporaryPngPath `
+            -c:v libwebp -lossless 1 -compression_level 6 $outputPath
+        if ($LASTEXITCODE -ne 0) {
+            throw "FFmpeg failed to encode $($Screen.Output) as lossless WebP."
+        }
+    }
+    finally {
+        Remove-Item -LiteralPath $temporaryPngPath -ErrorAction SilentlyContinue
+    }
     Write-Host "Rendered $($Screen.Locale)/$($Screen.Output)"
 }
 
 $screens = @(
     @{
-        Locale = 'en'; Output = 'lock-screen-learning.png'; Background = '#F6E0D0'; Accent = '#F2C94C'
+        Locale = 'en'; Output = 'lock-screen-learning.webp'; Background = '#F6E0D0'; Accent = '#F2C94C'
         Source = Join-Path $captureRoot 'device-captures\lock-screen-en.png'; CropX = 0; CropY = 0; CropWidth = 1080; CropHeight = 1460
     },
     @{
-        Locale = 'en'; Output = 'word-study.png'; Background = '#DDEFE2'; Accent = '#7BBFA8'
+        Locale = 'en'; Output = 'word-study.webp'; Background = '#DDEFE2'; Accent = '#7BBFA8'
         Source = Join-Path $captureRoot 'device-captures\study-current-en.png'; CropX = 0; CropY = 120; CropWidth = 1080; CropHeight = 1460
     },
     @{
-        Locale = 'en'; Output = 'quran-reading.png'; Background = '#E7DFF2'; Accent = '#B7A4D7'
+        Locale = 'en'; Output = 'quran-reading.webp'; Background = '#E7DFF2'; Accent = '#B7A4D7'
         Source = Join-Path $captureRoot 'en\quran.png'; CropX = 0; CropY = 135; CropWidth = 1080; CropHeight = 1460
     },
     @{
-        Locale = 'en'; Output = 'arabic-foundations.png'; Background = '#D9EEF1'; Accent = '#78B8C2'
+        Locale = 'en'; Output = 'arabic-foundations.webp'; Background = '#D9EEF1'; Accent = '#78B8C2'
         Source = Join-Path $captureRoot 'en\foundations.png'; CropX = 0; CropY = 420; CropWidth = 1080; CropHeight = 1460
     },
     @{
-        Locale = 'pt-BR'; Output = 'lock-screen-learning.png'; Background = '#F6E0D0'; Accent = '#F2C94C'
+        Locale = 'pt-BR'; Output = 'lock-screen-learning.webp'; Background = '#F6E0D0'; Accent = '#F2C94C'
         Source = Join-Path $captureRoot 'device-captures\lock-screen-secure-pt-BR.png'; CropX = 0; CropY = 0; CropWidth = 1080; CropHeight = 1460
     },
     @{
-        Locale = 'pt-BR'; Output = 'word-study.png'; Background = '#DDEFE2'; Accent = '#7BBFA8'
+        Locale = 'pt-BR'; Output = 'word-study.webp'; Background = '#DDEFE2'; Accent = '#7BBFA8'
         Source = Join-Path $captureRoot 'device-captures\study-current-pt-BR.png'; CropX = 0; CropY = 120; CropWidth = 1080; CropHeight = 1460
     },
     @{
-        Locale = 'pt-BR'; Output = 'quran-reading.png'; Background = '#E7DFF2'; Accent = '#B7A4D7'
+        Locale = 'pt-BR'; Output = 'quran-reading.webp'; Background = '#E7DFF2'; Accent = '#B7A4D7'
         Source = Join-Path $captureRoot 'pt-BR\quran.png'; CropX = 0; CropY = 135; CropWidth = 1080; CropHeight = 1460
     },
     @{
-        Locale = 'pt-BR'; Output = 'arabic-foundations.png'; Background = '#D9EEF1'; Accent = '#78B8C2'
+        Locale = 'pt-BR'; Output = 'arabic-foundations.webp'; Background = '#D9EEF1'; Accent = '#78B8C2'
         Source = Join-Path $captureRoot 'pt-BR\foundations.png'; CropX = 0; CropY = 420; CropWidth = 1080; CropHeight = 1460
     }
 )

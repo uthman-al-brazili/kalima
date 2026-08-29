@@ -4,7 +4,7 @@ type Language = 'en' | 'pt';
 type Route = '/' | '/privacy' | '/support';
 type FeatureIconName = 'lockscreen' | 'quiz' | 'widget' | 'audio' | 'quran' | 'progress';
 
-const artworkRevision = '0.30.5-2026-08-29-lockscreen-hd';
+const artworkRevision = '0.30.5-2026-08-29-webp';
 
 const facts = {
   email: 'uthman-al-brazili@proton.me',
@@ -53,10 +53,10 @@ const content = {
     screensTitle: 'From the lock screen into Quran context.',
     screensBody: 'Start with a screen-on card, then continue with focused word study, Quran reading, and Arabic foundations.',
     screens: [
-      ['lock-screen-learning.png', 'Quranic Arabic word shown on the lock screen inside a simulated Android phone', 'Review a Quranic Arabic word at screen-on while Android keeps your PIN and biometrics in control.'],
-      ['word-study.png', 'Kalima daily Quranic word study screen with Arabic, pronunciation, and review controls', 'Build vocabulary one word at a time with pronunciation, contextual meaning, and spaced review.'],
-      ['quran-reading.png', 'Kalima Quran reader with tappable Arabic words', 'Tap any word anywhere in the Quran to connect vocabulary with its ayah and deeper context.'],
-      ['arabic-foundations.png', 'Kalima Arabic basics screen with alphabet and Arabic-Indic number lessons', 'Practice the alphabet and Arabic-Indic numbers separately whenever you need the foundation.'],
+      ['lock-screen-learning.webp', 'Quranic Arabic word shown on the lock screen inside a simulated Android phone', 'Review a Quranic Arabic word at screen-on while Android keeps your PIN and biometrics in control.'],
+      ['word-study.webp', 'Kalima daily Quranic word study screen with Arabic, pronunciation, and review controls', 'Build vocabulary one word at a time with pronunciation, contextual meaning, and spaced review.'],
+      ['quran-reading.webp', 'Kalima Quran reader with tappable Arabic words', 'Tap any word anywhere in the Quran to connect vocabulary with its ayah and deeper context.'],
+      ['arabic-foundations.webp', 'Kalima Arabic basics screen with alphabet and Arabic-Indic number lessons', 'Practice the alphabet and Arabic-Indic numbers separately whenever you need the foundation.'],
     ],
     featuresTitle: 'Built around small moments that add up.',
     features: [
@@ -118,10 +118,10 @@ const content = {
     screensTitle: 'Da tela bloqueada ao contexto do Alcorão.',
     screensBody: 'Comece com um cartão ao acender a tela e continue com estudo de palavras, leitura do Alcorão e fundamentos do árabe.',
     screens: [
-      ['lock-screen-learning.png', 'Palavra do Alcorão exibida na tela bloqueada dentro de um telefone Android simulado', 'Revise uma palavra do Alcorão ao acender a tela, com o PIN e a biometria sob o controle do Android.'],
-      ['word-study.png', 'Tela do Kalima para estudar a palavra corânica do dia, com áudio e controles de revisão', 'Construa vocabulário uma palavra de cada vez, com pronúncia, significado em contexto e revisão espaçada.'],
-      ['quran-reading.png', 'Leitor do Alcorão do Kalima com palavras árabes tocáveis', 'Toque em qualquer palavra, em qualquer parte do Alcorão, para conectá-la à ayah e ao seu contexto.'],
-      ['arabic-foundations.png', 'Tela de fundamentos do árabe do Kalima com alfabeto e números indo-arábicos', 'Pratique o alfabeto e os números indo-arábicos separadamente quando precisar reforçar a base.'],
+      ['lock-screen-learning.webp', 'Palavra do Alcorão exibida na tela bloqueada dentro de um telefone Android simulado', 'Revise uma palavra do Alcorão ao acender a tela, com o PIN e a biometria sob o controle do Android.'],
+      ['word-study.webp', 'Tela do Kalima para estudar a palavra corânica do dia, com áudio e controles de revisão', 'Construa vocabulário uma palavra de cada vez, com pronúncia, significado em contexto e revisão espaçada.'],
+      ['quran-reading.webp', 'Leitor do Alcorão do Kalima com palavras árabes tocáveis', 'Toque em qualquer palavra, em qualquer parte do Alcorão, para conectá-la à ayah e ao seu contexto.'],
+      ['arabic-foundations.webp', 'Tela de fundamentos do árabe do Kalima com alfabeto e números indo-arábicos', 'Pratique o alfabeto e os números indo-arábicos separadamente quando precisar reforçar a base.'],
     ],
     featuresTitle: 'Pequenos momentos que constroem conhecimento.',
     features: [
