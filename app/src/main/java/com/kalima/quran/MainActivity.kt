@@ -35,6 +35,7 @@ import com.kalima.quran.localization.LanguageManager
 import com.kalima.quran.notifications.NotificationHelper
 import com.kalima.quran.notifications.ReminderScheduler
 import com.kalima.quran.ui.KalimaApp
+import com.kalima.quran.ui.ProgressStatisticsCache
 import com.kalima.quran.ui.StartupLoadingScreen
 import com.kalima.quran.ui.StudyLaunchTarget
 import java.time.Instant
@@ -42,6 +43,7 @@ import java.time.LocalDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -179,6 +181,12 @@ class MainActivity : ComponentActivity() {
             launch(Dispatchers.Default) {
                 delay(POST_RENDER_WORK_DELAY_MS)
                 WordRepository.prepareDeferredIndexes()
+            }
+            launch(Dispatchers.Default) {
+                delay(POST_RENDER_WORK_DELAY_MS)
+                store.progress.collectLatest { progress ->
+                    ProgressStatisticsCache.prepare(progress, WordRepository.words)
+                }
             }
             launch(Dispatchers.IO) {
                 delay(POST_RENDER_WORK_DELAY_MS)

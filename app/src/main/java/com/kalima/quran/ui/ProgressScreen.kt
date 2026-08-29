@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -39,6 +40,7 @@ import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.HijriCalendar
 import com.kalima.quran.data.HijriCalendarDate
+import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.QuranVocabularyCoverage
 import com.kalima.quran.data.SurahVocabularyCoverage
 import com.kalima.quran.data.StudyProgress
@@ -50,6 +52,8 @@ import com.kalima.quran.data.limitNewWords
 import java.time.LocalDate
 import java.time.DayOfWeek
 import java.time.ZoneId
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ProgressScreen(
@@ -60,36 +64,27 @@ fun ProgressScreen(
 ) {
     val scopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val activeWords = remember(
+    val corpusWords = WordRepository.words
+    val statistics by produceState<ProgressStatistics?>(
+        initialValue = ProgressStatisticsCache.get(progress, corpusWords),
+        corpusWords,
         scopeKey,
         selectionKey,
         progress.customStudyIds,
-    ) {
-        WordRepository.wordsFor(
-            progress.studyScopes,
-            progress.selectedSurahs,
-            progress.customStudyIds,
-        )
-    }
-    val learnedInScope = remember(activeWords, progress.learnedIds) {
-        activeWords.count { it.id in progress.learnedIds }
-    }
-    val learningWords = remember(
-        activeWords,
         progress.maximumWords,
         progress.learnedIds,
         progress.reviewingIds,
         progress.alreadyKnownIds,
+        progress.reviewSchedules,
+        progress.spacedRepetitionEnabled,
     ) {
-        progress.limitNewWords(activeWords)
-    }
-    val dueInScope = progress.dueReviewCount(learningWords.mapTo(mutableSetOf()) { it.id })
-    val learnedFraction = if (activeWords.isEmpty()) 0f else learnedInScope.toFloat() / activeWords.size
-    val recognizedWordIds = remember(progress.learnedIds, progress.alreadyKnownIds) {
-        progress.learnedIds + progress.alreadyKnownIds
-    }
-    val vocabularyCoverage = remember(recognizedWordIds) {
-        VocabularyCoverage.calculate(WordRepository.words, recognizedWordIds)
+        ProgressStatisticsCache.get(progress, corpusWords)?.let {
+            value = it
+            return@produceState
+        }
+        value = withContext(Dispatchers.Default) {
+            ProgressStatisticsCache.prepare(progress, corpusWords)
+        }
     }
     val selectedPathSummary = progress.studyScopes
         .sortedBy(StudyScope::ordinal)
@@ -134,7 +129,7 @@ fun ProgressScreen(
                 modifier = Modifier.weight(1f),
             )
             StatBlock(
-                value = dueInScope.toString(),
+                value = statistics?.dueInScope?.toString() ?: "—",
                 label = stringResource(R.string.stat_due),
                 modifier = Modifier.weight(1f),
             )
@@ -177,15 +172,25 @@ fun ProgressScreen(
                         color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold,
                     )
-                    Text("$learnedInScope/${activeWords.size}")
+                    Text(
+                        statistics?.let { "${it.learnedInScope}/${it.activeWordCount}" } ?: "—",
+                    )
                 }
                 Spacer(Modifier.height(12.dp))
-                LinearProgressIndicator(
-                    progress = { learnedFraction.coerceIn(0f, 1f) },
-                    modifier = Modifier.fillMaxWidth().height(9.dp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                )
+                if (statistics == null) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth().height(9.dp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                    )
+                } else {
+                    LinearProgressIndicator(
+                        progress = { requireNotNull(statistics).learnedFraction },
+                        modifier = Modifier.fillMaxWidth().height(9.dp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                    )
+                }
                 Spacer(Modifier.height(10.dp))
                 Text(
                     stringResource(R.string.selected_content_note),
@@ -195,7 +200,11 @@ fun ProgressScreen(
             }
         }
         Spacer(Modifier.height(24.dp))
-        VocabularyCoverageSummary(vocabularyCoverage)
+        if (statistics == null) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        } else {
+            VocabularyCoverageSummary(requireNotNull(statistics).vocabularyCoverage)
+        }
         Spacer(Modifier.height(24.dp))
         Text(
             stringResource(R.string.guided_paths),
@@ -310,11 +319,13 @@ fun ProgressScreen(
                 }
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    pluralStringResource(
-                        R.plurals.cards_in_current_study,
-                        learningWords.size,
-                        learningWords.size,
-                    ),
+                    statistics?.learningWordCount?.let { learningWordCount ->
+                        pluralStringResource(
+                            R.plurals.cards_in_current_study,
+                            learningWordCount,
+                            learningWordCount,
+                        )
+                    } ?: "—",
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
@@ -324,13 +335,108 @@ fun ProgressScreen(
         Spacer(Modifier.height(24.dp))
         ActivityCalendar(progress, pronouncer)
         Spacer(Modifier.height(24.dp))
-        if (progress.spacedRepetitionEnabled) DifficultWords(progress)
+        if (progress.spacedRepetitionEnabled) DifficultWords(statistics?.difficultWords)
         Spacer(Modifier.height(24.dp))
-        RootMastery(activeWords, progress)
+        RootMastery(statistics?.rootMastery)
         Spacer(Modifier.height(24.dp))
-        VocabularyCoverageBySurah(vocabularyCoverage)
+        statistics?.let { VocabularyCoverageBySurah(it.vocabularyCoverage) }
         Spacer(Modifier.height(24.dp))
     }
+}
+
+internal data class ProgressStatistics(
+    val activeWordCount: Int,
+    val learnedInScope: Int,
+    val learningWordCount: Int,
+    val dueInScope: Int,
+    val vocabularyCoverage: QuranVocabularyCoverage,
+    val difficultWords: List<Pair<QuranWord, Int>>,
+    val rootMastery: List<Triple<String, Int, Int>>,
+) {
+    val learnedFraction: Float
+        get() = if (activeWordCount == 0) 0f else learnedInScope.toFloat() / activeWordCount
+}
+
+internal object ProgressStatisticsCache {
+    @Volatile
+    private var entry: Entry? = null
+
+    fun get(progress: StudyProgress, corpusWords: List<QuranWord>): ProgressStatistics? =
+        entry?.takeIf { it.matches(progress, corpusWords) }?.statistics
+
+    fun prepare(progress: StudyProgress, corpusWords: List<QuranWord>): ProgressStatistics {
+        get(progress, corpusWords)?.let { return it }
+        val statistics = calculateProgressStatistics(progress, corpusWords)
+        if (WordRepository.words === corpusWords) {
+            entry = Entry(progress, corpusWords, statistics)
+        }
+        return statistics
+    }
+
+    private class Entry(
+        progress: StudyProgress,
+        private val corpusWords: List<QuranWord>,
+        val statistics: ProgressStatistics,
+    ) {
+        private val studyScope = progress.studyScope
+        private val selectedStudyScopes = progress.selectedStudyScopes
+        private val selectedSurahs = progress.selectedSurahs
+        private val customStudyIds = progress.customStudyIds
+        private val maximumWords = progress.maximumWords
+        private val learnedIds = progress.learnedIds
+        private val reviewingIds = progress.reviewingIds
+        private val alreadyKnownIds = progress.alreadyKnownIds
+        private val reviewSchedules = progress.reviewSchedules
+        private val spacedRepetitionEnabled = progress.spacedRepetitionEnabled
+
+        fun matches(progress: StudyProgress, corpusWords: List<QuranWord>): Boolean =
+            this.corpusWords === corpusWords &&
+                studyScope == progress.studyScope &&
+                selectedStudyScopes === progress.selectedStudyScopes &&
+                selectedSurahs === progress.selectedSurahs &&
+                customStudyIds === progress.customStudyIds &&
+                maximumWords == progress.maximumWords &&
+                learnedIds === progress.learnedIds &&
+                reviewingIds === progress.reviewingIds &&
+                alreadyKnownIds === progress.alreadyKnownIds &&
+                reviewSchedules === progress.reviewSchedules &&
+                spacedRepetitionEnabled == progress.spacedRepetitionEnabled
+    }
+}
+
+private fun calculateProgressStatistics(
+    progress: StudyProgress,
+    corpusWords: List<QuranWord>,
+): ProgressStatistics {
+    val activeWords = WordRepository.wordsFor(
+        progress.studyScopes,
+        progress.selectedSurahs,
+        progress.customStudyIds,
+    )
+    val learningWords = progress.limitNewWords(activeWords)
+    val recognizedWordIds = progress.learnedIds + progress.alreadyKnownIds
+    val rootMastery = activeWords
+        .asSequence()
+        .filter { it.root.isNotBlank() && it.root != "—" }
+        .groupBy(QuranWord::root)
+        .map { (root, rootWords) ->
+            Triple(root, rootWords.count { progress.statusFor(it.id) != com.kalima.quran.data.WordStatus.New }, rootWords.size)
+        }
+        .sortedWith(compareByDescending<Triple<String, Int, Int>> { it.second }.thenByDescending { it.third })
+        .take(5)
+    return ProgressStatistics(
+        activeWordCount = activeWords.size,
+        learnedInScope = activeWords.count { it.id in progress.learnedIds },
+        learningWordCount = learningWords.size,
+        dueInScope = progress.dueReviewCount(learningWords.mapTo(mutableSetOf()) { it.id }),
+        vocabularyCoverage = VocabularyCoverage.calculate(corpusWords, recognizedWordIds),
+        difficultWords = progress.reviewSchedules.entries
+            .sortedByDescending { it.value.lapses }
+            .filter { it.value.lapses > 0 }
+            .take(5)
+            .mapNotNull { entry -> WordRepository.wordById(entry.key)?.let { it to entry.value.lapses } },
+        rootMastery = rootMastery,
+    )
 }
 
 @Composable
@@ -682,18 +788,13 @@ private fun monthName(month: Int): String = stringResource(
 )
 
 @Composable
-private fun DifficultWords(progress: StudyProgress) {
-    val difficult = remember(progress.reviewSchedules) {
-        progress.reviewSchedules.entries
-            .sortedByDescending { it.value.lapses }
-            .filter { it.value.lapses > 0 }
-            .take(5)
-            .mapNotNull { entry -> WordRepository.wordById(entry.key)?.let { it to entry.value.lapses } }
-    }
+private fun DifficultWords(difficult: List<Pair<QuranWord, Int>>?) {
     Text(stringResource(R.string.difficult_words), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
     Text(stringResource(R.string.difficult_words_note), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
     Spacer(Modifier.height(10.dp))
-    if (difficult.isEmpty()) {
+    if (difficult == null) {
+        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+    } else if (difficult.isEmpty()) {
         Text(stringResource(R.string.no_history_yet), color = MaterialTheme.colorScheme.onSurfaceVariant)
     } else difficult.forEach { (word, lapses) ->
         Surface(
@@ -713,16 +814,7 @@ private fun DifficultWords(progress: StudyProgress) {
 }
 
 @Composable
-private fun RootMastery(words: List<com.kalima.quran.data.QuranWord>, progress: StudyProgress) {
-    val roots = remember(words, progress.learnedIds, progress.reviewingIds, progress.alreadyKnownIds) {
-        words.filter { it.root.isNotBlank() && it.root != "—" }
-            .groupBy { it.root }
-            .map { (root, rootWords) ->
-                Triple(root, rootWords.count { progress.statusFor(it.id) != com.kalima.quran.data.WordStatus.New }, rootWords.size)
-            }
-            .sortedWith(compareByDescending<Triple<String, Int, Int>> { it.second }.thenByDescending { it.third })
-            .take(5)
-    }
+private fun RootMastery(roots: List<Triple<String, Int, Int>>?) {
     Text(stringResource(R.string.root_mastery), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
     Text(
         stringResource(R.string.root_mastery_note),
@@ -730,9 +822,11 @@ private fun RootMastery(words: List<com.kalima.quran.data.QuranWord>, progress: 
         style = MaterialTheme.typography.bodySmall,
     )
     Spacer(Modifier.height(10.dp))
-    if (roots.isEmpty()) {
+    if (roots == null) {
+        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+    } else if (roots.orEmpty().isEmpty()) {
         Text(stringResource(R.string.no_history_yet), color = MaterialTheme.colorScheme.onSurfaceVariant)
-    } else roots.forEach { (root, familiar, total) ->
+    } else roots.orEmpty().forEach { (root, familiar, total) ->
         Column(modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
