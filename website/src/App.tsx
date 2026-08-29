@@ -9,8 +9,8 @@ const facts = {
   email: 'uthman-al-brazili@proton.me',
   support: 'mailto:uthman-al-brazili@proton.me?subject=Supporting%20Kalima',
   repository: 'https://github.com/uthman-al-brazili/kalima',
-  release: 'https://github.com/uthman-al-brazili/kalima/releases/tag/v0.31.5',
-  apk: 'https://github.com/uthman-al-brazili/kalima/releases/download/v0.31.5/kalima-0.31.5-release.apk',
+  release: 'https://github.com/uthman-al-brazili/kalima/releases/tag/v0.31.6',
+  apk: 'https://github.com/uthman-al-brazili/kalima/releases/download/v0.31.6/kalima-0.31.6-release.apk',
   obtainium: 'https://github.com/ImranR98/Obtainium/releases',
 };
 

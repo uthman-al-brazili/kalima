@@ -3,6 +3,17 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.31.6 — 2026-08-28
+
+- Consolidated words, quizzes, and Arabic basics under a clearer Learn tab,
+  with settings available directly from the top app bar.
+- Improved Quran word transliterations by restoring standalone articles and
+  pausal endings consistently across loaded and curated vocabulary.
+- Kept mission, statistics, activity, and navigation labels readable on one
+  line, including at constrained screen widths.
+- Cached progress statistics after startup to make the Progress screen and
+  study-scope queries more responsive.
+
 ## 0.31.5 — 2026-08-28
 
 - Added a Quran learning overlay that marks recognized, reviewing, due, new,
