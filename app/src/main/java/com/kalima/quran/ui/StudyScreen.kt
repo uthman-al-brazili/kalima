@@ -1513,21 +1513,24 @@ private fun WordCard(
                         Spacer(Modifier.height(8.dp))
                         if (showCompleteAyah) {
                             VerseExplorerPanel(word = word)
-                            VersePronunciationButton(
-                                word = word,
-                                pronouncer = pronouncer,
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .width(112.dp),
-                                dense = true,
-                                centerContentGroup = true,
-                                labelRes = R.string.ayah_audio_short,
-                            )
-                            TextButton(
-                                onClick = { onShowCompleteAyahChange(false) },
+                            Row(
                                 modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                Text(stringResource(R.string.hide_complete_ayah))
+                                VersePronunciationButton(
+                                    word = word,
+                                    pronouncer = pronouncer,
+                                    modifier = Modifier.weight(1f),
+                                    dense = true,
+                                    centerLabel = true,
+                                    labelRes = R.string.ayah_audio_short,
+                                )
+                                OutlinedButton(
+                                    onClick = { onShowCompleteAyahChange(false) },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(stringResource(R.string.hide_complete_ayah))
+                                }
                             }
                         } else {
                             OutlinedButton(

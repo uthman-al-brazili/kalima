@@ -349,9 +349,9 @@ private fun LibraryWordCard(
                         VersePronunciationButton(
                             word = word,
                             pronouncer = pronouncer,
-                            modifier = Modifier.width(112.dp),
+                            modifier = Modifier.weight(1f),
                             dense = true,
-                            centerContentGroup = true,
+                            centerLabel = true,
                             labelRes = R.string.ayah_audio_short,
                         )
                         OutlinedButton(

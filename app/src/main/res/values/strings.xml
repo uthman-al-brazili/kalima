@@ -60,7 +60,7 @@
         <item quantity="other">%1$d ayahs</item>
     </plurals>
     <string name="show_complete_ayah">Mostrar ayah completo</string>
-    <string name="hide_complete_ayah">Ocultar ayah completo</string>
+    <string name="hide_complete_ayah">Ocultar ayah</string>
     <string name="read_and_understand_action">Recitar e entender esta ayah</string>
     <string name="read_and_understand_title">Recite e entenda</string>
     <string name="read_and_understand_description">Recite o ayah em ordem, acompanhe as palavras e depois recorde o significado. O reconhecimento verifica apenas o avanço ordenado pelas palavras.</string>

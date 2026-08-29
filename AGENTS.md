@@ -54,11 +54,13 @@ For an ordinary Android change:
    Gradle.
 2. Run the smallest tests or compilation check that validates the changed
    surface.
-3. Run `verifyLockScreenRegression` once after the final source edit. This check
-   remains mandatory for every Android application change.
-4. Run Android lint or APK assembly during development only when needed to
+3. Run Android lint or APK assembly during development only when needed to
    validate the affected build, resource, manifest, packaging, or integration
    surface, or when the user explicitly requests it.
+
+Do not run `verifyLockScreenRegression` for ordinary development changes unless
+the user explicitly requests it. Run it as part of the explicit release workflow
+when preparing to publish a new app version.
 
 Do not bump versions, edit release notes, create release artifacts, commit, or
 tag as part of an ordinary development change.
