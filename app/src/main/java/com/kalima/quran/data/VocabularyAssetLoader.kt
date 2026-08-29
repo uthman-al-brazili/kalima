@@ -50,7 +50,8 @@ internal object VocabularyAssetLoader {
                     id = fields[0],
                     arabic = fields[1].pooled(stringPool),
                     lemma = lemma,
-                    transliteration = fields[3].pooled(stringPool),
+                    transliteration = standaloneTransliteration(fields[1], fields[3])
+                        .pooled(stringPool),
                     meaning = meaning,
                     root = fields[6].pooled(stringPool),
                     grammar = grammar,

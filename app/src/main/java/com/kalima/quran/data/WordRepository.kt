@@ -508,19 +508,22 @@ object WordRepository {
     }
 
     private fun withAudioLocations(words: List<QuranWord>): List<QuranWord> = words.map { word ->
-        if (word.audioLocation != null) {
-            word
+        val standaloneWord = word.copy(
+            transliteration = standaloneTransliteration(word.arabic, word.transliteration),
+        )
+        if (standaloneWord.audioLocation != null) {
+            standaloneWord
         } else {
-            word.copy(
+            standaloneWord.copy(
                 audioLocation = requireNotNull(
-                    curatedAudioLocations[word.id]
+                    curatedAudioLocations[standaloneWord.id]
                         ?: QuranWordAudioLocationResolver.resolve(
-                            id = word.id,
-                            arabic = word.arabic,
-                            reference = word.reference,
-                            verseArabic = word.verseArabic,
+                            id = standaloneWord.id,
+                            arabic = standaloneWord.arabic,
+                            reference = standaloneWord.reference,
+                            verseArabic = standaloneWord.verseArabic,
                         ),
-                ) { "No Quran.com word-audio location for fallback card ${word.id}" },
+                ) { "No Quran.com word-audio location for fallback card ${standaloneWord.id}" },
             )
         }
     }
