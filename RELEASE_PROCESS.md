@@ -19,9 +19,9 @@ publicar o aplicativo Windows, salvo quando o usuário pedir isso explicitamente
 2. Adicionar no topo de `CHANGELOG.md` uma seção datada para a nova versão,
    resumindo as funcionalidades e correções visíveis para o usuário.
 3. Atualizar em `website/src/App.tsx` os links versionados da release e do APK,
-   além dos textos de download em inglês e português. Seguir a revisão de artes
-   e do manifesto descrita em `website/README.md`, incluindo o estado completo
-   do site no commit da release.
+   além dos textos de download em inglês e português, incluindo essa alteração
+   do site no commit da release. Não alterar artes promocionais, capturas de tela
+   ou o manifesto de artes sem um pedido explícito do usuário.
 4. Em uma única invocação Gradle, quando possível, executar os testes unitários,
    o lint, `verifyLockScreenRegression` e a montagem do artefato distribuível
    solicitado, seguindo o fluxo de assinatura correspondente. Não montar um APK

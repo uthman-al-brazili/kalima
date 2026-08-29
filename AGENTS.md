@@ -77,9 +77,9 @@ version, or publish it. Once the source is stable:
 3. Add a dated section at the top of `CHANGELOG.md` summarizing user-visible
    changes.
 4. Update the versioned GitHub release and APK links plus the English and
-   Portuguese download labels in `website/src/App.tsx`. Follow the artwork
-   review and manifest requirements in `website/README.md`, and include the
-   complete website source state in the release commit.
+   Portuguese download labels in `website/src/App.tsx`, and include that website
+   source state in the release commit. Do not change promotional artwork,
+   screenshots, or the artwork manifest unless the user explicitly requests it.
 5. In one Gradle invocation where practical, run the relevant unit tests,
    Android lint, `verifyLockScreenRegression`, and assembly of the requested
    distributable release artifact. Do not build or copy a separate debug APK

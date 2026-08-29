@@ -60,14 +60,14 @@ $items = @(
     },
     @{
         Locale = "en"
-        Source = "distribution\uptodown\screenshots\device-captures\study-current-en.png"
+        Source = "distribution\uptodown\screenshots\en\study.png"
         Output = "distribution\uptodown\promotional\screenshots-v2\en\02-word-study.png"
         Title = "ONE WORD AT A TIME"
         Subtitle = "Review Arabic, pronunciation, meaning, and Quran context."
     },
     @{
         Locale = "pt-BR"
-        Source = "distribution\uptodown\screenshots\device-captures\study-current-pt-BR.png"
+        Source = "distribution\uptodown\screenshots\pt-BR\study.png"
         Output = "distribution\uptodown\promotional\screenshots-v2\pt-BR\02-estudo-de-palavras.png"
         Title = "UMA PALAVRA DE CADA VEZ"
         Subtitle = "Revise árabe, pronúncia, significado e contexto do Alcorão."
