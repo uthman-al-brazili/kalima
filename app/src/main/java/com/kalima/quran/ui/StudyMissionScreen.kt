@@ -60,8 +60,9 @@ internal fun DailyMissionScreen(
             Column(Modifier.weight(1f)) {
                 Text(
                     stringResource(R.string.today_mission_title),
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
+                    maxLines = 1,
                 )
                 Text(
                     stringResource(R.string.today_mission_subtitle),
