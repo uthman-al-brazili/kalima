@@ -80,6 +80,7 @@ data class NumberLesson(
     val arabicDigit: String,
     val arabicName: String,
     val transliteration: String,
+    val audioResourceName: String,
 )
 
 /** A permanent, quick-reference row for one of the 28 Arabic letters. */
@@ -299,16 +300,16 @@ object ArabicFoundations {
     }
 
     val numberLessons: List<NumberLesson> = listOf(
-        NumberLesson(0, "٠", "صِفْر", "ṣifr"),
-        NumberLesson(1, "١", "وَاحِد", "wāḥid"),
-        NumberLesson(2, "٢", "اِثْنَان", "ithnān"),
-        NumberLesson(3, "٣", "ثَلَاثَة", "thalātha"),
-        NumberLesson(4, "٤", "أَرْبَعَة", "arbaʿa"),
-        NumberLesson(5, "٥", "خَمْسَة", "khamsa"),
-        NumberLesson(6, "٦", "سِتَّة", "sitta"),
-        NumberLesson(7, "٧", "سَبْعَة", "sabʿa"),
-        NumberLesson(8, "٨", "ثَمَانِيَة", "thamāniya"),
-        NumberLesson(9, "٩", "تِسْعَة", "tisʿa"),
+        NumberLesson(0, "٠", "صِفْر", "ṣifr", "arabic_number_0_sifr"),
+        NumberLesson(1, "١", "وَاحِد", "wāḥid", "arabic_number_1_wahid"),
+        NumberLesson(2, "٢", "اِثْنَان", "ithnān", "arabic_number_2_ithnan"),
+        NumberLesson(3, "٣", "ثَلَاثَة", "thalātha", "arabic_number_3_thalatha"),
+        NumberLesson(4, "٤", "أَرْبَعَة", "arbaʿa", "arabic_number_4_arbaa"),
+        NumberLesson(5, "٥", "خَمْسَة", "khamsa", "arabic_number_5_khamsa"),
+        NumberLesson(6, "٦", "سِتَّة", "sitta", "arabic_number_6_sitta"),
+        NumberLesson(7, "٧", "سَبْعَة", "sabʿa", "arabic_number_7_sabaa"),
+        NumberLesson(8, "٨", "ثَمَانِيَة", "thamāniya", "arabic_number_8_thamaniya"),
+        NumberLesson(9, "٩", "تِسْعَة", "tisʿa", "arabic_number_9_tisaa"),
     )
 
     /** Each row uses fatḥa, kasra, ḍamma, and sukūn, in that order. */

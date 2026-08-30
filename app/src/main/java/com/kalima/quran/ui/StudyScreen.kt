@@ -1368,6 +1368,7 @@ private fun NumberFoundationCard(
             Spacer(Modifier.height(10.dp))
             FoundationPronunciationButton(
                 text = lesson.arabicName,
+                audioResourceName = lesson.audioResourceName,
                 pronouncer = pronouncer,
                 modifier = Modifier.fillMaxWidth(),
                 labelRes = R.string.hear_number,

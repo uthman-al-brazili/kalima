@@ -216,6 +216,21 @@ class ArabicFoundationsTest {
             listOf("٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"),
             ArabicFoundations.numberLessons.map(NumberLesson::arabicDigit),
         )
+        assertEquals(
+            listOf(
+                "arabic_number_0_sifr",
+                "arabic_number_1_wahid",
+                "arabic_number_2_ithnan",
+                "arabic_number_3_thalatha",
+                "arabic_number_4_arbaa",
+                "arabic_number_5_khamsa",
+                "arabic_number_6_sitta",
+                "arabic_number_7_sabaa",
+                "arabic_number_8_thamaniya",
+                "arabic_number_9_tisaa",
+            ),
+            ArabicFoundations.numberLessons.map(NumberLesson::audioResourceName),
+        )
     }
 
     @Test
