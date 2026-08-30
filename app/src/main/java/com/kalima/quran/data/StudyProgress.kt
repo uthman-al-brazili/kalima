@@ -41,6 +41,8 @@ data class StudyProgress(
     val spacedRepetitionEnabled: Boolean = true,
     val currentStudyWordId: String? = null,
     val reviewSchedules: Map<String, ReviewSchedule> = emptyMap(),
+    /** Per-letter schedules keyed by letter and recognition dimension. */
+    val alphabetReviewSchedules: Map<String, ReviewSchedule> = emptyMap(),
     val customStudyIds: Set<String> = emptySet(),
     val onboardingComplete: Boolean = true,
     val alphabetCourseRequested: Boolean = false,

@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Instant
 
 class ArabicFoundationsTest {
     @Test
@@ -17,8 +18,7 @@ class ArabicFoundationsTest {
         assertEquals(28, letters.size)
         assertEquals(28, letters.toSet().size)
         assertTrue(letters.all { it.length == 1 })
-        assertEquals("ا", letters.first())
-        assertEquals("ي", letters.last())
+        assertEquals(28, ArabicFoundations.alphabetReference.size)
         assertTrue(recordings.all { it != null })
         assertEquals(28, recordings.toSet().size)
     }
@@ -40,27 +40,84 @@ class ArabicFoundationsTest {
 
     @Test
     fun `every alphabet lesson has a complete recognition check`() {
-        ArabicFoundations.alphabetLessons.forEach { lesson ->
-            val questions = lesson.practiceQuestions()
+        ArabicFoundations.alphabetLessons.forEachIndexed { lessonIndex, lesson ->
+            val questions = ArabicFoundations.practiceQuestions(lessonIndex)
 
-            assertEquals(lesson.symbols.size, questions.size)
-            assertEquals(
-                lesson.symbols,
-                questions.map(AlphabetPracticeQuestion::symbol),
-            )
+            assertEquals(lesson.symbols.size * 4, questions.size)
+            assertEquals(lesson.symbols.toSet(), questions.map(AlphabetPracticeQuestion::symbol).toSet())
             questions.forEach { question ->
-                assertEquals(lesson.symbols.size, question.options.size)
-                assertEquals(lesson.symbols.size, question.options.toSet().size)
-                assertEquals(
-                    question.symbol.transliteration,
-                    question.options[question.correctOptionIndex],
-                )
+                assertEquals(4, question.options.size)
+                assertEquals(4, question.options.toSet().size)
+                assertTrue(question.correctOptionIndex in question.options.indices)
             }
+        }
+    }
+
+    @Test
+    fun `symbol recognition choices use complete letter names`() {
+        val nameQuestions = ArabicFoundations.alphabetLessons.indices
+            .flatMap(ArabicFoundations::practiceQuestions)
+            .filter { it.type == AlphabetQuestionType.GlyphToSound }
+
+        nameQuestions.forEach { question ->
             assertEquals(
-                lesson.symbols.indices.toSet(),
-                questions.map(AlphabetPracticeQuestion::correctOptionIndex).toSet(),
+                question.symbol.transliteration,
+                question.options[question.correctOptionIndex].text,
             )
         }
+        val choices = nameQuestions.flatMap(AlphabetPracticeQuestion::options)
+            .map(AlphabetPracticeOption::text)
+        assertTrue("jīm" in choices)
+        assertTrue("ḥāʾ" in choices)
+        assertTrue("khāʾ" in choices)
+        assertTrue("ʿayn" in choices)
+    }
+
+    @Test
+    fun `shape families keep confusing pairs together and teach connection breaks`() {
+        val lessonFor = ArabicFoundations.alphabetLessons.flatMapIndexed { index, lesson ->
+            lesson.symbols.map { it.arabic to index }
+        }.toMap()
+
+        listOf("د" to "ذ", "س" to "ش", "ط" to "ظ", "ف" to "ق").forEach { (left, right) ->
+            assertEquals(lessonFor[left], lessonFor[right])
+        }
+        val breakLetters = ArabicFoundations.alphabetLessons.flatMap(AlphabetLesson::symbols)
+            .filterNot(FoundationSymbol::connectsToFollowing)
+            .map(FoundationSymbol::arabic)
+            .toSet()
+        assertEquals(setOf("ا", "د", "ذ", "ر", "ز", "و"), breakLetters)
+    }
+
+    @Test
+    fun `every lesson ends with a manually curated decoding milestone`() {
+        ArabicFoundations.alphabetLessons.forEach { lesson ->
+            assertTrue(lesson.milestone.word.isNotBlank())
+            assertTrue(lesson.milestone.segments.size >= 2)
+            assertTrue(lesson.milestone.audioResourceName.startsWith("arabic_word_"))
+        }
+    }
+
+    @Test
+    fun `cumulative practice brings back due dimensions from earlier lessons`() {
+        val now = Instant.parse("2026-08-29T12:00:00Z")
+        val earlierQuestion = ArabicFoundations.practiceQuestions(0).first()
+        val future = SpacedRepetition.review(null, ReviewGrade.Good, now)
+        val withoutDueCard = ArabicFoundations.cumulativePracticeQuestions(
+            lessonIndex = 1,
+            schedules = mapOf(earlierQuestion.masteryKey to future),
+            now = now,
+        )
+        val withDueCard = ArabicFoundations.cumulativePracticeQuestions(
+            lessonIndex = 1,
+            schedules = mapOf(
+                earlierQuestion.masteryKey to future.copy(dueAt = now.minusSeconds(1)),
+            ),
+            now = now,
+        )
+
+        assertFalse(withoutDueCard.any { it.masteryKey == earlierQuestion.masteryKey })
+        assertTrue(withDueCard.any { it.masteryKey == earlierQuestion.masteryKey })
     }
 
     @Test
@@ -68,8 +125,14 @@ class ArabicFoundationsTest {
         val symbols = ArabicFoundations.alphabetLessons.flatMap(AlphabetLesson::symbols)
 
         assertTrue(symbols.all { it.spokenArabic.isNotBlank() })
-        assertEquals("أَلِف", symbols.first().spokenArabic)
-        assertEquals("يَاء", symbols.last().spokenArabic)
+        assertEquals(
+            "أَلِف",
+            symbols.single { it.arabic == "ا" }.spokenArabic,
+        )
+        assertEquals(
+            "يَاء",
+            symbols.single { it.arabic == "ي" }.spokenArabic,
+        )
     }
 
     @Test

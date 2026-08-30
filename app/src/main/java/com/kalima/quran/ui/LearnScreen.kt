@@ -47,6 +47,7 @@ internal fun LearnScreen(
     openExcludedWordsRequestId: Long,
     onQuizAnswer: (String, Boolean) -> Unit,
     onCompleteAlphabetLesson: () -> Unit,
+    onAlphabetPracticeAnswer: (String, Boolean) -> Unit,
     onStartAlphabetFoundation: () -> Unit,
     onSkipAlphabetFoundation: () -> Unit,
     onCompleteNumberLesson: () -> Unit,
@@ -78,6 +79,7 @@ internal fun LearnScreen(
                     LearnSection.Foundations -> FoundationsScreen(
                         progress = progress,
                         onCompleteAlphabetLesson = onCompleteAlphabetLesson,
+                        onAlphabetPracticeAnswer = onAlphabetPracticeAnswer,
                         onStartAlphabetFoundation = onStartAlphabetFoundation,
                         onSkipAlphabetFoundation = onSkipAlphabetFoundation,
                         onCompleteNumberLesson = onCompleteNumberLesson,

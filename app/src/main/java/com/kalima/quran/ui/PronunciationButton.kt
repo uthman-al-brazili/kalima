@@ -124,6 +124,7 @@ fun FoundationPronunciationButton(
     text: String,
     pronouncer: ArabicPronouncer,
     modifier: Modifier = Modifier,
+    audioResourceName: String? = null,
     @StringRes labelRes: Int,
     compact: Boolean = false,
 ) {
@@ -131,6 +132,7 @@ fun FoundationPronunciationButton(
         play = { onPlaybackResult ->
             pronouncer.speakFoundation(
                 text = text,
+                audioResourceName = audioResourceName,
                 onPlaybackResult = onPlaybackResult,
             )
         },

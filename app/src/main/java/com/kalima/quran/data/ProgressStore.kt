@@ -146,6 +146,20 @@ class ProgressStore private constructor(context: Context) {
         persist(QuizProgress.record(previous, wordId, correct, date), date)
     }
 
+    fun answerAlphabetPractice(masteryKey: String, correct: Boolean) {
+        if (masteryKey !in ArabicFoundations.allMasteryKeys) return
+        val moment = Instant.now()
+        val current = _progress.value
+        val updatedSchedules = current.alphabetReviewSchedules + (
+            masteryKey to SpacedRepetition.review(
+                previous = current.alphabetReviewSchedules[masteryKey],
+                grade = if (correct) ReviewGrade.Good else ReviewGrade.Again,
+                now = moment,
+            )
+        )
+        persist(current.copy(alphabetReviewSchedules = updatedSchedules), today())
+    }
+
     fun commitLockScreenQuizAnswer(sessionId: String, wordId: String, correct: Boolean): Boolean =
         recordQuizAnswer(wordId, correct, ReviewSource.LockScreen, sessionId)
 
@@ -604,6 +618,8 @@ class ProgressStore private constructor(context: Context) {
             alreadyKnownIds = alreadyKnownIds,
             todayAnsweredIds = restored.todayAnsweredIds.intersect(knownIds),
             reviewSchedules = restored.reviewSchedules.filterKeys { it in knownIds },
+            alphabetReviewSchedules = restored.alphabetReviewSchedules
+                .filterKeys { it in ArabicFoundations.allMasteryKeys },
             customStudyIds = restored.customStudyIds.intersect(knownIds),
             reviewEvents = restored.reviewEvents.filter { it.wordId in knownIds },
             quizCorrectDays = restored.quizCorrectDays.filterKeys { it in knownIds },
@@ -821,6 +837,9 @@ class ProgressStore private constructor(context: Context) {
             currentStudyWordId = preferences.getString(KEY_CURRENT_STUDY_WORD_ID, null)
                 ?.takeIf { storedId -> storedId in validWordIds && storedId !in alreadyKnownIds },
             reviewSchedules = schedules,
+            alphabetReviewSchedules = ReviewScheduleCodec.decode(
+                preferences.getStringSet(KEY_ALPHABET_REVIEW_SCHEDULES, emptySet()).orEmpty(),
+            ).filterKeys { it in ArabicFoundations.allMasteryKeys },
             customStudyIds = customStudyIds,
             onboardingComplete = preferences.getBoolean(
                 KEY_ONBOARDING_COMPLETE,
@@ -907,6 +926,10 @@ class ProgressStore private constructor(context: Context) {
             putBoolean(KEY_SHOW_COMPLETE_AYAH, progress.showCompleteAyah)
             putBoolean(KEY_SPACED_REPETITION_ENABLED, progress.spacedRepetitionEnabled)
             putStringSet(KEY_REVIEW_SCHEDULES, ReviewScheduleCodec.encode(progress.reviewSchedules))
+            putStringSet(
+                KEY_ALPHABET_REVIEW_SCHEDULES,
+                ReviewScheduleCodec.encode(progress.alphabetReviewSchedules),
+            )
             putStringSet(KEY_FAVORITE_IDS, emptySet())
             putStringSet(KEY_CUSTOM_STUDY_IDS, progress.customStudyIds)
             putBoolean(KEY_ONBOARDING_COMPLETE, progress.onboardingComplete)
@@ -1024,6 +1047,7 @@ class ProgressStore private constructor(context: Context) {
         private const val KEY_SPACED_REPETITION_ENABLED = "spaced_repetition_enabled"
         private const val KEY_CURRENT_STUDY_WORD_ID = "current_study_word_id"
         private const val KEY_REVIEW_SCHEDULES = "review_schedules_v1"
+        private const val KEY_ALPHABET_REVIEW_SCHEDULES = "alphabet_review_schedules_v1"
         private const val KEY_FAVORITE_IDS = "favorite_ids"
         private const val KEY_CUSTOM_STUDY_IDS = "custom_study_ids"
         private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"

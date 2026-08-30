@@ -20,6 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.DeviceFontFamilyName
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.intl.Locale
@@ -28,6 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.data.WordStatus
+
+private val ArabicFontFamily = FontFamily(
+    Font(DeviceFontFamilyName("Noto Naskh Arabic"), weight = FontWeight.Normal),
+    Font(DeviceFontFamilyName("Noto Naskh Arabic"), weight = FontWeight.Bold),
+)
 
 @Composable
 fun ArabicText(
@@ -45,6 +53,9 @@ fun ArabicText(
         lineHeight = (size * 1.55).sp,
         textAlign = align,
         style = MaterialTheme.typography.headlineLarge.copy(
+            fontFamily = ArabicFontFamily,
+            letterSpacing = 0.sp,
+            fontFeatureSettings = "mark, mkmk",
             textDirection = TextDirection.Rtl,
             localeList = LocaleList(Locale("ar")),
         ),

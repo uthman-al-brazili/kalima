@@ -20,6 +20,9 @@ class ProgressBackupCodecTest {
             reviewingIds = setOf("word-2"),
             alreadyKnownIds = setOf("word-2"),
             reviewSchedules = mapOf("word-1" to schedule),
+            alphabetReviewSchedules = mapOf(
+                ArabicFoundations.allMasteryKeys.first() to schedule,
+            ),
             customStudyIds = setOf("word-2"),
             reviewEvents = listOf(ReviewEvent(now, "word-1", true, false, ReviewSource.Study)),
             lockScreenCooldownMinutes = 15,
@@ -41,6 +44,7 @@ class ProgressBackupCodecTest {
         assertEquals(progress.learnedIds, decoded.progress.learnedIds)
         assertEquals(progress.alreadyKnownIds, decoded.progress.alreadyKnownIds)
         assertEquals(progress.reviewSchedules, decoded.progress.reviewSchedules)
+        assertEquals(progress.alphabetReviewSchedules, decoded.progress.alphabetReviewSchedules)
         assertEquals(progress.customStudyIds, decoded.progress.customStudyIds)
         assertEquals(15, decoded.progress.lockScreenCooldownMinutes)
         assertEquals(true, decoded.progress.showCompleteAyah)

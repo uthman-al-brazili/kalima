@@ -65,6 +65,9 @@ object ProgressBackupCodec {
             "spacedRepetitionEnabled" to progress.spacedRepetitionEnabled.toString(),
             "currentStudyWordId" to progress.currentStudyWordId.orEmpty(),
             "reviewSchedules" to encodeSet(ReviewScheduleCodec.encode(progress.reviewSchedules)),
+            "alphabetReviewSchedules" to encodeSet(
+                ReviewScheduleCodec.encode(progress.alphabetReviewSchedules),
+            ),
             // Retained as an empty field so v1 backups remain readable by older Kalima versions.
             "favoriteIds" to encodeSet(emptySet()),
             "customStudyIds" to encodeSet(progress.customStudyIds),
@@ -140,6 +143,15 @@ object ProgressBackupCodec {
             ReviewEventCodec.decode(entries).also { decoded ->
                 if (decoded.size != entries.size || decoded.any { it.wordId !in knownWordIds }) {
                     throw invalid("Backup contains invalid review history")
+                }
+            }
+        }
+        val alphabetSchedules = values.optionalEncodedSet("alphabetReviewSchedules").let { entries ->
+            ReviewScheduleCodec.decode(entries).also { decoded ->
+                if (decoded.size != entries.size ||
+                    decoded.keys.any { it !in ArabicFoundations.allMasteryKeys }
+                ) {
+                    throw invalid("Backup contains invalid alphabet review schedules")
                 }
             }
         }
@@ -219,6 +231,7 @@ object ProgressBackupCodec {
             spacedRepetitionEnabled = values.boolean("spacedRepetitionEnabled"),
             currentStudyWordId = currentWordId,
             reviewSchedules = schedules,
+            alphabetReviewSchedules = alphabetSchedules,
             customStudyIds = customStudyIds,
             onboardingComplete = values.boolean("onboardingComplete"),
             alphabetCourseRequested = alphabetCourseRequested,
@@ -277,6 +290,9 @@ object ProgressBackupCodec {
 
     private fun Map<String, String>.encodedSet(key: String): Set<String> =
         decodeSet(required(key))
+
+    private fun Map<String, String>.optionalEncodedSet(key: String): Set<String> =
+        this[key]?.let(::decodeSet).orEmpty()
 
     private fun Map<String, String>.idSet(key: String, knownWordIds: Set<String>): Set<String> =
         encodedSet(key).also { ids ->

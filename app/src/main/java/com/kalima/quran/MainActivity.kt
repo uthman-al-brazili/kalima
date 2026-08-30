@@ -131,6 +131,7 @@ class MainActivity : ComponentActivity() {
                 onToggleAlreadyKnown = store::toggleAlreadyKnown,
                 onCompleteOnboarding = store::completeOnboarding,
                 onCompleteAlphabetLesson = store::completeNextAlphabetLesson,
+                onAlphabetPracticeAnswer = store::answerAlphabetPractice,
                 onStartAlphabetFoundation = store::startAlphabetFoundation,
                 onSkipAlphabetFoundation = store::skipAlphabetFoundation,
                 onCompleteNumberLesson = store::completeNextNumberLesson,

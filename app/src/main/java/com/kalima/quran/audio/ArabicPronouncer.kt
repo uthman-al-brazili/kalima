@@ -19,6 +19,8 @@ class ArabicPronouncer(context: Context) {
     private val wordAudioPlayer = QuranComWordAudioPlayer(applicationContext)
     private val verseAudioPlayer = HussaryVerseAudioPlayer(applicationContext)
     private val alphabetAudioPlayer = OfflineAlphabetAudioPlayer(applicationContext)
+    private val foundationExerciseAudioPlayer =
+        OfflineFoundationExerciseAudioPlayer(applicationContext)
     private val foundationVoice = ArabicFoundationVoice(applicationContext)
     private val connectivityManager = applicationContext.getSystemService(ConnectivityManager::class.java)
 
@@ -30,6 +32,7 @@ class ArabicPronouncer(context: Context) {
     ): PronunciationResult {
         verseAudioPlayer.stop()
         alphabetAudioPlayer.stop()
+        foundationExerciseAudioPlayer.stop()
         foundationVoice.stop()
         val source = selectWordAudioSource(
             hasQuranComLocation = location != null,
@@ -64,6 +67,7 @@ class ArabicPronouncer(context: Context) {
     ): PronunciationResult {
         wordAudioPlayer.stop()
         alphabetAudioPlayer.stop()
+        foundationExerciseAudioPlayer.stop()
         foundationVoice.stop()
         val hasOfflineAudio = location?.let(verseAudioPlayer::hasOfflineAudio) == true
         if (location == null) return PronunciationResult.Failed
@@ -85,11 +89,25 @@ class ArabicPronouncer(context: Context) {
 
     fun speakFoundation(
         text: String,
+        audioResourceName: String? = null,
         playbackRate: Float = FOUNDATION_DEFAULT_RATE,
         onPlaybackResult: (PronunciationResult) -> Unit = {},
     ): PronunciationResult {
         wordAudioPlayer.stop()
         verseAudioPlayer.stop()
+        if (audioResourceName != null) {
+            alphabetAudioPlayer.stop()
+            foundationVoice.stop()
+            return if (foundationExerciseAudioPlayer.hasAudio(audioResourceName)) {
+                foundationExerciseAudioPlayer.play(
+                    resourceName = audioResourceName,
+                    onFailure = { onPlaybackResult(PronunciationResult.Failed) },
+                )
+            } else {
+                PronunciationResult.OfflineAudioMissing
+            }
+        }
+        foundationExerciseAudioPlayer.stop()
         val alphabetAudio = AlphabetAudio.fromSpokenArabic(text)
         if (alphabetAudio != null) {
             foundationVoice.stop()
@@ -102,6 +120,9 @@ class ArabicPronouncer(context: Context) {
         return foundationVoice.speak(text, playbackRate, onPlaybackResult)
     }
 
+    fun hasFoundationAudio(resourceName: String): Boolean =
+        foundationExerciseAudioPlayer.hasAudio(resourceName)
+
     private fun hasValidatedInternet(): Boolean {
         val activeNetwork = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
@@ -113,11 +134,13 @@ class ArabicPronouncer(context: Context) {
         wordAudioPlayer.stop()
         verseAudioPlayer.stop()
         alphabetAudioPlayer.stop()
+        foundationExerciseAudioPlayer.stop()
         foundationVoice.stop()
     }
 
     fun shutdown() {
         stop()
+        alphabetAudioPlayer.shutdown()
         foundationVoice.shutdown()
     }
 
