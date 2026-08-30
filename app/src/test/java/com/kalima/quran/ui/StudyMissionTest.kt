@@ -133,6 +133,54 @@ class StudyMissionTest {
     }
 
     @Test
+    fun `empty guided queue returns to the path mission instead of caught up`() {
+        assertTrue(
+            shouldShowDailyMission(
+                showMission = false,
+                hasActiveUnderstandPath = true,
+                hasQueuedWords = false,
+                showCompletion = false,
+                hasLaunchTarget = false,
+            ),
+        )
+    }
+
+    @Test
+    fun `empty free study queue keeps the caught up state`() {
+        assertFalse(
+            shouldShowDailyMission(
+                showMission = false,
+                hasActiveUnderstandPath = false,
+                hasQueuedWords = false,
+                showCompletion = false,
+                hasLaunchTarget = false,
+            ),
+        )
+    }
+
+    @Test
+    fun `guided queue does not hide completion or a routed launch`() {
+        assertFalse(
+            shouldShowDailyMission(
+                showMission = false,
+                hasActiveUnderstandPath = true,
+                hasQueuedWords = false,
+                showCompletion = true,
+                hasLaunchTarget = false,
+            ),
+        )
+        assertFalse(
+            shouldShowDailyMission(
+                showMission = false,
+                hasActiveUnderstandPath = true,
+                hasQueuedWords = false,
+                showCompletion = false,
+                hasLaunchTarget = true,
+            ),
+        )
+    }
+
+    @Test
     fun `new word completion checks whether the checkpoint should open`() {
         val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
         val nextWordHandler = source.substringAfter("onNextWord = {").substringBefore("onAgain = {")

@@ -244,7 +244,15 @@ fun StudyScreen(
             sessionWordIds = arrayListOf()
         }
     }
-    if (showMission && launchTarget == null) {
+    if (
+        shouldShowDailyMission(
+            showMission = showMission,
+            hasActiveUnderstandPath = activePathState != null,
+            hasQueuedWords = words.isNotEmpty(),
+            showCompletion = showCompletion,
+            hasLaunchTarget = launchTarget != null,
+        )
+    ) {
         DailyMissionScreen(
             mission = mission,
             progress = progress,
@@ -1575,6 +1583,16 @@ internal fun studyWordsForPresentation(
         ?.let(::listOf)
         .orEmpty()
 }
+
+internal fun shouldShowDailyMission(
+    showMission: Boolean,
+    hasActiveUnderstandPath: Boolean,
+    hasQueuedWords: Boolean,
+    showCompletion: Boolean,
+    hasLaunchTarget: Boolean,
+): Boolean = !hasLaunchTarget && (
+    showMission || (hasActiveUnderstandPath && !hasQueuedWords && !showCompletion)
+)
 
 @Composable
 private fun ReviewActionContent(title: String, detail: String) {
