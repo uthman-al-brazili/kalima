@@ -349,8 +349,6 @@ private fun KalimaTopBar(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 )
-                Spacer(Modifier.weight(1f))
-                ArabicIndicClock(modifier = Modifier.padding(horizontal = 8.dp))
             } else {
                 Text(
                     text = stringResource(R.string.app_name),
@@ -359,7 +357,6 @@ private fun KalimaTopBar(
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 )
                 Spacer(Modifier.weight(1f))
-                ArabicIndicClock(modifier = Modifier.padding(horizontal = 8.dp))
                 IconButton(onClick = onOpenSettings) {
                     Icon(
                         painter = painterResource(R.drawable.ic_settings),

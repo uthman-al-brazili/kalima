@@ -150,7 +150,6 @@ fun QuranReaderScreen(
     var pagePickerVisible by rememberSaveable { mutableStateOf(false) }
     var learningLegendVisible by rememberSaveable { mutableStateOf(false) }
     var selectedToken by remember { mutableStateOf<QuranPageToken?>(null) }
-    var recitationToken by remember { mutableStateOf<QuranPageToken?>(null) }
     val currentPageNumber = pagerState.currentPage + 1
     val currentPage = remember(currentPageNumber) {
         QuranReaderRepository.page(currentPageNumber)
@@ -233,40 +232,6 @@ fun QuranReaderScreen(
             concealDetailsForRecall = shouldConcealQuranReaderWordDetails(studyAction),
             inCustomList = indexedWord?.id?.let { it in customStudyIds } == true,
             onToggleCustomList = onToggleCustomList,
-            onReadAndUnderstand = if (indexedWord != null && readerIndexReady) {
-                {
-                    recitationToken = token
-                    selectedToken = null
-                }
-            } else {
-                null
-            },
-        )
-    }
-
-    recitationToken?.let { token ->
-        val verseTokens = remember(token) {
-            QuranReaderRepository.verseTokens(token.surahNumber, token.ayahNumber)
-        }
-        val verseArabic = remember(token) {
-            QuranReaderRepository.verseText(token.surahNumber, token.ayahNumber)
-        }
-        val verseWords = remember(token, verseTokens) {
-            verseTokens.map { verseToken ->
-                WordRepository.readerWordFor(verseToken, verseArabic)
-            }
-        }
-        val surahName = remember(token.surahNumber) {
-            WordRepository.selectableSurahs
-                .firstOrNull { it.number == token.surahNumber }
-                ?.transliteratedName
-                ?: "Surah ${token.surahNumber}"
-        }
-        ReadAndUnderstandSheet(
-            verseTokens = verseTokens,
-            verseWords = verseWords,
-            reference = "$surahName ${token.surahNumber}:${token.ayahNumber}",
-            onDismiss = { recitationToken = null },
         )
     }
 

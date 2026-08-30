@@ -3,13 +3,6 @@
 Kalima does not use advertising, analytics, accounts, location, contacts,
 camera, accessibility, or exact-alarm permissions.
 
-## Optional recitation practice
-
-- `RECORD_AUDIO`: captures a recitation only after the learner taps “Start
-  reciting” in Recite & Understand. Tilawa processes the audio locally with the
-  Quran recognition model bundled in the app. Kalima does not store or upload
-  the recording, and the permission is not used in the background.
-
 ## Network
 
 - `INTERNET`: streams Quran.com word audio and Mahmoud Khalil Al-Hussary ayah

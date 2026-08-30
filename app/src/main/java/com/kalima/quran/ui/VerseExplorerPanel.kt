@@ -126,7 +126,6 @@ internal fun WordExplorerSheet(
     showVersePronunciation: Boolean = true,
     inCustomList: Boolean = false,
     onToggleCustomList: ((String) -> Unit)? = null,
-    onReadAndUnderstand: (() -> Unit)? = null,
 ) {
     val pronouncer = rememberArabicPronouncer()
     var detailsRevealed by remember(word.id, concealDetailsForRecall) {
@@ -175,14 +174,6 @@ internal fun WordExplorerSheet(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                 )
-            }
-            if (onReadAndUnderstand != null) {
-                OutlinedButton(
-                    onClick = onReadAndUnderstand,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.read_and_understand_action))
-                }
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),

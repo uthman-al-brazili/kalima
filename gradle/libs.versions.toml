@@ -7,7 +7,6 @@ activityCompose = "1.13.0"
 lifecycle = "2.10.0"
 coreKtx = "1.17.0"
 junit = "4.13.2"
-onnxRuntime = "1.24.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -21,7 +20,6 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-onnxruntime-android = { group = "com.microsoft.onnxruntime", name = "onnxruntime-android", version.ref = "onnxRuntime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

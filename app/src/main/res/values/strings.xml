@@ -63,27 +63,6 @@
     </plurals>
     <string name="show_complete_ayah">Mostrar ayah completo</string>
     <string name="hide_complete_ayah">Ocultar ayah</string>
-    <string name="read_and_understand_action">Recitar e entender esta ayah</string>
-    <string name="read_and_understand_title">Recite e entenda</string>
-    <string name="read_and_understand_description">Recite o ayah em ordem, acompanhe as palavras e depois recorde o significado. O reconhecimento verifica apenas o avanço ordenado pelas palavras.</string>
-    <string name="start_recitation">Começar a recitar</string>
-    <string name="finish_recitation">Finalizar</string>
-    <string name="try_recitation_again">Tentar novamente</string>
-    <string name="recitation_ready">Quando estiver pronto, recite o ayah completo.</string>
-    <string name="recitation_model_loading">Preparando o reconhecedor corânico offline…</string>
-    <string name="recitation_listening">Ouvindo com o Tilawa neste aparelho…</string>
-    <string name="recitation_processing">Verificando as palavras…</string>
-    <string name="recitation_words_heard">%1$d de %2$d palavras ouvidas. Agora recorde o significado do ayah.</string>
-    <string name="recitation_no_match">Recite esta ayah em ordem. Palavras anteriores são ignoradas, mas palavras inseridas ou posteriores não são aceitas.</string>
-    <string name="recitation_permission_denied">O acesso ao microfone é necessário apenas quando você decide recitar.</string>
-    <string name="recitation_failed">O reconhecimento parou inesperadamente. Tente novamente.</string>
-    <string name="recitation_heard">Ouvido: %1$s</string>
-    <string name="recall_ayah_meaning">O que esta ayah significa?</string>
-    <string name="recall_ayah_meaning_hint">Faça uma pausa e explique para si mesmo antes de revelar o significado.</string>
-    <string name="ayah_meaning_not_indexed">Ainda não há um significado contextual completo indexado para esta ayah.</string>
-    <string name="key_vocabulary">Vocabulário principal</string>
-    <string name="recitation_tracking_disclaimer">O destaque das palavras é um auxílio de aprendizado, não uma avaliação de pronúncia ou tajwid. O Tilawa processa o áudio inteiramente neste aparelho; o Kalima não o armazena.</string>
-
     <string name="status_new">Nova</string>
     <string name="status_reviewing">Revisando</string>
     <string name="status_learned">Aprendida</string>
