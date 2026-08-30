@@ -3,6 +3,7 @@ package com.kalima.quran.data
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.time.Instant
+import java.time.LocalDate
 import java.util.Base64
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -36,6 +37,10 @@ class ProgressBackupCodecTest {
             completedNumberLessons = 7,
             selectedStudyScopes = setOf(StudyScope.Frequent50, StudyScope.Prayer),
             studyScope = StudyScope.Frequent50,
+            activeUnderstandPath = UnderstandPathId.AlFatihahSevenDays,
+            understandPathStartedOn = LocalDate.of(2026, 8, 12),
+            activeUnderstandPathStage = 3,
+            completedUnderstandPaths = setOf(UnderstandPathId.LastTenSurahs),
         )
         val encoded = ProgressBackupCodec.encode(progress, "0.17.0", "corpus", now)
         val decoded = ProgressBackupCodec.decode(encoded, "corpus", knownIds)
@@ -56,6 +61,10 @@ class ProgressBackupCodecTest {
         assertEquals(3, decoded.progress.completedAlphabetLessons)
         assertEquals(7, decoded.progress.completedNumberLessons)
         assertEquals(progress.studyScopes, decoded.progress.studyScopes)
+        assertEquals(progress.activeUnderstandPath, decoded.progress.activeUnderstandPath)
+        assertEquals(progress.understandPathStartedOn, decoded.progress.understandPathStartedOn)
+        assertEquals(progress.activeUnderstandPathStage, decoded.progress.activeUnderstandPathStage)
+        assertEquals(progress.completedUnderstandPaths, decoded.progress.completedUnderstandPaths)
     }
 
     @Test

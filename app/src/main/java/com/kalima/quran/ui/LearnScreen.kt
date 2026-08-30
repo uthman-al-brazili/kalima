@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.UnderstandPathId
 
 internal enum class LearnSection(
     @param:StringRes val labelRes: Int,
@@ -43,6 +44,7 @@ internal fun LearnScreen(
     onShowCompleteAyahChange: (Boolean) -> Unit,
     openExcludedWordsRequestId: Long,
     onQuizAnswer: (String, Boolean) -> Unit,
+    quizUnderstandPath: UnderstandPathId?,
     onCompleteAlphabetLesson: () -> Unit,
     onAlphabetPracticeAnswer: (String, Boolean) -> Unit,
     onStartAlphabetFoundation: () -> Unit,
@@ -72,6 +74,7 @@ internal fun LearnScreen(
                         progress = progress,
                         onAnswer = onQuizAnswer,
                         pronouncer = pronouncer,
+                        understandPath = quizUnderstandPath,
                     )
                     LearnSection.Alphabet -> AlphabetScreen(
                         progress = progress,

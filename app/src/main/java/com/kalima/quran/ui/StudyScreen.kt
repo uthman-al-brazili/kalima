@@ -70,6 +70,8 @@ import com.kalima.quran.data.ReviewSchedule
 import com.kalima.quran.data.SpacedRepetition
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.UnderstandPathId
+import com.kalima.quran.data.UnderstandPathProgress
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.WordStatus
 import com.kalima.quran.data.limitNewWords
@@ -98,6 +100,8 @@ fun StudyScreen(
     onToggleAlreadyKnown: (String) -> Unit,
     onOpenFoundations: () -> Unit,
     onOpenQuiz: () -> Unit,
+    onSelectUnderstandPath: (UnderstandPathId?) -> Unit,
+    onAdvanceUnderstandPath: () -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
     onLaunchTargetHandled: (Long) -> Unit = {},
@@ -110,18 +114,29 @@ fun StudyScreen(
     val coroutineScope = rememberCoroutineScope()
     val excludedMessage = stringResource(R.string.word_excluded_message)
     val undoLabel = stringResource(R.string.undo)
-    val scopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
-    val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
+    val activePathState = remember(progress) {
+        progress.activeUnderstandPath?.let { pathId ->
+            UnderstandPathProgress.calculate(progress, pathId, WordRepository.words)
+        }
+    }
+    val scopeKey = activePathState?.let { state ->
+        "understand:${state.definition.id.name}:${state.currentStageIndex}"
+    } ?: progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
+    val selectionKey = if (activePathState == null) {
+        progress.selectedSurahs.sorted().joinToString(",")
+    } else {
+        "guided"
+    }
     val selectedWords = remember(
         scopeKey,
         selectionKey,
         progress.customStudyIds,
     ) {
-        WordRepository.wordsFor(
-            progress.studyScopes,
-            progress.selectedSurahs,
-            progress.customStudyIds,
-        )
+        activePathState?.unlockedWords ?: WordRepository.wordsFor(
+                progress.studyScopes,
+                progress.selectedSurahs,
+                progress.customStudyIds,
+            )
     }
     val availableWords = remember(
         selectedWords,
@@ -212,7 +227,12 @@ fun StudyScreen(
         }
     }
     val mission = remember(progress, availableWords, missionNow) {
-        buildDailyMissionState(progress, availableWords, now = missionNow)
+        buildDailyMissionState(
+            progress,
+            availableWords,
+            now = missionNow,
+            restrictAnswersToAvailableWords = activePathState != null,
+        )
     }
     LaunchedEffect(missionDate) {
         if (missionSessionDate != missionDate.toString()) {
@@ -227,10 +247,13 @@ fun StudyScreen(
     if (showMission && launchTarget == null) {
         DailyMissionScreen(
             mission = mission,
+            progress = progress,
             streakDays = progress.streakDays,
             canStart = words.isNotEmpty(),
             lockScreenEnabled = progress.lockScreenEnabled,
             onEnableLockScreen = onEnableLockScreen,
+            onSelectUnderstandPath = onSelectUnderstandPath,
+            onAdvanceUnderstandPath = onAdvanceUnderstandPath,
             onOpenQuiz = onOpenQuiz,
             onStart = {
                 sessionWordIds = arrayListOf()

@@ -143,7 +143,10 @@ class ProgressStore private constructor(context: Context) {
     fun answerQuiz(wordId: String, correct: Boolean) {
         val date = today()
         val previous = refreshDayIfNeeded(_progress.value, date)
-        persist(QuizProgress.record(previous, wordId, correct, date), date)
+        persist(
+            markUnderstandPathCompleted(QuizProgress.record(previous, wordId, correct, date)),
+            date,
+        )
     }
 
     fun answerAlphabetPractice(masteryKey: String, correct: Boolean) {
@@ -194,7 +197,7 @@ class ProgressStore private constructor(context: Context) {
         }
         val lastStudyDate = preferences.getString(KEY_LAST_STUDY_DATE, null)
             ?.let(LocalDate::parse)
-        val updated = QuizProgress.record(previous, wordId, correct, date).copy(
+        val updated = markUnderstandPathCompleted(QuizProgress.record(previous, wordId, correct, date).copy(
             learnedIds = learnedIds,
             reviewingIds = reviewingIds,
             todayAnsweredIds = previous.todayAnsweredIds + wordId,
@@ -204,7 +207,7 @@ class ProgressStore private constructor(context: Context) {
                 previous.reviewEvents,
                 ReviewEvent(moment, wordId, correct, wasNew, source),
             ),
-        )
+        ))
         preferences.edit { putString(KEY_LAST_STUDY_DATE, date.toString()) }
         persist(
             updated,
@@ -255,6 +258,44 @@ class ProgressStore private constructor(context: Context) {
                 // Keep the previous identifier for older app versions and integrations.
                 studyScope = scopes.minBy(StudyScope::ordinal),
                 selectedSurahs = selectedSurahs,
+            ),
+            today(),
+        )
+    }
+
+    fun setActiveUnderstandPath(pathId: UnderstandPathId?) {
+        val current = _progress.value
+        persist(
+            current.copy(
+                activeUnderstandPath = pathId,
+                understandPathStartedOn = when {
+                    pathId == null -> current.understandPathStartedOn
+                    pathId == current.activeUnderstandPath -> current.understandPathStartedOn ?: today()
+                    else -> today()
+                },
+                activeUnderstandPathStage = if (pathId == current.activeUnderstandPath) {
+                    current.activeUnderstandPathStage
+                } else {
+                    0
+                },
+                currentStudyWordId = null,
+            ),
+            today(),
+        )
+    }
+
+    fun advanceUnderstandPathStage() {
+        val current = _progress.value
+        val pathId = current.activeUnderstandPath ?: return
+        val pathState = UnderstandPathProgress.calculate(current, pathId, WordRepository.words)
+        if (!pathState.currentStageReadyToAdvance) return
+        val nextStage = (current.activeUnderstandPathStage + 1)
+            .coerceAtMost(pathState.definition.stages.lastIndex)
+        if (nextStage == current.activeUnderstandPathStage) return
+        persist(
+            current.copy(
+                activeUnderstandPathStage = nextStage,
+                currentStudyWordId = null,
             ),
             today(),
         )
@@ -442,11 +483,13 @@ class ProgressStore private constructor(context: Context) {
 
     private fun createLockScreenSession(preview: Boolean): LockScreenSession? {
         val current = _progress.value
-        val selectedSource = WordRepository.wordsFor(
-            current.studyScopes,
-            current.selectedSurahs,
-            current.customStudyIds,
-        )
+        val selectedSource = current.activeUnderstandPath?.let { pathId ->
+            UnderstandPathProgress.calculate(current, pathId, WordRepository.words).unlockedWords
+        } ?: WordRepository.wordsFor(
+                current.studyScopes,
+                current.selectedSurahs,
+                current.customStudyIds,
+            )
         val available = current.limitNewWords(selectedSource)
         val quizOptions = selectedSource.filterNot { it.id in current.alreadyKnownIds }
         val source = if (current.spacedRepetitionEnabled) {
@@ -807,6 +850,19 @@ class ProgressStore private constructor(context: Context) {
                 .orEmpty()
                 .mapNotNull(String::toIntOrNull)
                 .filterTo(mutableSetOf()) { it in AVAILABLE_SURAHS },
+            activeUnderstandPath = preferences.getString(KEY_ACTIVE_UNDERSTAND_PATH, null)
+                ?.let { stored -> UnderstandPathId.entries.firstOrNull { it.name == stored } },
+            understandPathStartedOn = preferences.getString(KEY_UNDERSTAND_PATH_STARTED_ON, null)
+                ?.let { stored -> runCatching { LocalDate.parse(stored) }.getOrNull() },
+            activeUnderstandPathStage = preferences.getInt(KEY_ACTIVE_UNDERSTAND_PATH_STAGE, 0)
+                .coerceAtLeast(0),
+            completedUnderstandPaths = preferences
+                .getStringSet(KEY_COMPLETED_UNDERSTAND_PATHS, emptySet())
+                .orEmpty()
+                .mapNotNull { stored ->
+                    UnderstandPathId.entries.firstOrNull { it.name == stored }
+                }
+                .toSet(),
             quizCorrectDays = decodeQuizCorrectDays(
                 preferences.getStringSet(KEY_QUIZ_CORRECT_DAYS, emptySet()).orEmpty(),
             ),
@@ -911,6 +967,17 @@ class ProgressStore private constructor(context: Context) {
             putString(KEY_STUDY_SCOPE, progress.studyScope.name)
             putStringSet(KEY_SELECTED_STUDY_SCOPES, progress.studyScopes.mapTo(mutableSetOf()) { it.name })
             putStringSet(KEY_SELECTED_SURAHS, progress.selectedSurahs.map(Int::toString).toSet())
+            progress.activeUnderstandPath?.let {
+                putString(KEY_ACTIVE_UNDERSTAND_PATH, it.name)
+            } ?: remove(KEY_ACTIVE_UNDERSTAND_PATH)
+            progress.understandPathStartedOn?.let {
+                putString(KEY_UNDERSTAND_PATH_STARTED_ON, it.toString())
+            } ?: remove(KEY_UNDERSTAND_PATH_STARTED_ON)
+            putInt(KEY_ACTIVE_UNDERSTAND_PATH_STAGE, progress.activeUnderstandPathStage)
+            putStringSet(
+                KEY_COMPLETED_UNDERSTAND_PATHS,
+                progress.completedUnderstandPaths.mapTo(mutableSetOf()) { it.name },
+            )
             putStringSet(KEY_QUIZ_CORRECT_DAYS, encodeQuizCorrectDays(progress.quizCorrectDays))
             putInt(KEY_QUIZ_CORRECT_ANSWERS, progress.quizCorrectAnswers)
             putInt(KEY_QUIZ_TOTAL_ANSWERS, progress.quizTotalAnswers)
@@ -974,6 +1041,17 @@ class ProgressStore private constructor(context: Context) {
         _progress.value = progress
     }
 
+    private fun markUnderstandPathCompleted(progress: StudyProgress): StudyProgress {
+        val pathId = progress.activeUnderstandPath ?: return progress
+        if (pathId in progress.completedUnderstandPaths) return progress
+        val path = UnderstandPathProgress.calculate(progress, pathId, WordRepository.words)
+        return if (path.meetsCompletionGoal) {
+            progress.copy(completedUnderstandPaths = progress.completedUnderstandPaths + pathId)
+        } else {
+            progress
+        }
+    }
+
     private fun decodeQuizCorrectDays(entries: Set<String>): Map<String, Set<String>> =
         entries.mapNotNull { entry ->
             val separator = entry.indexOf('|')
@@ -1032,6 +1110,10 @@ class ProgressStore private constructor(context: Context) {
         private const val KEY_STUDY_SCOPE = "study_scope"
         private const val KEY_SELECTED_STUDY_SCOPES = "selected_study_scopes"
         private const val KEY_SELECTED_SURAHS = "selected_surahs"
+        private const val KEY_ACTIVE_UNDERSTAND_PATH = "active_understand_path"
+        private const val KEY_UNDERSTAND_PATH_STARTED_ON = "understand_path_started_on"
+        private const val KEY_ACTIVE_UNDERSTAND_PATH_STAGE = "active_understand_path_stage"
+        private const val KEY_COMPLETED_UNDERSTAND_PATHS = "completed_understand_paths"
         private const val KEY_QUIZ_CORRECT_DAYS = "quiz_correct_days"
         private const val KEY_QUIZ_CORRECT_ANSWERS = "quiz_correct_answers"
         private const val KEY_QUIZ_TOTAL_ANSWERS = "quiz_total_answers"

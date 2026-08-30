@@ -47,15 +47,20 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
+import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.UnderstandPathId
 import java.time.format.TextStyle
 
 @Composable
 internal fun DailyMissionScreen(
     mission: DailyMissionState,
+    progress: StudyProgress,
     streakDays: Int,
     canStart: Boolean,
     lockScreenEnabled: Boolean,
     onEnableLockScreen: () -> Unit,
+    onSelectUnderstandPath: (UnderstandPathId?) -> Unit,
+    onAdvanceUnderstandPath: () -> Unit,
     onOpenQuiz: () -> Unit,
     onStart: () -> Unit,
 ) {
@@ -91,6 +96,20 @@ internal fun DailyMissionScreen(
                     style = MaterialTheme.typography.labelLarge,
                 )
             }
+        }
+        Spacer(Modifier.height(16.dp))
+        UnderstandPathsPanel(
+            progress = progress,
+            onSelectPath = onSelectUnderstandPath,
+            onAdvancePath = onAdvanceUnderstandPath,
+        )
+        if (progress.activeUnderstandPath != null) {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                stringResource(R.string.understand_path_current_lesson),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
         Spacer(Modifier.height(20.dp))
         Card(
@@ -195,7 +214,16 @@ internal fun DailyMissionScreen(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
         ) {
-            Text(stringResource(R.string.open_quiz), fontWeight = FontWeight.SemiBold)
+            Text(
+                stringResource(
+                    if (progress.activeUnderstandPath == null) {
+                        R.string.open_quiz
+                    } else {
+                        R.string.understand_path_quiz
+                    },
+                ),
+                fontWeight = FontWeight.SemiBold,
+            )
         }
         if (!lockScreenEnabled) {
             Spacer(Modifier.height(18.dp))

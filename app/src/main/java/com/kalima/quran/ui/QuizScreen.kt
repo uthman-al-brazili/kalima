@@ -45,6 +45,8 @@ import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.UnderstandPathId
+import com.kalima.quran.data.UnderstandPathProgress
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.needsAlphabetFoundation
 import com.kalima.quran.quiz.QuizEngine
@@ -59,15 +61,21 @@ internal data class QuizSessionKey(
     val selectedSurahs: Set<Int>,
     val customStudyIds: Set<String>,
     val alreadyKnownIds: Set<String>,
+    val understandPath: UnderstandPathId?,
     val mode: QuizMode,
     val version: Int,
 )
 
-internal fun StudyProgress.quizSessionKey(mode: QuizMode, version: Int) = QuizSessionKey(
+internal fun StudyProgress.quizSessionKey(
+    mode: QuizMode,
+    version: Int,
+    understandPath: UnderstandPathId? = null,
+) = QuizSessionKey(
     studyScopes = studyScopes,
     selectedSurahs = selectedSurahs,
     customStudyIds = customStudyIds,
     alreadyKnownIds = alreadyKnownIds,
+    understandPath = understandPath,
     mode = mode,
     version = version,
 )
@@ -77,6 +85,7 @@ fun QuizScreen(
     progress: StudyProgress,
     onAnswer: (String, Boolean) -> Unit,
     pronouncer: ArabicPronouncer,
+    understandPath: UnderstandPathId? = null,
 ) {
     if (progress.needsAlphabetFoundation) {
         Column(
@@ -101,21 +110,32 @@ fun QuizScreen(
         }
         return
     }
-    val scopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
-    val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
+    val pathState = remember(progress, understandPath) {
+        understandPath?.let { pathId ->
+            UnderstandPathProgress.calculate(progress, pathId, WordRepository.words)
+        }
+    }
+    val scopeKey = understandPath?.let { "understand:${it.name}" }
+        ?: progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
+    val selectionKey = pathState?.currentStageIndex?.let { "stage:$it" }
+        ?: progress.selectedSurahs.sorted().joinToString(",")
     val selectedSource = remember(
         scopeKey,
         selectionKey,
         progress.customStudyIds,
     ) {
-        WordRepository.wordsFor(
-            progress.studyScopes,
-            progress.selectedSurahs,
-            progress.customStudyIds,
-        )
+        pathState?.unlockedWords ?: WordRepository.wordsFor(
+                progress.studyScopes,
+                progress.selectedSurahs,
+                progress.customStudyIds,
+            )
     }
     val selectedWords = remember(selectedSource, progress.alreadyKnownIds) {
-        selectedSource.filterNot { it.id in progress.alreadyKnownIds }
+        if (understandPath == null) {
+            selectedSource.filterNot { it.id in progress.alreadyKnownIds }
+        } else {
+            selectedSource
+        }
     }
     if (selectedWords.isEmpty()) {
         when {
@@ -140,6 +160,7 @@ fun QuizScreen(
     if (!quizStarted) {
         QuizModeStartScreen(
             mode = mode,
+            understandPath = understandPath,
             onModeChange = { modeName = it.name },
             onStart = {
                 sessionVersion += 1
@@ -148,7 +169,7 @@ fun QuizScreen(
         )
         return
     }
-    val sessionKey = progress.quizSessionKey(mode, sessionVersion)
+    val sessionKey = progress.quizSessionKey(mode, sessionVersion, understandPath)
     val sessionSeed by rememberSaveable(sessionKey) { mutableIntStateOf(Random.Default.nextInt()) }
     val targets = remember(selectedWords, mode) {
         when (mode) {
@@ -261,6 +282,7 @@ fun QuizScreen(
 @Composable
 private fun QuizModeStartScreen(
     mode: QuizMode,
+    understandPath: UnderstandPathId?,
     onModeChange: (QuizMode) -> Unit,
     onStart: () -> Unit,
 ) {
@@ -278,6 +300,23 @@ private fun QuizModeStartScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodyMedium,
         )
+        if (understandPath != null) {
+            Spacer(Modifier.height(10.dp))
+            Surface(
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text(
+                    stringResource(
+                        R.string.understand_path_quiz_scope,
+                        understandPathTitle(understandPath),
+                    ),
+                    modifier = Modifier.fillMaxWidth().padding(12.dp),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
         Spacer(Modifier.height(16.dp))
         QuizModeSelector(mode = mode, onModeChange = onModeChange)
         Spacer(Modifier.height(16.dp))

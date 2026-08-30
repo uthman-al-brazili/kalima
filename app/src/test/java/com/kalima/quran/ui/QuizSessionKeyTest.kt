@@ -3,6 +3,7 @@ package com.kalima.quran.ui
 import com.kalima.quran.data.ReviewSchedule
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.UnderstandPathId
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.quiz.QuizEngine
 import com.kalima.quran.quiz.QuizMode
@@ -46,6 +47,14 @@ class QuizSessionKeyTest {
 
         assertNotEquals(original, progress.quizSessionKey(QuizMode.Listening, version = 0))
         assertNotEquals(original, progress.quizSessionKey(QuizMode.Mixed, version = 1))
+        assertNotEquals(
+            original,
+            progress.quizSessionKey(
+                QuizMode.Mixed,
+                version = 0,
+                understandPath = UnderstandPathId.AlFatihahSevenDays,
+            ),
+        )
         assertNotEquals(
             original,
             progress.copy(alreadyKnownIds = setOf("word-1"))

@@ -50,6 +50,7 @@ import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.QuranWordAudioLocation
 import com.kalima.quran.data.QuranVerseAudioLocation
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.UnderstandPathId
 import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.ui.theme.KalimaTheme
 
@@ -82,6 +83,8 @@ fun KalimaApp(
     onShowCompleteAyahChange: (Boolean) -> Unit,
     onSpacedRepetitionEnabledChange: (Boolean) -> Unit,
     onStudyScopeChange: (StudyScope) -> Unit,
+    onSelectUnderstandPath: (UnderstandPathId?) -> Unit,
+    onAdvanceUnderstandPath: () -> Unit,
     onToggleSurah: (Int) -> Unit,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
@@ -118,6 +121,7 @@ fun KalimaApp(
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
     var selectedLearnSectionName by rememberSaveable { mutableStateOf(LearnSection.Dictionary.name) }
+    var quizUnderstandPathName by rememberSaveable { mutableStateOf<String?>(null) }
     var settingsVisible by rememberSaveable { mutableStateOf(false) }
     var handledStudyRequestId by rememberSaveable { mutableLongStateOf(NO_STUDY_REQUEST) }
     var excludedWordsRequestId by rememberSaveable { mutableLongStateOf(0L) }
@@ -271,9 +275,12 @@ fun KalimaApp(
                                 selectedName = AppTab.Learn.name
                             },
                             onOpenQuiz = {
+                                quizUnderstandPathName = progress.activeUnderstandPath?.name
                                 selectedLearnSectionName = LearnSection.Quiz.name
                                 selectedName = AppTab.Learn.name
                             },
+                            onSelectUnderstandPath = onSelectUnderstandPath,
+                            onAdvanceUnderstandPath = onAdvanceUnderstandPath,
                             launchTarget = studyLaunchTarget,
                             onLaunchTargetHandled = { requestId ->
                                 selectedName = AppTab.Study.name
@@ -293,13 +300,19 @@ fun KalimaApp(
                         AppTab.Learn -> LearnScreen(
                             progress = progress,
                             selectedSection = selectedLearnSection,
-                            onSectionSelected = { selectedLearnSectionName = it.name },
+                            onSectionSelected = {
+                                selectedLearnSectionName = it.name
+                                if (it == LearnSection.Quiz) quizUnderstandPathName = null
+                            },
                             pronouncer = pronouncer,
                             onToggleCustomList = onToggleCustomList,
                             onToggleAlreadyKnown = onToggleAlreadyKnown,
                             onShowCompleteAyahChange = onShowCompleteAyahChange,
                             openExcludedWordsRequestId = excludedWordsRequestId,
                             onQuizAnswer = onQuizAnswer,
+                            quizUnderstandPath = quizUnderstandPathName?.let { stored ->
+                                UnderstandPathId.entries.firstOrNull { it.name == stored }
+                            },
                             onCompleteAlphabetLesson = onCompleteAlphabetLesson,
                             onAlphabetPracticeAnswer = onAlphabetPracticeAnswer,
                             onStartAlphabetFoundation = onStartAlphabetFoundation,
@@ -311,6 +324,8 @@ fun KalimaApp(
                             progress = progress,
                             onStudyScopeChange = onStudyScopeChange,
                             onToggleSurah = onToggleSurah,
+                            onSelectUnderstandPath = onSelectUnderstandPath,
+                            onAdvanceUnderstandPath = onAdvanceUnderstandPath,
                             pronouncer = pronouncer,
                         )
                         }

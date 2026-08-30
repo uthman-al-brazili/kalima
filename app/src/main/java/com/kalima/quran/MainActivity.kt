@@ -126,6 +126,8 @@ class MainActivity : ComponentActivity() {
                 onShowCompleteAyahChange = store::setShowCompleteAyah,
                 onSpacedRepetitionEnabledChange = store::setSpacedRepetitionEnabled,
                 onStudyScopeChange = store::toggleStudyScope,
+                onSelectUnderstandPath = store::setActiveUnderstandPath,
+                onAdvanceUnderstandPath = store::advanceUnderstandPathStage,
                 onToggleSurah = store::toggleSurah,
                 onToggleCustomList = store::toggleCustomStudy,
                 onToggleAlreadyKnown = store::toggleAlreadyKnown,

@@ -37,11 +37,18 @@ internal fun buildDailyMissionState(
     availableWords: List<QuranWord>,
     now: Instant = Instant.now(),
     zoneId: ZoneId = ZoneId.systemDefault(),
+    restrictAnswersToAvailableWords: Boolean = false,
 ): DailyMissionState {
     val today = now.atZone(zoneId).toLocalDate()
+    val availableWordIds = if (restrictAnswersToAvailableWords) {
+        availableWords.mapTo(mutableSetOf(), QuranWord::id)
+    } else {
+        null
+    }
     val answeredWordIds = progress.reviewEvents
         .asSequence()
         .filter { event -> event.timestamp.atZone(zoneId).toLocalDate() == today }
+        .filter { event -> availableWordIds == null || event.wordId in availableWordIds }
         .mapTo(mutableSetOf()) { event -> event.wordId }
     val completedWords = answeredWordIds.size
     val goalWords = progress.dailyGoal

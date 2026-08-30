@@ -3,6 +3,7 @@ package com.kalima.quran.data
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.time.Instant
+import java.time.LocalDate
 import java.util.Base64
 
 data class ProgressBackupMetadata(
@@ -48,6 +49,12 @@ object ProgressBackupCodec {
                 .sortedBy(StudyScope::ordinal)
                 .joinToString(",") { it.name },
             "selectedSurahs" to progress.selectedSurahs.sorted().joinToString(","),
+            "activeUnderstandPath" to progress.activeUnderstandPath?.name.orEmpty(),
+            "understandPathStartedOn" to progress.understandPathStartedOn?.toString().orEmpty(),
+            "activeUnderstandPathStage" to progress.activeUnderstandPathStage.toString(),
+            "completedUnderstandPaths" to progress.completedUnderstandPaths
+                .sortedBy(UnderstandPathId::ordinal)
+                .joinToString(",", transform = UnderstandPathId::name),
             "quizCorrectDays" to encodeSet(
                 progress.quizCorrectDays.mapTo(mutableSetOf()) { (id, days) ->
                     "$id|${days.sorted().joinToString(",")}"
@@ -195,6 +202,26 @@ object ProgressBackupCodec {
             }
             ?.toSet()
             .orEmpty()
+        val activeUnderstandPath = values["activeUnderstandPath"]
+            ?.ifBlank { null }
+            ?.let { stored ->
+                UnderstandPathId.entries.firstOrNull { it.name == stored }
+                    ?: throw invalid("Backup has an invalid understanding path")
+            }
+        val understandPathStartedOn = values["understandPathStartedOn"]
+            ?.ifBlank { null }
+            ?.let { stored ->
+                runCatching { LocalDate.parse(stored) }
+                    .getOrElse { throw invalid("Backup has an invalid understanding path date") }
+            }
+        val completedUnderstandPaths = values["completedUnderstandPaths"]
+            ?.takeIf(String::isNotBlank)
+            ?.split(',')
+            ?.mapTo(mutableSetOf()) { stored ->
+                UnderstandPathId.entries.firstOrNull { it.name == stored }
+                    ?: throw invalid("Backup has an invalid completed understanding path")
+            }
+            .orEmpty()
         val progress = StudyProgress(
             learnedIds = learned,
             reviewingIds = reviewing,
@@ -209,6 +236,11 @@ object ProgressBackupCodec {
             selectedStudyScopes = selectedStudyScopes.ifEmpty { setOf(legacyStudyScope) },
             selectedSurahs = values.required("selectedSurahs").split(',')
                 .mapNotNull(String::toIntOrNull).filterTo(mutableSetOf()) { it in 1..114 },
+            activeUnderstandPath = activeUnderstandPath,
+            understandPathStartedOn = understandPathStartedOn,
+            activeUnderstandPathStage = values.optionalInt("activeUnderstandPathStage", 0)
+                .coerceAtLeast(0),
+            completedUnderstandPaths = completedUnderstandPaths,
             quizCorrectDays = quizCorrectDays,
             quizCorrectAnswers = values.int("quizCorrectAnswers").coerceAtLeast(0),
             quizTotalAnswers = values.int("quizTotalAnswers").coerceAtLeast(0),

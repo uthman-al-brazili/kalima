@@ -46,6 +46,7 @@ import com.kalima.quran.data.QuranVocabularyCoverage
 import com.kalima.quran.data.SurahVocabularyCoverage
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.UnderstandPathId
 import com.kalima.quran.data.VocabularyCoverage
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.ReviewHistory
@@ -61,6 +62,8 @@ fun ProgressScreen(
     progress: StudyProgress,
     onStudyScopeChange: (StudyScope) -> Unit,
     onToggleSurah: (Int) -> Unit,
+    onSelectUnderstandPath: (UnderstandPathId?) -> Unit,
+    onAdvanceUnderstandPath: () -> Unit,
     pronouncer: ArabicPronouncer,
 ) {
     val scopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
@@ -126,6 +129,12 @@ fun ProgressScreen(
             stringResource(R.string.progress_subtitle),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(Modifier.height(12.dp))
+        UnderstandPathsPanel(
+            progress = progress,
+            onSelectPath = onSelectUnderstandPath,
+            onAdvancePath = onAdvanceUnderstandPath,
         )
         Spacer(Modifier.height(12.dp))
         ProgressOverviewCard(

@@ -1,6 +1,7 @@
 package com.kalima.quran.data
 
 import java.time.Instant
+import java.time.LocalDate
 
 const val QUIZ_MASTERY_DAYS = 3
 
@@ -28,6 +29,10 @@ data class StudyProgress(
     val selectedStudyScopes: Set<StudyScope> = emptySet(),
     val studyScope: StudyScope = StudyScope.All,
     val selectedSurahs: Set<Int> = emptySet(),
+    val activeUnderstandPath: UnderstandPathId? = null,
+    val understandPathStartedOn: LocalDate? = null,
+    val activeUnderstandPathStage: Int = 0,
+    val completedUnderstandPaths: Set<UnderstandPathId> = emptySet(),
     val quizCorrectDays: Map<String, Set<String>> = emptyMap(),
     val quizCorrectAnswers: Int = 0,
     val quizTotalAnswers: Int = 0,
