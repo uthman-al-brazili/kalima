@@ -89,16 +89,22 @@ class AlphabetReferenceRegressionTest {
     }
 
     @Test
-    fun `basics overview uses the compact reference header`() {
+    fun `alphabet and number tabs keep their study content separate`() {
         val study = source("ui/StudyScreen.kt")
-        val overview = study
-            .substringAfter("fun FoundationsScreen")
+        val alphabet = study
+            .substringAfter("fun AlphabetScreen")
+            .substringBefore("fun NumberScreen")
+        val numbers = study
+            .substringAfter("fun NumberScreen")
             .substringBefore("private fun WordStudyLockedScreen")
         val table = study
             .substringAfter("private fun AlphabetReferenceTable")
             .substringBefore("private fun NumberFoundationCard")
 
-        assertFalse(overview.contains("R.string.foundations_description"))
+        assertTrue(alphabet.contains("AlphabetReferenceTable"))
+        assertFalse(alphabet.contains("NumberFoundationCard"))
+        assertTrue(numbers.contains("NumberFoundationCard"))
+        assertFalse(numbers.contains("AlphabetReferenceTable"))
         assertTrue(table.contains("R.string.alphabet_reference_compact_hint"))
         assertTrue(table.contains("size = 28"))
         assertTrue(table.contains("size = 24"))

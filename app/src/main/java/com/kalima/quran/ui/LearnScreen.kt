@@ -1,6 +1,5 @@
 package com.kalima.quran.ui
 
-import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -12,14 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
@@ -28,11 +25,11 @@ import com.kalima.quran.data.StudyProgress
 
 internal enum class LearnSection(
     @param:StringRes val labelRes: Int,
-    @param:DrawableRes val iconRes: Int,
 ) {
-    Words(R.string.tab_words, R.drawable.ic_library),
-    Quiz(R.string.tab_quiz, R.drawable.ic_quiz),
-    Foundations(R.string.tab_foundations, R.drawable.ic_foundations),
+    Dictionary(R.string.tab_dictionary),
+    Quiz(R.string.tab_quiz),
+    Alphabet(R.string.tab_alphabet),
+    Numbers(R.string.tab_numbers),
 }
 
 @Composable
@@ -63,7 +60,7 @@ internal fun LearnScreen(
         Box(Modifier.fillMaxWidth().weight(1f)) {
             sectionStateHolder.SaveableStateProvider(selectedSection.name) {
                 when (selectedSection) {
-                    LearnSection.Words -> LibraryScreen(
+                    LearnSection.Dictionary -> LibraryScreen(
                         progress = progress,
                         pronouncer = pronouncer,
                         onToggleCustomList = onToggleCustomList,
@@ -76,12 +73,16 @@ internal fun LearnScreen(
                         onAnswer = onQuizAnswer,
                         pronouncer = pronouncer,
                     )
-                    LearnSection.Foundations -> FoundationsScreen(
+                    LearnSection.Alphabet -> AlphabetScreen(
                         progress = progress,
                         onCompleteAlphabetLesson = onCompleteAlphabetLesson,
                         onAlphabetPracticeAnswer = onAlphabetPracticeAnswer,
                         onStartAlphabetFoundation = onStartAlphabetFoundation,
                         onSkipAlphabetFoundation = onSkipAlphabetFoundation,
+                        pronouncer = pronouncer,
+                    )
+                    LearnSection.Numbers -> NumberScreen(
+                        progress = progress,
                         onCompleteNumberLesson = onCompleteNumberLesson,
                         onStartNumberFoundation = onStartNumberFoundation,
                         pronouncer = pronouncer,
@@ -113,12 +114,6 @@ private fun LearnSectionBar(
                     selected = selectedSection == section,
                     onClick = { onSectionSelected(section) },
                     label = { Text(stringResource(section.labelRes)) },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(section.iconRes),
-                            contentDescription = null,
-                        )
-                    },
                 )
             }
         }

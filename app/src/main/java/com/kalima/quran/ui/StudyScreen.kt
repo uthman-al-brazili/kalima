@@ -508,14 +508,12 @@ internal fun LockScreenLearningCard(
 }
 
 @Composable
-fun FoundationsScreen(
+fun AlphabetScreen(
     progress: StudyProgress,
     onCompleteAlphabetLesson: () -> Unit,
     onAlphabetPracticeAnswer: (String, Boolean) -> Unit,
     onStartAlphabetFoundation: () -> Unit,
     onSkipAlphabetFoundation: () -> Unit,
-    onCompleteNumberLesson: () -> Unit,
-    onStartNumberFoundation: () -> Unit,
     pronouncer: ArabicPronouncer,
 ) {
     if (progress.hasAlphabetFoundationLesson) {
@@ -535,7 +533,7 @@ fun FoundationsScreen(
             .padding(horizontal = 12.dp, vertical = 12.dp),
     ) {
         Text(
-            stringResource(R.string.foundations_title),
+            stringResource(R.string.alphabet_shortcut_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
         )
@@ -544,7 +542,31 @@ fun FoundationsScreen(
             progress = progress,
             onStartAlphabetFoundation = onStartAlphabetFoundation,
         )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(14.dp))
+        AlphabetReferenceTable()
+        Spacer(Modifier.height(12.dp))
+    }
+}
+
+@Composable
+fun NumberScreen(
+    progress: StudyProgress,
+    onCompleteNumberLesson: () -> Unit,
+    onStartNumberFoundation: () -> Unit,
+    pronouncer: ArabicPronouncer,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+    ) {
+        Text(
+            stringResource(R.string.numbers_shortcut_title),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.height(10.dp))
         if (progress.hasNumberFoundationLesson) {
             NumberFoundationCard(
                 progress = progress,
@@ -554,8 +576,6 @@ fun FoundationsScreen(
         } else {
             NumberAccessCard(onStartNumberFoundation = onStartNumberFoundation)
         }
-        Spacer(Modifier.height(14.dp))
-        AlphabetReferenceTable()
         Spacer(Modifier.height(12.dp))
     }
 }

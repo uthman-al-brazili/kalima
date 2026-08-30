@@ -117,7 +117,7 @@ fun KalimaApp(
     onStudyLaunchTargetHandled: (Long) -> Unit = {},
 ) {
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
-    var selectedLearnSectionName by rememberSaveable { mutableStateOf(LearnSection.Words.name) }
+    var selectedLearnSectionName by rememberSaveable { mutableStateOf(LearnSection.Dictionary.name) }
     var settingsVisible by rememberSaveable { mutableStateOf(false) }
     var handledStudyRequestId by rememberSaveable { mutableLongStateOf(NO_STUDY_REQUEST) }
     var excludedWordsRequestId by rememberSaveable { mutableLongStateOf(0L) }
@@ -129,7 +129,7 @@ fun KalimaApp(
         AppTab.entries.firstOrNull { it.name == selectedName } ?: AppTab.Study
     }
     val selectedLearnSection = LearnSection.entries
-        .firstOrNull { it.name == selectedLearnSectionName } ?: LearnSection.Words
+        .firstOrNull { it.name == selectedLearnSectionName } ?: LearnSection.Dictionary
     val pronouncer = rememberArabicPronouncer()
     val screenStateHolder = rememberSaveableStateHolder()
 
@@ -260,7 +260,7 @@ fun KalimaApp(
                             onEnableLockScreen = { onLockScreenChange(true) },
                             onOpenExcludedWords = {
                                 excludedWordsRequestId += 1L
-                                selectedLearnSectionName = LearnSection.Words.name
+                                selectedLearnSectionName = LearnSection.Dictionary.name
                                 selectedName = AppTab.Learn.name
                             },
                             pronouncer = pronouncer,
@@ -268,7 +268,7 @@ fun KalimaApp(
                             onToggleAlreadyKnown = onToggleAlreadyKnown,
                             onShowCompleteAyahChange = onShowCompleteAyahChange,
                             onOpenFoundations = {
-                                selectedLearnSectionName = LearnSection.Foundations.name
+                                selectedLearnSectionName = LearnSection.Alphabet.name
                                 selectedName = AppTab.Learn.name
                             },
                             onOpenQuiz = {

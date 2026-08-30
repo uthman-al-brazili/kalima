@@ -4,11 +4,12 @@
     <string name="tab_study">Estudar</string>
     <string name="tab_quran">Alcorão</string>
     <string name="tab_learn">Aprender</string>
-    <string name="tab_words">Palavras</string>
+    <string name="tab_dictionary">Dicionário</string>
     <string name="tab_quiz">Quiz</string>
     <string name="open_quiz">Fazer quiz</string>
     <string name="tab_progress">Progresso</string>
-    <string name="tab_foundations">Básico</string>
+    <string name="tab_alphabet">Alfabeto</string>
+    <string name="tab_numbers">Números</string>
     <string name="tab_settings">Ajustes</string>
     <string name="navigate_back">Voltar</string>
     <string name="current_time">Hora atual: %1$s</string>
