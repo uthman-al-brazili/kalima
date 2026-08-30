@@ -130,15 +130,29 @@ fun QuizScreen(
                 progress.customStudyIds,
             )
     }
-    val selectedWords = remember(selectedSource, progress.alreadyKnownIds) {
+    val pathQuizEligibleIds = remember(
+        progress.learnedIds,
+        progress.reviewingIds,
+        progress.alreadyKnownIds,
+        progress.reviewSchedules,
+    ) {
+        pathQuizEligibleWordIds(progress)
+    }
+    val selectedWords = remember(
+        selectedSource,
+        progress.alreadyKnownIds,
+        pathQuizEligibleIds,
+        understandPath,
+    ) {
         if (understandPath == null) {
             selectedSource.filterNot { it.id in progress.alreadyKnownIds }
         } else {
-            selectedSource
+            selectedSource.filter { it.id in pathQuizEligibleIds }
         }
     }
     if (selectedWords.isEmpty()) {
         when {
+            understandPath != null -> PathQuizLockedScreen()
             selectedSource.isNotEmpty() && selectedSource.all { it.id in progress.alreadyKnownIds } ->
                 AllWordsAlreadyKnownState()
             progress.studyScopes == setOf(StudyScope.Custom) -> EmptyCollectionState()
@@ -276,6 +290,32 @@ fun QuizScreen(
         if (selectedOption == null) {
             Spacer(Modifier.height(12.dp))
         }
+    }
+}
+
+internal fun pathQuizEligibleWordIds(progress: StudyProgress): Set<String> =
+    progress.learnedIds + progress.reviewingIds + progress.alreadyKnownIds +
+        progress.reviewSchedules.keys
+
+@Composable
+private fun PathQuizLockedScreen() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            stringResource(R.string.understand_path_quiz_empty_title),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            stringResource(R.string.understand_path_quiz_empty_description),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 

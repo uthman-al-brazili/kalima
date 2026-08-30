@@ -71,7 +71,6 @@ import com.kalima.quran.data.ReviewSchedule
 import com.kalima.quran.data.SpacedRepetition
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
-import com.kalima.quran.data.UnderstandPathId
 import com.kalima.quran.data.UnderstandPathProgress
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.WordStatus
@@ -100,8 +99,6 @@ fun StudyScreen(
     onToggleAlreadyKnown: (String) -> Unit,
     onOpenFoundations: () -> Unit,
     onOpenQuiz: () -> Unit,
-    onSelectUnderstandPath: (UnderstandPathId?) -> Unit,
-    onAdvanceUnderstandPath: () -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
     onLaunchTargetHandled: (Long) -> Unit = {},
@@ -226,14 +223,19 @@ fun StudyScreen(
             delay(MISSION_REFRESH_MILLIS)
         }
     }
-    val mission = remember(progress, availableWords, missionNow) {
+    val mission = remember(progress, availableWords, words, missionNow) {
         buildDailyMissionState(
             progress,
             availableWords,
+            missionWords = words,
             now = missionNow,
             restrictAnswersToAvailableWords = activePathState != null,
         )
     }
+    val pathQuizEligibleIds = pathQuizEligibleWordIds(progress)
+    val pathQuizReady = activePathState?.unlockedWords?.any { word ->
+        word.id in pathQuizEligibleIds
+    } ?: true
     LaunchedEffect(missionDate) {
         if (missionSessionDate != missionDate.toString()) {
             missionSessionDate = missionDate.toString()
@@ -258,10 +260,13 @@ fun StudyScreen(
             progress = progress,
             streakDays = progress.streakDays,
             canStart = words.isNotEmpty(),
+            sessionWordCount = missionActionWordCount(
+                mission = mission,
+                queuedWordCount = words.distinctBy(QuranWord::id).size,
+            ),
+            pathQuizReady = pathQuizReady,
             lockScreenEnabled = progress.lockScreenEnabled,
             onEnableLockScreen = onEnableLockScreen,
-            onSelectUnderstandPath = onSelectUnderstandPath,
-            onAdvanceUnderstandPath = onAdvanceUnderstandPath,
             onOpenQuiz = onOpenQuiz,
             onStart = {
                 sessionWordIds = arrayListOf()
@@ -411,6 +416,7 @@ fun StudyScreen(
         ) {
             StudyHeader(
                 progress = progress,
+                mission = mission,
                 dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
                 onViewTodayResults = if (
                     mission.goalComplete && sessionWordIds.isNotEmpty() &&
@@ -1656,10 +1662,12 @@ internal fun studyQueueSourceWords(
 @Composable
 private fun StudyHeader(
     progress: StudyProgress,
+    mission: DailyMissionState,
     dueCount: Int,
     onViewTodayResults: (() -> Unit)?,
 ) {
-    val fraction = (progress.todayCompleted.toFloat() / progress.dailyGoal).coerceIn(0f, 1f)
+    val fraction = (mission.completedWords.toFloat() / mission.goalWords.coerceAtLeast(1))
+        .coerceIn(0f, 1f)
     val scopeSummary = if (progress.studyScopes.size > 1) {
         stringResource(R.string.study_paths_combined, progress.studyScopes.size)
     } else when (progress.studyScopes.single()) {
@@ -1728,7 +1736,7 @@ private fun StudyHeader(
         )
         Spacer(Modifier.width(12.dp))
         Text(
-            "${progress.todayCompleted}/${progress.dailyGoal}",
+            "${mission.completedWords}/${mission.goalWords}",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelMedium,
         )

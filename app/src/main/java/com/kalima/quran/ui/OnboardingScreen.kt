@@ -40,25 +40,47 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.UnderstandPathId
 import com.kalima.quran.ui.theme.Forest
 import kotlin.math.roundToInt
 
-private data class StarterPath(
+internal data class StarterPlan(
     val scope: StudyScope,
+    val understandPath: UnderstandPathId?,
     @param:StringRes val titleRes: Int,
     @param:StringRes val descriptionRes: Int,
 )
 
-private val starterPaths = listOf(
-    StarterPath(StudyScope.Frequent, R.string.path_top_100, R.string.path_top_100_desc),
-    StarterPath(StudyScope.Prayer, R.string.path_prayer, R.string.path_prayer_desc),
-    StarterPath(StudyScope.ShortSurahs, R.string.path_short_surahs, R.string.path_short_surahs_desc),
-    StarterPath(StudyScope.All, R.string.path_explore_all, R.string.path_explore_all_desc),
+internal val starterPlans = listOf(
+    StarterPlan(
+        scope = StudyScope.Prayer,
+        understandPath = UnderstandPathId.AlFatihahSevenDays,
+        titleRes = R.string.understand_path_fatihah_title,
+        descriptionRes = R.string.understand_path_fatihah_description,
+    ),
+    StarterPlan(
+        scope = StudyScope.ShortSurahs,
+        understandPath = UnderstandPathId.LastTenSurahs,
+        titleRes = R.string.understand_path_last_ten_title,
+        descriptionRes = R.string.understand_path_last_ten_description,
+    ),
+    StarterPlan(
+        scope = StudyScope.Frequent,
+        understandPath = null,
+        titleRes = R.string.path_top_100,
+        descriptionRes = R.string.path_top_100_desc,
+    ),
+    StarterPlan(
+        scope = StudyScope.All,
+        understandPath = null,
+        titleRes = R.string.path_explore_all,
+        descriptionRes = R.string.path_explore_all_desc,
+    ),
 )
 
 @Composable
-fun OnboardingScreen(onComplete: (StudyScope, Int, Boolean, Boolean) -> Unit) {
-    var selectedScope by rememberSaveable { mutableStateOf(StudyScope.Frequent) }
+fun OnboardingScreen(onComplete: (StudyScope, UnderstandPathId?, Int, Boolean, Boolean) -> Unit) {
+    var selectedPlanIndex by rememberSaveable { mutableIntStateOf(2) }
     var dailyGoal by rememberSaveable { mutableIntStateOf(5) }
     var knowsArabicAlphabet by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var knowsArabicNumbers by rememberSaveable { mutableStateOf<Boolean?>(null) }
@@ -185,27 +207,27 @@ fun OnboardingScreen(onComplete: (StudyScope, Int, Boolean, Boolean) -> Unit) {
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(Modifier.height(6.dp))
-                starterPaths.chunked(2).forEachIndexed { index, rowPaths ->
+                starterPlans.chunked(2).forEachIndexed { index, rowPlans ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        rowPaths.forEach { path ->
-                            CompactPathChoice(
-                                path = path,
-                                selected = path.scope == selectedScope,
-                                onClick = { selectedScope = path.scope },
+                        rowPlans.forEach { plan ->
+                            CompactPlanChoice(
+                                plan = plan,
+                                selected = starterPlans.indexOf(plan) == selectedPlanIndex,
+                                onClick = { selectedPlanIndex = starterPlans.indexOf(plan) },
                                 modifier = Modifier.weight(1f),
                             )
                         }
                     }
-                    if (index < starterPaths.chunked(2).lastIndex) {
+                    if (index < starterPlans.chunked(2).lastIndex) {
                         Spacer(Modifier.height(8.dp))
                     }
                 }
-                val selectedPath = starterPaths.first { it.scope == selectedScope }
+                val selectedPlan = starterPlans[selectedPlanIndex]
                 Text(
-                    stringResource(selectedPath.descriptionRes),
+                    stringResource(selectedPlan.descriptionRes),
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
@@ -228,8 +250,10 @@ fun OnboardingScreen(onComplete: (StudyScope, Int, Boolean, Boolean) -> Unit) {
             Spacer(Modifier.height(8.dp))
             Button(
                 onClick = {
+                    val selectedPlan = starterPlans[selectedPlanIndex]
                     onComplete(
-                        selectedScope,
+                        selectedPlan.scope,
+                        selectedPlan.understandPath,
                         dailyGoal,
                         requireNotNull(knowsArabicAlphabet),
                         requireNotNull(knowsArabicNumbers),
@@ -290,15 +314,15 @@ private fun KnowledgeQuestion(
 }
 
 @Composable
-private fun CompactPathChoice(
-    path: StarterPath,
+private fun CompactPlanChoice(
+    plan: StarterPlan,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
         modifier = modifier
-            .height(54.dp)
+            .height(72.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(14.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
@@ -310,7 +334,7 @@ private fun CompactPathChoice(
         Row(verticalAlignment = Alignment.CenterVertically) {
             RadioButton(selected = selected, onClick = onClick)
             Text(
-                stringResource(path.titleRes),
+                stringResource(plan.titleRes),
                 modifier = Modifier.padding(end = 6.dp),
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Bold,

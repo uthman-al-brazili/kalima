@@ -352,6 +352,7 @@ class ProgressStore private constructor(context: Context) {
 
     fun completeOnboarding(
         scope: StudyScope,
+        understandPath: UnderstandPathId?,
         dailyGoal: Int,
         knowsArabicAlphabet: Boolean,
         knowsArabicNumbers: Boolean,
@@ -361,6 +362,9 @@ class ProgressStore private constructor(context: Context) {
                 onboardingComplete = true,
                 studyScope = scope,
                 selectedStudyScopes = setOf(scope),
+                activeUnderstandPath = understandPath,
+                understandPathStartedOn = understandPath?.let { today() },
+                activeUnderstandPathStage = 0,
                 dailyGoal = dailyGoal.coerceIn(3, 20),
                 alphabetCourseRequested = !knowsArabicAlphabet,
                 alphabetFoundationRequired = !knowsArabicAlphabet,

@@ -73,6 +73,71 @@ class StudyMissionTest {
     }
 
     @Test
+    fun `mission goal is capped by the words that can actually be completed`() {
+        val freshWords = (1..4).map { index -> word("fresh-$index") }
+
+        val mission = buildDailyMissionState(
+            progress = StudyProgress(dailyGoal = 5),
+            availableWords = freshWords,
+            now = now,
+            zoneId = zone,
+        )
+
+        assertEquals(0, mission.completedWords)
+        assertEquals(4, mission.goalWords)
+        assertEquals(4, mission.remainingWords)
+        assertEquals(4, mission.newWordsReady)
+    }
+
+    @Test
+    fun `achievable mission goal stays stable after the first queued word is completed`() {
+        val completed = word("completed")
+        val remaining = (1..3).map { index -> word("remaining-$index") }
+        val progress = StudyProgress(
+            dailyGoal = 5,
+            reviewingIds = setOf(completed.id),
+            reviewEvents = listOf(
+                ReviewEvent(now, completed.id, true, true, ReviewSource.Study),
+            ),
+        )
+
+        val mission = buildDailyMissionState(
+            progress = progress,
+            availableWords = listOf(completed) + remaining,
+            missionWords = remaining,
+            now = now,
+            zoneId = zone,
+        )
+
+        assertEquals(1, mission.completedWords)
+        assertEquals(4, mission.goalWords)
+        assertEquals(3, mission.remainingWords)
+    }
+
+    @Test
+    fun `mission action count is capped by words actually queued`() {
+        val mission = mission(
+            answeredWordIds = emptySet(),
+            completedWords = 0,
+            goalWords = 5,
+            goalComplete = false,
+        )
+
+        assertEquals(4, missionActionWordCount(mission, queuedWordCount = 4))
+        assertEquals(5, missionActionWordCount(mission, queuedWordCount = 12))
+    }
+
+    @Test
+    fun `understanding path management lives in progress instead of study`() {
+        val studySource = File("src/main/java/com/kalima/quran/ui/StudyMissionScreen.kt").readText()
+        val progressSource = File("src/main/java/com/kalima/quran/ui/ProgressScreen.kt").readText()
+
+        assertFalse(studySource.contains("UnderstandPathLauncher("))
+        assertTrue(progressSource.contains("UnderstandPathLauncher("))
+        assertTrue(progressSource.contains("R.string.selected_content_guided_summary"))
+    }
+
+    @Test
     fun `daily mission excludes answered ids from the prior local day`() {
         val stale = word("stale")
         val progress = StudyProgress(
@@ -85,7 +150,7 @@ class StudyMissionTest {
 
         val mission = buildDailyMissionState(
             progress = progress,
-            availableWords = listOf(stale),
+            availableWords = listOf(stale, word("fresh-1"), word("fresh-2")),
             now = now,
             zoneId = zone,
         )

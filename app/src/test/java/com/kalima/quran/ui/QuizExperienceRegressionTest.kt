@@ -1,5 +1,8 @@
 package com.kalima.quran.ui
 
+import com.kalima.quran.data.ReviewSchedule
+import com.kalima.quran.data.StudyProgress
+import java.time.Instant
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -31,6 +34,31 @@ class QuizExperienceRegressionTest {
     fun `quiz feedback always includes the tested words translation`() {
         val quiz = source("ui/QuizScreen.kt")
         assertTrue(quiz.contains("R.string.quiz_word_translation, question.word.meaning"))
+    }
+
+    @Test
+    fun `path quiz eligibility contains only encountered or claimed known words`() {
+        val progress = StudyProgress(
+            learnedIds = setOf("learned"),
+            reviewingIds = setOf("reviewing"),
+            alreadyKnownIds = setOf("known"),
+            reviewSchedules = mapOf(
+                "scheduled" to ReviewSchedule(
+                    repetitions = 0,
+                    intervalDays = 0,
+                    easeFactor = 2.5,
+                    dueAt = Instant.EPOCH,
+                    lastReviewedAt = Instant.EPOCH,
+                    lapses = 0,
+                ),
+            ),
+        )
+
+        assertEquals(
+            setOf("learned", "reviewing", "known", "scheduled"),
+            pathQuizEligibleWordIds(progress),
+        )
+        assertFalse("unseen" in pathQuizEligibleWordIds(progress))
     }
 
     private fun source(relative: String): String = sequenceOf(

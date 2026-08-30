@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.StudyProgress
-import com.kalima.quran.data.UnderstandPathId
 import java.time.format.TextStyle
 
 @Composable
@@ -57,10 +56,10 @@ internal fun DailyMissionScreen(
     progress: StudyProgress,
     streakDays: Int,
     canStart: Boolean,
+    sessionWordCount: Int,
+    pathQuizReady: Boolean,
     lockScreenEnabled: Boolean,
     onEnableLockScreen: () -> Unit,
-    onSelectUnderstandPath: (UnderstandPathId?) -> Unit,
-    onAdvanceUnderstandPath: () -> Unit,
     onOpenQuiz: () -> Unit,
     onStart: () -> Unit,
 ) {
@@ -98,12 +97,6 @@ internal fun DailyMissionScreen(
             }
         }
         Spacer(Modifier.height(16.dp))
-        UnderstandPathLauncher(
-            progress = progress,
-            onSelectPath = onSelectUnderstandPath,
-            onAdvancePath = onAdvanceUnderstandPath,
-        )
-        Spacer(Modifier.height(14.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(26.dp),
@@ -191,8 +184,8 @@ internal fun DailyMissionScreen(
                             mission.goalComplete -> stringResource(R.string.keep_practicing)
                             else -> pluralStringResource(
                                 R.plurals.continue_words,
-                                mission.remainingWords,
-                                mission.remainingWords,
+                                sessionWordCount,
+                                sessionWordCount,
                             )
                         },
                         fontWeight = FontWeight.Bold,
@@ -204,12 +197,15 @@ internal fun DailyMissionScreen(
         OutlinedButton(
             onClick = onOpenQuiz,
             modifier = Modifier.fillMaxWidth(),
+            enabled = pathQuizReady,
             shape = RoundedCornerShape(16.dp),
         ) {
             Text(
                 stringResource(
                     if (progress.activeUnderstandPath == null) {
                         R.string.open_quiz
+                    } else if (!pathQuizReady) {
+                        R.string.understand_path_quiz_locked
                     } else {
                         R.string.understand_path_quiz
                     },

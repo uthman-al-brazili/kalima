@@ -46,6 +46,8 @@ import com.kalima.quran.data.QuranVocabularyCoverage
 import com.kalima.quran.data.SurahVocabularyCoverage
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.UnderstandPathId
+import com.kalima.quran.data.UnderstandPathProgress
 import com.kalima.quran.data.VocabularyCoverage
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.ReviewHistory
@@ -60,18 +62,53 @@ import kotlinx.coroutines.withContext
 fun ProgressScreen(
     progress: StudyProgress,
     onStudyScopeChange: (StudyScope) -> Unit,
+    onSelectUnderstandPath: (UnderstandPathId?) -> Unit,
+    onAdvanceUnderstandPath: () -> Unit,
     onToggleSurah: (Int) -> Unit,
     pronouncer: ArabicPronouncer,
 ) {
-    val scopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
+    val studySetScopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val corpusWords = WordRepository.words
-    val statistics by produceState<ProgressStatistics?>(
-        initialValue = ProgressStatisticsCache.get(progress, corpusWords)
-            ?: ProgressStatisticsCache.latest(corpusWords),
-        corpusWords,
-        scopeKey,
+    val activeUnderstandPathWords = remember(progress) {
+        progress.activeUnderstandPath?.let { pathId ->
+            UnderstandPathProgress.calculate(progress, pathId, corpusWords).unlockedWords
+        }
+    }
+    val statisticsScopeKey = progress.activeUnderstandPath?.let { pathId ->
+        "understand:${pathId.name}:${progress.activeUnderstandPathStage}"
+    } ?: studySetScopeKey
+    val selectedStudySetWords = remember(
+        studySetScopeKey,
         selectionKey,
+        progress.customStudyIds,
+    ) {
+        WordRepository.wordsFor(
+            progress.studyScopes,
+            progress.selectedSurahs,
+            progress.customStudyIds,
+        )
+    }
+    val selectedStudySetLearningWordCount = remember(
+        selectedStudySetWords,
+        progress.maximumWords,
+        progress.learnedIds,
+        progress.reviewingIds,
+        progress.alreadyKnownIds,
+    ) {
+        progress.limitNewWords(selectedStudySetWords).size
+    }
+    val statistics by produceState<ProgressStatistics?>(
+        initialValue = if (activeUnderstandPathWords == null) {
+            ProgressStatisticsCache.get(progress, corpusWords)
+                ?: ProgressStatisticsCache.latest(corpusWords)
+        } else {
+            null
+        },
+        corpusWords,
+        statisticsScopeKey,
+        selectionKey,
+        activeUnderstandPathWords,
         progress.customStudyIds,
         progress.maximumWords,
         progress.learnedIds,
@@ -80,6 +117,12 @@ fun ProgressScreen(
         progress.reviewSchedules,
         progress.spacedRepetitionEnabled,
     ) {
+        activeUnderstandPathWords?.let { pathWords ->
+            value = withContext(Dispatchers.Default) {
+                calculateProgressStatistics(progress, corpusWords, pathWords)
+            }
+            return@produceState
+        }
         ProgressStatisticsCache.get(progress, corpusWords)?.let {
             value = it
             return@produceState
@@ -89,10 +132,16 @@ fun ProgressScreen(
             ProgressStatisticsCache.prepare(progress, corpusWords)
         }
     }
-    val selectedPathSummary = progress.studyScopes
+    val selectedStudySetSummary = progress.studyScopes
         .sortedBy(StudyScope::ordinal)
         .map { scope -> studyScopeDescription(scope) }
         .joinToString("  •  ")
+    val selectedContentSummary = progress.activeUnderstandPath?.let { pathId ->
+        stringResource(
+            R.string.selected_content_guided_summary,
+            understandPathTitle(pathId),
+        )
+    } ?: selectedStudySetSummary
     val today = LocalDate.now()
     val eventsToday = progress.reviewEvents.filter {
         it.timestamp.atZone(ZoneId.systemDefault()).toLocalDate() == today
@@ -146,7 +195,7 @@ fun ProgressScreen(
         Spacer(Modifier.height(12.dp))
         ExpandableSectionHeader(
             title = stringResource(R.string.selected_content),
-            summary = selectedPathSummary,
+            summary = selectedContentSummary,
             expanded = showStudySetDetails,
             showLabel = stringResource(R.string.progress_change_study_set),
             hideLabel = stringResource(R.string.progress_hide_study_set),
@@ -154,6 +203,17 @@ fun ProgressScreen(
         )
         if (showStudySetDetails) {
             Spacer(Modifier.height(8.dp))
+            UnderstandPathLauncher(
+                progress = progress,
+                onSelectPath = onSelectUnderstandPath,
+                onAdvancePath = onAdvanceUnderstandPath,
+            )
+            Spacer(Modifier.height(14.dp))
+            Text(
+                stringResource(R.string.vocabulary_sets_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
             Text(
                 stringResource(R.string.guided_paths_note),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -252,7 +312,7 @@ fun ProgressScreen(
                     Text(
                         stringResource(
                             R.string.path_selected_summary,
-                            selectedPathSummary,
+                            selectedStudySetSummary,
                         ),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -262,13 +322,11 @@ fun ProgressScreen(
                 }
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    statistics?.learningWordCount?.let { learningWordCount ->
-                        pluralStringResource(
-                            R.plurals.cards_in_current_study,
-                            learningWordCount,
-                            learningWordCount,
-                        )
-                    } ?: "—",
+                    pluralStringResource(
+                        R.plurals.cards_in_current_study,
+                        selectedStudySetLearningWordCount,
+                        selectedStudySetLearningWordCount,
+                    ),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
@@ -518,12 +576,12 @@ internal object ProgressStatisticsCache {
 private fun calculateProgressStatistics(
     progress: StudyProgress,
     corpusWords: List<QuranWord>,
-): ProgressStatistics {
-    val activeWords = WordRepository.wordsFor(
+    activeWords: List<QuranWord> = WordRepository.wordsFor(
         progress.studyScopes,
         progress.selectedSurahs,
         progress.customStudyIds,
-    )
+    ),
+): ProgressStatistics {
     val learningWords = progress.limitNewWords(activeWords)
     val recognizedWordIds = progress.learnedIds + progress.alreadyKnownIds
     val rootMastery = activeWords

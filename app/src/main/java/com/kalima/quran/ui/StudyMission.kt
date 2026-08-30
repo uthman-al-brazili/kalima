@@ -35,6 +35,7 @@ internal data class StudyCompletionPayoff(
 internal fun buildDailyMissionState(
     progress: StudyProgress,
     availableWords: List<QuranWord>,
+    missionWords: List<QuranWord> = availableWords,
     now: Instant = Instant.now(),
     zoneId: ZoneId = ZoneId.systemDefault(),
     restrictAnswersToAvailableWords: Boolean = false,
@@ -51,7 +52,17 @@ internal fun buildDailyMissionState(
         .filter { event -> availableWordIds == null || event.wordId in availableWordIds }
         .mapTo(mutableSetOf()) { event -> event.wordId }
     val completedWords = answeredWordIds.size
-    val goalWords = progress.dailyGoal
+    val queuedWordCount = missionWords
+        .asSequence()
+        .map(QuranWord::id)
+        .distinct()
+        .count { wordId -> wordId !in answeredWordIds }
+    val achievableGoalWords = completedWords + queuedWordCount
+    val goalWords = if (achievableGoalWords == 0) {
+        progress.dailyGoal
+    } else {
+        minOf(progress.dailyGoal, achievableGoalWords)
+    }
     val remainingWords = (goalWords - completedWords).coerceAtLeast(0)
     val newWordsReady = availableWords
         .asSequence()
@@ -83,6 +94,11 @@ internal fun buildDailyMissionState(
         activity = activity,
     )
 }
+
+internal fun missionActionWordCount(
+    mission: DailyMissionState,
+    queuedWordCount: Int,
+): Int = minOf(mission.remainingWords, queuedWordCount.coerceAtLeast(0))
 
 internal fun shouldOpenContextCheckpoint(
     mission: DailyMissionState,

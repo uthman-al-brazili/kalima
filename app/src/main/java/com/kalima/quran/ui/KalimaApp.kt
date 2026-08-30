@@ -88,7 +88,7 @@ fun KalimaApp(
     onToggleSurah: (Int) -> Unit,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
-    onCompleteOnboarding: (StudyScope, Int, Boolean, Boolean) -> Unit,
+    onCompleteOnboarding: (StudyScope, UnderstandPathId?, Int, Boolean, Boolean) -> Unit,
     onCompleteAlphabetLesson: () -> Unit,
     onAlphabetPracticeAnswer: (String, Boolean) -> Unit,
     onStartAlphabetFoundation: () -> Unit,
@@ -279,8 +279,6 @@ fun KalimaApp(
                                 selectedLearnSectionName = LearnSection.Quiz.name
                                 selectedName = AppTab.Learn.name
                             },
-                            onSelectUnderstandPath = onSelectUnderstandPath,
-                            onAdvanceUnderstandPath = onAdvanceUnderstandPath,
                             launchTarget = studyLaunchTarget,
                             onLaunchTargetHandled = { requestId ->
                                 selectedName = AppTab.Study.name
@@ -323,6 +321,8 @@ fun KalimaApp(
                         AppTab.Progress -> ProgressScreen(
                             progress = progress,
                             onStudyScopeChange = onStudyScopeChange,
+                            onSelectUnderstandPath = onSelectUnderstandPath,
+                            onAdvanceUnderstandPath = onAdvanceUnderstandPath,
                             onToggleSurah = onToggleSurah,
                             pronouncer = pronouncer,
                         )
