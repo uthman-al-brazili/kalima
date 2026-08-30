@@ -355,6 +355,7 @@
     <string name="alphabet_course_words_locked">Aprenda no seu ritmo ou pule por enquanto. Você pode voltar às letras a qualquer momento pela aba Básico.</string>
     <string name="skip_alphabet_for_now">Pular por enquanto</string>
     <string name="alphabet_shortcut_title">Alfabeto árabe</string>
+    <string name="foundation_course_title">Curso básico</string>
     <string name="alphabet_shortcut_description">Ouça e pratique as letras quando quiser.</string>
     <string name="alphabet_shortcut_progress">%1$d de %2$d lições concluídas</string>
     <string name="study_alphabet">Estudar</string>
@@ -396,9 +397,6 @@
     <string name="review_alphabet_symbols">Rever os símbolos</string>
     <string name="complete_alphabet_step">Concluir esta lição</string>
     <string name="finish_alphabet_course">Concluir curso do alfabeto</string>
-    <string name="number_course_title">Número indo-arábico</string>
-    <string name="next_number">Próximo número</string>
-    <string name="finish_number_course">Concluir curso de números</string>
     <string name="foundations_title">Básico de árabe</string>
     <string name="foundations_description">Ajuda opcional com o alfabeto e os algarismos indo-arábicos, separada do estudo de palavras do Alcorão.</string>
     <string name="numbers_shortcut_title">Números indo-arábicos</string>
@@ -409,7 +407,6 @@
     <string name="open_foundations">Abrir Básico</string>
     <string name="hear_letter">Ouvir esta letra</string>
     <string name="letter_audio_matches_name">A gravação offline pronuncia exatamente o nome em árabe mostrado acima.</string>
-    <string name="hear_number">Ouvir este número</string>
     <string name="foundation_voice_unavailable">Instale ou ative uma voz em árabe nas configurações de conversão de texto em voz do aparelho para ouvir formas vocálicas e números. Os nomes das 28 letras já estão disponíveis offline.</string>
     <string name="finish_alphabet_first">Conclua os fundamentos do alfabeto árabe antes de ativar o estudo de palavras fora do app.</string>
     <string name="quiz_after_alphabet_title">O quiz começa depois do alfabeto</string>
@@ -576,7 +573,7 @@
         <item quantity="other">%1$d minutos</item>
     </plurals>
     <string name="lock_safety_status">Última abertura: %1$s ms (meta ≤ %2$d ms) · %3$d bloqueios de segurança</string>
-    <string name="alphabet_reference_title">Tabela do alfabeto árabe</string>
+    <string name="alphabet_reference_title">Tabela de referência</string>
     <string name="alphabet_reference_description">Consulte e ouça offline as 28 letras da direita para a esquerda. Cada página mostra quatro letras com fatḥa (a), kasra (i), ḍamma (u) e sukūn. No alif, as vogais iniciais são escritas com hamza (أ/إ).</string>
     <string name="alphabet_reference_compact_hint">Leia da direita para a esquerda · a, i, u e sukūn</string>
     <string name="alphabet_reference_page">Página %1$d de %2$d</string>

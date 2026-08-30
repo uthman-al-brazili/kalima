@@ -532,12 +532,6 @@ fun AlphabetScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 12.dp, vertical = 12.dp),
     ) {
-        Text(
-            stringResource(R.string.alphabet_shortcut_title),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-        )
-        Spacer(Modifier.height(10.dp))
         AlphabetAccessCard(
             progress = progress,
             onStartAlphabetFoundation = onStartAlphabetFoundation,
@@ -561,12 +555,6 @@ fun NumberScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 12.dp, vertical = 12.dp),
     ) {
-        Text(
-            stringResource(R.string.numbers_shortcut_title),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-        )
-        Spacer(Modifier.height(10.dp))
         if (progress.hasNumberFoundationLesson) {
             NumberFoundationCard(
                 progress = progress,
@@ -1339,22 +1327,16 @@ private fun NumberFoundationCard(
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        stringResource(R.string.number_course_title),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        stringResource(
-                            R.string.foundation_step_progress,
-                            lessonIndex + 1,
-                            ArabicFoundations.numberLessonCount,
-                        ),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f),
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                }
+                Text(
+                    stringResource(
+                        R.string.foundation_step_progress,
+                        lessonIndex + 1,
+                        ArabicFoundations.numberLessonCount,
+                    ),
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f),
+                    style = MaterialTheme.typography.labelMedium,
+                )
                 Text(
                     "${lesson.arabicDigit}  =  ${lesson.westernDigit}",
                     color = MaterialTheme.colorScheme.primary,
@@ -1381,7 +1363,7 @@ private fun NumberFoundationCard(
                 audioResourceName = lesson.audioResourceName,
                 pronouncer = pronouncer,
                 modifier = Modifier.fillMaxWidth(),
-                labelRes = R.string.hear_number,
+                labelRes = R.string.listen_pronunciation,
             )
             Spacer(Modifier.height(8.dp))
             OutlinedButton(
@@ -1392,9 +1374,9 @@ private fun NumberFoundationCard(
                 Text(
                     stringResource(
                         if (lessonIndex == ArabicFoundations.numberLessons.lastIndex) {
-                            R.string.finish_number_course
+                            R.string.finish_action
                         } else {
-                            R.string.next_number
+                            R.string.continue_action
                         },
                     ),
                     fontWeight = FontWeight.Bold,
@@ -1417,7 +1399,7 @@ private fun NumberAccessCard(onStartNumberFoundation: () -> Unit) {
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    stringResource(R.string.numbers_shortcut_title),
+                    stringResource(R.string.foundation_course_title),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleSmall,
                 )
@@ -1454,7 +1436,7 @@ private fun AlphabetAccessCard(
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    stringResource(R.string.alphabet_shortcut_title),
+                    stringResource(R.string.foundation_course_title),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleSmall,
                 )

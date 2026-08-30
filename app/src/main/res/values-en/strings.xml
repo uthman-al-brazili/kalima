@@ -355,6 +355,7 @@
     <string name="alphabet_course_words_locked">Learn at your own pace or skip for now. You can return to the letters any time from Basics.</string>
     <string name="skip_alphabet_for_now">Skip for now</string>
     <string name="alphabet_shortcut_title">Arabic alphabet</string>
+    <string name="foundation_course_title">Foundation course</string>
     <string name="alphabet_shortcut_description">Hear and practice the letters whenever you want.</string>
     <string name="alphabet_shortcut_progress">%1$d of %2$d lessons complete</string>
     <string name="study_alphabet">Study</string>
@@ -396,9 +397,6 @@
     <string name="review_alphabet_symbols">Review the symbols</string>
     <string name="complete_alphabet_step">Complete this lesson</string>
     <string name="finish_alphabet_course">Finish alphabet course</string>
-    <string name="number_course_title">Arabic-Indic number</string>
-    <string name="next_number">Next number</string>
-    <string name="finish_number_course">Finish number course</string>
     <string name="foundations_title">Arabic basics</string>
     <string name="foundations_description">Optional help with the alphabet and Arabic-Indic digits, kept separate from Quranic word study.</string>
     <string name="numbers_shortcut_title">Arabic-Indic numbers</string>
@@ -409,7 +407,6 @@
     <string name="open_foundations">Open Basics</string>
     <string name="hear_letter">Hear this letter</string>
     <string name="letter_audio_matches_name">The offline recording says the exact Arabic name shown above.</string>
-    <string name="hear_number">Hear this number</string>
     <string name="foundation_voice_unavailable">Install or enable an Arabic voice in your device’s text-to-speech settings to hear vowel forms and numbers. All 28 letter names are already available offline.</string>
     <string name="finish_alphabet_first">Finish the Arabic alphabet foundation before enabling word study outside the app.</string>
     <string name="quiz_after_alphabet_title">The quiz starts after the alphabet</string>
@@ -576,7 +573,7 @@
         <item quantity="other">%1$d minutes</item>
     </plurals>
     <string name="lock_safety_status">Last launch: %1$s ms (budget ≤ %2$d ms) · %3$d safety skips</string>
-    <string name="alphabet_reference_title">Arabic alphabet table</string>
+    <string name="alphabet_reference_title">Reference table</string>
     <string name="alphabet_reference_description">Browse and hear all 28 letters offline from right to left. Each page shows four letters with fatḥa (a), kasra (i), ḍamma (u), and sukūn. Initial vowels on alif use hamza (أ/إ).</string>
     <string name="alphabet_reference_compact_hint">Read right to left · a, i, u, and sukūn</string>
     <string name="alphabet_reference_page">Page %1$d of %2$d</string>

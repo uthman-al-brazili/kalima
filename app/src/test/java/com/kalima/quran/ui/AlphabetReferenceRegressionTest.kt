@@ -111,6 +111,45 @@ class AlphabetReferenceRegressionTest {
     }
 
     @Test
+    fun `alphabet overview does not repeat the selected tab label`() {
+        val study = source("ui/StudyScreen.kt")
+        val alphabet = study
+            .substringAfter("fun AlphabetScreen")
+            .substringBefore("fun NumberScreen")
+        val accessCard = study
+            .substringAfter("private fun AlphabetAccessCard")
+            .substringBefore("private fun StudyActionBar")
+
+        assertFalse(alphabet.contains("R.string.alphabet_shortcut_title"))
+        assertTrue(accessCard.contains("R.string.foundation_course_title"))
+        assertFalse(accessCard.contains("R.string.alphabet_shortcut_title"))
+    }
+
+    @Test
+    fun `numbers overview does not repeat the selected tab label`() {
+        val study = source("ui/StudyScreen.kt")
+        val numbers = study
+            .substringAfter("fun NumberScreen")
+            .substringBefore("private fun WordStudyLockedScreen")
+        val lessonCard = study
+            .substringAfter("private fun NumberFoundationCard")
+            .substringBefore("private fun NumberAccessCard")
+        val accessCard = study
+            .substringAfter("private fun NumberAccessCard")
+            .substringBefore("private fun AlphabetAccessCard")
+
+        assertFalse(numbers.contains("R.string.numbers_shortcut_title"))
+        assertFalse(lessonCard.contains("R.string.number_course_title"))
+        assertFalse(lessonCard.contains("R.string.hear_number"))
+        assertFalse(lessonCard.contains("R.string.next_number"))
+        assertFalse(lessonCard.contains("R.string.finish_number_course"))
+        assertTrue(lessonCard.contains("R.string.listen_pronunciation"))
+        assertTrue(lessonCard.contains("R.string.continue_action"))
+        assertTrue(accessCard.contains("R.string.foundation_course_title"))
+        assertFalse(accessCard.contains("R.string.numbers_shortcut_title"))
+    }
+
+    @Test
     fun `foundation voice reapplies Arabic locale before speaking`() {
         val voice = source("audio/ArabicFoundationVoice.kt")
         val play = voice.substringAfter("private fun play")
