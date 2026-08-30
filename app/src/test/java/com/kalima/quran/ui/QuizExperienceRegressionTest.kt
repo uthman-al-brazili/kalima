@@ -18,6 +18,13 @@ class QuizExperienceRegressionTest {
     }
 
     @Test
+    fun `quiz progress includes the current question`() {
+        val quiz = source("ui/QuizScreen.kt")
+
+        assertTrue(quiz.contains("(currentIndex + 1).toFloat() / session.size"))
+    }
+
+    @Test
     fun `tabs save quiz and study state instead of recreating them`() {
         val app = source("ui/KalimaApp.kt")
         val quiz = source("ui/QuizScreen.kt")
@@ -34,6 +41,15 @@ class QuizExperienceRegressionTest {
     fun `quiz feedback always includes the tested words translation`() {
         val quiz = source("ui/QuizScreen.kt")
         assertTrue(quiz.contains("R.string.quiz_word_translation, question.word.meaning"))
+    }
+
+    @Test
+    fun `choosing a mode after a path quiz clears the path quiz scope`() {
+        val app = source("ui/KalimaApp.kt")
+        val quiz = source("ui/QuizScreen.kt")
+
+        assertTrue(quiz.contains("onChooseQuizMode()"))
+        assertTrue(app.contains("onChooseQuizMode = { quizUnderstandPathName = null }"))
     }
 
     @Test

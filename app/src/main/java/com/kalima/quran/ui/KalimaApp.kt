@@ -47,6 +47,7 @@ import com.kalima.quran.audio.OfflineWordAudioDownloadState
 import com.kalima.quran.data.AppThemeMode
 import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.SessionLevel
 import com.kalima.quran.data.QuranWordAudioLocation
 import com.kalima.quran.data.QuranVerseAudioLocation
 import com.kalima.quran.data.StudyScope
@@ -74,7 +75,7 @@ fun KalimaApp(
     onLockScreenQuizChange: (Boolean) -> Unit,
     onLockScreenQuizIntervalChange: (Int) -> Unit,
     onReminderChange: (Boolean) -> Unit,
-    onDailyGoalChange: (Int) -> Unit,
+    onSessionLevelChange: (SessionLevel) -> Unit,
     onMaximumWordsChange: (Int) -> Unit,
     onThemeModeChange: (AppThemeMode) -> Unit,
     onQuranFontSizeChange: (Int) -> Unit,
@@ -88,13 +89,7 @@ fun KalimaApp(
     onToggleSurah: (Int) -> Unit,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
-    onCompleteOnboarding: (StudyScope, UnderstandPathId?, Int, Boolean, Boolean) -> Unit,
-    onCompleteAlphabetLesson: () -> Unit,
-    onAlphabetPracticeAnswer: (String, Boolean) -> Unit,
-    onStartAlphabetFoundation: () -> Unit,
-    onSkipAlphabetFoundation: () -> Unit,
-    onCompleteNumberLesson: () -> Unit,
-    onStartNumberFoundation: () -> Unit,
+    onCompleteOnboarding: (StudyScope, UnderstandPathId?, SessionLevel) -> Unit,
     onOpenAppSettings: () -> Unit,
     onPreviewLockScreen: () -> Unit,
     onOpenWebsite: () -> Unit,
@@ -224,7 +219,7 @@ fun KalimaApp(
                             onThemeModeChange = onThemeModeChange,
                             onLanguageChange = onLanguageChange,
                             onReminderChange = onReminderChange,
-                            onDailyGoalChange = onDailyGoalChange,
+                            onSessionLevelChange = onSessionLevelChange,
                             onAdvancedSettingsVisibleChange = onAdvancedSettingsVisibleChange,
                             onSpacedRepetitionEnabledChange = onSpacedRepetitionEnabledChange,
                             onLockScreenChange = onLockScreenChange,
@@ -270,15 +265,13 @@ fun KalimaApp(
                             pronouncer = pronouncer,
                             onToggleCustomList = onToggleCustomList,
                             onToggleAlreadyKnown = onToggleAlreadyKnown,
-                            onOpenFoundations = {
-                                selectedLearnSectionName = LearnSection.Alphabet.name
-                                selectedName = AppTab.Learn.name
-                            },
                             onOpenQuiz = {
                                 quizUnderstandPathName = progress.activeUnderstandPath?.name
                                 selectedLearnSectionName = LearnSection.Quiz.name
                                 selectedName = AppTab.Learn.name
                             },
+                            onSessionLevelChange = onSessionLevelChange,
+                            onAdvanceUnderstandPath = onAdvanceUnderstandPath,
                             launchTarget = studyLaunchTarget,
                             onLaunchTargetHandled = { requestId ->
                                 selectedName = AppTab.Study.name
@@ -311,12 +304,7 @@ fun KalimaApp(
                             quizUnderstandPath = quizUnderstandPathName?.let { stored ->
                                 UnderstandPathId.entries.firstOrNull { it.name == stored }
                             },
-                            onCompleteAlphabetLesson = onCompleteAlphabetLesson,
-                            onAlphabetPracticeAnswer = onAlphabetPracticeAnswer,
-                            onStartAlphabetFoundation = onStartAlphabetFoundation,
-                            onSkipAlphabetFoundation = onSkipAlphabetFoundation,
-                            onCompleteNumberLesson = onCompleteNumberLesson,
-                            onStartNumberFoundation = onStartNumberFoundation,
+                            onChooseQuizMode = { quizUnderstandPathName = null },
                         )
                         AppTab.Progress -> ProgressScreen(
                             progress = progress,

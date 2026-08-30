@@ -65,6 +65,19 @@ class ContextCheckpointTest {
     }
 
     @Test
+    fun `guided checkpoint prefers a current ayah word`() {
+        val checkpoint = buildContextCheckpointQuestion(
+            practicedWords = words.take(3),
+            activeCollection = words,
+            seed = 31,
+            preferredWordIds = setOf(words[1].id),
+        )
+
+        assertNotNull(checkpoint)
+        assertEquals(words[1].id, checkpoint?.word?.id)
+    }
+
+    @Test
     fun `checkpoint is skipped when three distractors cannot be produced`() {
         val checkpoint = buildContextCheckpointQuestion(
             practicedWords = listOf(words.first()),

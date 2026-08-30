@@ -46,6 +46,7 @@ import com.kalima.quran.data.AppThemeMode
 import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.LearningWordLimiter
 import com.kalima.quran.data.LockScreenPerformanceBudget
+import com.kalima.quran.data.SessionLevel
 import com.kalima.quran.data.StudyPlan
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
@@ -66,7 +67,7 @@ fun SettingsScreen(
     onThemeModeChange: (AppThemeMode) -> Unit,
     onLanguageChange: (AppLanguage) -> Unit,
     onReminderChange: (Boolean) -> Unit,
-    onDailyGoalChange: (Int) -> Unit,
+    onSessionLevelChange: (SessionLevel) -> Unit,
     onAdvancedSettingsVisibleChange: (Boolean) -> Unit,
     onSpacedRepetitionEnabledChange: (Boolean) -> Unit,
     onLockScreenChange: (Boolean) -> Unit,
@@ -138,9 +139,6 @@ fun SettingsScreen(
         verseCount = offlineVerseAudioLocations.size,
     )
     var showAudioDownloadConfirmation by rememberSaveable { mutableStateOf(false) }
-    var dailyGoalSlider by rememberSaveable(progress.dailyGoal) {
-        mutableFloatStateOf(progress.dailyGoal.toFloat())
-    }
 
     if (showAudioDownloadConfirmation) {
         AlertDialog(
@@ -316,26 +314,19 @@ fun SettingsScreen(
                     Switch(checked = progress.reminderEnabled, onCheckedChange = onReminderChange)
                 }
                 Spacer(Modifier.height(20.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(stringResource(R.string.daily_goal), fontWeight = FontWeight.Bold)
-                    Text(
-                        pluralStringResource(
-                            R.plurals.words_count,
-                            dailyGoalSlider.roundToInt(),
-                            dailyGoalSlider.roundToInt(),
-                        ),
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-                Slider(
-                    value = dailyGoalSlider,
-                    onValueChange = { dailyGoalSlider = it },
-                    onValueChangeFinished = {
-                        onDailyGoalChange(dailyGoalSlider.roundToInt())
-                    },
-                    valueRange = 3f..20f,
-                    steps = 16,
+                Text(
+                    stringResource(R.string.default_session_level),
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    stringResource(R.string.default_session_level_description),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Spacer(Modifier.height(8.dp))
+                SessionLevelSelector(
+                    selected = progress.sessionLevel,
+                    onSelected = onSessionLevelChange,
                 )
             }
         }

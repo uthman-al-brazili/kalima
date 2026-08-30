@@ -8,6 +8,12 @@ class StudyPresentationTest {
     private val words = WordRepository.words.take(2)
 
     @Test
+    fun `session progress shows the current word as a one based position`() {
+        assertEquals(1, studySessionPosition(completedWords = 0, sessionWords = 4))
+        assertEquals(4, studySessionPosition(completedWords = 3, sessionWords = 4))
+    }
+
+    @Test
     fun `active introduction remains visible after it leaves the review queue`() {
         assertEquals(
             listOf(words.first()),

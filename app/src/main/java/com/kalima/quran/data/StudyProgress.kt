@@ -11,11 +11,25 @@ enum class AppThemeMode {
     Dark,
 }
 
+enum class SessionLevel(val newWordLimit: Int, val requestsContextCheckpoint: Boolean) {
+    Quick(newWordLimit = 0, requestsContextCheckpoint = false),
+    Steady(newWordLimit = 2, requestsContextCheckpoint = false),
+    Deep(newWordLimit = 5, requestsContextCheckpoint = true),
+    ;
+
+    companion object {
+        fun fromPersistedName(stored: String?): SessionLevel =
+            entries.firstOrNull { it.name == stored } ?: Steady
+    }
+}
+
 data class StudyProgress(
     val learnedIds: Set<String> = emptySet(),
     val reviewingIds: Set<String> = emptySet(),
     val alreadyKnownIds: Set<String> = emptySet(),
     val todayAnsweredIds: Set<String> = emptySet(),
+    val sessionLevel: SessionLevel = SessionLevel.Steady,
+    /** Retained so older preferences and backups can still round-trip. */
     val dailyGoal: Int = 5,
     val maximumWords: Int = LearningWordLimiter.UNLIMITED,
     val streakDays: Int = 0,

@@ -26,7 +26,6 @@ import com.kalima.quran.data.ProgressBackupCodec
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.initialize
-import com.kalima.quran.data.needsAlphabetFoundation
 import com.kalima.quran.data.preloadQuranFirstPage
 import com.kalima.quran.audio.OfflineWordAudioManager
 import com.kalima.quran.lockscreen.LockScreenStudyService
@@ -117,7 +116,7 @@ class MainActivity : ComponentActivity() {
                 onLockScreenQuizChange = store::setLockScreenQuizEnabled,
                 onLockScreenQuizIntervalChange = store::setLockScreenQuizInterval,
                 onReminderChange = ::changeReminder,
-                onDailyGoalChange = store::setDailyGoal,
+                onSessionLevelChange = store::setSessionLevel,
                 onMaximumWordsChange = store::setMaximumWords,
                 onThemeModeChange = store::setThemeMode,
                 onQuranFontSizeChange = store::setQuranFontSize,
@@ -132,12 +131,6 @@ class MainActivity : ComponentActivity() {
                 onToggleCustomList = store::toggleCustomStudy,
                 onToggleAlreadyKnown = store::toggleAlreadyKnown,
                 onCompleteOnboarding = store::completeOnboarding,
-                onCompleteAlphabetLesson = store::completeNextAlphabetLesson,
-                onAlphabetPracticeAnswer = store::answerAlphabetPractice,
-                onStartAlphabetFoundation = store::startAlphabetFoundation,
-                onSkipAlphabetFoundation = store::skipAlphabetFoundation,
-                onCompleteNumberLesson = store::completeNextNumberLesson,
-                onStartNumberFoundation = store::startNumberFoundation,
                 onOpenAppSettings = ::openAppSettings,
                 onPreviewLockScreen = ::previewLockScreen,
                 onOpenWebsite = ::openWebsite,
@@ -217,10 +210,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun changeLockScreen(enabled: Boolean) {
-        if (enabled && progressStore.progress.value.needsAlphabetFoundation) {
-            Toast.makeText(this, R.string.finish_alphabet_first, Toast.LENGTH_LONG).show()
-            return
-        }
         if (!enabled) {
             progressStore.setLockScreenEnabled(false)
             LockScreenStudyService.stop(this)
@@ -279,10 +268,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun changeReminder(enabled: Boolean) {
-        if (enabled && progressStore.progress.value.needsAlphabetFoundation) {
-            Toast.makeText(this, R.string.finish_alphabet_first, Toast.LENGTH_LONG).show()
-            return
-        }
         if (!enabled) {
             progressStore.setReminderEnabled(false)
             ReminderScheduler.cancel(this)

@@ -70,13 +70,15 @@ import com.kalima.quran.data.ReviewSchedule
 import com.kalima.quran.data.SpacedRepetition
 import com.kalima.quran.data.StudyPlan
 import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.SessionLevel
+import com.kalima.quran.data.StudySessionPlanner
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.WordStatus
 import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.data.hasNumberFoundationLesson
 import com.kalima.quran.data.hasAlphabetFoundationLesson
-import com.kalima.quran.data.needsAlphabetFoundation
+import com.kalima.quran.data.isStudySessionComplete
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -96,16 +98,13 @@ fun StudyScreen(
     onOpenExcludedWords: () -> Unit,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
-    onOpenFoundations: () -> Unit,
     onOpenQuiz: () -> Unit,
+    onSessionLevelChange: (SessionLevel) -> Unit,
+    onAdvanceUnderstandPath: () -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
     onLaunchTargetHandled: (Long) -> Unit = {},
 ) {
-    if (progress.needsAlphabetFoundation) {
-        WordStudyLockedScreen(onOpenFoundations = onOpenFoundations)
-        return
-    }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val excludedMessage = stringResource(R.string.word_excluded_message)
@@ -155,44 +154,46 @@ fun StudyScreen(
         }
         return
     }
-    var activeIntroductionId by rememberSaveable(scopeKey, selectionKey) {
-        mutableStateOf<String?>(null)
-    }
-    val queueSourceWords = remember(availableWords, requestedWord?.id) {
-        studyQueueSourceWords(availableWords, requestedWord)
-    }
-    val focusWordIds = remember(studyPlan.focusWords) {
-        studyPlan.focusWords.mapTo(mutableSetOf(), QuranWord::id)
-    }
-    val queuedWords = remember(
-        queueSourceWords,
-        focusWordIds,
-        progress.reviewSchedules,
-        progress.spacedRepetitionEnabled,
+    var missionNow by remember { mutableStateOf(Instant.now()) }
+    val missionDate = missionNow.atZone(ZoneId.systemDefault()).toLocalDate()
+    val previewPlan = remember(
+        progress,
+        studyPlan,
+        availableWords,
+        missionNow,
     ) {
         val dailyStart = LocalDate.now().toEpochDay().toInt()
-        StudyPlan.orderedQueue(
-            words = queueSourceWords,
-            focusWordIds = focusWordIds,
-            schedules = progress.reviewSchedules,
-            spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
-            now = Instant.now(),
+        StudySessionPlanner.build(
+            progress = progress,
+            selection = studyPlan,
+            availableWords = availableWords,
+            now = missionNow,
             newStartIndex = dailyStart,
         )
     }
-    val words = remember(queuedWords, queueSourceWords, activeIntroductionId) {
-        studyWordsForPresentation(queuedWords, queueSourceWords, activeIntroductionId)
-    }
-    var missionNow by remember { mutableStateOf(Instant.now()) }
-    val missionDate = missionNow.atZone(ZoneId.systemDefault()).toLocalDate()
     var showMission by rememberSaveable(scopeKey, selectionKey, missionDate) { mutableStateOf(true) }
     var showCompletion by rememberSaveable(scopeKey, selectionKey, missionDate) { mutableStateOf(false) }
     var checkpointComplete by rememberSaveable(scopeKey, selectionKey) { mutableStateOf(false) }
-    var automaticCheckpointEligible by rememberSaveable(scopeKey, selectionKey) {
+    var plannedWordIds by rememberSaveable(scopeKey, selectionKey, missionDate) {
+        mutableStateOf(arrayListOf<String>())
+    }
+    var plannedReviewWordIds by rememberSaveable(scopeKey, selectionKey) {
+        mutableStateOf(arrayListOf<String>())
+    }
+    var plannedLessonWordIds by rememberSaveable(scopeKey, selectionKey) {
+        mutableStateOf(arrayListOf<String>())
+    }
+    var completedSessionWordIds by rememberSaveable(scopeKey, selectionKey, missionDate) {
+        mutableStateOf(arrayListOf<String>())
+    }
+    var sessionCheckpointRequested by rememberSaveable(scopeKey, selectionKey) {
         mutableStateOf(false)
     }
-    var sessionWordIds by rememberSaveable(scopeKey, selectionKey, missionDate) {
+    var sessionPreferredContextWordIds by rememberSaveable(scopeKey, selectionKey) {
         mutableStateOf(arrayListOf<String>())
+    }
+    var sessionLevelName by rememberSaveable(scopeKey, selectionKey) {
+        mutableStateOf(SessionLevel.Steady.name)
     }
     var missionSessionDate by rememberSaveable(scopeKey, selectionKey) {
         mutableStateOf(missionDate.toString())
@@ -213,14 +214,8 @@ fun StudyScreen(
             delay(MISSION_REFRESH_MILLIS)
         }
     }
-    val mission = remember(progress, availableWords, words, missionNow) {
-        buildDailyMissionState(
-            progress,
-            availableWords,
-            missionWords = words,
-            now = missionNow,
-            restrictAnswersToAvailableWords = activePathState != null,
-        )
+    val missionActivity = remember(progress.reviewEvents, missionNow) {
+        buildMissionActivity(progress, missionNow)
     }
     val pathQuizEligibleIds = pathQuizEligibleWordIds(progress)
     val pathQuizReady = activePathState?.unlockedWords?.any { word ->
@@ -232,51 +227,64 @@ fun StudyScreen(
             showMission = true
             showCompletion = false
             checkpointComplete = false
-            automaticCheckpointEligible = false
-            sessionWordIds = arrayListOf()
+            plannedWordIds = arrayListOf()
+            plannedReviewWordIds = arrayListOf()
+            plannedLessonWordIds = arrayListOf()
+            completedSessionWordIds = arrayListOf()
+            sessionCheckpointRequested = false
+            sessionPreferredContextWordIds = arrayListOf()
         }
     }
     if (
         shouldShowDailyMission(
             showMission = showMission,
             hasActiveUnderstandPath = activePathState != null,
-            hasQueuedWords = words.isNotEmpty(),
+            hasQueuedWords = previewPlan.wordIds.isNotEmpty(),
             showCompletion = showCompletion,
             hasLaunchTarget = launchTarget != null,
         )
     ) {
         DailyMissionScreen(
-            mission = mission,
+            plan = previewPlan,
             progress = progress,
             streakDays = progress.streakDays,
-            canStart = words.isNotEmpty(),
-            sessionWordCount = missionActionWordCount(
-                mission = mission,
-                queuedWordCount = words.distinctBy(QuranWord::id).size,
-            ),
+            activity = missionActivity,
             pathQuizReady = pathQuizReady,
             lockScreenEnabled = progress.lockScreenEnabled,
             onEnableLockScreen = onEnableLockScreen,
             onOpenQuiz = onOpenQuiz,
+            onSessionLevelChange = onSessionLevelChange,
             onStart = {
-                sessionWordIds = arrayListOf()
+                routedStudyWordId = null
+                plannedWordIds = ArrayList(previewPlan.wordIds)
+                plannedReviewWordIds = ArrayList(previewPlan.reviewWordIds)
+                plannedLessonWordIds = ArrayList(previewPlan.lessonWordIds)
+                completedSessionWordIds = arrayListOf()
                 checkpointComplete = false
-                automaticCheckpointEligible = !mission.goalComplete
+                sessionCheckpointRequested = previewPlan.requestsContextCheckpoint
+                sessionPreferredContextWordIds = ArrayList(previewPlan.preferredContextWordIds)
+                sessionLevelName = previewPlan.level.name
                 showMission = false
             },
         )
         return
     }
-    if (showCompletion && sessionWordIds.isNotEmpty()) {
-        val reviewedWords = sessionWordIds.mapNotNull(WordRepository::wordById)
+    if (showCompletion && completedSessionWordIds.isNotEmpty()) {
+        val reviewedWords = completedSessionWordIds.mapNotNull(WordRepository::wordById)
         val recognizedWordIds = progress.learnedIds + progress.reviewingIds +
-            progress.alreadyKnownIds + sessionWordIds
-        val checkpoint = remember(reviewedWords, availableWords, missionDate) {
-            buildContextCheckpointQuestion(
+            progress.alreadyKnownIds + completedSessionWordIds
+        val checkpoint = remember(
+            reviewedWords,
+            availableWords,
+            missionDate,
+            sessionPreferredContextWordIds,
+        ) {
+            if (sessionCheckpointRequested) buildContextCheckpointQuestion(
                 practicedWords = reviewedWords,
                 activeCollection = availableWords,
                 seed = missionDate.toEpochDay().toInt(),
-            )
+                preferredWordIds = sessionPreferredContextWordIds.toSet(),
+            ) else null
         }
         if (!checkpointComplete && checkpoint != null) {
             ContextCheckpointScreen(
@@ -298,15 +306,41 @@ fun StudyScreen(
             payoff = payoff,
             recognizedWordIds = recognizedWordIds,
             pronouncer = pronouncer,
+            onAdvancePath = if (
+                SessionLevel.fromPersistedName(sessionLevelName) != SessionLevel.Quick &&
+                plannedLessonWordIds.isNotEmpty() &&
+                activePathState?.currentStageReadyToAdvance == true &&
+                activePathState.currentStageIndex < activePathState.definition.stages.lastIndex
+            ) {
+                {
+                    onAdvanceUnderstandPath()
+                    routedStudyWordId = null
+                    showCompletion = false
+                    showMission = true
+                    plannedWordIds = arrayListOf()
+                    completedSessionWordIds = arrayListOf()
+                }
+            } else {
+                null
+            },
             onFinish = {
+                routedStudyWordId = null
                 showCompletion = false
                 showMission = true
                 checkpointComplete = false
-                automaticCheckpointEligible = false
-                sessionWordIds = arrayListOf()
+                plannedWordIds = arrayListOf()
+                plannedReviewWordIds = arrayListOf()
+                plannedLessonWordIds = arrayListOf()
+                completedSessionWordIds = arrayListOf()
+                sessionCheckpointRequested = false
+                sessionPreferredContextWordIds = arrayListOf()
             },
         )
         return
+    }
+    val words = remember(plannedWordIds, requestedWord?.id) {
+        val planned = plannedWordIds.mapNotNull(WordRepository::wordById)
+        if (planned.isNotEmpty()) planned else listOfNotNull(requestedWord)
     }
     if (words.isEmpty()) {
         Box(Modifier.fillMaxSize()) {
@@ -319,17 +353,16 @@ fun StudyScreen(
         return
     }
     val session = remember(words, requestedWord?.id) {
-        val resumedWord = progress.currentStudyWordId
-            ?.let { currentId -> words.firstOrNull { it.id == currentId } }
         buildStudySession(
             words = words,
-            defaultWord = resumedWord ?: words.first(),
+            defaultWord = words.first(),
             requestedWord = requestedWord,
         )
     }
     var currentWordId by rememberSaveable(
         scopeKey,
         selectionKey,
+        plannedWordIds.joinToString(","),
     ) { mutableStateOf(session.first().id) }
     val displayedWordId = displayedStudyWordId(currentWordId, launchTarget)
     val word = WordRepository.wordById(displayedWordId) ?: session.first()
@@ -342,32 +375,28 @@ fun StudyScreen(
     val moveToNextWord = {
         routedStudyWordId = null
         val currentIndex = session.indexOfFirst { it.id == word.id }
-        val nextWord = if (currentIndex < 0) session.first() else session[(currentIndex + 1) % session.size]
+        val nextWord = if (currentIndex < 0) {
+            session.first()
+        } else {
+            session.drop(currentIndex + 1)
+                .firstOrNull { it.id !in completedSessionWordIds }
+                ?: session.first()
+        }
         currentWordId = nextWord.id
         onCurrentWordChange(nextWord.id)
     }
-    val finishCurrentWord: (Boolean) -> Unit = { wordCompletionAlreadyRecorded ->
-        sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
-        if (
-            shouldOpenContextCheckpoint(
-                mission = mission,
-                wordId = word.id,
-                dailyGoalWasIncompleteAtMissionStart = automaticCheckpointEligible,
-                wordCompletionAlreadyRecorded = wordCompletionAlreadyRecorded,
-            )
-        ) {
-            automaticCheckpointEligible = false
+    val finishCurrentWord = {
+        val completed = (completedSessionWordIds + word.id).distinct()
+        completedSessionWordIds = ArrayList(completed)
+        val requiredIds = if (plannedWordIds.isNotEmpty()) plannedWordIds else listOf(word.id)
+        if (isStudySessionComplete(requiredIds, completed)) {
             showCompletion = true
         } else {
             moveToNextWord()
         }
     }
-    val nextActionOpensCheckpoint = isNewPresentation && shouldOpenContextCheckpoint(
-        mission = mission,
-        wordId = word.id,
-        dailyGoalWasIncompleteAtMissionStart = automaticCheckpointEligible,
-        wordCompletionAlreadyRecorded = true,
-    )
+    val nextActionOpensCheckpoint = isNewPresentation && sessionCheckpointRequested &&
+        plannedWordIds.all { it == word.id || it in completedSessionWordIds }
     val scrollState = rememberScrollState()
     var scrollPositionWordId by rememberSaveable(scopeKey, selectionKey) {
         mutableStateOf<String?>(null)
@@ -387,8 +416,6 @@ fun StudyScreen(
     LaunchedEffect(word.id) {
         onCurrentWordChange(word.id)
         if (isNewPresentation) {
-            activeIntroductionId = word.id
-            sessionWordIds = ArrayList((sessionWordIds + word.id).distinct())
             onIntroduce(word.id)
         }
         if (scrollPositionWordId != word.id) {
@@ -406,22 +433,9 @@ fun StudyScreen(
         ) {
             StudyHeader(
                 progress = progress,
-                mission = mission,
-                dueCount = progress.dueReviewCount(availableWords.mapTo(mutableSetOf()) { it.id }),
-                onViewTodayResults = if (
-                    mission.goalComplete && sessionWordIds.isNotEmpty() &&
-                    !nextActionOpensCheckpoint
-                ) {
-                    {
-                        showMission = true
-                        showCompletion = false
-                        checkpointComplete = false
-                        automaticCheckpointEligible = false
-                        sessionWordIds = arrayListOf()
-                    }
-                } else {
-                    null
-                },
+                completedWords = completedSessionWordIds.size,
+                sessionWords = plannedWordIds.size.coerceAtLeast(1),
+                reviewCount = plannedReviewWordIds.size,
             )
             Spacer(Modifier.height(10.dp))
             if (!progress.lockScreenEnabled) {
@@ -443,7 +457,7 @@ fun StudyScreen(
                     val markingAsKnown = wordId !in progress.alreadyKnownIds
                     onToggleAlreadyKnown(wordId)
                     if (markingAsKnown) {
-                        moveToNextWord()
+                        finishCurrentWord()
                         coroutineScope.launch {
                             val result = snackbarHostState.showSnackbar(
                                 message = excludedMessage,
@@ -469,16 +483,15 @@ fun StudyScreen(
                 ),
                 onRevealMeaning = { meaningRevealed = true },
                 onNextWord = {
-                    activeIntroductionId = null
-                    finishCurrentWord(true)
+                    finishCurrentWord()
                 },
                 onAgain = {
                     onAnswer(word.id, false)
-                    finishCurrentWord(false)
+                    finishCurrentWord()
                 },
                 onRemembered = {
                     onAnswer(word.id, true)
-                    finishCurrentWord(false)
+                    finishCurrentWord()
                 },
             )
             Spacer(Modifier.height(16.dp))
@@ -1649,14 +1662,18 @@ internal fun studyQueueSourceWords(
     requestedWord: QuranWord?,
 ): List<QuranWord> = availableWords.ifEmpty { listOfNotNull(requestedWord) }
 
+internal fun studySessionPosition(completedWords: Int, sessionWords: Int): Int =
+    (completedWords + 1).coerceIn(1, sessionWords.coerceAtLeast(1))
+
 @Composable
 private fun StudyHeader(
     progress: StudyProgress,
-    mission: DailyMissionState,
-    dueCount: Int,
-    onViewTodayResults: (() -> Unit)?,
+    completedWords: Int,
+    sessionWords: Int,
+    reviewCount: Int,
 ) {
-    val fraction = (mission.completedWords.toFloat() / mission.goalWords.coerceAtLeast(1))
+    val currentPosition = studySessionPosition(completedWords, sessionWords)
+    val fraction = (currentPosition.toFloat() / sessionWords.coerceAtLeast(1))
         .coerceIn(0f, 1f)
     val supportingSummary = if (progress.studyScopes.size > 1) {
         stringResource(R.string.study_paths_combined, progress.studyScopes.size)
@@ -1690,8 +1707,8 @@ private fun StudyHeader(
             progress.studyScopes.size,
         )
     } ?: supportingSummary
-    val dueSummary = if (dueCount > 0) {
-        pluralStringResource(R.plurals.reviews_due, dueCount, dueCount)
+    val dueSummary = if (reviewCount > 0) {
+        pluralStringResource(R.plurals.reviews_due, reviewCount, reviewCount)
     } else {
         null
     }
@@ -1734,20 +1751,10 @@ private fun StudyHeader(
         )
         Spacer(Modifier.width(12.dp))
         Text(
-            "${mission.completedWords}/${mission.goalWords}",
+            "$currentPosition/$sessionWords",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelMedium,
         )
-    }
-    if (onViewTodayResults != null) {
-        Spacer(Modifier.height(8.dp))
-        OutlinedButton(
-            onClick = onViewTodayResults,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(14.dp),
-        ) {
-            Text(stringResource(R.string.view_today_results), fontWeight = FontWeight.SemiBold)
-        }
     }
 }
 

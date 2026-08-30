@@ -39,6 +39,7 @@ object ProgressBackupCodec {
             "reviewingIds" to encodeSet(progress.reviewingIds),
             "alreadyKnownIds" to encodeSet(progress.alreadyKnownIds),
             "todayAnsweredIds" to encodeSet(progress.todayAnsweredIds),
+            "sessionLevel" to progress.sessionLevel.name,
             "dailyGoal" to progress.dailyGoal.toString(),
             "maximumWords" to progress.maximumWords.toString(),
             "streakDays" to progress.streakDays.toString(),
@@ -227,6 +228,10 @@ object ProgressBackupCodec {
             reviewingIds = reviewing,
             alreadyKnownIds = alreadyKnown,
             todayAnsweredIds = values.idSet("todayAnsweredIds", knownWordIds),
+            sessionLevel = values["sessionLevel"]?.let { stored ->
+                SessionLevel.entries.firstOrNull { it.name == stored }
+                    ?: throw invalid("Backup has an invalid session level")
+            } ?: SessionLevel.Steady,
             dailyGoal = values.int("dailyGoal").coerceIn(3, 20),
             maximumWords = values.int("maximumWords"),
             streakDays = values.int("streakDays").coerceAtLeast(0),

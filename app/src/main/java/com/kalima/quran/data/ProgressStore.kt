@@ -278,6 +278,11 @@ class ProgressStore private constructor(context: Context) {
                 } else {
                     0
                 },
+                sessionLevel = if (pathId != null && pathId != current.activeUnderstandPath) {
+                    SessionLevel.Steady
+                } else {
+                    current.sessionLevel
+                },
                 currentStudyWordId = null,
             ),
             today(),
@@ -353,9 +358,7 @@ class ProgressStore private constructor(context: Context) {
     fun completeOnboarding(
         scope: StudyScope,
         understandPath: UnderstandPathId?,
-        dailyGoal: Int,
-        knowsArabicAlphabet: Boolean,
-        knowsArabicNumbers: Boolean,
+        sessionLevel: SessionLevel,
     ) {
         persist(
             _progress.value.copy(
@@ -365,20 +368,7 @@ class ProgressStore private constructor(context: Context) {
                 activeUnderstandPath = understandPath,
                 understandPathStartedOn = understandPath?.let { today() },
                 activeUnderstandPathStage = 0,
-                dailyGoal = dailyGoal.coerceIn(3, 20),
-                alphabetCourseRequested = !knowsArabicAlphabet,
-                alphabetFoundationRequired = !knowsArabicAlphabet,
-                numberCourseRequested = !knowsArabicNumbers,
-                completedAlphabetLessons = if (knowsArabicAlphabet) {
-                    ArabicFoundations.alphabetLessonCount
-                } else {
-                    0
-                },
-                completedNumberLessons = if (knowsArabicNumbers) {
-                    ArabicFoundations.numberLessonCount
-                } else {
-                    0
-                },
+                sessionLevel = sessionLevel,
             ),
             today(),
         )
@@ -689,6 +679,11 @@ class ProgressStore private constructor(context: Context) {
         persist(updated, today())
     }
 
+    fun setSessionLevel(level: SessionLevel) {
+        if (_progress.value.sessionLevel == level) return
+        persist(_progress.value.copy(sessionLevel = level), today())
+    }
+
     fun setMaximumWords(maximumWords: Int) {
         val normalized = if (maximumWords == LearningWordLimiter.UNLIMITED) {
             LearningWordLimiter.UNLIMITED
@@ -828,6 +823,9 @@ class ProgressStore private constructor(context: Context) {
             reviewingIds = reviewingIds,
             alreadyKnownIds = alreadyKnownIds,
             todayAnsweredIds = answered,
+            sessionLevel = SessionLevel.fromPersistedName(
+                preferences.getString(KEY_SESSION_LEVEL, null),
+            ),
             dailyGoal = preferences.getInt(KEY_DAILY_GOAL, 5),
             maximumWords = preferences.getInt(
                 KEY_MAXIMUM_WORDS,
@@ -957,6 +955,7 @@ class ProgressStore private constructor(context: Context) {
             putStringSet(KEY_ALREADY_KNOWN_IDS, progress.alreadyKnownIds)
             putStringSet(KEY_TODAY_ANSWERED, progress.todayAnsweredIds)
             putString(KEY_TODAY, date.toString())
+            putString(KEY_SESSION_LEVEL, progress.sessionLevel.name)
             putInt(KEY_DAILY_GOAL, progress.dailyGoal)
             putInt(KEY_MAXIMUM_WORDS, progress.maximumWords)
             putInt(KEY_STREAK, progress.streakDays)
@@ -1098,6 +1097,7 @@ class ProgressStore private constructor(context: Context) {
         private const val KEY_ALREADY_KNOWN_IDS = "already_known_ids"
         private const val KEY_TODAY_ANSWERED = "today_answered"
         private const val KEY_TODAY = "today"
+        private const val KEY_SESSION_LEVEL = "session_level"
         private const val KEY_DAILY_GOAL = "daily_goal"
         private const val KEY_MAXIMUM_WORDS = "maximum_words"
         private const val KEY_STREAK = "streak"

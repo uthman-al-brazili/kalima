@@ -135,6 +135,44 @@
     <string name="today_word">Your word for today</string>
     <string name="today_mission_title">Today’s Arabic mission</string>
     <string name="today_mission_subtitle">Build Quranic Arabic recognition in one focused session.</string>
+    <string name="session_level_choose">Choose this session’s level</string>
+    <string name="session_level_quick">Quick</string>
+    <string name="session_level_steady">Steady</string>
+    <string name="session_level_deep">Deep</string>
+    <string name="session_level_quick_description">Due reviews only. No new words.</string>
+    <string name="session_level_steady_description">Due reviews, then up to 2 new words. Guided paths include the complete current lesson.</string>
+    <string name="session_level_deep_description">Due reviews, then up to 5 new words and one Quranic context challenge.</string>
+    <string name="session_level_quick_guided_description">Due reviews from earlier unlocked path content. Today’s lesson stays waiting.</string>
+    <string name="session_level_steady_guided_description">Earlier path reviews, then the complete current-ayah vocabulary lesson.</string>
+    <string name="session_level_deep_guided_description">The complete current-ayah lesson, plus one context challenge from today’s ayah.</string>
+    <string name="session_plan_with_level">%1$s · %2$s</string>
+    <string name="guided_session_stage_ayah">Day %1$d of %2$d · Ayah %3$d</string>
+    <string name="guided_session_stage">Stage %1$d of %2$d</string>
+    <string name="guided_quick_lesson_waiting">Today’s ayah remains waiting. Quick reviews earlier unlocked words without consuming this lesson.</string>
+    <string name="guided_lesson_completed_today">Today’s ayah completed</string>
+    <string name="session_context_included">Includes one Quranic context challenge after the vocabulary cards.</string>
+    <string name="session_quick_caught_up">You’re caught up—Quick will not introduce a new word.</string>
+    <string name="study_session_complete">Session complete</string>
+    <plurals name="session_reviews_count">
+        <item quantity="one">%d review</item>
+        <item quantity="other">%d reviews</item>
+    </plurals>
+    <plurals name="session_new_words_count">
+        <item quantity="one">%d new word</item>
+        <item quantity="other">%d new words</item>
+    </plurals>
+    <plurals name="session_ayah_words_count">
+        <item quantity="one">%d word from today’s ayah</item>
+        <item quantity="other">%d words from today’s ayah</item>
+    </plurals>
+    <plurals name="session_practice_words_count">
+        <item quantity="one">%d rotating practice word</item>
+        <item quantity="other">%d rotating practice words</item>
+    </plurals>
+    <plurals name="start_session_words">
+        <item quantity="one">Start 1-word session</item>
+        <item quantity="other">Start %d-word session</item>
+    </plurals>
     <string name="mission_words_completed">%1$d of %2$d words completed</string>
     <string name="daily_arabic_goal_complete">Daily Arabic goal complete</string>
     <string name="view_today_results">View today’s results</string>
@@ -290,6 +328,8 @@
     <string name="daily_reminder">Daily reminder</string>
     <string name="daily_reminder_description">Daily notification at 8:00 AM, subject to Android permissions.</string>
     <string name="daily_goal">Daily goal</string>
+    <string name="default_session_level">Default session level</string>
+    <string name="default_session_level_description">Used when Study opens. You can change the level again before each session.</string>
     <string name="language">Language</string>
     <string name="language_description">Choose the language used for the interface and word meanings.</string>
     <string name="language_portuguese">Português</string>
@@ -385,6 +425,7 @@
     <string name="path_explore_all">Explore freely</string>
     <string name="path_explore_all_desc">Use the whole corpus and choose freely.</string>
     <string name="onboarding_daily_goal">Starting daily goal: %1$d words</string>
+    <string name="onboarding_session_level">Choose your default session level</string>
     <string name="onboarding_start">Start learning</string>
     <string name="onboarding_start_alphabet">Start learning the letters</string>
     <string name="alphabet_course_title">Arabic alphabet foundations</string>
@@ -628,7 +669,7 @@
     <string name="understand_paths_title">Understanding paths</string>
     <string name="understand_paths_intro">Choose a finite goal. Progress comes from recognized vocabulary and proven recall.</string>
     <string name="understand_path_fatihah_title">Al-Fatihah in 7 days</string>
-    <string name="understand_path_fatihah_description">Learn one ayah at a time and revisit its vocabulary until recognition is reliable.</string>
+    <string name="understand_path_fatihah_description">A seven-ayah guided introduction, one ayah at a time. Reliable spaced recall continues afterward.</string>
     <string name="understand_path_last_ten_title">Recognize the last 10 surahs</string>
     <string name="understand_path_last_ten_description">A path through surahs 105–114 with meaning and recall practice.</string>
     <string name="understand_path_start">Start path</string>

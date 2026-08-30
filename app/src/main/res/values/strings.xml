@@ -135,6 +135,44 @@
     <string name="today_word">Sua palavra de hoje</string>
     <string name="today_mission_title">Missão de árabe de hoje</string>
     <string name="today_mission_subtitle">Desenvolva o reconhecimento do árabe corânico em uma sessão focada.</string>
+    <string name="session_level_choose">Escolha o nível desta sessão</string>
+    <string name="session_level_quick">Rápida</string>
+    <string name="session_level_steady">Constante</string>
+    <string name="session_level_deep">Profunda</string>
+    <string name="session_level_quick_description">Somente revisões pendentes. Nenhuma palavra nova.</string>
+    <string name="session_level_steady_description">Revisões pendentes e até 2 palavras novas. Nos percursos guiados, inclui a lição atual completa.</string>
+    <string name="session_level_deep_description">Revisões pendentes, até 5 palavras novas e um desafio de contexto corânico.</string>
+    <string name="session_level_quick_guided_description">Revisões pendentes do conteúdo já liberado no percurso. A lição de hoje continua aguardando.</string>
+    <string name="session_level_steady_guided_description">Revisões anteriores do percurso e a lição completa de vocabulário da āyah atual.</string>
+    <string name="session_level_deep_guided_description">A lição completa da āyah atual e um desafio de contexto com a āyah de hoje.</string>
+    <string name="session_plan_with_level">%1$s · %2$s</string>
+    <string name="guided_session_stage_ayah">Dia %1$d de %2$d · Āyah %3$d</string>
+    <string name="guided_session_stage">Etapa %1$d de %2$d</string>
+    <string name="guided_quick_lesson_waiting">A āyah de hoje continua aguardando. A sessão Rápida revisa palavras já liberadas sem consumir esta lição.</string>
+    <string name="guided_lesson_completed_today">Āyah de hoje concluída</string>
+    <string name="session_context_included">Inclui um desafio de contexto corânico após os cartões de vocabulário.</string>
+    <string name="session_quick_caught_up">Está tudo em dia — a sessão Rápida não apresentará uma palavra nova.</string>
+    <string name="study_session_complete">Sessão concluída</string>
+    <plurals name="session_reviews_count">
+        <item quantity="one">%d revisão</item>
+        <item quantity="other">%d revisões</item>
+    </plurals>
+    <plurals name="session_new_words_count">
+        <item quantity="one">%d palavra nova</item>
+        <item quantity="other">%d palavras novas</item>
+    </plurals>
+    <plurals name="session_ayah_words_count">
+        <item quantity="one">%d palavra da āyah de hoje</item>
+        <item quantity="other">%d palavras da āyah de hoje</item>
+    </plurals>
+    <plurals name="session_practice_words_count">
+        <item quantity="one">%d palavra na prática rotativa</item>
+        <item quantity="other">%d palavras na prática rotativa</item>
+    </plurals>
+    <plurals name="start_session_words">
+        <item quantity="one">Iniciar sessão de 1 palavra</item>
+        <item quantity="other">Iniciar sessão de %d palavras</item>
+    </plurals>
     <string name="mission_words_completed">%1$d de %2$d palavras concluídas</string>
     <string name="daily_arabic_goal_complete">Meta diária de árabe concluída</string>
     <string name="view_today_results">Ver resultados de hoje</string>
@@ -290,6 +328,8 @@
     <string name="daily_reminder">Lembrete diário</string>
     <string name="daily_reminder_description">Notificação diária às 8h, respeitando as permissões do Android.</string>
     <string name="daily_goal">Meta diária</string>
+    <string name="default_session_level">Nível de sessão padrão</string>
+    <string name="default_session_level_description">Usado ao abrir Estudo. Você pode mudar o nível antes de cada sessão.</string>
     <string name="language">Idioma</string>
     <string name="language_description">Escolha o idioma da interface e dos significados das palavras.</string>
     <string name="language_portuguese">Português</string>
@@ -385,6 +425,7 @@
     <string name="path_explore_all">Explorar livremente</string>
     <string name="path_explore_all_desc">Use todo o corpus e escolha livremente.</string>
     <string name="onboarding_daily_goal">Meta diária inicial: %1$d palavras</string>
+    <string name="onboarding_session_level">Escolha o nível de sessão padrão</string>
     <string name="onboarding_start">Começar a aprender</string>
     <string name="onboarding_start_alphabet">Começar a aprender as letras</string>
     <string name="alphabet_course_title">Fundamentos do alfabeto árabe</string>
@@ -628,7 +669,7 @@
     <string name="understand_paths_title">Caminhos de compreensão</string>
     <string name="understand_paths_intro">Escolha um objetivo finito. O progresso depende do vocabulário reconhecido e da recordação comprovada.</string>
     <string name="understand_path_fatihah_title">Al-Fātiḥah em 7 dias</string>
-    <string name="understand_path_fatihah_description">Aprenda uma āyah de cada vez e reveja o vocabulário até reconhecê-lo com segurança.</string>
+    <string name="understand_path_fatihah_description">Uma introdução guiada pelas sete āyāt, uma de cada vez. A memorização confiável com repetição espaçada continua depois.</string>
     <string name="understand_path_last_ten_title">Reconheça as últimas 10 suratas</string>
     <string name="understand_path_last_ten_description">Um caminho pelas suratas 105–114, com prática de significado e recordação.</string>
     <string name="understand_path_start">Iniciar caminho</string>

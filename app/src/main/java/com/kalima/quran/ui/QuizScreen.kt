@@ -49,7 +49,6 @@ import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.UnderstandPathId
 import com.kalima.quran.data.UnderstandPathProgress
 import com.kalima.quran.data.WordRepository
-import com.kalima.quran.data.needsAlphabetFoundation
 import com.kalima.quran.quiz.QuizEngine
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
@@ -89,30 +88,8 @@ fun QuizScreen(
     onAnswer: (String, Boolean) -> Unit,
     pronouncer: ArabicPronouncer,
     understandPath: UnderstandPathId? = null,
+    onChooseQuizMode: () -> Unit = {},
 ) {
-    if (progress.needsAlphabetFoundation) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                stringResource(R.string.quiz_after_alphabet_title),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(10.dp))
-            Text(
-                stringResource(R.string.quiz_after_alphabet_description),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-        }
-        return
-    }
     val pathState = remember(progress, understandPath) {
         understandPath?.let { pathId ->
             UnderstandPathProgress.calculate(progress, pathId, WordRepository.words)
@@ -221,7 +198,10 @@ fun QuizScreen(
         QuizSummary(
             score = score,
             total = session.size,
-            onNewQuiz = { quizStarted = false },
+            onNewQuiz = {
+                quizStarted = false
+                onChooseQuizMode()
+            },
         )
         return
     }
@@ -235,7 +215,7 @@ fun QuizScreen(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             LinearProgressIndicator(
-                progress = { currentIndex.toFloat() / session.size },
+                progress = { (currentIndex + 1).toFloat() / session.size },
                 modifier = Modifier.weight(1f).height(7.dp),
                 color = MaterialTheme.colorScheme.secondary,
             )

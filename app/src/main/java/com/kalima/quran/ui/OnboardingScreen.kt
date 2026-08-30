@@ -18,11 +18,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,9 +37,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.SessionLevel
 import com.kalima.quran.data.UnderstandPathId
 import com.kalima.quran.ui.theme.Forest
-import kotlin.math.roundToInt
 
 internal data class StarterPlan(
     val scope: StudyScope,
@@ -79,11 +76,11 @@ internal val starterPlans = listOf(
 )
 
 @Composable
-fun OnboardingScreen(onComplete: (StudyScope, UnderstandPathId?, Int, Boolean, Boolean) -> Unit) {
+fun OnboardingScreen(
+    onComplete: (StudyScope, UnderstandPathId?, SessionLevel) -> Unit,
+) {
     var selectedPlanIndex by rememberSaveable { mutableIntStateOf(2) }
-    var dailyGoal by rememberSaveable { mutableIntStateOf(5) }
-    var knowsArabicAlphabet by rememberSaveable { mutableStateOf<Boolean?>(null) }
-    var knowsArabicNumbers by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    var sessionLevel by rememberSaveable { mutableStateOf(SessionLevel.Steady) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -144,109 +141,47 @@ fun OnboardingScreen(onComplete: (StudyScope, UnderstandPathId?, Int, Boolean, B
             }
             Spacer(Modifier.height(14.dp))
             Text(
-                stringResource(R.string.onboarding_foundations_title),
+                stringResource(R.string.onboarding_path_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
             )
+            Spacer(Modifier.height(6.dp))
+            starterPlans.chunked(2).forEachIndexed { index, rowPlans ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    rowPlans.forEach { plan ->
+                        CompactPlanChoice(
+                            plan = plan,
+                            selected = starterPlans.indexOf(plan) == selectedPlanIndex,
+                            onClick = { selectedPlanIndex = starterPlans.indexOf(plan) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+                if (index < starterPlans.chunked(2).lastIndex) {
+                    Spacer(Modifier.height(8.dp))
+                }
+            }
+            val selectedPlan = starterPlans[selectedPlanIndex]
             Text(
-                stringResource(R.string.onboarding_foundations_description),
+                stringResource(selectedPlan.descriptionRes),
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
             )
-            Spacer(Modifier.height(6.dp))
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
-            ) {
-                Column(Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
-                    KnowledgeQuestion(
-                        questionRes = R.string.onboarding_knows_alphabet,
-                        answer = knowsArabicAlphabet,
-                        onAnswer = { knowsArabicAlphabet = it },
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    KnowledgeQuestion(
-                        questionRes = R.string.onboarding_knows_numbers,
-                        answer = knowsArabicNumbers,
-                        onAnswer = { knowsArabicNumbers = it },
-                    )
-                    if (knowsArabicAlphabet == false || knowsArabicNumbers == false) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                        Text(
-                            stringResource(R.string.onboarding_your_plan),
-                            modifier = Modifier.padding(top = 6.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        if (knowsArabicAlphabet == false) {
-                            Text(
-                                stringResource(R.string.onboarding_alphabet_plan),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                        if (knowsArabicNumbers == false) {
-                            Text(
-                                stringResource(R.string.onboarding_numbers_plan),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(bottom = 6.dp),
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                    }
-                }
-            }
-            if (shouldShowWordStudySetup(knowsArabicAlphabet)) {
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    stringResource(R.string.onboarding_path_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(Modifier.height(6.dp))
-                starterPlans.chunked(2).forEachIndexed { index, rowPlans ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        rowPlans.forEach { plan ->
-                            CompactPlanChoice(
-                                plan = plan,
-                                selected = starterPlans.indexOf(plan) == selectedPlanIndex,
-                                onClick = { selectedPlanIndex = starterPlans.indexOf(plan) },
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
-                    }
-                    if (index < starterPlans.chunked(2).lastIndex) {
-                        Spacer(Modifier.height(8.dp))
-                    }
-                }
-                val selectedPlan = starterPlans[selectedPlanIndex]
-                Text(
-                    stringResource(selectedPlan.descriptionRes),
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        stringResource(R.string.onboarding_daily_goal, dailyGoal),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Slider(
-                        value = dailyGoal.toFloat(),
-                        onValueChange = { dailyGoal = it.roundToInt() },
-                        valueRange = 3f..15f,
-                        steps = 11,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
+            Text(
+                stringResource(R.string.onboarding_session_level),
+                modifier = Modifier.padding(top = 4.dp),
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold,
+            )
+            SessionLevelSelector(
+                selected = sessionLevel,
+                onSelected = { sessionLevel = it },
+                guided = selectedPlan.understandPath != null,
+            )
             Spacer(Modifier.height(8.dp))
             Button(
                 onClick = {
@@ -254,61 +189,18 @@ fun OnboardingScreen(onComplete: (StudyScope, UnderstandPathId?, Int, Boolean, B
                     onComplete(
                         selectedPlan.scope,
                         selectedPlan.understandPath,
-                        dailyGoal,
-                        requireNotNull(knowsArabicAlphabet),
-                        requireNotNull(knowsArabicNumbers),
+                        sessionLevel,
                     )
                 },
-                enabled = knowsArabicAlphabet != null && knowsArabicNumbers != null,
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 shape = RoundedCornerShape(14.dp),
             ) {
                 Text(
-                    stringResource(
-                        if (knowsArabicAlphabet == false) {
-                            R.string.onboarding_start_alphabet
-                        } else {
-                            R.string.onboarding_start
-                        },
-                    ),
+                    stringResource(R.string.onboarding_start),
                     fontWeight = FontWeight.Bold,
                 )
             }
             Spacer(Modifier.height(12.dp))
-        }
-    }
-}
-
-internal fun shouldShowWordStudySetup(knowsArabicAlphabet: Boolean?): Boolean =
-    knowsArabicAlphabet == true
-
-@Composable
-private fun KnowledgeQuestion(
-    @StringRes questionRes: Int,
-    answer: Boolean?,
-    onAnswer: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            stringResource(questionRes),
-            modifier = Modifier.weight(1f).padding(end = 8.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            FilterChip(
-                selected = answer == true,
-                onClick = { onAnswer(true) },
-                label = { Text(stringResource(R.string.yes)) },
-            )
-            FilterChip(
-                selected = answer == false,
-                onClick = { onAnswer(false) },
-                label = { Text(stringResource(R.string.no)) },
-            )
         }
     }
 }

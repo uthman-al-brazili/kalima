@@ -31,6 +31,7 @@ internal fun buildContextCheckpointQuestion(
     practicedWords: List<QuranWord>,
     activeCollection: List<QuranWord>,
     seed: Int,
+    preferredWordIds: Set<String> = emptySet(),
 ): ContextCheckpointQuestion? {
     val candidates = practicedWords
         .distinctBy(QuranWord::id)
@@ -42,7 +43,9 @@ internal fun buildContextCheckpointQuestion(
     if (candidates.isEmpty() || optionWords.isEmpty()) return null
 
     val random = Random(seed)
-    return candidates.shuffled(random).firstNotNullOfOrNull { word ->
+    val orderedCandidates = candidates.filter { it.id in preferredWordIds }.shuffled(random) +
+        candidates.filterNot { it.id in preferredWordIds }.shuffled(random)
+    return orderedCandidates.firstNotNullOfOrNull { word ->
         val ayah = VerseExcerptBuilder.buildFullCloze(word) ?: return@firstNotNullOfOrNull null
         val quizQuestion = QuizEngine.createQuestionOrNull(
             word = word,

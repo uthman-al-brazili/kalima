@@ -20,7 +20,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -47,22 +46,64 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
+import com.kalima.quran.data.SessionLevel
 import com.kalima.quran.data.StudyProgress
+import com.kalima.quran.data.StudySessionPlan
 import java.time.format.TextStyle
 
 @Composable
 internal fun DailyMissionScreen(
-    mission: DailyMissionState,
+    plan: StudySessionPlan,
     progress: StudyProgress,
     streakDays: Int,
-    canStart: Boolean,
-    sessionWordCount: Int,
+    activity: List<DailyMissionActivity>,
     pathQuizReady: Boolean,
     lockScreenEnabled: Boolean,
     onEnableLockScreen: () -> Unit,
     onOpenQuiz: () -> Unit,
+    onSessionLevelChange: (SessionLevel) -> Unit,
     onStart: () -> Unit,
 ) {
+    val levelName = stringResource(sessionLevelNameRes(plan.level))
+    val reviewSummary = pluralStringResource(
+        if (plan.freePractice) R.plurals.session_practice_words_count
+        else R.plurals.session_reviews_count,
+        plan.reviewWordIds.size,
+        plan.reviewWordIds.size,
+    )
+    val guidedLessonCompletedToday = plan.currentGuidedLessonCompletedToday
+    val lessonSummary = if (guidedLessonCompletedToday) {
+        stringResource(R.string.guided_lesson_completed_today)
+    } else if (plan.guidedStageIndex != null) {
+        pluralStringResource(
+            R.plurals.session_ayah_words_count,
+            plan.lessonWordIds.size,
+            plan.lessonWordIds.size,
+        )
+    } else {
+        pluralStringResource(
+            R.plurals.session_new_words_count,
+            plan.lessonWordIds.size,
+            plan.lessonWordIds.size,
+        )
+    }
+    val planParts = buildList {
+        if (plan.reviewWordIds.isNotEmpty()) add(reviewSummary)
+        if (plan.lessonWordIds.isNotEmpty()) add(lessonSummary)
+    }
+    val guidedMissionComplete = plan.isEmpty && guidedLessonCompletedToday
+    val planSummary = when {
+        guidedMissionComplete -> stringResource(R.string.daily_arabic_goal_complete)
+        planParts.isEmpty() -> stringResource(
+            if (plan.level == SessionLevel.Quick) R.string.session_quick_caught_up
+            else R.string.mission_all_caught_up,
+        )
+        else -> stringResource(
+            R.string.session_plan_with_level,
+            levelName,
+            planParts.joinToString(" + "),
+        )
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -97,6 +138,18 @@ internal fun DailyMissionScreen(
             }
         }
         Spacer(Modifier.height(16.dp))
+        Text(
+            stringResource(R.string.session_level_choose),
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleSmall,
+        )
+        Spacer(Modifier.height(6.dp))
+        SessionLevelSelector(
+            selected = plan.level,
+            onSelected = onSessionLevelChange,
+            guided = plan.guidedStageIndex != null,
+        )
+        Spacer(Modifier.height(14.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(26.dp),
@@ -104,63 +157,64 @@ internal fun DailyMissionScreen(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         ) {
             Column(Modifier.padding(20.dp)) {
+                if (plan.guidedStageIndex != null && plan.guidedStageCount != null) {
+                    Text(
+                        if (plan.guidedAyahNumber != null) {
+                            stringResource(
+                                R.string.guided_session_stage_ayah,
+                                plan.guidedStageIndex + 1,
+                                plan.guidedStageCount,
+                                plan.guidedAyahNumber,
+                            )
+                        } else {
+                            stringResource(
+                                R.string.guided_session_stage,
+                                plan.guidedStageIndex + 1,
+                                plan.guidedStageCount,
+                            )
+                        },
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                }
                 Text(
-                    if (mission.goalComplete) {
-                        stringResource(R.string.daily_arabic_goal_complete)
-                    } else {
-                        stringResource(
-                            R.string.mission_words_completed,
-                            mission.completedWords,
-                            mission.goalWords,
-                        )
-                    },
+                    planSummary,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleLarge,
                 )
-                if (mission.goalComplete) {
+                if (plan.currentGuidedLessonWaiting) {
                     Text(
-                        stringResource(
-                            R.string.mission_words_completed,
-                            mission.completedWords,
-                            mission.goalWords,
-                        ),
+                        stringResource(R.string.guided_quick_lesson_waiting),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
-                Spacer(Modifier.height(14.dp))
-                LinearProgressIndicator(
-                    progress = {
-                        (mission.completedWords.toFloat() / mission.goalWords.coerceAtLeast(1))
-                            .coerceIn(0f, 1f)
-                    },
-                    modifier = Modifier.fillMaxWidth().height(9.dp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
                 Spacer(Modifier.height(18.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     MissionStat(
-                        value = mission.dueReviews.toString(),
-                        label = pluralStringResource(
-                            R.plurals.mission_reviews_due,
-                            mission.dueReviews,
-                            mission.dueReviews,
-                        ),
+                        value = plan.reviewWordIds.size.toString(),
+                        label = reviewSummary,
                         modifier = Modifier.weight(1f),
                     )
                     MissionStat(
-                        value = if (mission.newWordsReady > 0) "+${mission.newWordsReady}" else "—",
-                        label = if (mission.newWordsReady > 0) {
-                            pluralStringResource(
-                                R.plurals.mission_new_words_ready,
-                                mission.newWordsReady,
-                            )
-                        } else {
-                            stringResource(R.string.mission_no_new_word)
+                        value = when {
+                            plan.lessonWordIds.isNotEmpty() -> "+${plan.lessonWordIds.size}"
+                            guidedLessonCompletedToday -> "✓"
+                            else -> "—"
                         },
+                        label = lessonSummary,
                         modifier = Modifier.weight(1f),
+                    )
+                }
+                if (plan.requestsContextCheckpoint) {
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        stringResource(R.string.session_context_included),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
                 Spacer(Modifier.height(20.dp))
@@ -170,22 +224,25 @@ internal fun DailyMissionScreen(
                     style = MaterialTheme.typography.titleSmall,
                 )
                 Spacer(Modifier.height(10.dp))
-                WeeklyMissionActivity(mission.activity)
+                WeeklyMissionActivity(activity)
                 Spacer(Modifier.height(20.dp))
                 Button(
                     onClick = onStart,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
-                    enabled = canStart,
+                    enabled = !plan.isEmpty,
                     shape = RoundedCornerShape(16.dp),
                 ) {
                     Text(
-                        when {
-                            !canStart -> stringResource(R.string.mission_all_caught_up)
-                            mission.goalComplete -> stringResource(R.string.keep_practicing)
-                            else -> pluralStringResource(
-                                R.plurals.continue_words,
-                                sessionWordCount,
-                                sessionWordCount,
+                        if (plan.isEmpty) {
+                            stringResource(
+                                if (guidedMissionComplete) R.string.daily_arabic_goal_complete
+                                else R.string.mission_all_caught_up,
+                            )
+                        } else {
+                            pluralStringResource(
+                                R.plurals.start_session_words,
+                                plan.wordIds.size,
+                                plan.wordIds.size,
                             )
                         },
                         fontWeight = FontWeight.Bold,
@@ -543,6 +600,7 @@ internal fun StudyCompletionScreen(
     payoff: StudyCompletionPayoff,
     recognizedWordIds: Set<String>,
     pronouncer: ArabicPronouncer,
+    onAdvancePath: (() -> Unit)? = null,
     onFinish: () -> Unit,
 ) {
     var showInteractiveAyah by rememberSaveable(payoff.featuredWord.id) { mutableStateOf(false) }
@@ -554,7 +612,7 @@ internal fun StudyCompletionScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            stringResource(R.string.daily_arabic_goal_complete),
+            stringResource(R.string.study_session_complete),
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.Center,
@@ -672,6 +730,16 @@ internal fun StudyCompletionScreen(
             }
         }
         Spacer(Modifier.height(10.dp))
+        if (onAdvancePath != null) {
+            Button(
+                onClick = onAdvancePath,
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(stringResource(R.string.understand_path_next_stage), fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(8.dp))
+        }
         OutlinedButton(
             onClick = onFinish,
             modifier = Modifier.fillMaxWidth().height(48.dp),

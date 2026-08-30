@@ -41,6 +41,7 @@ class ProgressBackupCodecTest {
             understandPathStartedOn = LocalDate.of(2026, 8, 12),
             activeUnderstandPathStage = 3,
             completedUnderstandPaths = setOf(UnderstandPathId.LastTenSurahs),
+            sessionLevel = SessionLevel.Deep,
         )
         val encoded = ProgressBackupCodec.encode(progress, "0.17.0", "corpus", now)
         val decoded = ProgressBackupCodec.decode(encoded, "corpus", knownIds)
@@ -65,6 +66,7 @@ class ProgressBackupCodecTest {
         assertEquals(progress.understandPathStartedOn, decoded.progress.understandPathStartedOn)
         assertEquals(progress.activeUnderstandPathStage, decoded.progress.activeUnderstandPathStage)
         assertEquals(progress.completedUnderstandPaths, decoded.progress.completedUnderstandPaths)
+        assertEquals(SessionLevel.Deep, decoded.progress.sessionLevel)
     }
 
     @Test
@@ -251,6 +253,24 @@ class ProgressBackupCodecTest {
 
         val progress = ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress
         assertEquals(setOf(StudyScope.ShortSurahs), progress.studyScopes)
+    }
+
+    @Test
+    fun backupsBeforeSessionLevelsDefaultToSteady() {
+        val legacy = withoutPayloadField(
+            ProgressBackupCodec.encode(
+                StudyProgress(sessionLevel = SessionLevel.Deep),
+                "0.33.0",
+                "corpus",
+                now,
+            ),
+            "sessionLevel",
+        )
+
+        assertEquals(
+            SessionLevel.Steady,
+            ProgressBackupCodec.decode(legacy, "corpus", knownIds).progress.sessionLevel,
+        )
     }
 
     private fun withoutPayloadField(backup: String, field: String): String {

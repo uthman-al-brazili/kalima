@@ -29,8 +29,6 @@ internal enum class LearnSection(
 ) {
     Dictionary(R.string.tab_dictionary),
     Quiz(R.string.tab_quiz),
-    Alphabet(R.string.tab_alphabet),
-    Numbers(R.string.tab_numbers),
 }
 
 @Composable
@@ -45,12 +43,7 @@ internal fun LearnScreen(
     openExcludedWordsRequestId: Long,
     onQuizAnswer: (String, Boolean) -> Unit,
     quizUnderstandPath: UnderstandPathId?,
-    onCompleteAlphabetLesson: () -> Unit,
-    onAlphabetPracticeAnswer: (String, Boolean) -> Unit,
-    onStartAlphabetFoundation: () -> Unit,
-    onSkipAlphabetFoundation: () -> Unit,
-    onCompleteNumberLesson: () -> Unit,
-    onStartNumberFoundation: () -> Unit,
+    onChooseQuizMode: () -> Unit,
 ) {
     val sectionStateHolder = rememberSaveableStateHolder()
 
@@ -75,20 +68,7 @@ internal fun LearnScreen(
                         onAnswer = onQuizAnswer,
                         pronouncer = pronouncer,
                         understandPath = quizUnderstandPath,
-                    )
-                    LearnSection.Alphabet -> AlphabetScreen(
-                        progress = progress,
-                        onCompleteAlphabetLesson = onCompleteAlphabetLesson,
-                        onAlphabetPracticeAnswer = onAlphabetPracticeAnswer,
-                        onStartAlphabetFoundation = onStartAlphabetFoundation,
-                        onSkipAlphabetFoundation = onSkipAlphabetFoundation,
-                        pronouncer = pronouncer,
-                    )
-                    LearnSection.Numbers -> NumberScreen(
-                        progress = progress,
-                        onCompleteNumberLesson = onCompleteNumberLesson,
-                        onStartNumberFoundation = onStartNumberFoundation,
-                        pronouncer = pronouncer,
+                        onChooseQuizMode = onChooseQuizMode,
                     )
                 }
             }
