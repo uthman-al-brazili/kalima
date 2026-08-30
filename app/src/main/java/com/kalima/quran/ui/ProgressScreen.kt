@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -99,6 +100,8 @@ fun ProgressScreen(
     val newToday = eventsToday.count { it.wasNew }
     val reviewedToday = eventsToday.size - newToday
     var showSurahDialog by rememberSaveable { mutableStateOf(false) }
+    var showStudySetDetails by rememberSaveable { mutableStateOf(false) }
+    var showMoreDetails by rememberSaveable { mutableStateOf(false) }
 
     if (showSurahDialog) {
         SurahSelectionDialog(
@@ -112,113 +115,51 @@ fun ProgressScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(20.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Text(
             stringResource(R.string.progress_title),
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
         Text(
             stringResource(R.string.progress_subtitle),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
         )
-        Spacer(Modifier.height(20.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatBlock(
-                value = progress.learnedIds.size.toString(),
-                label = stringResource(R.string.stat_learned),
-                modifier = Modifier.weight(1f),
-            )
-            StatBlock(
-                value = statistics?.dueInScope?.toString() ?: "—",
-                label = stringResource(R.string.stat_due),
-                modifier = Modifier.weight(1f),
-            )
-            StatBlock(
-                value = "🔥 ${progress.streakDays}",
-                label = stringResource(R.string.stat_days),
-                modifier = Modifier.weight(1f),
-            )
-        }
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatBlock(
-                value = progress.accuracy(7)?.let { "$it%" } ?: "—",
-                label = stringResource(R.string.accuracy_7_days),
-                modifier = Modifier.weight(1f),
-            )
-            StatBlock(
-                value = progress.accuracy(30)?.let { "$it%" } ?: "—",
-                label = stringResource(R.string.accuracy_30_days),
-                modifier = Modifier.weight(1f),
-            )
-        }
+        ProgressOverviewCard(
+            statistics = statistics,
+            dueNow = statistics?.dueInScope,
+            streakDays = progress.streakDays,
+            newToday = newToday,
+            reviewedToday = reviewedToday,
+            accuracy7 = progress.accuracy(7),
+            accuracy30 = progress.accuracy(30),
+        )
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatBlock(newToday.toString(), stringResource(R.string.new_today), Modifier.weight(1f))
-            StatBlock(reviewedToday.toString(), stringResource(R.string.reviewed_today), Modifier.weight(1f))
-        }
-        Spacer(Modifier.height(14.dp))
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-            ),
-            shape = RoundedCornerShape(24.dp),
-        ) {
-            Column(Modifier.padding(20.dp)) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        stringResource(R.string.selected_content),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        statistics?.let { "${it.learnedInScope}/${it.activeWordCount}" } ?: "—",
-                    )
-                }
-                Spacer(Modifier.height(12.dp))
-                if (statistics == null) {
-                    LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidth().height(9.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                    )
-                } else {
-                    LinearProgressIndicator(
-                        progress = { requireNotNull(statistics).learnedFraction },
-                        modifier = Modifier.fillMaxWidth().height(9.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                    )
-                }
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    stringResource(R.string.selected_content_note),
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.82f),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-        }
-        Spacer(Modifier.height(24.dp))
         if (statistics == null) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         } else {
             VocabularyCoverageSummary(requireNotNull(statistics).vocabularyCoverage)
         }
-        Spacer(Modifier.height(24.dp))
-        Text(
-            stringResource(R.string.guided_paths),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
+        Spacer(Modifier.height(12.dp))
+        ExpandableSectionHeader(
+            title = stringResource(R.string.selected_content),
+            summary = selectedPathSummary,
+            expanded = showStudySetDetails,
+            showLabel = stringResource(R.string.progress_change_study_set),
+            hideLabel = stringResource(R.string.progress_hide_study_set),
+            onToggle = { showStudySetDetails = !showStudySetDetails },
         )
-        Text(
-            stringResource(R.string.guided_paths_note),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-        )
-        Spacer(Modifier.height(10.dp))
+        if (showStudySetDetails) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.guided_paths_note),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(8.dp))
         Surface(
             color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(20.dp),
@@ -334,15 +275,177 @@ fun ProgressScreen(
                 )
             }
         }
-        Spacer(Modifier.height(24.dp))
-        ActivityCalendar(progress, pronouncer)
-        Spacer(Modifier.height(24.dp))
-        if (progress.spacedRepetitionEnabled) DifficultWords(statistics?.difficultWords)
-        Spacer(Modifier.height(24.dp))
-        RootMastery(statistics?.rootMastery)
-        Spacer(Modifier.height(24.dp))
-        statistics?.let { VocabularyCoverageBySurah(it.vocabularyCoverage) }
-        Spacer(Modifier.height(24.dp))
+        }
+        Spacer(Modifier.height(12.dp))
+        ExpandableSectionHeader(
+            title = stringResource(R.string.progress_more_details),
+            summary = stringResource(R.string.progress_more_details_note),
+            expanded = showMoreDetails,
+            showLabel = stringResource(R.string.progress_show_details),
+            hideLabel = stringResource(R.string.progress_hide_details),
+            onToggle = { showMoreDetails = !showMoreDetails },
+        )
+        if (showMoreDetails) {
+            Spacer(Modifier.height(18.dp))
+            ActivityCalendar(progress, pronouncer)
+            if (progress.spacedRepetitionEnabled) {
+                Spacer(Modifier.height(20.dp))
+                DifficultWords(statistics?.difficultWords)
+            }
+            Spacer(Modifier.height(20.dp))
+            RootMastery(statistics?.rootMastery)
+            statistics?.let {
+                Spacer(Modifier.height(20.dp))
+                VocabularyCoverageBySurah(it.vocabularyCoverage)
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun ProgressOverviewCard(
+    statistics: ProgressStatistics?,
+    dueNow: Int?,
+    streakDays: Int,
+    newToday: Int,
+    reviewedToday: Int,
+    accuracy7: Int?,
+    accuracy30: Int?,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+        ),
+        shape = RoundedCornerShape(22.dp),
+    ) {
+        Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    statistics?.let {
+                        stringResource(
+                            R.string.progress_learned_of,
+                            it.learnedInScope,
+                            it.activeWordCount,
+                        )
+                    } ?: "—",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    statistics?.let { "${(it.learnedFraction * 100).toInt()}%" } ?: "—",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            LinearProgressIndicator(
+                progress = { statistics?.learnedFraction ?: 0f },
+                modifier = Modifier.fillMaxWidth().height(7.dp),
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+            )
+            Spacer(Modifier.height(12.dp))
+            Row(Modifier.fillMaxWidth()) {
+                CompactProgressMetric(
+                    value = dueNow?.toString() ?: "—",
+                    label = stringResource(R.string.stat_due),
+                    modifier = Modifier.weight(1f),
+                )
+                CompactProgressMetric(
+                    value = "🔥 $streakDays",
+                    label = stringResource(R.string.stat_days),
+                    modifier = Modifier.weight(1f),
+                )
+                CompactProgressMetric(
+                    value = newToday.toString(),
+                    label = stringResource(R.string.new_today),
+                    modifier = Modifier.weight(1f),
+                )
+                CompactProgressMetric(
+                    value = reviewedToday.toString(),
+                    label = stringResource(R.string.reviewed_today),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                stringResource(
+                    R.string.progress_accuracy_summary,
+                    accuracy7?.let { "$it%" } ?: "—",
+                    accuracy30?.let { "$it%" } ?: "—",
+                ),
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.82f),
+                style = MaterialTheme.typography.labelSmall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CompactProgressMetric(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            value,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            label,
+            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.78f),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.labelSmall,
+            maxLines = 2,
+        )
+    }
+}
+
+@Composable
+private fun ExpandableSectionHeader(
+    title: String,
+    summary: String,
+    expanded: Boolean,
+    showLabel: String,
+    hideLabel: String,
+    onToggle: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(18.dp),
+        tonalElevation = 1.dp,
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 14.dp, top = 10.dp, end = 6.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    title,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    summary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 2,
+                )
+            }
+            TextButton(onClick = onToggle) {
+                Text(if (expanded) hideLabel else showLabel)
+            }
+        }
     }
 }
 
@@ -452,61 +555,58 @@ private fun VocabularyCoverageSummary(coverage: QuranVocabularyCoverage) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(18.dp),
     ) {
-        Column(Modifier.padding(18.dp)) {
-            Text(
-                stringResource(R.string.vocabulary_coverage_title),
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleLarge,
-            )
-            Spacer(Modifier.height(5.dp))
-            Text(
-                stringResource(R.string.vocabulary_coverage_note),
-                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.82f),
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Spacer(Modifier.height(14.dp))
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom,
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
+                Text(
+                    stringResource(R.string.vocabulary_coverage_title),
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
+                )
                 Text(
                     stringResource(R.string.vocabulary_coverage_percent, coverage.percent),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-                Text(
-                    stringResource(
-                        R.string.vocabulary_coverage_occurrences,
-                        coverage.recognizedOccurrences,
-                        coverage.totalOccurrences,
-                    ),
-                    modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    textAlign = TextAlign.End,
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.titleLarge,
                 )
             }
-            Spacer(Modifier.height(9.dp))
+            Spacer(Modifier.height(8.dp))
             LinearProgressIndicator(
                 progress = { coverage.percent / 100f },
-                modifier = Modifier.fillMaxWidth().height(9.dp),
+                modifier = Modifier.fillMaxWidth().height(7.dp),
                 color = MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.12f),
             )
-            Spacer(Modifier.height(9.dp))
-            Text(
-                coverage.nextMilestonePercent?.let { milestone ->
-                    stringResource(R.string.vocabulary_coverage_next_milestone, milestone)
-                } ?: stringResource(R.string.vocabulary_coverage_top_milestone),
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                fontWeight = FontWeight.SemiBold,
-                style = MaterialTheme.typography.labelMedium,
-            )
+            Spacer(Modifier.height(7.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    stringResource(
+                        R.string.vocabulary_coverage_compact,
+                        coverage.recognizedOccurrences,
+                        coverage.totalOccurrences,
+                    ),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.82f),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Text(
+                    coverage.nextMilestonePercent?.let { milestone ->
+                        stringResource(R.string.vocabulary_coverage_next_milestone, milestone)
+                    } ?: stringResource(R.string.vocabulary_coverage_top_milestone),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
         }
     }
 }

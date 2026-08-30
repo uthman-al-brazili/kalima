@@ -111,8 +111,10 @@
     <string name="review_without_schedule">Próxima palavra</string>
     <string name="review_good_tomorrow">Rever amanhã</string>
     <string name="mark_already_known">Já conheço esta palavra</string>
+    <string name="mark_already_known_short">Já conheço</string>
     <string name="mark_already_known_description">Marcar como já conhecida e retirar da prática</string>
     <string name="restore_to_practice">Voltar à prática</string>
+    <string name="restore_to_practice_short">Praticar de novo</string>
     <string name="restore_to_practice_description">Devolver esta palavra ao estudo, quiz, lembretes e cartões da tela de bloqueio</string>
     <string name="already_known_confirmation">Retirar esta palavra do estudo, quiz, lembretes e cartões da tela de bloqueio? Você poderá restaurá-la em Palavras excluídas no Vocabulário.</string>
     <string name="remove_from_practice">Retirar</string>
@@ -127,6 +129,9 @@
         <item quantity="other">%1$d revisões pendentes</item>
     </plurals>
     <string name="context_meaning_note">O significado acompanha este contexto. Uma mesma palavra pode mudar de nuance em outro versículo.</string>
+    <string name="word_more_details">Mais detalhes</string>
+    <string name="word_details_title">Sobre esta palavra</string>
+    <string name="word_context_title">No Alcorão</string>
     <string name="today_word">Sua palavra de hoje</string>
     <string name="today_mission_title">Missão de árabe de hoje</string>
     <string name="today_mission_subtitle">Desenvolva o reconhecimento do árabe corânico em uma sessão focada.</string>
@@ -210,6 +215,14 @@
 
     <string name="progress_title">Seu progresso</string>
     <string name="progress_subtitle">Consistência pequena, compreensão duradoura.</string>
+    <string name="progress_learned_of">%1$d de %2$d aprendidas</string>
+    <string name="progress_accuracy_summary">Precisão: %1$s (7d) · %2$s (30d)</string>
+    <string name="progress_change_study_set">Alterar</string>
+    <string name="progress_hide_study_set">Concluir</string>
+    <string name="progress_more_details">Mais detalhes</string>
+    <string name="progress_more_details_note">Atividade, palavras difíceis, raízes e suratas</string>
+    <string name="progress_show_details">Mostrar</string>
+    <string name="progress_hide_details">Ocultar</string>
     <string name="stat_learned">aprendidas</string>
     <string name="stat_reviewing">em revisão</string>
     <string name="stat_due">pendentes</string>
@@ -492,6 +505,7 @@
     <string name="vocabulary_coverage_title">Reconhecimento do vocabulário do Alcorão</string>
     <string name="vocabulary_coverage_note">A proporção de ocorrências no Alcorão cuja forma e lema correspondem a uma palavra aprendida ou marcada como já conhecida. Mede reconhecimento de vocabulário, não compreensão completa.</string>
     <string name="vocabulary_coverage_percent">%1$d%%</string>
+    <string name="vocabulary_coverage_compact">%1$d / %2$d palavras</string>
     <string name="vocabulary_coverage_occurrences">%1$d de %2$d ocorrências de palavras</string>
     <string name="vocabulary_coverage_next_milestone">Próximo marco: %1$d%%</string>
     <string name="vocabulary_coverage_top_milestone" formatted="false">Marco de 90%+ alcançado</string>

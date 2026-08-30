@@ -20,9 +20,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -46,6 +48,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -93,7 +96,6 @@ fun StudyScreen(
     onOpenExcludedWords: () -> Unit,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
-    onShowCompleteAyahChange: (Boolean) -> Unit,
     onOpenFoundations: () -> Unit,
     onOpenQuiz: () -> Unit,
     pronouncer: ArabicPronouncer,
@@ -374,7 +376,7 @@ fun StudyScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(horizontal = 20.dp, vertical = 18.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
         ) {
             StudyHeader(
                 progress = progress,
@@ -394,10 +396,10 @@ fun StudyScreen(
                     null
                 },
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(10.dp))
             if (!progress.lockScreenEnabled) {
                 LockScreenLearningCard(onEnableLockScreen = onEnableLockScreen)
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(12.dp))
             }
             WordCard(
                 word = word,
@@ -408,7 +410,6 @@ fun StudyScreen(
                 ),
                 pronouncer = pronouncer,
                 meaningRevealed = meaningRevealed,
-                onRevealChange = { meaningRevealed = it },
                 onToggleCustomList = onToggleCustomList,
                 onToggleAlreadyKnown = {
                     val wordId = word.id
@@ -428,49 +429,39 @@ fun StudyScreen(
                         }
                     }
                 },
-                showCompleteAyah = progress.showCompleteAyah,
-                onShowCompleteAyahChange = onShowCompleteAyahChange,
             )
-            Spacer(Modifier.height(18.dp))
-            Text(
-                stringResource(R.string.context_meaning_note),
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-                textAlign = TextAlign.Center,
+            Spacer(Modifier.height(8.dp))
+            StudyActionBar(
+                meaningRevealed = meaningRevealed,
+                isNewPresentation = isNewPresentation,
+                nextActionOpensCheckpoint = nextActionOpensCheckpoint,
+                spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
+                goodTiming = goodReviewTiming(
+                    spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
+                    schedule = progress.scheduleFor(word.id),
+                ),
+                onRevealMeaning = { meaningRevealed = true },
+                onNextWord = {
+                    activeIntroductionId = null
+                    finishCurrentWord(true)
+                },
+                onAgain = {
+                    onAnswer(word.id, false)
+                    finishCurrentWord(false)
+                },
+                onRemembered = {
+                    onAnswer(word.id, true)
+                    finishCurrentWord(false)
+                },
             )
-            Spacer(Modifier.height(148.dp))
+            Spacer(Modifier.height(16.dp))
         }
 
-        StudyActionBar(
-            meaningRevealed = meaningRevealed,
-            isNewPresentation = isNewPresentation,
-            nextActionOpensCheckpoint = nextActionOpensCheckpoint,
-            spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
-            goodTiming = goodReviewTiming(
-                spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
-                schedule = progress.scheduleFor(word.id),
-            ),
-            onRevealMeaning = { meaningRevealed = true },
-            onNextWord = {
-                activeIntroductionId = null
-                finishCurrentWord(true)
-            },
-            onAgain = {
-                onAnswer(word.id, false)
-                finishCurrentWord(false)
-            },
-            onRemembered = {
-                onAnswer(word.id, true)
-                finishCurrentWord(false)
-            },
-            modifier = Modifier.align(Alignment.BottomCenter),
-        )
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 20.dp, vertical = 148.dp),
+                .padding(horizontal = 20.dp, vertical = 20.dp),
         )
     }
 }
@@ -1480,24 +1471,8 @@ private fun StudyActionBar(
     onRemembered: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(22.dp),
-        tonalElevation = 3.dp,
-        shadowElevation = 8.dp,
-    ) {
-        Column(Modifier.padding(8.dp)) {
+    Column(modifier = modifier.fillMaxWidth()) {
             if (!meaningRevealed) {
-                Text(
-                    stringResource(R.string.recall_before_reveal),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                )
                 Button(
                     onClick = onRevealMeaning,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -1523,20 +1498,13 @@ private fun StudyActionBar(
                     )
                 }
             } else {
-                Text(
-                    stringResource(R.string.rate_recall_instruction),
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OutlinedButton(
                         onClick = onAgain,
-                        modifier = Modifier.weight(1f).height(68.dp),
+                        modifier = Modifier.weight(1f).height(58.dp),
                         shape = RoundedCornerShape(16.dp),
                     ) {
                         ReviewActionContent(
@@ -1549,7 +1517,7 @@ private fun StudyActionBar(
                     }
                     Button(
                         onClick = onRemembered,
-                        modifier = Modifier.weight(1f).height(68.dp),
+                        modifier = Modifier.weight(1f).height(58.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -1562,7 +1530,6 @@ private fun StudyActionBar(
                     }
                 }
             }
-        }
     }
 }
 
@@ -1652,45 +1619,47 @@ private fun StudyHeader(
     onViewTodayResults: (() -> Unit)?,
 ) {
     val fraction = (progress.todayCompleted.toFloat() / progress.dailyGoal).coerceIn(0f, 1f)
+    val scopeSummary = if (progress.studyScopes.size > 1) {
+        stringResource(R.string.study_paths_combined, progress.studyScopes.size)
+    } else when (progress.studyScopes.single()) {
+        StudyScope.All -> stringResource(R.string.scope_all_description)
+        StudyScope.Frequent50 -> stringResource(R.string.scope_first_50_description)
+        StudyScope.Frequent -> stringResource(R.string.scope_frequent_description)
+        StudyScope.Frequent300 -> stringResource(R.string.scope_top_300_description)
+        StudyScope.Frequent500 -> stringResource(R.string.scope_top_500_description)
+        StudyScope.Prayer -> stringResource(R.string.scope_prayer_description)
+        StudyScope.ShortSurahs -> stringResource(R.string.scope_short_description)
+        StudyScope.Custom -> stringResource(R.string.scope_custom_description)
+        StudyScope.Surahs -> if (progress.selectedSurahs.size <= 4) {
+            stringResource(
+                R.string.scope_surah_list,
+                progress.selectedSurahs.sorted().joinToString(", "),
+            )
+        } else {
+            pluralStringResource(
+                R.plurals.selected_surahs_count,
+                progress.selectedSurahs.size,
+                progress.selectedSurahs.size,
+            )
+        }
+    }
+    val dueSummary = if (dueCount > 0) {
+        pluralStringResource(R.plurals.reviews_due, dueCount, dueCount)
+    } else {
+        null
+    }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(stringResource(R.string.today_word), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text(
-                if (progress.studyScopes.size > 1) {
-                    stringResource(R.string.study_paths_combined, progress.studyScopes.size)
-                } else when (progress.studyScopes.single()) {
-                    StudyScope.All -> stringResource(R.string.scope_all_description)
-                    StudyScope.Frequent50 -> stringResource(R.string.scope_first_50_description)
-                    StudyScope.Frequent -> stringResource(R.string.scope_frequent_description)
-                    StudyScope.Frequent300 -> stringResource(R.string.scope_top_300_description)
-                    StudyScope.Frequent500 -> stringResource(R.string.scope_top_500_description)
-                    StudyScope.Prayer -> stringResource(R.string.scope_prayer_description)
-                    StudyScope.ShortSurahs -> stringResource(R.string.scope_short_description)
-                    StudyScope.Custom -> stringResource(R.string.scope_custom_description)
-                    StudyScope.Surahs -> if (progress.selectedSurahs.size <= 4) {
-                        stringResource(
-                            R.string.scope_surah_list,
-                            progress.selectedSurahs.sorted().joinToString(", "),
-                        )
-                    } else {
-                        pluralStringResource(
-                            R.plurals.selected_surahs_count,
-                            progress.selectedSurahs.size,
-                            progress.selectedSurahs.size,
-                        )
-                    }
-                },
+                stringResource(R.string.today_word),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                listOfNotNull(dueSummary, scopeSummary).joinToString(" · "),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
             )
-            if (dueCount > 0) {
-                Text(
-                    pluralStringResource(R.plurals.reviews_due, dueCount, dueCount),
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
         }
         Surface(
             color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.35f),
@@ -1702,17 +1671,17 @@ private fun StudyHeader(
                     progress.streakDays,
                     progress.streakDays,
                 ),
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
             )
         }
     }
-    Spacer(Modifier.height(14.dp))
+    Spacer(Modifier.height(8.dp))
     Row(verticalAlignment = Alignment.CenterVertically) {
         LinearProgressIndicator(
             progress = { fraction },
-            modifier = Modifier.weight(1f).height(7.dp),
+            modifier = Modifier.weight(1f).height(5.dp),
             color = MaterialTheme.colorScheme.secondary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
         )
@@ -1735,6 +1704,7 @@ private fun StudyHeader(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WordCard(
     word: QuranWord,
@@ -1742,20 +1712,22 @@ private fun WordCard(
     displayedStatus: WordStatus,
     pronouncer: ArabicPronouncer,
     meaningRevealed: Boolean,
-    onRevealChange: (Boolean) -> Unit,
     onToggleCustomList: (String) -> Unit,
     onToggleAlreadyKnown: (String) -> Unit,
-    showCompleteAyah: Boolean,
-    onShowCompleteAyahChange: (Boolean) -> Unit,
 ) {
+    var showDetailsSheet by rememberSaveable(word.id) { mutableStateOf(false) }
+    val inCustomList = word.id in progress.customStudyIds
+    val customListDescription = stringResource(
+        if (inCustomList) R.string.remove_custom_list else R.string.add_custom_list,
+    )
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(
@@ -1773,11 +1745,11 @@ private fun WordCard(
                 }
                 WordStatusPill(displayedStatus)
             }
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(10.dp))
             ArabicText(
                 word.arabic,
                 modifier = Modifier.fillMaxWidth(),
-                size = 50,
+                size = 44,
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
@@ -1785,20 +1757,12 @@ private fun WordCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.titleMedium,
             )
-            TextButton(onClick = { onToggleAlreadyKnown(word.id) }) {
-                Text(
-                    stringResource(
-                        if (word.id in progress.alreadyKnownIds) {
-                            R.string.restore_to_practice
-                        } else {
-                            R.string.mark_already_known
-                        },
-                    ),
-                    style = MaterialTheme.typography.labelLarge,
-                )
-            }
-            Spacer(Modifier.height(8.dp))
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Spacer(Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 PronunciationButton(
                     word = word,
                     pronouncer = pronouncer,
@@ -1807,68 +1771,91 @@ private fun WordCard(
                     labelRes = R.string.device_voice_slow,
                     playbackRate = ArabicPronouncer.WORD_SLOW_RATE,
                 )
+                Spacer(Modifier.width(2.dp))
+                TextButton(
+                    onClick = { onToggleCustomList(word.id) },
+                    modifier = Modifier.semantics {
+                        contentDescription = customListDescription
+                    },
+                ) {
+                    Text(
+                        "${if (inCustomList) "✓" else "+"} " +
+                            stringResource(R.string.custom_list_action),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
+                Spacer(Modifier.width(2.dp))
+                TextButton(onClick = { onToggleAlreadyKnown(word.id) }) {
+                    Text(
+                        stringResource(
+                            if (word.id in progress.alreadyKnownIds) {
+                                R.string.restore_to_practice_short
+                            } else {
+                                R.string.mark_already_known_short
+                            },
+                        ),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
             }
-            Spacer(Modifier.height(14.dp))
-            WordCollectionActions(
-                word = word,
-                inCustomList = word.id in progress.customStudyIds,
-                alreadyKnown = word.id in progress.alreadyKnownIds,
-                onToggleCustomList = onToggleCustomList,
-                onToggleAlreadyKnown = {},
-                showAlreadyKnown = false,
-            )
             if (meaningRevealed) {
+                Spacer(Modifier.height(4.dp))
                 Text(
                     word.meaning,
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                 )
-                Spacer(Modifier.height(18.dp))
-                RootAndGrammar(word.root, word.grammar)
-                Spacer(Modifier.height(24.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
-                Spacer(Modifier.height(20.dp))
-                Box(Modifier.fillMaxWidth()) {
-                    Column {
-                        Text(
-                            word.reference,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        if (showCompleteAyah) {
-                            VerseExplorerPanel(word = word)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                VersePronunciationButton(
-                                    word = word,
-                                    pronouncer = pronouncer,
-                                    modifier = Modifier.weight(1f),
-                                    dense = true,
-                                    centerLabel = true,
-                                    labelRes = R.string.ayah_audio_short,
-                                )
-                                OutlinedButton(
-                                    onClick = { onShowCompleteAyahChange(false) },
-                                    modifier = Modifier.weight(1f),
-                                ) {
-                                    Text(stringResource(R.string.hide_complete_ayah))
-                                }
-                            }
-                        } else {
-                            OutlinedButton(
-                                onClick = { onShowCompleteAyahChange(true) },
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(stringResource(R.string.show_complete_ayah))
-                            }
-                        }
-                    }
+                TextButton(onClick = { showDetailsSheet = true }) {
+                    Text(stringResource(R.string.word_more_details))
                 }
-                Spacer(Modifier.height(18.dp))
+                if (showDetailsSheet) {
+                    ModalBottomSheet(onDismissRequest = { showDetailsSheet = false }) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                                .padding(horizontal = 20.dp, vertical = 8.dp),
+                        ) {
+                            Text(
+                                stringResource(R.string.word_details_title),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(Modifier.height(10.dp))
+                    RootAndGrammar(word.root, word.grammar)
+                    Spacer(Modifier.height(14.dp))
+                    Text(
+                        stringResource(R.string.context_meaning_note),
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(14.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
+                    Spacer(Modifier.height(14.dp))
+                    Text(
+                        stringResource(R.string.word_context_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        word.reference,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    VerseExplorerPanel(word = word)
+                    VersePronunciationButton(
+                        word = word,
+                        pronouncer = pronouncer,
+                        modifier = Modifier.fillMaxWidth(),
+                        dense = true,
+                        centerLabel = true,
+                        labelRes = R.string.ayah_audio_short,
+                    )
+                Spacer(Modifier.height(14.dp))
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
@@ -1881,12 +1868,11 @@ private fun WordCard(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                Spacer(Modifier.height(14.dp))
-                TextButton(onClick = { onRevealChange(false) }) {
-                    Text(stringResource(R.string.hide_meaning))
+                            Spacer(Modifier.height(28.dp))
+                        }
+                    }
                 }
             }
-            EditorialReviewPanel(word)
         }
     }
 }

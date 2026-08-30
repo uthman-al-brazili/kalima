@@ -111,8 +111,10 @@
     <string name="review_without_schedule">Next word</string>
     <string name="review_good_tomorrow">Review tomorrow</string>
     <string name="mark_already_known">I already know this word</string>
+    <string name="mark_already_known_short">I know this</string>
     <string name="mark_already_known_description">Mark as already known and remove from practice</string>
     <string name="restore_to_practice">Add back to practice</string>
+    <string name="restore_to_practice_short">Practice again</string>
     <string name="restore_to_practice_description">Restore this word to study, quiz, reminders, and lock-screen cards</string>
     <string name="already_known_confirmation">Remove this word from study, quizzes, reminders, and lock-screen cards? You can restore it from Excluded words in Vocabulary.</string>
     <string name="remove_from_practice">Remove</string>
@@ -127,6 +129,9 @@
         <item quantity="other">%1$d reviews due</item>
     </plurals>
     <string name="context_meaning_note">The meaning shown is specific to this context. The same word may have a different nuance in another verse.</string>
+    <string name="word_more_details">More details</string>
+    <string name="word_details_title">About this word</string>
+    <string name="word_context_title">In the Quran</string>
     <string name="today_word">Your word for today</string>
     <string name="today_mission_title">Today’s Arabic mission</string>
     <string name="today_mission_subtitle">Build Quranic Arabic recognition in one focused session.</string>
@@ -210,6 +215,14 @@
 
     <string name="progress_title">Your progress</string>
     <string name="progress_subtitle">Small, consistent steps build lasting understanding.</string>
+    <string name="progress_learned_of">%1$d of %2$d learned</string>
+    <string name="progress_accuracy_summary">Accuracy: %1$s (7d) · %2$s (30d)</string>
+    <string name="progress_change_study_set">Change</string>
+    <string name="progress_hide_study_set">Done</string>
+    <string name="progress_more_details">More details</string>
+    <string name="progress_more_details_note">Activity, difficult words, roots, and surahs</string>
+    <string name="progress_show_details">Show</string>
+    <string name="progress_hide_details">Hide</string>
     <string name="stat_learned">learned</string>
     <string name="stat_reviewing">reviewing</string>
     <string name="stat_due">due now</string>
@@ -492,6 +505,7 @@
     <string name="vocabulary_coverage_title">Quran vocabulary recognition</string>
     <string name="vocabulary_coverage_note">The share of Quran word occurrences whose form and lemma match a word you have learned or marked already known. This measures vocabulary recognition, not complete understanding.</string>
     <string name="vocabulary_coverage_percent">%1$d%%</string>
+    <string name="vocabulary_coverage_compact">%1$d / %2$d words</string>
     <string name="vocabulary_coverage_occurrences">%1$d of %2$d word occurrences</string>
     <string name="vocabulary_coverage_next_milestone">Next milestone: %1$d%%</string>
     <string name="vocabulary_coverage_top_milestone" formatted="false">90%+ milestone reached</string>

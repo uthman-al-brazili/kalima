@@ -19,11 +19,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -280,6 +283,7 @@ private fun WeeklyMissionActivity(activity: List<DailyMissionActivity>) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ContextCheckpointScreen(
     question: ContextCheckpointQuestion,
@@ -288,6 +292,8 @@ internal fun ContextCheckpointScreen(
     onContinue: () -> Unit,
 ) {
     var selectedOptionIndex by rememberSaveable(question.word.id) { mutableStateOf<Int?>(null) }
+    var showCompleteAyah by rememberSaveable(question.word.id) { mutableStateOf(false) }
+    val completeAyahSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val feedback = contextCheckpointFeedbackState(
         selectedOptionIndex = selectedOptionIndex,
         correctOptionIndex = question.correctOptionIndex,
@@ -297,93 +303,144 @@ internal fun ContextCheckpointScreen(
         R.string.checkpoint_blank_ayah_description,
         question.ayah.text,
     )
-    val restoredAyahDescription = stringResource(
-        R.string.checkpoint_restored_ayah_description,
-        question.ayah.restore(),
-    )
+    if (showCompleteAyah) {
+        ModalBottomSheet(
+            onDismissRequest = { showCompleteAyah = false },
+            sheetState = completeAyahSheetState,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+            ) {
+                Text(
+                    stringResource(R.string.checkpoint_restored_ayah),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    question.word.reference,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(8.dp))
+                VerseExplorerPanel(
+                    word = question.word,
+                    highlightedWordIds = setOf(question.word.id),
+                    showVersePronunciation = false,
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    question.word.verseMeaning,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.checkpoint_scope_note),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Spacer(Modifier.height(6.dp))
+                VersePronunciationButton(
+                    word = question.word,
+                    pronouncer = pronouncer,
+                    modifier = Modifier.fillMaxWidth(),
+                    labelRes = R.string.hussary_verse_recitation,
+                )
+                Spacer(Modifier.height(28.dp))
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 24.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Text(
             stringResource(R.string.context_checkpoint_title),
             color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(2.dp))
         Text(
             stringResource(R.string.context_checkpoint_intro),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
         )
-        Spacer(Modifier.height(18.dp))
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        ) {
-            Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    stringResource(R.string.quiz_cloze_prompt),
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(Modifier.height(14.dp))
-                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                    ArabicText(
-                        question.ayah.text,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .semantics { contentDescription = blankAyahDescription },
-                        size = 30,
+        Spacer(Modifier.height(10.dp))
+        if (!answered) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            ) {
+                Column(
+                    Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        stringResource(R.string.quiz_cloze_prompt),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                        ArabicText(
+                            question.ayah.text,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .semantics { contentDescription = blankAyahDescription },
+                            size = 27,
+                            color = MaterialTheme.colorScheme.primary,
+                            align = TextAlign.End,
+                        )
+                    }
+                    Text(
+                        question.word.reference,
+                        modifier = Modifier.fillMaxWidth(),
                         color = MaterialTheme.colorScheme.primary,
-                        align = TextAlign.End,
+                        textAlign = TextAlign.End,
+                        style = MaterialTheme.typography.labelMedium,
                     )
                 }
-                Text(
-                    question.word.reference,
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.End,
-                    style = MaterialTheme.typography.labelLarge,
-                )
             }
-        }
-        Spacer(Modifier.height(14.dp))
-        question.options.forEachIndexed { index, option ->
-            val choiceDescription = stringResource(
-                R.string.checkpoint_choice_description,
-                index + 1,
-                option,
-            )
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                QuizOption(
-                    text = option,
-                    arabic = true,
-                    selected = selectedOptionIndex == index,
-                    correct = index == question.correctOptionIndex,
-                    answered = answered,
-                    accessibilityDescription = choiceDescription,
-                    onClick = {
-                        if (selectedOptionIndex == null) {
-                            selectedOptionIndex = index
-                            onAnswer(question.word.id, index == question.correctOptionIndex)
-                        }
-                    },
+            Spacer(Modifier.height(10.dp))
+            question.options.forEachIndexed { index, option ->
+                val choiceDescription = stringResource(
+                    R.string.checkpoint_choice_description,
+                    index + 1,
+                    option,
                 )
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                    QuizOption(
+                        text = option,
+                        arabic = true,
+                        selected = selectedOptionIndex == index,
+                        correct = index == question.correctOptionIndex,
+                        answered = answered,
+                        accessibilityDescription = choiceDescription,
+                        onClick = {
+                            if (selectedOptionIndex == null) {
+                                selectedOptionIndex = index
+                                onAnswer(question.word.id, index == question.correctOptionIndex)
+                            }
+                        },
+                    )
+                }
+                Spacer(Modifier.height(5.dp))
             }
-            Spacer(Modifier.height(9.dp))
         }
 
         if (answered) {
-            Spacer(Modifier.height(7.dp))
+            Spacer(Modifier.height(3.dp))
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = if (feedback == ContextCheckpointFeedbackState.Correct) {
@@ -391,9 +448,9 @@ internal fun ContextCheckpointScreen(
                 } else {
                     MaterialTheme.colorScheme.errorContainer
                 },
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(16.dp),
             ) {
-                Column(Modifier.padding(18.dp)) {
+                Column(Modifier.padding(14.dp)) {
                     Text(
                         stringResource(
                             if (feedback == ContextCheckpointFeedbackState.Correct) {
@@ -410,24 +467,24 @@ internal fun ContextCheckpointScreen(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(6.dp))
                     Text(
                         stringResource(R.string.checkpoint_correct_word),
                         fontWeight = FontWeight.SemiBold,
                     )
                     Surface(
-                        modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                         color = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(12.dp),
                     ) {
                         ArabicText(
                             question.word.arabic,
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            size = 36,
+                            modifier = Modifier.fillMaxWidth().padding(6.dp),
+                            size = 30,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                         )
                     }
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(6.dp))
                     Text(
                         stringResource(
                             R.string.checkpoint_contextual_meaning,
@@ -444,58 +501,24 @@ internal fun ContextCheckpointScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(18.dp))
-            Text(
-                stringResource(R.string.checkpoint_restored_ayah),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
-            Spacer(Modifier.height(8.dp))
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                ArabicText(
-                    question.ayah.restore(),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics { contentDescription = restoredAyahDescription },
-                    size = 30,
-                    color = MaterialTheme.colorScheme.primary,
-                    align = TextAlign.End,
-                )
-            }
-            Text(
-                question.word.verseMeaning,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Spacer(Modifier.height(12.dp))
-            Text(
-                stringResource(R.string.checkpoint_scope_note),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Spacer(Modifier.height(16.dp))
-            VerseExplorerPanel(
-                word = question.word,
-                highlightedWordIds = setOf(question.word.id),
-                showVersePronunciation = false,
-            )
             Spacer(Modifier.height(10.dp))
-            VersePronunciationButton(
-                word = question.word,
-                pronouncer = pronouncer,
+            OutlinedButton(
+                onClick = { showCompleteAyah = true },
                 modifier = Modifier.fillMaxWidth(),
-                labelRes = R.string.hussary_verse_recitation,
-            )
-            Spacer(Modifier.height(16.dp))
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(stringResource(R.string.show_complete_ayah), fontWeight = FontWeight.SemiBold)
+            }
+            Spacer(Modifier.height(8.dp))
             Button(
                 onClick = onContinue,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
+                modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
                 Text(stringResource(R.string.continue_action), fontWeight = FontWeight.Bold)
             }
         }
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
     }
 }
 
@@ -511,7 +534,7 @@ internal fun StudyCompletionScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 24.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -530,14 +553,14 @@ internal fun StudyCompletionScreen(
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium,
         )
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(12.dp))
         Text(
             stringResource(R.string.words_practiced),
             modifier = Modifier.fillMaxWidth(),
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.titleSmall,
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
         Row(
             modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -547,10 +570,10 @@ internal fun StudyCompletionScreen(
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     shape = RoundedCornerShape(14.dp),
                 ) {
-                    Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                    Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                         ArabicText(
                             word.arabic,
-                            size = 24,
+                            size = 23,
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Text(word.meaning, style = MaterialTheme.typography.labelMedium)
@@ -558,35 +581,35 @@ internal fun StudyCompletionScreen(
                 }
             }
         }
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(12.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(26.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         ) {
-            Column(Modifier.padding(20.dp)) {
+            Column(Modifier.padding(16.dp)) {
                 Text(
                     payoff.featuredWord.reference,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                 )
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(6.dp))
                 if (!showInteractiveAyah) {
                     ArabicText(
                         payoff.featuredWord.verseArabic,
                         modifier = Modifier.fillMaxWidth(),
-                        size = 32,
+                        size = 30,
                         color = MaterialTheme.colorScheme.primary,
                     )
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(4.dp))
                 }
                 Text(
                     payoff.featuredWord.verseMeaning,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(10.dp))
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.primaryContainer,
@@ -598,13 +621,13 @@ internal fun StudyCompletionScreen(
                             payoff.recognizedWordCount,
                             payoff.recognizedWordCount,
                         ),
-                        modifier = Modifier.padding(14.dp),
+                        modifier = Modifier.padding(12.dp),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                     )
                 }
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(10.dp))
                 if (showInteractiveAyah) {
                     VerseExplorerPanel(
                         word = payoff.featuredWord,
@@ -621,7 +644,7 @@ internal fun StudyCompletionScreen(
                 } else {
                     Button(
                         onClick = { showInteractiveAyah = true },
-                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
                         shape = RoundedCornerShape(15.dp),
                     ) {
                         Text(
@@ -632,14 +655,14 @@ internal fun StudyCompletionScreen(
                 }
             }
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(10.dp))
         OutlinedButton(
             onClick = onFinish,
-            modifier = Modifier.fillMaxWidth().height(54.dp),
+            modifier = Modifier.fillMaxWidth().height(48.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
             Text(stringResource(R.string.finish_action), fontWeight = FontWeight.Bold)
         }
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(12.dp))
     }
 }

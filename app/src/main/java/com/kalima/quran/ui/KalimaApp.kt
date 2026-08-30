@@ -266,7 +266,6 @@ fun KalimaApp(
                             pronouncer = pronouncer,
                             onToggleCustomList = onToggleCustomList,
                             onToggleAlreadyKnown = onToggleAlreadyKnown,
-                            onShowCompleteAyahChange = onShowCompleteAyahChange,
                             onOpenFoundations = {
                                 selectedLearnSectionName = LearnSection.Alphabet.name
                                 selectedName = AppTab.Learn.name
