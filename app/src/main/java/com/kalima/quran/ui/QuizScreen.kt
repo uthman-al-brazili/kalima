@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QuranWord
+import com.kalima.quran.data.StudyPlan
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.UnderstandPathId
@@ -62,6 +63,7 @@ internal data class QuizSessionKey(
     val customStudyIds: Set<String>,
     val alreadyKnownIds: Set<String>,
     val understandPath: UnderstandPathId?,
+    val understandPathStage: Int?,
     val mode: QuizMode,
     val version: Int,
 )
@@ -75,7 +77,8 @@ internal fun StudyProgress.quizSessionKey(
     selectedSurahs = selectedSurahs,
     customStudyIds = customStudyIds,
     alreadyKnownIds = alreadyKnownIds,
-    understandPath = understandPath,
+    understandPath = understandPath ?: activeUnderstandPath,
+    understandPathStage = if (understandPath == null) activeUnderstandPathStage else null,
     mode = mode,
     version = version,
 )
@@ -115,21 +118,10 @@ fun QuizScreen(
             UnderstandPathProgress.calculate(progress, pathId, WordRepository.words)
         }
     }
-    val scopeKey = understandPath?.let { "understand:${it.name}" }
-        ?: progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
-    val selectionKey = pathState?.currentStageIndex?.let { "stage:$it" }
-        ?: progress.selectedSurahs.sorted().joinToString(",")
-    val selectedSource = remember(
-        scopeKey,
-        selectionKey,
-        progress.customStudyIds,
-    ) {
-        pathState?.unlockedWords ?: WordRepository.wordsFor(
-                progress.studyScopes,
-                progress.selectedSurahs,
-                progress.customStudyIds,
-            )
+    val studyPlan = remember(progress, understandPath) {
+        if (understandPath == null) StudyPlan.calculate(progress, WordRepository.words) else null
     }
+    val selectedSource = pathState?.unlockedWords ?: requireNotNull(studyPlan).combinedWords
     val pathQuizEligibleIds = remember(
         progress.learnedIds,
         progress.reviewingIds,

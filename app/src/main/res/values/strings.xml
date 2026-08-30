@@ -230,6 +230,22 @@
     <string name="selected_content">Conteúdo selecionado</string>
     <string name="selected_content_guided_summary">Caminho de compreensão: %1$s</string>
     <string name="selected_content_note">O progresso acima acompanha apenas o conjunto que você escolheu estudar agora.</string>
+    <string name="study_plan_title">Meu plano de estudo</string>
+    <string name="study_plan_manage">Gerenciar</string>
+    <string name="study_plan_hide">Concluir</string>
+    <string name="study_plan_summary_with_focus">%1$s · %2$s</string>
+    <string name="study_plan_focus_title">Foco guiado</string>
+    <string name="study_plan_focus_note">Um caminho opcional define a ordem e as etapas das novas palavras.</string>
+    <string name="study_plan_current_focus">Foco atual</string>
+    <string name="study_plan_no_focus">Sem foco guiado</string>
+    <string name="study_plan_supporting_title">Vocabulário complementar</string>
+    <string name="study_plan_supporting_note">Escolha um ou mais conjuntos para montar seu plano de estudo.</string>
+    <string name="study_plan_supporting_note_with_focus">Estes conjuntos continuam ativos junto com o foco. As revisões pendentes vêm primeiro, seguidas pelas palavras do caminho e pela prática extra.</string>
+    <string name="study_plan_supporting_summary">Conjuntos complementares: %1$s</string>
+    <plurals name="study_focus_with_supporting_sets">
+        <item quantity="one">Foco em %1$s · %2$d conjunto complementar</item>
+        <item quantity="other">Foco em %1$s · %2$d conjuntos complementares</item>
+    </plurals>
     <string name="choose_words">Escolher palavras</string>
     <string name="choose_words_note">A escolha também controla os cartões exibidos na tela de bloqueio.</string>
     <string name="scope_all">Todo o Alcorão</string>
@@ -240,6 +256,10 @@
     <plurals name="cards_in_current_study">
         <item quantity="one">%1$d cartão no estudo atual</item>
         <item quantity="other">%1$d cartões no estudo atual</item>
+    </plurals>
+    <plurals name="cards_in_current_plan">
+        <item quantity="one">%1$d cartão no plano atual</item>
+        <item quantity="other">%1$d cartões no plano atual</item>
     </plurals>
     <string name="learning_limit">Limite de palavras</string>
     <string name="learning_limit_description">Pare de apresentar cartões novos quando o total de palavras aprendidas ou em revisão alcançar o máximo. As palavras já vistas continuam disponíveis.</string>

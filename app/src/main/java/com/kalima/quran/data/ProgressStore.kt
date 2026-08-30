@@ -487,13 +487,7 @@ class ProgressStore private constructor(context: Context) {
 
     private fun createLockScreenSession(preview: Boolean): LockScreenSession? {
         val current = _progress.value
-        val selectedSource = current.activeUnderstandPath?.let { pathId ->
-            UnderstandPathProgress.calculate(current, pathId, WordRepository.words).unlockedWords
-        } ?: WordRepository.wordsFor(
-                current.studyScopes,
-                current.selectedSurahs,
-                current.customStudyIds,
-            )
+        val selectedSource = StudyPlan.calculate(current, WordRepository.words).combinedWords
         val available = current.limitNewWords(selectedSource)
         val quizOptions = selectedSource.filterNot { it.id in current.alreadyKnownIds }
         val source = if (current.spacedRepetitionEnabled) {

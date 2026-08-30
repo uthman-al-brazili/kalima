@@ -66,12 +66,11 @@ import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.QuranicDecodingMilestone
 import com.kalima.quran.data.ArabicFoundations
 import com.kalima.quran.data.AlphabetQuestionType
-import com.kalima.quran.data.ReviewQueue
 import com.kalima.quran.data.ReviewSchedule
 import com.kalima.quran.data.SpacedRepetition
+import com.kalima.quran.data.StudyPlan
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
-import com.kalima.quran.data.UnderstandPathProgress
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.WordStatus
 import com.kalima.quran.data.limitNewWords
@@ -111,30 +110,19 @@ fun StudyScreen(
     val coroutineScope = rememberCoroutineScope()
     val excludedMessage = stringResource(R.string.word_excluded_message)
     val undoLabel = stringResource(R.string.undo)
-    val activePathState = remember(progress) {
-        progress.activeUnderstandPath?.let { pathId ->
-            UnderstandPathProgress.calculate(progress, pathId, WordRepository.words)
+    val studyPlan = remember(progress) { StudyPlan.calculate(progress, WordRepository.words) }
+    val activePathState = studyPlan.focus
+    val scopeKey = buildString {
+        append(progress.studyScopes.map(StudyScope::name).sorted().joinToString(","))
+        activePathState?.let { state ->
+            append(":focus:")
+            append(state.definition.id.name)
+            append(':')
+            append(state.currentStageIndex)
         }
     }
-    val scopeKey = activePathState?.let { state ->
-        "understand:${state.definition.id.name}:${state.currentStageIndex}"
-    } ?: progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
-    val selectionKey = if (activePathState == null) {
-        progress.selectedSurahs.sorted().joinToString(",")
-    } else {
-        "guided"
-    }
-    val selectedWords = remember(
-        scopeKey,
-        selectionKey,
-        progress.customStudyIds,
-    ) {
-        activePathState?.unlockedWords ?: WordRepository.wordsFor(
-                progress.studyScopes,
-                progress.selectedSurahs,
-                progress.customStudyIds,
-            )
-    }
+    val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
+    val selectedWords = studyPlan.combinedWords
     val availableWords = remember(
         selectedWords,
         progress.maximumWords,
@@ -173,22 +161,24 @@ fun StudyScreen(
     val queueSourceWords = remember(availableWords, requestedWord?.id) {
         studyQueueSourceWords(availableWords, requestedWord)
     }
+    val focusWordIds = remember(studyPlan.focusWords) {
+        studyPlan.focusWords.mapTo(mutableSetOf(), QuranWord::id)
+    }
     val queuedWords = remember(
         queueSourceWords,
+        focusWordIds,
         progress.reviewSchedules,
         progress.spacedRepetitionEnabled,
     ) {
         val dailyStart = LocalDate.now().toEpochDay().toInt()
-        if (progress.spacedRepetitionEnabled) {
-            ReviewQueue.ordered(
-                words = queueSourceWords,
-                schedules = progress.reviewSchedules,
-                now = Instant.now(),
-                newStartIndex = dailyStart,
-            )
-        } else {
-            ReviewQueue.rotated(queueSourceWords, dailyStart)
-        }
+        StudyPlan.orderedQueue(
+            words = queueSourceWords,
+            focusWordIds = focusWordIds,
+            schedules = progress.reviewSchedules,
+            spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
+            now = Instant.now(),
+            newStartIndex = dailyStart,
+        )
     }
     val words = remember(queuedWords, queueSourceWords, activeIntroductionId) {
         studyWordsForPresentation(queuedWords, queueSourceWords, activeIntroductionId)
@@ -1668,7 +1658,7 @@ private fun StudyHeader(
 ) {
     val fraction = (mission.completedWords.toFloat() / mission.goalWords.coerceAtLeast(1))
         .coerceIn(0f, 1f)
-    val scopeSummary = if (progress.studyScopes.size > 1) {
+    val supportingSummary = if (progress.studyScopes.size > 1) {
         stringResource(R.string.study_paths_combined, progress.studyScopes.size)
     } else when (progress.studyScopes.single()) {
         StudyScope.All -> stringResource(R.string.scope_all_description)
@@ -1692,6 +1682,14 @@ private fun StudyHeader(
             )
         }
     }
+    val scopeSummary = progress.activeUnderstandPath?.let { pathId ->
+        pluralStringResource(
+            R.plurals.study_focus_with_supporting_sets,
+            progress.studyScopes.size,
+            understandPathTitle(pathId),
+            progress.studyScopes.size,
+        )
+    } ?: supportingSummary
     val dueSummary = if (dueCount > 0) {
         pluralStringResource(R.plurals.reviews_due, dueCount, dueCount)
     } else {

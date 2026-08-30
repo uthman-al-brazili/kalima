@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import com.kalima.quran.MainActivity
 import com.kalima.quran.R
 import com.kalima.quran.data.ProgressStore
+import com.kalima.quran.data.StudyPlan
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.limitNewWords
 import com.kalima.quran.lockscreen.LockScreenStudyService
@@ -71,11 +72,7 @@ object NotificationHelper {
         createChannel(localized)
         val progress = ProgressStore.get(context).progress.value
         val activeWords = progress.limitNewWords(
-            WordRepository.wordsFor(
-                progress.studyScopes,
-                progress.selectedSurahs,
-                progress.customStudyIds,
-            ),
+            StudyPlan.calculate(progress, WordRepository.words).combinedWords,
         )
         if (activeWords.isEmpty()) return
         val word = WordRepository.wordFor(source = activeWords)

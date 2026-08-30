@@ -46,6 +46,7 @@ import com.kalima.quran.data.AppThemeMode
 import com.kalima.quran.data.DecodedProgressBackup
 import com.kalima.quran.data.LearningWordLimiter
 import com.kalima.quran.data.LockScreenPerformanceBudget
+import com.kalima.quran.data.StudyPlan
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.QuranVerseAudioLocation
@@ -96,6 +97,8 @@ fun SettingsScreen(
         progress.studyScopes,
         progress.selectedSurahs,
         progress.customStudyIds,
+        progress.activeUnderstandPath,
+        progress.activeUnderstandPathStage,
         progress.maximumWords,
         progress.learnedIds,
         progress.reviewingIds,
@@ -105,6 +108,8 @@ fun SettingsScreen(
             progress.studyScopes.map(StudyScope::name).sorted().joinToString(","),
             progress.selectedSurahs,
             progress.customStudyIds,
+            progress.activeUnderstandPath?.name,
+            progress.activeUnderstandPathStage,
             progress.maximumWords,
             progress.learnedIds,
             progress.reviewingIds,
@@ -117,11 +122,7 @@ fun SettingsScreen(
     ) {
         value = withContext(Dispatchers.Default) {
             val wordLocations = progress.limitNewWords(
-                WordRepository.wordsFor(
-                    scopes = progress.studyScopes,
-                    selectedSurahs = progress.selectedSurahs,
-                    customStudyIds = progress.customStudyIds,
-                ),
+                StudyPlan.calculate(progress, WordRepository.words).combinedWords,
             ).mapNotNull { it.audioLocation }
                 .distinctBy(QuranWordAudioLocation::fileName)
             val verseLocations = wordLocations
@@ -928,6 +929,8 @@ private data class OfflineAudioSelectionKey(
     val studyScope: String,
     val selectedSurahs: Set<Int>,
     val customStudyIds: Set<String>,
+    val activeUnderstandPath: String?,
+    val activeUnderstandPathStage: Int,
     val maximumWords: Int,
     val learnedIds: Set<String>,
     val reviewingIds: Set<String>,

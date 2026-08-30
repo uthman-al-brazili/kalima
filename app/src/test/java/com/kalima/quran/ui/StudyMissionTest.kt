@@ -134,7 +134,7 @@ class StudyMissionTest {
 
         assertFalse(studySource.contains("UnderstandPathLauncher("))
         assertTrue(progressSource.contains("UnderstandPathLauncher("))
-        assertTrue(progressSource.contains("R.string.selected_content_guided_summary"))
+        assertTrue(progressSource.contains("R.string.study_plan_summary_with_focus"))
     }
 
     @Test

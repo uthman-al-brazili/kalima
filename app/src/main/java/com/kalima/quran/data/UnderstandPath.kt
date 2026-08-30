@@ -109,14 +109,14 @@ object UnderstandPathProgress {
         val targetWords = UnderstandPathCatalog.targetWords(definition, words)
         val wordsById = words.associateBy(QuranWord::id)
         val recognizedKeys = (progress.learnedIds + progress.alreadyKnownIds)
-            .mapNotNullTo(mutableSetOf()) { id -> wordsById[id]?.let(::recognitionKey) }
+            .mapNotNullTo(mutableSetOf()) { id -> wordsById[id]?.let(::understandingConceptKey) }
         val introducedKeys = (
             progress.reviewSchedules.keys + progress.learnedIds + progress.reviewingIds +
                 progress.alreadyKnownIds
-            ).mapNotNullTo(mutableSetOf()) { id -> wordsById[id]?.let(::recognitionKey) }
+            ).mapNotNullTo(mutableSetOf()) { id -> wordsById[id]?.let(::understandingConceptKey) }
         val correctDaysByKey = mutableMapOf<String, MutableSet<String>>()
         progress.quizCorrectDays.forEach { (id, days) ->
-            val key = wordsById[id]?.let(::recognitionKey) ?: return@forEach
+            val key = wordsById[id]?.let(::understandingConceptKey) ?: return@forEach
             correctDaysByKey.getOrPut(key, ::mutableSetOf).addAll(days)
         }
         val recalledKeys = correctDaysByKey
@@ -129,7 +129,7 @@ object UnderstandPathProgress {
             metricFor(stageTarget, recognizedKeys, recalledKeys)
         }
         val derivedStageIndex = stageWords.indexOfFirst { stageTarget ->
-            stageTarget.map(::recognitionKey).distinct().any { it !in introducedKeys }
+            stageTarget.map(::understandingConceptKey).distinct().any { it !in introducedKeys }
         }.let { firstUnintroduced ->
             if (firstUnintroduced < 0) definition.stages.lastIndex else firstUnintroduced
         }
@@ -139,7 +139,7 @@ object UnderstandPathProgress {
             derivedStageIndex
         }
         val currentStageReadyToAdvance = stageWords[currentStageIndex]
-            .map(::recognitionKey)
+            .map(::understandingConceptKey)
             .distinct()
             .all { it in introducedKeys }
         val unlockedIds = stageWords
@@ -164,10 +164,10 @@ object UnderstandPathProgress {
         recognizedKeys: Set<String>,
         recalledKeys: Set<String>,
     ): UnderstandPathMetric {
-        val concepts = targetWords.mapTo(mutableSetOf(), ::recognitionKey)
+        val concepts = targetWords.mapTo(mutableSetOf(), ::understandingConceptKey)
         return UnderstandPathMetric(
             recognizedOccurrences = targetWords.sumOf { word ->
-                if (recognitionKey(word) in recognizedKeys) word.frequency else 0
+                if (understandingConceptKey(word) in recognizedKeys) word.frequency else 0
             },
             totalOccurrences = targetWords.sumOf(QuranWord::frequency),
             recalledConcepts = concepts.count { it in recalledKeys },
@@ -175,11 +175,12 @@ object UnderstandPathProgress {
         )
     }
 
-    private fun recognitionKey(word: QuranWord): String = buildString {
-        append(VerseExplorer.normalizeArabic(word.arabic))
-        append('\u0000')
-        append(VerseExplorer.normalizeArabic(word.lemma.ifBlank { word.arabic }))
-    }
+}
+
+internal fun understandingConceptKey(word: QuranWord): String = buildString {
+    append(VerseExplorer.normalizeArabic(word.arabic))
+    append('\u0000')
+    append(VerseExplorer.normalizeArabic(word.lemma.ifBlank { word.arabic }))
 }
 
 private fun percent(numerator: Int, denominator: Int): Int =

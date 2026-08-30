@@ -1,6 +1,7 @@
 package com.kalima.quran.widget
 
 import com.kalima.quran.data.QuranWord
+import com.kalima.quran.data.StudyPlan
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.limitNewWords
@@ -9,11 +10,7 @@ import com.kalima.quran.data.limitNewWords
 internal object DailyQuranWordSelector {
     fun select(progress: StudyProgress, sequence: Int): QuranWord {
         val activeWords = progress.limitNewWords(
-            WordRepository.wordsFor(
-                progress.studyScopes,
-                progress.selectedSurahs,
-                progress.customStudyIds,
-            ),
+            StudyPlan.calculate(progress, WordRepository.words).combinedWords,
         )
         val source = activeWords.ifEmpty { WordRepository.words }
         val currentWord = WordRepository.wordById(progress.currentStudyWordId)

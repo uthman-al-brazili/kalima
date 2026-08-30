@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -44,10 +45,10 @@ import com.kalima.quran.data.HijriCalendarDate
 import com.kalima.quran.data.QuranWord
 import com.kalima.quran.data.QuranVocabularyCoverage
 import com.kalima.quran.data.SurahVocabularyCoverage
+import com.kalima.quran.data.StudyPlan
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.UnderstandPathId
-import com.kalima.quran.data.UnderstandPathProgress
 import com.kalima.quran.data.VocabularyCoverage
 import com.kalima.quran.data.WordRepository
 import com.kalima.quran.data.ReviewHistory
@@ -70,36 +71,27 @@ fun ProgressScreen(
     val studySetScopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
     val corpusWords = WordRepository.words
-    val activeUnderstandPathWords = remember(progress) {
-        progress.activeUnderstandPath?.let { pathId ->
-            UnderstandPathProgress.calculate(progress, pathId, corpusWords).unlockedWords
+    val studyPlan = remember(progress) { StudyPlan.calculate(progress, corpusWords) }
+    val statisticsScopeKey = buildString {
+        append(studySetScopeKey)
+        studyPlan.focus?.let { focus ->
+            append(":focus:")
+            append(focus.definition.id.name)
+            append(':')
+            append(focus.currentStageIndex)
         }
     }
-    val statisticsScopeKey = progress.activeUnderstandPath?.let { pathId ->
-        "understand:${pathId.name}:${progress.activeUnderstandPathStage}"
-    } ?: studySetScopeKey
-    val selectedStudySetWords = remember(
-        studySetScopeKey,
-        selectionKey,
-        progress.customStudyIds,
-    ) {
-        WordRepository.wordsFor(
-            progress.studyScopes,
-            progress.selectedSurahs,
-            progress.customStudyIds,
-        )
-    }
-    val selectedStudySetLearningWordCount = remember(
-        selectedStudySetWords,
+    val studyPlanLearningWordCount = remember(
+        studyPlan.combinedWords,
         progress.maximumWords,
         progress.learnedIds,
         progress.reviewingIds,
         progress.alreadyKnownIds,
     ) {
-        progress.limitNewWords(selectedStudySetWords).size
+        progress.limitNewWords(studyPlan.combinedWords).size
     }
     val statistics by produceState<ProgressStatistics?>(
-        initialValue = if (activeUnderstandPathWords == null) {
+        initialValue = if (studyPlan.focus == null) {
             ProgressStatisticsCache.get(progress, corpusWords)
                 ?: ProgressStatisticsCache.latest(corpusWords)
         } else {
@@ -108,7 +100,7 @@ fun ProgressScreen(
         corpusWords,
         statisticsScopeKey,
         selectionKey,
-        activeUnderstandPathWords,
+        studyPlan.combinedWords,
         progress.customStudyIds,
         progress.maximumWords,
         progress.learnedIds,
@@ -117,9 +109,9 @@ fun ProgressScreen(
         progress.reviewSchedules,
         progress.spacedRepetitionEnabled,
     ) {
-        activeUnderstandPathWords?.let { pathWords ->
+        if (studyPlan.focus != null) {
             value = withContext(Dispatchers.Default) {
-                calculateProgressStatistics(progress, corpusWords, pathWords)
+                calculateProgressStatistics(progress, corpusWords, studyPlan.combinedWords)
             }
             return@produceState
         }
@@ -138,8 +130,9 @@ fun ProgressScreen(
         .joinToString("  •  ")
     val selectedContentSummary = progress.activeUnderstandPath?.let { pathId ->
         stringResource(
-            R.string.selected_content_guided_summary,
+            R.string.study_plan_summary_with_focus,
             understandPathTitle(pathId),
+            selectedStudySetSummary,
         )
     } ?: selectedStudySetSummary
     val today = LocalDate.now()
@@ -194,38 +187,57 @@ fun ProgressScreen(
         }
         Spacer(Modifier.height(12.dp))
         ExpandableSectionHeader(
-            title = stringResource(R.string.selected_content),
+            title = stringResource(R.string.study_plan_title),
             summary = selectedContentSummary,
             expanded = showStudySetDetails,
-            showLabel = stringResource(R.string.progress_change_study_set),
-            hideLabel = stringResource(R.string.progress_hide_study_set),
+            showLabel = stringResource(R.string.study_plan_manage),
+            hideLabel = stringResource(R.string.study_plan_hide),
             onToggle = { showStudySetDetails = !showStudySetDetails },
         )
         if (showStudySetDetails) {
             Spacer(Modifier.height(8.dp))
-            UnderstandPathLauncher(
-                progress = progress,
-                onSelectPath = onSelectUnderstandPath,
-                onAdvancePath = onAdvanceUnderstandPath,
-            )
-            Spacer(Modifier.height(14.dp))
-            Text(
-                stringResource(R.string.vocabulary_sets_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                stringResource(R.string.guided_paths_note),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Spacer(Modifier.height(8.dp))
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(20.dp),
-            tonalElevation = 1.dp,
-        ) {
-            Column(Modifier.padding(18.dp)) {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(20.dp),
+                tonalElevation = 1.dp,
+            ) {
+                Column(Modifier.padding(18.dp)) {
+                    Text(
+                        stringResource(R.string.study_plan_focus_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        stringResource(R.string.study_plan_focus_note),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    UnderstandPathLauncher(
+                        progress = progress,
+                        onSelectPath = onSelectUnderstandPath,
+                        onAdvancePath = onAdvanceUnderstandPath,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        stringResource(R.string.study_plan_supporting_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        stringResource(
+                            if (progress.activeUnderstandPath == null) {
+                                R.string.study_plan_supporting_note
+                            } else {
+                                R.string.study_plan_supporting_note_with_focus
+                            },
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Spacer(Modifier.height(10.dp))
                 PathGroupLabel(R.string.path_group_frequency)
                 Spacer(Modifier.height(6.dp))
                 Row(
@@ -311,7 +323,7 @@ fun ProgressScreen(
                 ) {
                     Text(
                         stringResource(
-                            R.string.path_selected_summary,
+                            R.string.study_plan_supporting_summary,
                             selectedStudySetSummary,
                         ),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
@@ -323,16 +335,16 @@ fun ProgressScreen(
                 Spacer(Modifier.height(10.dp))
                 Text(
                     pluralStringResource(
-                        R.plurals.cards_in_current_study,
-                        selectedStudySetLearningWordCount,
-                        selectedStudySetLearningWordCount,
+                        R.plurals.cards_in_current_plan,
+                        studyPlanLearningWordCount,
+                        studyPlanLearningWordCount,
                     ),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                 )
+                }
             }
-        }
         }
         Spacer(Modifier.height(12.dp))
         ExpandableSectionHeader(

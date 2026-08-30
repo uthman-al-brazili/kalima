@@ -230,6 +230,22 @@
     <string name="selected_content">Selected content</string>
     <string name="selected_content_guided_summary">Understanding path: %1$s</string>
     <string name="selected_content_note">The progress above tracks only the set you have chosen to study now.</string>
+    <string name="study_plan_title">My study plan</string>
+    <string name="study_plan_manage">Manage</string>
+    <string name="study_plan_hide">Done</string>
+    <string name="study_plan_summary_with_focus">%1$s · %2$s</string>
+    <string name="study_plan_focus_title">Guided focus</string>
+    <string name="study_plan_focus_note">An optional path sets the order and milestones for new words.</string>
+    <string name="study_plan_current_focus">Current focus</string>
+    <string name="study_plan_no_focus">No guided focus</string>
+    <string name="study_plan_supporting_title">Supporting vocabulary</string>
+    <string name="study_plan_supporting_note">Choose one or more sets to build your study plan.</string>
+    <string name="study_plan_supporting_note_with_focus">These sets stay active alongside your focus. Due reviews come first, followed by path words and extra practice.</string>
+    <string name="study_plan_supporting_summary">Supporting sets: %1$s</string>
+    <plurals name="study_focus_with_supporting_sets">
+        <item quantity="one">%1$s focus · %2$d supporting set</item>
+        <item quantity="other">%1$s focus · %2$d supporting sets</item>
+    </plurals>
     <string name="choose_words">Choose words</string>
     <string name="choose_words_note">This choice also controls the cards shown on the lock screen.</string>
     <string name="scope_all">Whole Quran</string>
@@ -240,6 +256,10 @@
     <plurals name="cards_in_current_study">
         <item quantity="one">%1$d card in the current study set</item>
         <item quantity="other">%1$d cards in the current study set</item>
+    </plurals>
+    <plurals name="cards_in_current_plan">
+        <item quantity="one">%1$d card in the current plan</item>
+        <item quantity="other">%1$d cards in the current plan</item>
     </plurals>
     <string name="learning_limit">Word limit</string>
     <string name="learning_limit_description">Stop introducing new cards when the total number of learned or reviewing words reaches this maximum. Words you have already seen remain available.</string>

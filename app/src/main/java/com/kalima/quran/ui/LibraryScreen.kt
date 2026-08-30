@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.QuranWord
+import com.kalima.quran.data.StudyPlan
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.WordRepository
@@ -79,18 +80,8 @@ fun LibraryScreen(
             expandedId = null
         }
     }
-    val scopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
-    val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
-    val activeWords = remember(
-        scopeKey,
-        selectionKey,
-        progress.customStudyIds,
-    ) {
-        WordRepository.wordsFor(
-            progress.studyScopes,
-            progress.selectedSurahs,
-            progress.customStudyIds,
-        )
+    val activeWords = remember(progress) {
+        StudyPlan.calculate(progress, WordRepository.words).combinedWords
     }
     val libraryWordsKey = remember(
         query,
@@ -149,6 +140,11 @@ fun LibraryScreen(
             Text(stringResource(R.string.library_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Text(
                 when {
+                    progress.activeUnderstandPath != null -> pluralStringResource(
+                        R.plurals.library_available_cards,
+                        activeWords.size,
+                        activeWords.size,
+                    )
                     progress.studyScopes.size > 1 -> pluralStringResource(
                         R.plurals.library_available_cards,
                         activeWords.size,

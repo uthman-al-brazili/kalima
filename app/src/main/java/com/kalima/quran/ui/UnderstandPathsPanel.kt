@@ -95,7 +95,13 @@ internal fun UnderstandPathLauncher(
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    stringResource(R.string.understand_paths_title),
+                    stringResource(
+                        if (activeId == null) {
+                            R.string.study_plan_no_focus
+                        } else {
+                            R.string.study_plan_current_focus
+                        },
+                    ),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
