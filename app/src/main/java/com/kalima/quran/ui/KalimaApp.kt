@@ -324,8 +324,6 @@ fun KalimaApp(
                             progress = progress,
                             onStudyScopeChange = onStudyScopeChange,
                             onToggleSurah = onToggleSurah,
-                            onSelectUnderstandPath = onSelectUnderstandPath,
-                            onAdvanceUnderstandPath = onAdvanceUnderstandPath,
                             pronouncer = pronouncer,
                         )
                         }

@@ -98,20 +98,12 @@ internal fun DailyMissionScreen(
             }
         }
         Spacer(Modifier.height(16.dp))
-        UnderstandPathsPanel(
+        UnderstandPathLauncher(
             progress = progress,
             onSelectPath = onSelectUnderstandPath,
             onAdvancePath = onAdvanceUnderstandPath,
         )
-        if (progress.activeUnderstandPath != null) {
-            Spacer(Modifier.height(6.dp))
-            Text(
-                stringResource(R.string.understand_path_current_lesson),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(14.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(26.dp),

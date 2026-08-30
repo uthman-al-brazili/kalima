@@ -610,6 +610,8 @@
     <string name="understand_path_last_ten_title">Recognize the last 10 surahs</string>
     <string name="understand_path_last_ten_description">A path through surahs 105–114 with meaning and recall practice.</string>
     <string name="understand_path_start">Start path</string>
+    <string name="understand_path_choose">Choose path</string>
+    <string name="understand_path_manage">Manage</string>
     <string name="understand_path_switch">Change path</string>
     <string name="understand_path_pause">Pause path</string>
     <string name="understand_path_cancel_change">Keep current path</string>

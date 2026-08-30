@@ -8,15 +8,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +42,103 @@ import com.kalima.quran.data.UnderstandPathProgress
 import com.kalima.quran.data.UnderstandPathStage
 import com.kalima.quran.data.UnderstandPathState
 import com.kalima.quran.data.WordRepository
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun UnderstandPathLauncher(
+    progress: StudyProgress,
+    onSelectPath: (UnderstandPathId?) -> Unit,
+    onAdvancePath: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val activeId = progress.activeUnderstandPath
+    val activeState = remember(activeId, progress) {
+        activeId?.let { UnderstandPathProgress.calculate(progress, it, WordRepository.words) }
+    }
+    var showPathManager by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    if (showPathManager) {
+        ModalBottomSheet(
+            onDismissRequest = { showPathManager = false },
+            sheetState = sheetState,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                UnderstandPathsPanel(
+                    progress = progress,
+                    onSelectPath = { pathId ->
+                        onSelectPath(pathId)
+                        showPathManager = false
+                    },
+                    onAdvancePath = onAdvancePath,
+                )
+                Spacer(Modifier.height(24.dp))
+            }
+        }
+    }
+
+    Card(
+        onClick = { showPathManager = true },
+        modifier = modifier.fillMaxWidth(),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.understand_paths_title),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                if (activeId != null && activeState != null) {
+                    Text(
+                        understandPathTitle(activeId),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        understandPathStageLabel(
+                            stage = activeState.definition.stages[activeState.currentStageIndex],
+                            stageIndex = activeState.currentStageIndex,
+                            stageCount = activeState.definition.stages.size,
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                } else {
+                    Text(
+                        stringResource(R.string.understand_paths_intro),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 2,
+                    )
+                }
+            }
+            Text(
+                stringResource(
+                    if (activeId == null) {
+                        R.string.understand_path_choose
+                    } else {
+                        R.string.understand_path_manage
+                    },
+                ),
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+}
 
 @Composable
 internal fun UnderstandPathsPanel(

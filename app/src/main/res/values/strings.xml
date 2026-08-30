@@ -610,6 +610,8 @@
     <string name="understand_path_last_ten_title">Reconheça as últimas 10 suratas</string>
     <string name="understand_path_last_ten_description">Um caminho pelas suratas 105–114, com prática de significado e recordação.</string>
     <string name="understand_path_start">Iniciar caminho</string>
+    <string name="understand_path_choose">Escolher caminho</string>
+    <string name="understand_path_manage">Gerenciar</string>
     <string name="understand_path_switch">Trocar caminho</string>
     <string name="understand_path_pause">Pausar caminho</string>
     <string name="understand_path_cancel_change">Manter caminho atual</string>
