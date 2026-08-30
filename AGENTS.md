@@ -58,6 +58,10 @@ For an ordinary Android change:
    validate the affected build, resource, manifest, packaging, or integration
    surface, or when the user explicitly requests it.
 
+After every Kalima app change, install the updated debug build on the connected
+Android emulator, open the app, and navigate to the exact screen or state that
+was changed so the user can test it immediately.
+
 Do not run `verifyLockScreenRegression` for ordinary development changes unless
 the user explicitly requests it. Run it as part of the explicit release workflow
 when preparing to publish a new app version.

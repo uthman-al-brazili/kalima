@@ -523,7 +523,6 @@ fun FoundationsScreen(
             progress = progress,
             onCompleteAlphabetLesson = onCompleteAlphabetLesson,
             onAlphabetPracticeAnswer = onAlphabetPracticeAnswer,
-            onCompleteNumberLesson = onCompleteNumberLesson,
             onSkipAlphabetFoundation = onSkipAlphabetFoundation,
             pronouncer = pronouncer,
         )
@@ -595,7 +594,6 @@ private fun AlphabetFoundationScreen(
     progress: StudyProgress,
     onCompleteAlphabetLesson: () -> Unit,
     onAlphabetPracticeAnswer: (String, Boolean) -> Unit,
-    onCompleteNumberLesson: () -> Unit,
     onSkipAlphabetFoundation: () -> Unit,
     pronouncer: ArabicPronouncer,
 ) {
@@ -1044,14 +1042,6 @@ private fun AlphabetFoundationScreen(
                     }
                 }
             }
-        }
-        if (!compactActiveStudy && progress.hasNumberFoundationLesson) {
-            Spacer(Modifier.height(16.dp))
-            NumberFoundationCard(
-                progress = progress,
-                onCompleteNumberLesson = onCompleteNumberLesson,
-                pronouncer = pronouncer,
-            )
         }
         Spacer(Modifier.height(24.dp))
     }

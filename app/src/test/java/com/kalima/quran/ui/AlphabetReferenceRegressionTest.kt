@@ -78,6 +78,17 @@ class AlphabetReferenceRegressionTest {
     }
 
     @Test
+    fun `number lessons are not shown inside the alphabet course`() {
+        val study = source("ui/StudyScreen.kt")
+        val lesson = study
+            .substringAfter("private fun AlphabetFoundationScreen")
+            .substringBefore("private fun AlphabetPromptArabicText")
+
+        assertFalse(lesson.contains("NumberFoundationCard"))
+        assertFalse(lesson.contains("onCompleteNumberLesson"))
+    }
+
+    @Test
     fun `basics overview uses the compact reference header`() {
         val study = source("ui/StudyScreen.kt")
         val overview = study
