@@ -192,15 +192,8 @@ fun QuizScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 18.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
     ) {
-        Text("Quiz", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text(
-            stringResource(R.string.quiz_intro),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Spacer(Modifier.height(12.dp))
         QuizModeSelector(
             mode = mode,
             onModeChange = {
@@ -208,7 +201,7 @@ fun QuizScreen(
                 sessionVersion += 1
             },
         )
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             LinearProgressIndicator(
                 progress = { currentIndex.toFloat() / session.size },
@@ -221,9 +214,9 @@ fun QuizScreen(
                 fontWeight = FontWeight.Bold,
             )
         }
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(10.dp))
         QuizQuestionCard(question, pronouncer)
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(8.dp))
         question.options.forEachIndexed { index, option ->
             QuizOption(
                 text = option,
@@ -244,7 +237,7 @@ fun QuizScreen(
                     }
                 },
             )
-            Spacer(Modifier.height(9.dp))
+            Spacer(Modifier.height(6.dp))
         }
         if (selectedOption != null) {
             Spacer(Modifier.height(6.dp))
@@ -255,7 +248,7 @@ fun QuizScreen(
                 lastQuestion = currentIndex == session.lastIndex,
             )
         }
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(12.dp))
     }
 }
 
@@ -279,7 +272,7 @@ private fun QuizQuestionCard(question: QuizQuestion, pronouncer: ArabicPronounce
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(22.dp),
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -296,7 +289,7 @@ private fun QuizQuestionCard(question: QuizQuestion, pronouncer: ArabicPronounce
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium,
             )
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(10.dp))
             when (question.type) {
                 QuizQuestionType.ArabicToPortuguese -> {
                     ArabicText(
@@ -452,11 +445,11 @@ private fun ContextualVerse(question: QuizQuestion) {
         text = annotated,
         modifier = Modifier.fillMaxWidth(),
         textAlign = TextAlign.End,
-        fontSize = 27.sp,
-        lineHeight = 43.sp,
+        fontSize = 25.sp,
+        lineHeight = 36.sp,
         fontWeight = FontWeight.Medium,
     )
-    Spacer(Modifier.height(10.dp))
+    Spacer(Modifier.height(6.dp))
     Text(
         question.word.reference,
         color = MaterialTheme.colorScheme.primary,
@@ -510,7 +503,7 @@ internal fun QuizOption(
         } else {
             Text(
                 text,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 15.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 11.dp),
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -534,7 +527,7 @@ private fun QuizFeedback(
         },
         shape = RoundedCornerShape(18.dp),
     ) {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(12.dp)) {
             Text(
                 if (correct) {
                     stringResource(R.string.correct)
@@ -549,7 +542,7 @@ private fun QuizFeedback(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
             )
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(4.dp))
             Text(
                 stringResource(R.string.quiz_word_translation, question.word.meaning),
                 color = if (correct) {
@@ -560,27 +553,19 @@ private fun QuizFeedback(
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                stringResource(
+                "${stringResource(
                     R.string.reference_root,
                     question.word.transliteration,
                     question.word.root,
-                ),
+                )} • ${question.word.reference}",
                 color = if (correct) {
                     MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f)
                 } else {
                     MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.78f)
                 },
-            )
-            Text(
-                question.word.reference,
-                color = if (correct) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onErrorContainer
-                },
                 style = MaterialTheme.typography.bodySmall,
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
             Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(
