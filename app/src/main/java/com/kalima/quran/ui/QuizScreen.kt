@@ -136,6 +136,18 @@ fun QuizScreen(
     var modeName by rememberSaveable { mutableStateOf(QuizMode.Mixed.name) }
     val mode = QuizMode.entries.firstOrNull { it.name == modeName } ?: QuizMode.Mixed
     var sessionVersion by rememberSaveable { mutableIntStateOf(0) }
+    var quizStarted by rememberSaveable { mutableStateOf(false) }
+    if (!quizStarted) {
+        QuizModeStartScreen(
+            mode = mode,
+            onModeChange = { modeName = it.name },
+            onStart = {
+                sessionVersion += 1
+                quizStarted = true
+            },
+        )
+        return
+    }
     val sessionKey = progress.quizSessionKey(mode, sessionVersion)
     val sessionSeed by rememberSaveable(sessionKey) { mutableIntStateOf(Random.Default.nextInt()) }
     val targets = remember(selectedWords, mode) {
@@ -149,7 +161,7 @@ fun QuizScreen(
             mode = mode,
             onModeChange = {
                 modeName = it.name
-                sessionVersion += 1
+                quizStarted = false
             },
         )
         return
@@ -167,7 +179,7 @@ fun QuizScreen(
             mode = mode,
             onModeChange = {
                 modeName = it.name
-                sessionVersion += 1
+                quizStarted = false
             },
         )
         return
@@ -182,7 +194,7 @@ fun QuizScreen(
         QuizSummary(
             score = score,
             total = session.size,
-            onNewQuiz = { sessionVersion += 1 },
+            onNewQuiz = { quizStarted = false },
         )
         return
     }
@@ -194,14 +206,6 @@ fun QuizScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 10.dp),
     ) {
-        QuizModeSelector(
-            mode = mode,
-            onModeChange = {
-                modeName = it.name
-                sessionVersion += 1
-            },
-        )
-        Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             LinearProgressIndicator(
                 progress = { currentIndex.toFloat() / session.size },
@@ -248,7 +252,38 @@ fun QuizScreen(
                 lastQuestion = currentIndex == session.lastIndex,
             )
         }
-        Spacer(Modifier.height(12.dp))
+        if (selectedOption == null) {
+            Spacer(Modifier.height(12.dp))
+        }
+    }
+}
+
+@Composable
+private fun QuizModeStartScreen(
+    mode: QuizMode,
+    onModeChange: (QuizMode) -> Unit,
+    onStart: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 24.dp),
+    ) {
+        Text(
+            stringResource(R.string.quiz_choose_mode),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            stringResource(R.string.quiz_intro),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Spacer(Modifier.height(16.dp))
+        QuizModeSelector(mode = mode, onModeChange = onModeChange)
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.start_quiz))
+        }
     }
 }
 
@@ -341,7 +376,7 @@ private fun QuizQuestionCard(question: QuizQuestion, pronouncer: ArabicPronounce
                     ArabicText(
                         VerseExcerptBuilder.buildCloze(question.word),
                         modifier = Modifier.fillMaxWidth(),
-                        size = 28,
+                        size = 24,
                         align = TextAlign.End,
                     )
                     Text(
@@ -496,8 +531,8 @@ internal fun QuizOption(
         if (arabic) {
             ArabicText(
                 text,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                size = 28,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 7.dp),
+                size = 24,
                 color = MaterialTheme.colorScheme.primary,
             )
         } else {
@@ -614,7 +649,7 @@ private fun QuizSummary(
         )
         Spacer(Modifier.height(22.dp))
         Button(onClick = onNewQuiz) {
-            Text(stringResource(R.string.start_another_quiz))
+            Text(stringResource(R.string.choose_quiz_mode_action))
         }
     }
 }

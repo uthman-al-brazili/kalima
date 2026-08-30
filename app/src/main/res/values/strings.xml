@@ -287,6 +287,8 @@
     <string name="surah_search_hint">Número ou nome da sura</string>
     <string name="done">Concluir</string>
 
+    <string name="quiz_choose_mode">Escolha um modo de quiz</string>
+    <string name="start_quiz">Começar quiz</string>
     <string name="quiz_intro">Cinco palavras aleatórias do conteúdo selecionado, sem cronômetro, penalidades nem efeito na programação do estudo.</string>
     <string name="quiz_not_enough_options">Ainda não há alternativas distintas suficientes para este modo. Adicione mais palavras ao conteúdo selecionado ou escolha outro modo.</string>
     <string name="quiz_arabic_to_meaning">Qual é o significado desta palavra?</string>
@@ -310,7 +312,7 @@
     <string name="quiz_keep_practicing">Tudo bem. Pratique essas palavras novamente quando quiser.</string>
     <string name="overall_accuracy">Precisão geral: %1$d%%</string>
     <string name="quiz_session_accuracy">Precisão neste quiz: %1$d%%</string>
-    <string name="start_another_quiz">Começar outro quiz</string>
+    <string name="choose_quiz_mode_action">Escolher modo do quiz</string>
 
     <string name="quick_study">ESTUDO RÁPIDO</string>
     <string name="quick_quiz">QUIZ RÁPIDO</string>
