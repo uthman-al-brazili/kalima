@@ -3,6 +3,16 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.33.0 — 2026-08-30
+
+- Added adaptive Arabic decoding practice and separated alphabet and number
+  foundations into focused learning tabs.
+- Added offline pronunciation audio for Arabic-Indic numbers.
+- Added guided Quran understanding paths with contextual checkpoints that can
+  be launched directly from the daily mission.
+- Added a clearer quiz start experience and streamlined quiz, study, mission,
+  and progress layouts.
+
 ## 0.32.0 — 2026-08-29
 
 - Added fully offline Quran recitation recognition that follows spoken words

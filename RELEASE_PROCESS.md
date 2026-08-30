@@ -32,15 +32,20 @@ antes de qualquer commit, tag ou push.
    o lint, `verifyLockScreenRegression` e a montagem do artefato distribuível
    solicitado, seguindo o fluxo de assinatura correspondente. Não montar um APK
    de debug separado apenas para backup.
-5. Somente com autorização Git explícita do usuário, criar um commit e a tag
+5. Em um dispositivo Android 14 compatível, instalar o APK candidato e deixar o
+   aprendizado na tela bloqueada pronto para o teste manual do usuário. Lembrar o
+   usuário de fazer um ciclo real de tela desligada/ligada com o aparelho ainda
+   bloqueado, aguardar sua confirmação explícita de sucesso antes de publicar e
+   não executar esse ciclo em nome do usuário.
+6. Somente com autorização Git explícita do usuário, criar um commit e a tag
    anotada `vX.Y.Z`.
-6. Gerar o código-fonte restaurável a partir da tag:
+7. Gerar o código-fonte restaurável a partir da tag:
 
        git archive --format=zip --output=releases/kalima-X.Y.Z-source.zip vX.Y.Z
 
-7. Calcular o SHA-256 do ZIP e de qualquer artefato distribuível retido para a
+8. Calcular o SHA-256 do ZIP e de qualquer artefato distribuível retido para a
    versão e registrá-los em `releases/SHA256SUMS.txt`.
-8. Publicar a release e seus artefatos no GitHub e validar localmente a
+9. Publicar a release e seus artefatos no GitHub e validar localmente a
    compilação do site. Nunca implantar `website/` nem criar uma prévia pública
    sem autorização explícita do usuário para essa publicação no pedido atual.
    Um pedido geral para publicar uma release do app não autoriza a implantação

@@ -10,8 +10,8 @@ const facts = {
   email: 'uthman-al-brazili@proton.me',
   support: 'mailto:uthman-al-brazili@proton.me?subject=Supporting%20Kalima',
   repository: 'https://github.com/uthman-al-brazili/kalima',
-  release: 'https://github.com/uthman-al-brazili/kalima/releases/tag/v0.32.0',
-  apk: 'https://github.com/uthman-al-brazili/kalima/releases/download/v0.32.0/kalima-0.32.0-release.apk',
+  release: 'https://github.com/uthman-al-brazili/kalima/releases/tag/v0.33.0',
+  apk: 'https://github.com/uthman-al-brazili/kalima/releases/download/v0.33.0/kalima-0.33.0-release.apk',
   obtainium: 'https://github.com/ImranR98/Obtainium/releases',
 };
 
@@ -74,7 +74,7 @@ const content = {
       kicker: 'Kalima for Android',
       title: 'Turn unlock moments into Quranic Arabic practice.',
       body: 'Download the official signed APK from GitHub. Kalima is free, bilingual, private, and built for offline-first study.',
-      cta: 'Download Kalima 0.32.0',
+      cta: 'Download Kalima 0.33.0',
       secondary: 'View the GitHub release',
       installKicker: 'Updates through GitHub',
       installTitle: 'Install once. Keep future updates simple.',
@@ -139,7 +139,7 @@ const content = {
       kicker: 'Kalima para Android',
       title: 'Transforme o desbloqueio em prática de árabe corânico.',
       body: 'Baixe o APK oficial assinado pelo GitHub. O Kalima é gratuito, bilíngue, privado e feito para estudar mesmo sem internet.',
-      cta: 'Baixar Kalima 0.32.0',
+      cta: 'Baixar Kalima 0.33.0',
       secondary: 'Ver a versão no GitHub',
       installKicker: 'Atualizações pelo GitHub',
       installTitle: 'Instale uma vez. Simplifique as próximas atualizações.',

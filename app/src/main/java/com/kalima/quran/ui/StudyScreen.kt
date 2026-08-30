@@ -50,6 +50,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -81,7 +82,6 @@ import com.kalima.quran.data.needsAlphabetFoundation
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.Locale
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -1197,7 +1197,7 @@ private fun AlphabetDecodingMilestone(
         }
     }
     if (meaningVisible) {
-        val meaning = if (Locale.getDefault().language == "pt") {
+        val meaning = if (LocalLocale.current.language == "pt") {
             milestone.meaningPortuguese
         } else {
             milestone.meaningEnglish

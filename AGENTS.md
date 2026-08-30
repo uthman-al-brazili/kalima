@@ -112,5 +112,7 @@ turns on, including on a Samsung Galaxy M23 5G running Android 14. They must not
 wait for `ACTION_USER_PRESENT`. Never remove or bypass the manifest/window
 `showWhenLocked` declarations, the `ACTION_SCREEN_ON` launch path, or the
 explicit locked-device safety allowance. For a release, when a compatible
-Android 14 device is connected, install the candidate APK and exercise a real
-screen-off/screen-on cycle.
+Android 14 device is connected, install the candidate APK and leave lock-screen
+learning ready for the user to test. Remind the user to exercise a real locked
+screen-off/screen-on cycle, wait for their explicit confirmation that it passed
+before publishing, and do not perform that cycle on the user's behalf.
