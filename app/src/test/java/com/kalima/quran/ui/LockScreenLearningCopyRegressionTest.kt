@@ -28,6 +28,24 @@ class LockScreenLearningCopyRegressionTest {
         assertTrue(settings.contains("onPauseLockScreenOneHour"))
     }
 
+    @Test
+    fun `enabling lock screen study requests notification permission without making it mandatory`() {
+        val activity = source("java/com/kalima/quran/MainActivity.kt")
+        val lockScreenChange = activity.substringAfter("private fun changeLockScreen")
+            .substringBefore("private fun continueLockScreenEnable")
+        val permissionCallback = activity.substringAfter(
+            "private val lockScreenNotificationPermission",
+        ).substringBefore("private val overlayPermission")
+
+        assertTrue(lockScreenChange.contains("Build.VERSION_CODES.TIRAMISU"))
+        assertTrue(
+            lockScreenChange.contains(
+                "lockScreenNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)",
+            ),
+        )
+        assertTrue(permissionCallback.contains("continueLockScreenEnable()"))
+    }
+
     private fun assertRequiredLockScreenCopy(strings: String) {
         assertTrue(strings.contains("onboarding_lock_screen_title"))
         assertTrue(strings.contains("onboarding_lock_screen_description"))

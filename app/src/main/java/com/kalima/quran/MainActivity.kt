@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
         if (uri != null) inspectBackup(uri)
     }
 
-    private val notificationPermission = registerForActivityResult(
+    private val reminderNotificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
         if (granted) {
@@ -76,6 +76,12 @@ class MainActivity : ComponentActivity() {
             store.setReminderEnabled(true)
             ReminderScheduler.schedule(this)
         }
+    }
+
+    private val lockScreenNotificationPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) {
+        continueLockScreenEnable()
     }
 
     private val overlayPermission = registerForActivityResult(
@@ -216,8 +222,22 @@ class MainActivity : ComponentActivity() {
             return
         }
 
+        val needsNotificationPermission =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+        if (needsNotificationPermission) {
+            lockScreenNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            return
+        }
+
+        continueLockScreenEnable()
+    }
+
+    private fun continueLockScreenEnable() {
+        val store = loadedProgressStore ?: return
         if (Settings.canDrawOverlays(this)) {
-            progressStore.setLockScreenEnabled(true)
+            store.setLockScreenEnabled(true)
             LockScreenStudyService.start(this)
             return
         }
@@ -279,7 +299,7 @@ class MainActivity : ComponentActivity() {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED
         if (needsPermission) {
-            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            reminderNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
             progressStore.setReminderEnabled(true)
             ReminderScheduler.schedule(this)
