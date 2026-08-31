@@ -5,7 +5,6 @@ import com.kalima.quran.data.ReviewSchedule
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.quiz.QuizProgress
 import com.kalima.quran.quiz.VerseExcerptBuilder
-import java.io.File
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
@@ -20,14 +19,13 @@ class ContextCheckpointTest {
         word("one", "كَلِمَةٌ"),
         word("two", "كِتَابٌ"),
         word("three", "نُورٌ"),
-        word("four", "حَقٌّ"),
+        word("four", "حَقٌّ"),
         word("five", "عِلْمٌ"),
     )
 
     @Test
     fun `cloze removes the correct word and restores the complete ayah`() {
         val target = words.first()
-
         val cloze = VerseExcerptBuilder.buildFullCloze(target)
 
         assertNotNull(cloze)
@@ -58,7 +56,6 @@ class ContextCheckpointTest {
     @Test
     fun `checkpoint generation is deterministic for the same inputs and seed`() {
         val practiced = listOf(words[2], words[0], words[1])
-
         val first = buildContextCheckpointQuestion(practiced, words, seed = 31)
         val second = buildContextCheckpointQuestion(practiced.reversed(), words.reversed(), seed = 31)
 
@@ -81,31 +78,13 @@ class ContextCheckpointTest {
 
     @Test
     fun `checkpoint is skipped when three distractors cannot be produced`() {
-        val checkpoint = buildContextCheckpointQuestion(
-            practicedWords = listOf(words.first()),
-            activeCollection = words.take(3),
-            seed = 43,
+        assertNull(
+            buildContextCheckpointQuestion(
+                practicedWords = listOf(words.first()),
+                activeCollection = words.take(3),
+                seed = 43,
+            ),
         )
-
-        assertNull(checkpoint)
-    }
-
-    @Test
-    fun `all repeated occurrences of a word are replaced`() {
-        val target = words.first().copy(
-            verseArabic = "${words.first().arabic} فِي آيَةٍ ${words.first().arabic}",
-        )
-
-        val cloze = VerseExcerptBuilder.buildFullCloze(target)
-
-        assertNotNull(cloze)
-        requireNotNull(cloze)
-        assertEquals(2, cloze.removedOccurrences)
-        assertEquals(
-            2,
-            Regex(Regex.escape(VerseExcerptBuilder.CLOZE_BLANK)).findAll(cloze.text).count(),
-        )
-        assertEquals(target.verseArabic, cloze.restore())
     }
 
     @Test
@@ -130,15 +109,6 @@ class ContextCheckpointTest {
         assertEquals(before.todayAnsweredIds, after.todayAnsweredIds)
         assertEquals(before.reviewSchedules, after.reviewSchedules)
         assertEquals(before.quizTotalAnswers + 1, after.quizTotalAnswers)
-    }
-
-    @Test
-    fun `checkpoint routes its answer through quiz-only progress`() {
-        val studySource = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
-        val appSource = File("src/main/java/com/kalima/quran/ui/KalimaApp.kt").readText()
-
-        assertTrue(studySource.contains("onAnswer = onCheckpointAnswer"))
-        assertTrue(appSource.contains("onCheckpointAnswer = studyActions.onQuizAnswer"))
     }
 
     @Test

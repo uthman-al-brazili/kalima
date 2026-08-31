@@ -1,11 +1,12 @@
-package com.kalima.quran.ui
+package com.kalima.quran.architecture
 
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class UiStructureRegressionTest {
+/** Source-layout checks belong here; user-visible behavior belongs in androidTest. */
+class UiSourceArchitectureTest {
     @Test
     fun `Kalima app boundary stays grouped by state and actions`() {
         val source = uiFile("KalimaApp.kt").readText()
@@ -17,13 +18,7 @@ class UiStructureRegressionTest {
             .filter(String::isNotEmpty)
             .toList()
 
-        assertEquals(
-            listOf(
-                "state: KalimaUiState,",
-                "actions: KalimaAppActions,",
-            ),
-            parameters,
-        )
+        assertEquals(listOf("state: KalimaUiState,", "actions: KalimaAppActions,"), parameters)
     }
 
     @Test
@@ -33,10 +28,7 @@ class UiStructureRegressionTest {
             .map { it.name to it.readLines().size }
             .filter { (_, lines) -> lines > MAX_UI_FILE_LINES }
 
-        assertTrue(
-            "UI files over $MAX_UI_FILE_LINES lines: $oversized",
-            oversized.isEmpty(),
-        )
+        assertTrue("UI files over $MAX_UI_FILE_LINES lines: $oversized", oversized.isEmpty())
     }
 
     private fun uiFile(name: String): File = File(uiDirectory(), name)

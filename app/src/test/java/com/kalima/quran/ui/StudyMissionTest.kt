@@ -5,7 +5,6 @@ import com.kalima.quran.data.ReviewEvent
 import com.kalima.quran.data.ReviewSource
 import com.kalima.quran.data.StudyProgress
 import com.kalima.quran.data.VerseToken
-import java.io.File
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -47,16 +46,6 @@ class StudyMissionTest {
     }
 
     @Test
-    fun `understanding path management lives in progress instead of study`() {
-        val studySource = File("src/main/java/com/kalima/quran/ui/StudyMissionScreen.kt").readText()
-        val progressSource = File("src/main/java/com/kalima/quran/ui/ProgressScreen.kt").readText()
-
-        assertFalse(studySource.contains("UnderstandPathLauncher("))
-        assertTrue(progressSource.contains("UnderstandPathLauncher("))
-        assertTrue(progressSource.contains("R.string.study_plan_summary_with_focus"))
-    }
-
-    @Test
     fun `completion payoff chooses the reviewed ayah with the most recognized words`() {
         val first = word("first")
         val second = word("second")
@@ -83,53 +72,12 @@ class StudyMissionTest {
     }
 
     @Test
-    fun `completion is rendered before the empty queue fallback`() {
-        val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
-        assertTrue(
-            source.indexOf("if (showCompletion && completedSessionWordIds.isNotEmpty())") <
-                source.indexOf("if (words.isEmpty())"),
-        )
-    }
-
-    @Test
     fun `guided empty plan stays on mission while routed launches bypass it`() {
         assertTrue(shouldShowDailyMission(true, true, false, false, false))
         assertTrue(shouldShowDailyMission(false, true, false, false, false))
         assertFalse(shouldShowDailyMission(false, false, false, false, false))
         assertFalse(shouldShowDailyMission(false, true, false, true, false))
         assertFalse(shouldShowDailyMission(false, true, false, false, true))
-    }
-
-    @Test
-    fun `foreground completion uses the snapshot and not the legacy daily goal`() {
-        val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
-
-        assertTrue(source.contains("plannedWordIds = ArrayList(previewPlan.wordIds)"))
-        assertTrue(source.contains("isStudySessionComplete(requiredIds, completed)"))
-        assertTrue(source.contains("sessionCheckpointRequested = previewPlan.requestsContextCheckpoint"))
-        assertTrue(source.contains("if (sessionCheckpointRequested) buildContextCheckpointQuestion("))
-        assertFalse(source.contains("progress.dailyGoal"))
-    }
-
-    @Test
-    fun `mission refresh and local date reset preserve a bounded session snapshot`() {
-        val source = File("src/main/java/com/kalima/quran/ui/StudyScreen.kt").readText()
-
-        assertTrue(source.contains("delay(MISSION_REFRESH_MILLIS)"))
-        assertTrue(source.contains("Lifecycle.Event.ON_RESUME"))
-        assertTrue(source.contains("buildMissionActivity(progress, missionNow)"))
-        assertTrue(source.contains("if (missionSessionDate != missionDate.toString())"))
-        assertTrue(source.contains("plannedWordIds = arrayListOf()"))
-        assertTrue(source.contains("completedSessionWordIds = arrayListOf()"))
-    }
-
-    @Test
-    fun `completion context and interactive ayah avoid duplicate audio actions`() {
-        val source = File("src/main/java/com/kalima/quran/ui/StudyMissionScreen.kt").readText()
-
-        assertTrue(source.contains("R.string.explore_ayah_word_by_word"))
-        assertFalse(source.contains("R.string.read_the_ayah"))
-        assertTrue(source.contains("showVersePronunciation = false"))
     }
 
     private fun word(id: String) = QuranWord(
