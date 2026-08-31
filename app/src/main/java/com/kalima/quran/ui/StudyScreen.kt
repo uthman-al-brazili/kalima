@@ -406,8 +406,14 @@ fun StudyScreen(
             moveToNextWord()
         }
     }
+    val requiredWordIds = plannedWordIds.ifEmpty { listOf(word.id) }
+    val isLastSessionWord = isFinalStudySessionWord(
+        requiredWordIds = requiredWordIds,
+        completedWordIds = completedSessionWordIds,
+        currentWordId = word.id,
+    )
     val nextActionOpensCheckpoint = isNewPresentation && sessionCheckpointRequested &&
-        plannedWordIds.all { it == word.id || it in completedSessionWordIds }
+        isLastSessionWord
     val scrollState = rememberScrollState()
     var scrollPositionWordId by rememberSaveable(scopeKey, selectionKey) {
         mutableStateOf<String?>(null)
@@ -483,6 +489,7 @@ fun StudyScreen(
                 meaningRevealed = meaningRevealed,
                 isNewPresentation = isNewPresentation,
                 nextActionOpensCheckpoint = nextActionOpensCheckpoint,
+                nextActionCompletesSession = isLastSessionWord,
                 spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
                 goodTiming = goodReviewTiming(
                     spacedRepetitionEnabled = progress.spacedRepetitionEnabled,
@@ -1510,6 +1517,7 @@ private fun StudyActionBar(
     meaningRevealed: Boolean,
     isNewPresentation: Boolean,
     nextActionOpensCheckpoint: Boolean,
+    nextActionCompletesSession: Boolean,
     spacedRepetitionEnabled: Boolean,
     goodTiming: String,
     onRevealMeaning: () -> Unit,
@@ -1537,6 +1545,8 @@ private fun StudyActionBar(
                         stringResource(
                             if (nextActionOpensCheckpoint) {
                                 R.string.continue_to_context_checkpoint
+                            } else if (nextActionCompletesSession) {
+                                R.string.finish_action
                             } else {
                                 R.string.next_word
                             },
@@ -1671,6 +1681,13 @@ internal fun studyQueueSourceWords(
 
 internal fun studySessionPosition(completedWords: Int, sessionWords: Int): Int =
     (completedWords + 1).coerceIn(1, sessionWords.coerceAtLeast(1))
+
+internal fun isFinalStudySessionWord(
+    requiredWordIds: List<String>,
+    completedWordIds: Collection<String>,
+    currentWordId: String,
+): Boolean = requiredWordIds.isNotEmpty() &&
+    requiredWordIds.all { it == currentWordId || it in completedWordIds }
 
 @Composable
 private fun StudyHeader(

@@ -2,6 +2,8 @@ package com.kalima.quran.ui
 
 import com.kalima.quran.data.WordRepository
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class StudyPresentationTest {
@@ -11,6 +13,24 @@ class StudyPresentationTest {
     fun `session progress shows the current word as a one based position`() {
         assertEquals(1, studySessionPosition(completedWords = 0, sessionWords = 4))
         assertEquals(4, studySessionPosition(completedWords = 3, sessionWords = 4))
+    }
+
+    @Test
+    fun `last session word uses the finishing action`() {
+        assertTrue(
+            isFinalStudySessionWord(
+                requiredWordIds = listOf("first", "last"),
+                completedWordIds = listOf("first"),
+                currentWordId = "last",
+            ),
+        )
+        assertFalse(
+            isFinalStudySessionWord(
+                requiredWordIds = listOf("first", "last"),
+                completedWordIds = emptyList(),
+                currentWordId = "first",
+            ),
+        )
     }
 
     @Test
