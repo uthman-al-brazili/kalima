@@ -80,6 +80,7 @@
     <string name="study_lock_screen_description">Ative, se quiser, um cartão curto de árabe corânico quando a tela bloqueada acender. O Android exige a permissão “Aparecer sobre outros apps”; o Kalima nunca desbloqueia nem contorna a segurança do aparelho.</string>
     <string name="study_lock_screen_enable">Ativar cartões</string>
     <string name="study_lock_screen_not_now">Agora não</string>
+    <string name="lock_screen_recall_before_reveal">Tente lembrar o significado.</string>
     <string name="enable">Ativar</string>
     <string name="review_again">Ainda aprendendo</string>
     <string name="review_again_timing">Rever em 10 min</string>

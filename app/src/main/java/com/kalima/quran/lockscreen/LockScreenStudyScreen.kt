@@ -69,7 +69,7 @@ fun LockScreenStudyScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .systemBarsPadding()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -81,7 +81,7 @@ fun LockScreenStudyScreen(
                         Text(stringResource(R.string.quick_study), color = Color.White.copy(alpha = 0.65f), style = MaterialTheme.typography.labelSmall)
                     }
                     TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.not_now), color = Color.White)
+                        Text(stringResource(R.string.study_lock_screen_not_now), color = Color.White)
                     }
                 }
                 Column(
@@ -90,38 +90,40 @@ fun LockScreenStudyScreen(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(4.dp))
                     Surface(
                         color = Gold.copy(alpha = 0.18f),
                         shape = RoundedCornerShape(100.dp),
                     ) {
                         Text(
                             word.category,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                             color = Gold,
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.labelMedium,
                         )
                     }
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(8.dp))
                     ArabicText(
                         text = word.arabic,
                         modifier = Modifier.fillMaxWidth(),
-                        size = 56,
+                        size = 50,
                         color = Gold,
                     )
                     Text(
                         word.transliteration,
                         color = Color.White.copy(alpha = 0.7f),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(4.dp))
                     PronunciationButton(
                         word = word,
                         pronouncer = pronouncer,
+                        modifier = Modifier.fillMaxWidth().height(38.dp),
+                        dense = true,
                         contentColor = Gold,
                         borderColor = Gold.copy(alpha = 0.65f),
                     )
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(8.dp))
                     if (meaningRevealed) {
                         Text(
                             word.meaning,
@@ -141,26 +143,26 @@ fun LockScreenStudyScreen(
                         }
                     } else {
                         Text(
-                            stringResource(R.string.recall_before_reveal),
+                            stringResource(R.string.lock_screen_recall_before_reveal),
                             modifier = Modifier.fillMaxWidth(),
                             color = Color.White.copy(alpha = 0.78f),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             textAlign = TextAlign.Center,
                         )
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(8.dp))
                         Button(
                             onClick = { meaningRevealed = true },
-                            modifier = Modifier.fillMaxWidth().height(52.dp),
+                            modifier = Modifier.fillMaxWidth().height(46.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Gold,
                                 contentColor = Forest,
                             ),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(14.dp),
                         ) {
                             Text(stringResource(R.string.reveal_meaning), fontWeight = FontWeight.Bold)
                         }
                     }
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(4.dp))
                     if (confirmingAlreadyKnown) {
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
@@ -201,38 +203,52 @@ fun LockScreenStudyScreen(
                         }
                     } else {
                         TextButton(onClick = { confirmingAlreadyKnown = true }) {
-                            Text(stringResource(R.string.mark_already_known), color = Gold)
+                            Text(stringResource(R.string.mark_already_known_short), color = Gold)
                         }
                     }
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(4.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Surface(color = Color.White.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
                             Text(
                                 stringResource(R.string.root_value, word.root),
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                                 color = Color.White,
+                                style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.SemiBold,
                             )
                         }
                         Surface(color = Color.White.copy(alpha = 0.1f), shape = RoundedCornerShape(12.dp)) {
                             Text(
                                 word.grammar,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                                 color = Color.White.copy(alpha = 0.8f),
                                 style = MaterialTheme.typography.labelMedium,
                             )
                         }
                     }
-                    Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(12.dp))
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = Cream,
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(20.dp),
                     ) {
-                        Column(Modifier.padding(20.dp)) {
-                            Text(word.reference, color = Forest, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(8.dp))
+                        Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
                             if (completeAyahVisible) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(word.reference, color = Forest, fontWeight = FontWeight.Bold)
+                                    TextButton(
+                                        onClick = {
+                                            completeAyahVisible = false
+                                            onShowCompleteAyahChange(false)
+                                        },
+                                    ) {
+                                        Text(stringResource(R.string.hide_complete_ayah))
+                                    }
+                                }
                                 ArabicText(
                                     word.verseArabic,
                                     modifier = Modifier.fillMaxWidth(),
@@ -240,49 +256,38 @@ fun LockScreenStudyScreen(
                                     color = Forest,
                                     align = TextAlign.End,
                                 )
-                                TextButton(
-                                    onClick = {
-                                        completeAyahVisible = false
-                                        onShowCompleteAyahChange(false)
-                                    },
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    Text(stringResource(R.string.hide_complete_ayah))
-                                }
                             } else {
-                                OutlinedButton(
-                                    onClick = {
-                                        completeAyahVisible = true
-                                        onShowCompleteAyahChange(true)
-                                    },
+                                Row(
                                     modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Text(stringResource(R.string.show_complete_ayah))
+                                    Text(word.reference, color = Forest, fontWeight = FontWeight.Bold)
+                                    TextButton(
+                                        onClick = {
+                                            completeAyahVisible = true
+                                            onShowCompleteAyahChange(true)
+                                        },
+                                    ) {
+                                        Text(stringResource(R.string.show_complete_ayah))
+                                    }
                                 }
                             }
-                            Spacer(Modifier.height(14.dp))
                             HorizontalDivider(color = Muted.copy(alpha = 0.2f))
-                            Spacer(Modifier.height(12.dp))
-                            Text("💡 ${word.learnerInsight}", color = Forest, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(Modifier.height(8.dp))
+                            Text("💡 ${word.learnerInsight}", color = Forest, style = MaterialTheme.typography.bodySmall)
                         }
                     }
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(10.dp))
                     OutlinedButton(
                         onClick = onOpenApp,
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth().height(44.dp),
+                        shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Gold),
                     ) {
                         Text(stringResource(R.string.open_app), fontWeight = FontWeight.Bold)
                     }
-                    Spacer(Modifier.height(12.dp))
-                    Text(
-                        stringResource(R.string.lock_screen_security_note),
-                        color = Color.White.copy(alpha = 0.58f),
-                        style = MaterialTheme.typography.bodySmall,
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(8.dp))
                 }
 
                 if (meaningRevealed && !isNewPresentation) {
