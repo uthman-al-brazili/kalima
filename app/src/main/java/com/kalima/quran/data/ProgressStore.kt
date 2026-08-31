@@ -74,12 +74,9 @@ class ProgressStore private constructor(context: Context) {
             ),
         )
         preferences.edit { putString(KEY_LAST_STUDY_DATE, date.toString()) }
-        persist(
-            updated,
-            date,
-            completedLockScreenSessionId = lockScreenSessionId,
-            clearPendingLockScreenSession = lockScreenSessionId != null,
-        )
+        // Introduction happens when the card is rendered. Keep its session pending so a
+        // later rating or "already known" action can perform the terminal commit.
+        persist(updated, date)
         return true
     }
 
