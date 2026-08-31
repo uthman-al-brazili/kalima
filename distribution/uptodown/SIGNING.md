@@ -22,9 +22,10 @@ $env:ANDROID_USER_HOME = "$PWD\.android-home"
 & "$env:LOCALAPPDATA\Android\Sdk\build-tools\<version>\apksigner.bat" verify --verbose --print-certs app\build\outputs\apk\release\app-release.apk
 ```
 
-The build intentionally fails `packageRelease` when any signing value is
-missing. Release work does not require a separate debug APK backup; build and
-verify the signed public candidate needed for distribution.
+The build intentionally fails both APK packaging (`packageRelease`) and AAB
+bundling (`bundleRelease`) when any signing value is missing. Release work does
+not require a separate debug APK backup; build and verify the signed public
+candidate needed for distribution.
 
 For an interactive local walkthrough that keeps passwords out of chat and
 shell history, run:

@@ -208,7 +208,9 @@ val verifyStartupRegression by tasks.registering {
 }
 
 tasks.configureEach {
-    if (name == "packageRelease") dependsOn(verifyUptodownSigning)
+    if (name == "packageRelease" || name == "bundleRelease") {
+        dependsOn(verifyUptodownSigning)
+    }
     if (name == "preBuild" || name == "check") {
         dependsOn(verifyLockScreenRegression, verifyStartupRegression)
     }
