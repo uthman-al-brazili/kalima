@@ -1,6 +1,7 @@
 package com.kalima.quran.data
 
 import android.content.Context
+import android.util.Log
 import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +16,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import java.util.concurrent.Executors
 
 class ProgressStore private constructor(context: Context) {
     private val preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
@@ -26,6 +28,15 @@ class ProgressStore private constructor(context: Context) {
     private val today = { LocalDate.now() }
     private val _progress = MutableStateFlow(load())
     val progress: StateFlow<StudyProgress> = _progress.asStateFlow()
+    @Volatile
+    private var progressDate = today()
+    private val persistenceWriter = LatestValueWriter(
+        executor = Executors.newSingleThreadExecutor { work ->
+            Thread(work, "kalima-progress-persistence").apply { isDaemon = true }
+        },
+        write = ::writeProgress,
+        onFailure = { error -> Log.e(TAG, "Unable to persist study progress", error) },
+    )
 
     fun answer(wordId: String, learned: Boolean) {
         recordAnswer(wordId, learned, ReviewSource.Study)
@@ -932,20 +943,50 @@ class ProgressStore private constructor(context: Context) {
     }
 
     private fun refreshDayIfNeeded(progress: StudyProgress, date: LocalDate): StudyProgress {
-        val storedDay = preferences.getString(KEY_TODAY, null)
-        return if (storedDay == date.toString()) {
+        return if (progressDate == date) {
             progress
         } else {
             progress.copy(todayAnsweredIds = emptySet(), lockScreenCardsToday = 0)
         }
     }
 
+    @Synchronized
     private fun persist(
         progress: StudyProgress,
         date: LocalDate,
         completedLockScreenSessionId: String? = null,
         clearPendingLockScreenSession: Boolean = false,
     ) {
+        val current = _progress.value
+        val featureFlagsChanged = current.reminderEnabled != progress.reminderEnabled ||
+            current.lockScreenEnabled != progress.lockScreenEnabled
+        if (featureFlagsChanged || completedLockScreenSessionId != null || clearPendingLockScreenSession) {
+            preferences.edit {
+                if (featureFlagsChanged) {
+                    putBoolean(KEY_REMINDER, progress.reminderEnabled)
+                    putBoolean(KEY_LOCK_SCREEN_ENABLED, progress.lockScreenEnabled)
+                }
+                if (completedLockScreenSessionId != null) {
+                    val completed = preferences.getStringSet(
+                        KEY_COMPLETED_LOCK_SCREEN_SESSIONS,
+                        emptySet(),
+                    ).orEmpty()
+                    putStringSet(
+                        KEY_COMPLETED_LOCK_SCREEN_SESSIONS,
+                        LockScreenTransactionLedger.append(completed, completedLockScreenSessionId),
+                    )
+                }
+                if (clearPendingLockScreenSession) remove(KEY_PENDING_LOCK_SCREEN_SESSION)
+            }
+        }
+        progressDate = date
+        _progress.value = progress
+        persistenceWriter.submit(PersistenceSnapshot(progress, date))
+    }
+
+    private fun writeProgress(snapshot: PersistenceSnapshot) {
+        val progress = snapshot.progress
+        val date = snapshot.date
         preferences.edit {
             putStringSet(KEY_LEARNED, progress.learnedIds)
             putStringSet(KEY_REVIEWING, progress.reviewingIds)
@@ -956,8 +997,6 @@ class ProgressStore private constructor(context: Context) {
             putInt(KEY_DAILY_GOAL, progress.dailyGoal)
             putInt(KEY_MAXIMUM_WORDS, progress.maximumWords)
             putInt(KEY_STREAK, progress.streakDays)
-            putBoolean(KEY_REMINDER, progress.reminderEnabled)
-            putBoolean(KEY_LOCK_SCREEN_ENABLED, progress.lockScreenEnabled)
             putString(KEY_STUDY_SCOPE, progress.studyScope.name)
             putStringSet(KEY_SELECTED_STUDY_SCOPES, progress.studyScopes.mapTo(mutableSetOf()) { it.name })
             putStringSet(KEY_SELECTED_SURAHS, progress.selectedSurahs.map(Int::toString).toSet())
@@ -1020,20 +1059,13 @@ class ProgressStore private constructor(context: Context) {
             progress.currentStudyWordId?.let {
                 putString(KEY_CURRENT_STUDY_WORD_ID, it)
             } ?: remove(KEY_CURRENT_STUDY_WORD_ID)
-            if (completedLockScreenSessionId != null) {
-                val completed = preferences.getStringSet(
-                    KEY_COMPLETED_LOCK_SCREEN_SESSIONS,
-                    emptySet(),
-                ).orEmpty()
-                putStringSet(
-                    KEY_COMPLETED_LOCK_SCREEN_SESSIONS,
-                    LockScreenTransactionLedger.append(completed, completedLockScreenSessionId),
-                )
-            }
-            if (clearPendingLockScreenSession) remove(KEY_PENDING_LOCK_SCREEN_SESSION)
         }
-        _progress.value = progress
     }
+
+    private data class PersistenceSnapshot(
+        val progress: StudyProgress,
+        val date: LocalDate,
+    )
 
     private fun markUnderstandPathCompleted(progress: StudyProgress): StudyProgress {
         val pathId = progress.activeUnderstandPath ?: return progress
@@ -1081,6 +1113,8 @@ class ProgressStore private constructor(context: Context) {
     }
 
     companion object {
+        private const val TAG = "ProgressStore"
+
         @Volatile
         private var instance: ProgressStore? = null
 
