@@ -367,7 +367,10 @@ private fun QuizQuestionCard(question: QuizQuestion, pronouncer: ArabicPronounce
                     QuizQuestionType.PortugueseToArabic -> stringResource(R.string.quiz_meaning_to_arabic)
                     QuizQuestionType.ContextualMeaning -> stringResource(R.string.quiz_contextual_meaning)
                     QuizQuestionType.ListeningToPortuguese -> stringResource(R.string.quiz_listening_prompt)
-                    QuizQuestionType.ClozeToArabic -> stringResource(R.string.quiz_cloze_prompt)
+                    QuizQuestionType.ClozeToArabic -> stringResource(
+                        R.string.quiz_cloze_prompt,
+                        question.word.meaning,
+                    )
                     QuizQuestionType.RootToArabic -> stringResource(R.string.quiz_root_prompt)
                 },
                 modifier = Modifier.fillMaxWidth(),

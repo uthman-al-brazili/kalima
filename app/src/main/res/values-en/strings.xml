@@ -520,12 +520,12 @@
     <string name="editorial_metadata">Card %1$s · %2$s · reviewer pending</string>
     <string name="quiz_mode_mixed">Mixed</string>
     <string name="quiz_mode_listening">Listening</string>
-    <string name="quiz_mode_cloze">Cloze</string>
+    <string name="quiz_mode_cloze">Vocabulary in context</string>
     <string name="quiz_mode_roots">Roots</string>
     <string name="quiz_mode_due">Reviews only</string>
     <string name="quiz_mode_difficult">Difficult only</string>
     <string name="quiz_listening_prompt">Listen and choose the meaning</string>
-    <string name="quiz_cloze_prompt">Which word completes the verse?</string>
+    <string name="quiz_cloze_prompt">Which Arabic word means “%1$s” in this context?</string>
     <string name="quiz_root_prompt">Which word belongs to this root?</string>
     <string name="tap_to_listen">Tap to listen</string>
     <string name="no_due_reviews">No reviews are due right now</string>

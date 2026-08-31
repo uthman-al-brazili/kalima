@@ -520,12 +520,12 @@
     <string name="editorial_metadata">Cartão %1$s · %2$s · revisor pendente</string>
     <string name="quiz_mode_mixed">Misto</string>
     <string name="quiz_mode_listening">Escuta</string>
-    <string name="quiz_mode_cloze">Lacuna</string>
+    <string name="quiz_mode_cloze">Vocabulário no contexto</string>
     <string name="quiz_mode_roots">Raízes</string>
     <string name="quiz_mode_due">Só revisões</string>
     <string name="quiz_mode_difficult">Só difíceis</string>
     <string name="quiz_listening_prompt">Ouça e escolha o significado</string>
-    <string name="quiz_cloze_prompt">Qual palavra completa o versículo?</string>
+    <string name="quiz_cloze_prompt">Qual palavra árabe significa “%1$s” neste contexto?</string>
     <string name="quiz_root_prompt">Qual palavra pertence a esta raiz?</string>
     <string name="tap_to_listen">Toque para ouvir</string>
     <string name="no_due_reviews">Nenhuma revisão vencida agora</string>

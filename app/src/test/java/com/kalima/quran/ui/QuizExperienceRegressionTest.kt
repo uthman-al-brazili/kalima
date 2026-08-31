@@ -44,6 +44,17 @@ class QuizExperienceRegressionTest {
     }
 
     @Test
+    fun `context vocabulary questions provide a meaning clue`() {
+        val quiz = source("ui/QuizScreen.kt")
+        val english = resource("values-en/strings.xml")
+        val portuguese = resource("values/strings.xml")
+
+        assertTrue(quiz.contains("R.string.quiz_cloze_prompt,\n                        question.word.meaning"))
+        assertTrue(english.contains("Which Arabic word means “%1\$s” in this context?"))
+        assertTrue(portuguese.contains("Qual palavra árabe significa “%1\$s” neste contexto?"))
+    }
+
+    @Test
     fun `choosing a mode after a path quiz clears the path quiz scope`() {
         val app = source("ui/KalimaApp.kt")
         val quiz = source("ui/QuizScreen.kt")
@@ -82,4 +93,10 @@ class QuizExperienceRegressionTest {
         File("app/src/main/java/com/kalima/quran/$relative"),
     ).firstOrNull(File::isFile)?.readText()
         ?: error("Android source not found: $relative")
+
+    private fun resource(relative: String): String = sequenceOf(
+        File("src/main/res/$relative"),
+        File("app/src/main/res/$relative"),
+    ).firstOrNull(File::isFile)?.readText()
+        ?: error("Android resource not found: $relative")
 }
