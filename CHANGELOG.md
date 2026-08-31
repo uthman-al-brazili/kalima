@@ -3,6 +3,16 @@
 This file records what changed in every published Kalima version. New releases
 must add their notes here before the release commit and tag are created.
 
+## 0.34.0 — 2026-08-31
+
+- Made guided Quran understanding paths the primary study experience, with
+  configurable session levels and vocabulary tested in Quranic context.
+- Added dedicated alphabet and Arabic-Indic number learning screens.
+- Improved onboarding, study, Quran reader, and lock-screen layouts for a more
+  compact and focused experience.
+- Improved offline reliability for audio downloads and progress backups, and
+  removed the offline recitation-recognition feature.
+
 ## 0.33.0 — 2026-08-30
 
 - Added adaptive Arabic decoding practice and separated alphabet and number
