@@ -431,6 +431,7 @@ private fun ProgressOverviewCard(
                 modifier = Modifier.fillMaxWidth().height(7.dp),
                 color = MaterialTheme.colorScheme.secondary,
                 trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                drawStopIndicator = {},
             )
             Spacer(Modifier.height(12.dp))
             Row(Modifier.fillMaxWidth()) {
@@ -664,6 +665,7 @@ private fun VocabularyCoverageSummary(coverage: QuranVocabularyCoverage) {
                 modifier = Modifier.fillMaxWidth().height(7.dp),
                 color = MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.12f),
+                drawStopIndicator = {},
             )
             Spacer(Modifier.height(7.dp))
             Row(
@@ -739,6 +741,7 @@ private fun VocabularyCoverageBySurah(coverage: QuranVocabularyCoverage) {
                 progress = { surah.percent / 100f },
                 modifier = Modifier.fillMaxWidth().height(6.dp),
                 trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                drawStopIndicator = {},
             )
             Spacer(Modifier.height(4.dp))
             Text(
@@ -1029,6 +1032,7 @@ private fun RootMastery(roots: List<Triple<String, Int, Int>>?) {
                 progress = { if (total == 0) 0f else familiar.toFloat() / total },
                 modifier = Modifier.fillMaxWidth().height(6.dp),
                 trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                drawStopIndicator = {},
             )
         }
     }

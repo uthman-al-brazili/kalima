@@ -348,6 +348,7 @@ private fun PathMetric(metric: UnderstandPathMetric, vocabulary: Boolean) {
     LinearProgressIndicator(
         progress = { percent / 100f },
         modifier = Modifier.fillMaxWidth().height(7.dp),
+        drawStopIndicator = {},
     )
     Text(
         if (vocabulary) {

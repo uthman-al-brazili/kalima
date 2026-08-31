@@ -218,6 +218,7 @@ fun QuizScreen(
                 progress = { (currentIndex + 1).toFloat() / session.size },
                 modifier = Modifier.weight(1f).height(7.dp),
                 color = MaterialTheme.colorScheme.secondary,
+                drawStopIndicator = {},
             )
             Text(
                 "  ${currentIndex + 1}/${session.size}",

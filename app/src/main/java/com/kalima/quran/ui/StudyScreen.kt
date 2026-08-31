@@ -1793,6 +1793,7 @@ private fun StudyHeader(
             modifier = Modifier.weight(1f).height(5.dp),
             color = MaterialTheme.colorScheme.secondary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            drawStopIndicator = {},
         )
         Spacer(Modifier.width(12.dp))
         Text(

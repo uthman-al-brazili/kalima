@@ -354,6 +354,7 @@ fun SettingsScreen(
                     LinearProgressIndicator(
                         progress = { progressFraction },
                         modifier = Modifier.fillMaxWidth(),
+                        drawStopIndicator = {},
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
