@@ -100,6 +100,7 @@
     <string name="already_known_confirmation">Remove this word from study, quizzes, reminders, and lock-screen cards? You can restore it from Excluded words in Vocabulary.</string>
     <string name="remove_from_practice">Remove</string>
     <string name="word_excluded_message">This word won’t appear in your studies anymore. You can add it back from Excluded words.</string>
+    <string name="word_excluded_toast">Word removed from study. Restore it from Excluded words.</string>
     <string name="undo">Undo</string>
     <plurals name="review_good_days">
         <item quantity="one">Review in %1$d day</item>

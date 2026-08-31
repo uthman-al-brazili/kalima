@@ -100,6 +100,7 @@
     <string name="already_known_confirmation">Retirar esta palavra do estudo, quiz, lembretes e cartões da tela de bloqueio? Você poderá restaurá-la em Palavras excluídas no Vocabulário.</string>
     <string name="remove_from_practice">Retirar</string>
     <string name="word_excluded_message">Esta palavra não aparecerá mais nos seus estudos. Você pode devolvê-la em Palavras excluídas.</string>
+    <string name="word_excluded_toast">Palavra retirada dos estudos. Restaure em Palavras excluídas.</string>
     <string name="undo">Desfazer</string>
     <plurals name="review_good_days">
         <item quantity="one">Rever em %1$d dia</item>

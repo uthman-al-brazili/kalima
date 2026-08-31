@@ -148,7 +148,7 @@ class LockScreenStudyActivity : ComponentActivity() {
                             if (!preview) {
                                 Toast.makeText(
                                     this@LockScreenStudyActivity,
-                                    com.kalima.quran.R.string.word_excluded_message,
+                                    com.kalima.quran.R.string.word_excluded_toast,
                                     Toast.LENGTH_LONG,
                                 ).show()
                             }
