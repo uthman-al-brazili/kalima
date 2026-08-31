@@ -4,7 +4,6 @@ import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -167,22 +166,14 @@ fun KalimaApp(
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                if (settingsVisible || selected != AppTab.Quran) {
-                    KalimaTopBar(
-                        settingsVisible = settingsVisible,
-                        onOpenSettings = { settingsVisible = true },
-                        onCloseSettings = { settingsVisible = false },
-                    )
+                if (settingsVisible) {
+                    SettingsTopBar(onCloseSettings = { settingsVisible = false })
                 }
             },
             bottomBar = {
                 if (!settingsVisible) {
                     NavigationBar(
-                        modifier = if (selected == AppTab.Quran) {
-                            Modifier.height(64.dp)
-                        } else {
-                            Modifier
-                        },
+                        modifier = Modifier.height(64.dp),
                         containerColor = MaterialTheme.colorScheme.surface,
                     ) {
                         AppTab.entries.forEach { tab ->
@@ -281,6 +272,7 @@ fun KalimaApp(
                             },
                             onSessionLevelChange = onSessionLevelChange,
                             onAdvanceUnderstandPath = onAdvanceUnderstandPath,
+                            onOpenSettings = { settingsVisible = true },
                             launchTarget = studyLaunchTarget,
                             onLaunchTargetHandled = { requestId ->
                                 selectedName = AppTab.Study.name
@@ -315,6 +307,7 @@ fun KalimaApp(
                                 UnderstandPathId.entries.firstOrNull { it.name == stored }
                             },
                             onChooseQuizMode = { quizUnderstandPathName = null },
+                            onOpenSettings = { settingsVisible = true },
                         )
                         AppTab.Progress -> ProgressScreen(
                             progress = progress,
@@ -323,6 +316,7 @@ fun KalimaApp(
                             onAdvanceUnderstandPath = onAdvanceUnderstandPath,
                             onToggleSurah = onToggleSurah,
                             pronouncer = pronouncer,
+                            onOpenSettings = { settingsVisible = true },
                         )
                         }
                     }
@@ -333,9 +327,7 @@ fun KalimaApp(
 }
 
 @Composable
-private fun KalimaTopBar(
-    settingsVisible: Boolean,
-    onOpenSettings: () -> Unit,
+private fun SettingsTopBar(
     onCloseSettings: () -> Unit,
 ) {
     Surface(color = MaterialTheme.colorScheme.surface) {
@@ -347,33 +339,17 @@ private fun KalimaTopBar(
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (settingsVisible) {
-                IconButton(onClick = onCloseSettings) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_arrow_back),
-                        contentDescription = stringResource(R.string.navigate_back),
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.tab_settings),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            IconButton(onClick = onCloseSettings) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_back),
+                    contentDescription = stringResource(R.string.navigate_back),
                 )
-            } else {
-                Text(
-                    text = stringResource(R.string.app_name),
-                    modifier = Modifier.padding(start = 8.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                )
-                Spacer(Modifier.weight(1f))
-                IconButton(onClick = onOpenSettings) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_settings),
-                        contentDescription = stringResource(R.string.tab_settings),
-                    )
-                }
             }
+            Text(
+                text = stringResource(R.string.tab_settings),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            )
         }
     }
 }

@@ -44,6 +44,7 @@ internal fun LearnScreen(
     onQuizAnswer: (String, Boolean) -> Unit,
     quizUnderstandPath: UnderstandPathId?,
     onChooseQuizMode: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val sectionStateHolder = rememberSaveableStateHolder()
 
@@ -51,6 +52,7 @@ internal fun LearnScreen(
         LearnSectionBar(
             selectedSection = selectedSection,
             onSectionSelected = onSectionSelected,
+            onOpenSettings = onOpenSettings,
         )
         Box(Modifier.fillMaxWidth().weight(1f)) {
             sectionStateHolder.SaveableStateProvider(selectedSection.name) {
@@ -80,25 +82,38 @@ internal fun LearnScreen(
 private fun LearnSectionBar(
     selectedSection: LearnSection,
     onSectionSelected: (LearnSection) -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 4.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
         ) {
-            LearnSection.entries.forEach { section ->
-                FilterChip(
-                    selected = selectedSection == section,
-                    onClick = { onSectionSelected(section) },
-                    label = { Text(stringResource(section.labelRes)) },
-                )
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(rememberScrollState())
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                LearnSection.entries.forEach { section ->
+                    FilterChip(
+                        selected = selectedSection == section,
+                        onClick = { onSectionSelected(section) },
+                        label = { Text(stringResource(section.labelRes)) },
+                    )
+                }
             }
+            TabSettingsButton(
+                onClick = onOpenSettings,
+                modifier = Modifier.alignTabSettingsButton(
+                    contentHorizontalPadding = 4.dp,
+                    contentTopPadding = 8.dp,
+                ),
+            )
         }
     }
 }

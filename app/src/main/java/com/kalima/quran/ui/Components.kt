@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -19,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -28,6 +32,7 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.data.WordStatus
@@ -35,6 +40,27 @@ import com.kalima.quran.data.WordStatus
 private val ArabicFontFamily = FontFamily(
     Font(DeviceFontFamilyName("Noto Naskh Arabic"), weight = FontWeight.Normal),
     Font(DeviceFontFamilyName("Noto Naskh Arabic"), weight = FontWeight.Bold),
+)
+
+@Composable
+internal fun TabSettingsButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    IconButton(onClick = onClick, modifier = modifier) {
+        Icon(
+            painter = painterResource(R.drawable.ic_settings),
+            contentDescription = stringResource(R.string.tab_settings),
+        )
+    }
+}
+
+internal fun Modifier.alignTabSettingsButton(
+    contentHorizontalPadding: Dp,
+    contentTopPadding: Dp,
+): Modifier = offset(
+    x = contentHorizontalPadding - 8.dp,
+    y = 2.dp - contentTopPadding,
 )
 
 @Composable

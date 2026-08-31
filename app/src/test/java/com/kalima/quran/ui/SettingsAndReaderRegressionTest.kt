@@ -35,14 +35,27 @@ class SettingsAndReaderRegressionTest {
     }
 
     @Test
-    fun `quran reader keeps surrounding controls compact`() {
+    fun `all main tabs keep surrounding controls compact`() {
         val app = source("ui/KalimaApp.kt")
         val reader = source("ui/QuranReaderScreen.kt")
+        val study = source("ui/StudyScreen.kt")
+        val mission = source("ui/StudyMissionScreen.kt")
+        val learn = source("ui/LearnScreen.kt")
+        val progress = source("ui/ProgressScreen.kt")
+        val components = source("ui/Components.kt")
 
-        assertTrue(app.contains("settingsVisible || selected != AppTab.Quran"))
+        assertTrue(app.contains("if (settingsVisible)"))
+        assertFalse(app.contains("selected != AppTab.Quran"))
+        assertFalse(app.contains("text = stringResource(R.string.app_name)"))
         assertTrue(app.contains("Modifier.height(64.dp)"))
         assertFalse(app.contains("quranReadingMode"))
         assertTrue(reader.contains("onOpenSettings"))
+        assertTrue(study.contains("onOpenSettings"))
+        assertTrue(mission.contains("TabSettingsButton("))
+        assertTrue(learn.contains("TabSettingsButton("))
+        assertTrue(progress.contains("TabSettingsButton("))
+        assertTrue(components.contains("internal fun TabSettingsButton"))
+        assertTrue(components.contains("internal fun Modifier.alignTabSettingsButton"))
         assertTrue(reader.contains("pageSelectionEnabled"))
         assertFalse(reader.contains("ic_fullscreen"))
     }

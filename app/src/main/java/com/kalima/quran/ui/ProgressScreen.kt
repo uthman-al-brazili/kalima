@@ -67,6 +67,7 @@ fun ProgressScreen(
     onAdvanceUnderstandPath: () -> Unit,
     onToggleSurah: (Int) -> Unit,
     pronouncer: ArabicPronouncer,
+    onOpenSettings: () -> Unit,
 ) {
     val studySetScopeKey = progress.studyScopes.map(StudyScope::name).sorted().joinToString(",")
     val selectionKey = progress.selectedSurahs.sorted().joinToString(",")
@@ -159,11 +160,21 @@ fun ProgressScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        Text(
-            stringResource(R.string.progress_title),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.progress_title),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            TabSettingsButton(
+                onClick = onOpenSettings,
+                modifier = Modifier.alignTabSettingsButton(
+                    contentHorizontalPadding = 16.dp,
+                    contentTopPadding = 12.25.dp,
+                ),
+            )
+        }
         Text(
             stringResource(R.string.progress_subtitle),
             color = MaterialTheme.colorScheme.onSurfaceVariant,

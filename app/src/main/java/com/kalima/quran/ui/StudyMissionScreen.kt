@@ -63,6 +63,7 @@ internal fun DailyMissionScreen(
     pathQuizReady: Boolean,
     onOpenQuiz: () -> Unit,
     onSessionLevelChange: (SessionLevel) -> Unit,
+    onOpenSettings: () -> Unit,
     onStart: () -> Unit,
 ) {
     val levelName = stringResource(sessionLevelNameRes(plan.level))
@@ -137,6 +138,13 @@ internal fun DailyMissionScreen(
                     style = MaterialTheme.typography.labelLarge,
                 )
             }
+            TabSettingsButton(
+                onClick = onOpenSettings,
+                modifier = Modifier.alignTabSettingsButton(
+                    contentHorizontalPadding = 20.dp,
+                    contentTopPadding = 36.25.dp,
+                ),
+            )
         }
         Spacer(Modifier.height(16.dp))
         Text(
@@ -360,6 +368,7 @@ internal fun ContextCheckpointScreen(
     pronouncer: ArabicPronouncer,
     onAnswer: (String, Boolean) -> Unit,
     onContinue: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     var selectedOptionIndex by rememberSaveable(question.word.id) { mutableStateOf<Int?>(null) }
     var showCompleteAyah by rememberSaveable(question.word.id) { mutableStateOf(false) }
@@ -430,12 +439,22 @@ internal fun ContextCheckpointScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        Text(
-            stringResource(R.string.context_checkpoint_title),
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.context_checkpoint_title),
+                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            TabSettingsButton(
+                onClick = onOpenSettings,
+                modifier = Modifier.alignTabSettingsButton(
+                    contentHorizontalPadding = 16.dp,
+                    contentTopPadding = 12.dp,
+                ),
+            )
+        }
         Spacer(Modifier.height(2.dp))
         Text(
             stringResource(R.string.context_checkpoint_intro),
@@ -608,6 +627,7 @@ internal fun StudyCompletionScreen(
     payoff: StudyCompletionPayoff,
     recognizedWordIds: Set<String>,
     pronouncer: ArabicPronouncer,
+    onOpenSettings: () -> Unit,
     onAdvancePath: (() -> Unit)? = null,
     onFinish: () -> Unit,
 ) {
@@ -619,14 +639,23 @@ internal fun StudyCompletionScreen(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            stringResource(R.string.study_session_complete),
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.study_session_complete),
+                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            TabSettingsButton(
+                onClick = onOpenSettings,
+                modifier = Modifier.alignTabSettingsButton(
+                    contentHorizontalPadding = 16.dp,
+                    contentTopPadding = 12.dp,
+                ),
+            )
+        }
         Spacer(Modifier.height(6.dp))
         Text(
             stringResource(R.string.completion_payoff_subtitle),

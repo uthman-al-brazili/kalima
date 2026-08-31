@@ -102,6 +102,7 @@ fun StudyScreen(
     onOpenQuiz: () -> Unit,
     onSessionLevelChange: (SessionLevel) -> Unit,
     onAdvanceUnderstandPath: () -> Unit,
+    onOpenSettings: () -> Unit,
     pronouncer: ArabicPronouncer,
     launchTarget: StudyLaunchTarget? = null,
     onLaunchTargetHandled: (Long) -> Unit = {},
@@ -163,6 +164,10 @@ fun StudyScreen(
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(20.dp),
+            )
+            TabSettingsButton(
+                onClick = onOpenSettings,
+                modifier = Modifier.align(Alignment.TopEnd).padding(end = 8.dp, top = 2.dp),
             )
         }
         return
@@ -265,6 +270,7 @@ fun StudyScreen(
             pathQuizReady = pathQuizReady,
             onOpenQuiz = onOpenQuiz,
             onSessionLevelChange = onSessionLevelChange,
+            onOpenSettings = onOpenSettings,
             onStart = {
                 routedStudyWordId = null
                 plannedWordIds = ArrayList(previewPlan.wordIds)
@@ -303,6 +309,7 @@ fun StudyScreen(
                 pronouncer = pronouncer,
                 onAnswer = onCheckpointAnswer,
                 onContinue = { checkpointComplete = true },
+                onOpenSettings = onOpenSettings,
             )
             return
         }
@@ -317,6 +324,7 @@ fun StudyScreen(
             payoff = payoff,
             recognizedWordIds = recognizedWordIds,
             pronouncer = pronouncer,
+            onOpenSettings = onOpenSettings,
             onAdvancePath = if (
                 SessionLevel.fromPersistedName(sessionLevelName) != SessionLevel.Quick &&
                 plannedLessonWordIds.isNotEmpty() &&
@@ -359,6 +367,10 @@ fun StudyScreen(
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(20.dp),
+            )
+            TabSettingsButton(
+                onClick = onOpenSettings,
+                modifier = Modifier.align(Alignment.TopEnd).padding(end = 8.dp, top = 2.dp),
             )
         }
         return
@@ -453,6 +465,7 @@ fun StudyScreen(
                 completedWords = completedSessionWordIds.size,
                 sessionWords = plannedWordIds.size.coerceAtLeast(1),
                 reviewCount = plannedReviewWordIds.size,
+                onOpenSettings = onOpenSettings,
             )
             Spacer(Modifier.height(10.dp))
             WordCard(
@@ -1695,6 +1708,7 @@ private fun StudyHeader(
     completedWords: Int,
     sessionWords: Int,
     reviewCount: Int,
+    onOpenSettings: () -> Unit,
 ) {
     val currentPosition = studySessionPosition(completedWords, sessionWords)
     val fraction = (currentPosition.toFloat() / sessionWords.coerceAtLeast(1))
@@ -1764,6 +1778,13 @@ private fun StudyHeader(
                 fontWeight = FontWeight.Bold,
             )
         }
+        TabSettingsButton(
+            onClick = onOpenSettings,
+            modifier = Modifier.alignTabSettingsButton(
+                contentHorizontalPadding = 12.dp,
+                contentTopPadding = 8.dp,
+            ),
+        )
     }
     Spacer(Modifier.height(8.dp))
     Row(verticalAlignment = Alignment.CenterVertically) {
