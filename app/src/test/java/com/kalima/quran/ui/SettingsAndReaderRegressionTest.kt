@@ -35,6 +35,19 @@ class SettingsAndReaderRegressionTest {
     }
 
     @Test
+    fun `quran reader keeps surrounding controls compact`() {
+        val app = source("ui/KalimaApp.kt")
+        val reader = source("ui/QuranReaderScreen.kt")
+
+        assertTrue(app.contains("settingsVisible || selected != AppTab.Quran"))
+        assertTrue(app.contains("Modifier.height(64.dp)"))
+        assertFalse(app.contains("quranReadingMode"))
+        assertTrue(reader.contains("onOpenSettings"))
+        assertTrue(reader.contains("pageSelectionEnabled"))
+        assertFalse(reader.contains("ic_fullscreen"))
+    }
+
+    @Test
     fun `hussary recitation keeps static verse styling without proportional timing`() {
         val player = source("audio/HussaryVerseAudioPlayer.kt")
         val versePanel = source("ui/VerseExplorerPanel.kt")

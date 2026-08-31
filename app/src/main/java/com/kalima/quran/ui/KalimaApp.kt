@@ -167,15 +167,24 @@ fun KalimaApp(
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                KalimaTopBar(
-                    settingsVisible = settingsVisible,
-                    onOpenSettings = { settingsVisible = true },
-                    onCloseSettings = { settingsVisible = false },
-                )
+                if (settingsVisible || selected != AppTab.Quran) {
+                    KalimaTopBar(
+                        settingsVisible = settingsVisible,
+                        onOpenSettings = { settingsVisible = true },
+                        onCloseSettings = { settingsVisible = false },
+                    )
+                }
             },
             bottomBar = {
                 if (!settingsVisible) {
-                    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                    NavigationBar(
+                        modifier = if (selected == AppTab.Quran) {
+                            Modifier.height(64.dp)
+                        } else {
+                            Modifier
+                        },
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ) {
                         AppTab.entries.forEach { tab ->
                             NavigationBarItem(
                                 selected = selected == tab,
@@ -287,6 +296,7 @@ fun KalimaApp(
                             onFontSizeChange = onQuranFontSizeChange,
                             onLearningOverlayChange = onQuranLearningOverlayChange,
                             onToggleCustomList = onToggleCustomList,
+                            onOpenSettings = { settingsVisible = true },
                         )
                         AppTab.Learn -> LearnScreen(
                             progress = progress,

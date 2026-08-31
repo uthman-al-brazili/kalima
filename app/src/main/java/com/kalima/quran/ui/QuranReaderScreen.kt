@@ -18,6 +18,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -40,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -85,6 +88,7 @@ fun QuranReaderScreen(
     onFontSizeChange: (Int) -> Unit,
     onLearningOverlayChange: (Boolean) -> Unit,
     onToggleCustomList: (String) -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val context = LocalContext.current.applicationContext
     val firstPageAvailable by produceState<Boolean?>(
@@ -168,6 +172,7 @@ fun QuranReaderScreen(
             onFontSizeChange = onFontSizeChange,
             onLearningOverlayChange = onLearningOverlayChange,
             onOpenLearningLegend = { learningLegendVisible = true },
+            onOpenSettings = onOpenSettings,
         )
 
         HorizontalPager(
@@ -188,25 +193,12 @@ fun QuranReaderScreen(
                     learningOverlayEnabled = learningOverlayEnabled,
                     readerIndexReady = readerIndexReady,
                     learningNow = learningNow,
-                    onWordClick = {
-                        selectedToken = it
-                    },
+                    pageSelectionEnabled = readerReady,
+                    onChoosePage = { pagePickerVisible = true },
+                    onWordClick = { selectedToken = it },
                 )
             }
         }
-
-        PageNavigation(
-            pageNumber = currentPageNumber,
-            pageCount = QuranReaderRepository.TOTAL_PAGES,
-            navigationEnabled = readerReady,
-            onPrevious = {
-                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
-            },
-            onChoosePage = { pagePickerVisible = true },
-            onNext = {
-                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-            },
-        )
     }
 
     selectedToken?.let { token ->
@@ -278,6 +270,7 @@ private fun ReaderHeader(
     onFontSizeChange: (Int) -> Unit,
     onLearningOverlayChange: (Boolean) -> Unit,
     onOpenLearningLegend: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val surahsByNumber = remember {
         WordRepository.selectableSurahs.associateBy(QuranSurah::number)
@@ -294,16 +287,11 @@ private fun ReaderHeader(
     val increaseTextSizeDescription = stringResource(R.string.increase_quran_text_size)
     val learningOverlayDescription = stringResource(R.string.learning_overlay_toggle_description)
 
-    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                stringResource(R.string.quran_reader_title),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-            )
             TextButton(
                 onClick = onChooseSurah,
                 enabled = surahSelectionEnabled,
@@ -314,17 +302,25 @@ private fun ReaderHeader(
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.End,
+                    textAlign = TextAlign.Start,
                     style = MaterialTheme.typography.labelLarge,
                 )
             }
+            IconButton(onClick = onOpenSettings) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_settings),
+                    contentDescription = stringResource(R.string.tab_settings),
+                )
+            }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
-                stringResource(R.string.quran_reader_page_hint),
+                stringResource(R.string.learning_overlay),
                 modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelMedium,
             )
             TextButton(
                 onClick = {
@@ -348,16 +344,6 @@ private fun ReaderHeader(
             ) {
                 Text("A+")
             }
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                stringResource(R.string.learning_overlay),
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.labelLarge,
-            )
             if (learningOverlayEnabled) {
                 TextButton(onClick = onOpenLearningLegend) {
                     Text(stringResource(R.string.learning_overlay_legend))
@@ -383,6 +369,8 @@ private fun QuranPage(
     learningOverlayEnabled: Boolean,
     readerIndexReady: Boolean,
     learningNow: Instant,
+    pageSelectionEnabled: Boolean,
+    onChoosePage: () -> Unit,
     onWordClick: (QuranPageToken) -> Unit,
 ) {
     val sections = remember(tokens) { quranPageSections(tokens) }
@@ -418,9 +406,9 @@ private fun QuranPage(
         }
     }
     Surface(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 4.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 6.dp, vertical = 2.dp),
         color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         tonalElevation = 1.dp,
     ) {
         Column(
@@ -442,7 +430,15 @@ private fun QuranPage(
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                pageNumber.toString(),
+                stringResource(
+                    R.string.quran_page_indicator,
+                    pageNumber,
+                    QuranReaderRepository.TOTAL_PAGES,
+                ),
+                modifier = Modifier.clickable(
+                    enabled = pageSelectionEnabled,
+                    onClick = onChoosePage,
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelSmall,
             )
