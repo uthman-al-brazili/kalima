@@ -75,6 +75,11 @@ internal val starterPlans = listOf(
     ),
 )
 
+internal val onboardingSessionLevels = listOf(
+    SessionLevel.Steady,
+    SessionLevel.Deep,
+)
+
 @Composable
 fun OnboardingScreen(
     onComplete: (StudyScope, UnderstandPathId?, SessionLevel) -> Unit,
@@ -181,6 +186,7 @@ fun OnboardingScreen(
                 selected = sessionLevel,
                 onSelected = { sessionLevel = it },
                 guided = selectedPlan.understandPath != null,
+                levels = onboardingSessionLevels,
             )
             Spacer(Modifier.height(8.dp))
             Button(

@@ -24,13 +24,14 @@ internal fun SessionLevelSelector(
     modifier: Modifier = Modifier,
     showDescription: Boolean = true,
     guided: Boolean = false,
+    levels: List<SessionLevel> = SessionLevel.entries,
 ) {
     Column(modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            SessionLevel.entries.forEach { level ->
+            levels.forEach { level ->
                 val name = stringResource(sessionLevelNameRes(level))
                 val description = stringResource(sessionLevelDescriptionRes(level, guided))
                 FilterChip(

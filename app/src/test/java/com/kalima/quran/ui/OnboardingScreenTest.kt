@@ -1,6 +1,7 @@
 package com.kalima.quran.ui
 
 import com.kalima.quran.data.StudyScope
+import com.kalima.quran.data.SessionLevel
 import com.kalima.quran.data.UnderstandPathId
 import java.io.File
 import org.junit.Assert.assertEquals
@@ -58,5 +59,13 @@ class OnboardingScreenTest {
         assertTrue(settings.contains("R.string.default_session_level"))
         assertTrue(settings.contains("SessionLevelSelector("))
         assertFalse(settings.contains("onDailyGoalChange"))
+    }
+
+    @Test
+    fun `onboarding omits Quick because a new user has no reviews`() {
+        assertEquals(
+            listOf(SessionLevel.Steady, SessionLevel.Deep),
+            onboardingSessionLevels,
+        )
     }
 }
