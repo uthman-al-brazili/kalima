@@ -12,13 +12,17 @@ class LockScreenLearningCopyRegressionTest {
     }
 
     @Test
-    fun `study hides the status card when active and keeps the activation path`() {
+    fun `study shows a dismissible activation popup only while lock screen learning is off`() {
         val study = source("java/com/kalima/quran/ui/StudyScreen.kt")
+        val mission = source("java/com/kalima/quran/ui/StudyMissionScreen.kt")
         val settings = source("java/com/kalima/quran/ui/SettingsScreen.kt")
 
-        assertTrue(study.contains("if (!progress.lockScreenEnabled)"))
-        assertTrue(study.contains("LockScreenLearningCard("))
+        assertTrue(study.contains("if (!progress.lockScreenEnabled && showLockScreenPrompt)"))
+        assertTrue(study.contains("LockScreenLearningPopup("))
+        assertTrue(study.contains("AlertDialog("))
+        assertTrue(study.contains("onDismiss = { showLockScreenPrompt = false }"))
         assertTrue(study.contains("onEnableLockScreen"))
+        assertTrue(!mission.contains("LockScreenLearningCard("))
         assertTrue(settings.contains("onLockScreenChange"))
         assertTrue(settings.contains("onLockScreenQuizChange"))
         assertTrue(settings.contains("onPauseLockScreenOneHour"))

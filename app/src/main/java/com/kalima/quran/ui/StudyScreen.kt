@@ -20,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
@@ -107,6 +108,18 @@ fun StudyScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var showLockScreenPrompt by rememberSaveable(progress.lockScreenEnabled) {
+        mutableStateOf(!progress.lockScreenEnabled)
+    }
+    if (!progress.lockScreenEnabled && showLockScreenPrompt) {
+        LockScreenLearningPopup(
+            onDismiss = { showLockScreenPrompt = false },
+            onEnableLockScreen = {
+                showLockScreenPrompt = false
+                onEnableLockScreen()
+            },
+        )
+    }
     val excludedMessage = stringResource(R.string.word_excluded_message)
     val undoLabel = stringResource(R.string.undo)
     val studyPlan = remember(progress) { StudyPlan.calculate(progress, WordRepository.words) }
@@ -250,8 +263,6 @@ fun StudyScreen(
             streakDays = progress.streakDays,
             activity = missionActivity,
             pathQuizReady = pathQuizReady,
-            lockScreenEnabled = progress.lockScreenEnabled,
-            onEnableLockScreen = onEnableLockScreen,
             onOpenQuiz = onOpenQuiz,
             onSessionLevelChange = onSessionLevelChange,
             onStart = {
@@ -438,10 +449,6 @@ fun StudyScreen(
                 reviewCount = plannedReviewWordIds.size,
             )
             Spacer(Modifier.height(10.dp))
-            if (!progress.lockScreenEnabled) {
-                LockScreenLearningCard(onEnableLockScreen = onEnableLockScreen)
-                Spacer(Modifier.height(12.dp))
-            }
             WordCard(
                 word = word,
                 progress = progress,
@@ -507,35 +514,35 @@ fun StudyScreen(
 }
 
 @Composable
-internal fun LockScreenLearningCard(
+internal fun LockScreenLearningPopup(
+    onDismiss: () -> Unit,
     onEnableLockScreen: () -> Unit,
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.primaryContainer,
-        shape = RoundedCornerShape(20.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    stringResource(R.string.study_lock_screen_title),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    stringResource(R.string.study_lock_screen_description),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            Spacer(Modifier.width(12.dp))
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                stringResource(R.string.study_lock_screen_title),
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        text = {
+            Text(
+                stringResource(R.string.study_lock_screen_description),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
+        confirmButton = {
             Button(onClick = onEnableLockScreen) {
                 Text(stringResource(R.string.study_lock_screen_enable))
             }
-        }
-    }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.study_lock_screen_not_now))
+            }
+        },
+    )
 }
 
 @Composable

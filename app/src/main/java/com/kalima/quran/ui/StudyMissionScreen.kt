@@ -58,8 +58,6 @@ internal fun DailyMissionScreen(
     streakDays: Int,
     activity: List<DailyMissionActivity>,
     pathQuizReady: Boolean,
-    lockScreenEnabled: Boolean,
-    onEnableLockScreen: () -> Unit,
     onOpenQuiz: () -> Unit,
     onSessionLevelChange: (SessionLevel) -> Unit,
     onStart: () -> Unit,
@@ -269,10 +267,6 @@ internal fun DailyMissionScreen(
                 ),
                 fontWeight = FontWeight.SemiBold,
             )
-        }
-        if (!lockScreenEnabled) {
-            Spacer(Modifier.height(18.dp))
-            LockScreenLearningCard(onEnableLockScreen = onEnableLockScreen)
         }
         Spacer(Modifier.height(24.dp))
     }
