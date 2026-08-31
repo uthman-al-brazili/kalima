@@ -42,7 +42,6 @@ import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -53,8 +52,7 @@ class MainActivity : ComponentActivity() {
     private var studyLaunchTarget by mutableStateOf<StudyLaunchTarget?>(null)
     private var lastStudyLaunchRequestId = 0L
     private var pendingBackupImport by mutableStateOf<DecodedProgressBackup?>(null)
-    private val offlineWordAudioManager by lazy { OfflineWordAudioManager(applicationContext) }
-    private var offlineWordAudioJob: Job? = null
+    private val offlineWordAudioManager by lazy { OfflineWordAudioManager.get(applicationContext) }
 
     private val createBackupDocument = registerForActivityResult(
         ActivityResultContracts.CreateDocument("application/octet-stream"),
@@ -157,13 +155,9 @@ class MainActivity : ComponentActivity() {
                 onCancelBackupImport = { pendingBackupImport = null },
                 offlineWordAudioState = offlineWordAudioState,
                 onDownloadOfflineWordAudio = { wordLocations, verseLocations ->
-                    if (offlineWordAudioJob?.isActive != true) {
-                        offlineWordAudioJob = lifecycleScope.launch {
-                            offlineWordAudioManager.download(wordLocations, verseLocations)
-                        }
-                    }
+                    offlineWordAudioManager.download(wordLocations, verseLocations)
                 },
-                onCancelOfflineWordAudio = { offlineWordAudioJob?.cancel() },
+                onCancelOfflineWordAudio = offlineWordAudioManager::cancel,
                 studyLaunchTarget = studyLaunchTarget,
                 onStudyLaunchTargetHandled = ::consumeStudyLaunchTarget,
             )

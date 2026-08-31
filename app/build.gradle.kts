@@ -221,6 +221,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.work.runtime.ktx)
 
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)

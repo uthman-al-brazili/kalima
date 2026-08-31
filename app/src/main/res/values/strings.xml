@@ -506,6 +506,8 @@
     <string name="hussary_verse_recitation">Ouvir ayah · Al-Hussary</string>
     <string name="audio_disclosure">As palavras individuais usam gravações humanas do Quran.com. Os ayahs completos usam a recitação Murattal de Mahmoud Khalil Al-Hussary, fornecida pelo EveryAyah. As gravações ouvidas com internet ficam salvas neste aparelho; você também pode baixar de uma vez o áudio do conteúdo de estudo selecionado.</string>
     <string name="offline_audio_download_title">Baixar gravações reais</string>
+    <string name="offline_audio_download_channel">Downloads de áudio offline</string>
+    <string name="offline_audio_download_channel_description">Progresso dos downloads de gravações do Alcorão</string>
     <string name="offline_audio_download_confirmation">Baixar %1$d gravações de palavras e %2$d recitações de ayahs por Al-Hussary (aproximadamente %3$d MB) para o conteúdo de estudo selecionado? Downloads existentes serão reutilizados. Recomendamos Wi-Fi.</string>
     <string name="offline_audio_download_estimate">%1$d palavras · %2$d ayahs · até aproximadamente %3$d MB</string>
     <string name="offline_audio_download_progress">Salvando gravação %1$d de %2$d</string>
