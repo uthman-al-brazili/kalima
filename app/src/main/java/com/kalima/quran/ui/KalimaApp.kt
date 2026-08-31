@@ -42,16 +42,7 @@ import androidx.core.view.WindowCompat
 import androidx.annotation.StringRes
 import androidx.annotation.DrawableRes
 import com.kalima.quran.R
-import com.kalima.quran.audio.OfflineWordAudioDownloadState
-import com.kalima.quran.data.AppThemeMode
-import com.kalima.quran.data.DecodedProgressBackup
-import com.kalima.quran.data.StudyProgress
-import com.kalima.quran.data.SessionLevel
-import com.kalima.quran.data.QuranWordAudioLocation
-import com.kalima.quran.data.QuranVerseAudioLocation
-import com.kalima.quran.data.StudyScope
 import com.kalima.quran.data.UnderstandPathId
-import com.kalima.quran.localization.AppLanguage
 import com.kalima.quran.ui.theme.KalimaTheme
 
 private enum class AppTab(@param:StringRes val labelRes: Int, @param:DrawableRes val iconRes: Int) {
@@ -65,54 +56,18 @@ data class StudyLaunchTarget(val wordId: String, val requestId: Long)
 
 @Composable
 fun KalimaApp(
-    progress: StudyProgress,
-    onIntroduce: (String) -> Unit,
-    onAnswer: (String, Boolean) -> Unit,
-    onCurrentStudyWordChange: (String) -> Unit,
-    onQuizAnswer: (String, Boolean) -> Unit,
-    onLockScreenChange: (Boolean) -> Unit,
-    onLockScreenQuizChange: (Boolean) -> Unit,
-    onLockScreenQuizIntervalChange: (Int) -> Unit,
-    onReminderChange: (Boolean) -> Unit,
-    onSessionLevelChange: (SessionLevel) -> Unit,
-    onMaximumWordsChange: (Int) -> Unit,
-    onThemeModeChange: (AppThemeMode) -> Unit,
-    onQuranFontSizeChange: (Int) -> Unit,
-    onQuranLearningOverlayChange: (Boolean) -> Unit,
-    onAdvancedSettingsVisibleChange: (Boolean) -> Unit,
-    onShowCompleteAyahChange: (Boolean) -> Unit,
-    onSpacedRepetitionEnabledChange: (Boolean) -> Unit,
-    onStudyScopeChange: (StudyScope) -> Unit,
-    onSelectUnderstandPath: (UnderstandPathId?) -> Unit,
-    onAdvanceUnderstandPath: () -> Unit,
-    onToggleSurah: (Int) -> Unit,
-    onToggleCustomList: (String) -> Unit,
-    onToggleAlreadyKnown: (String) -> Unit,
-    onCompleteOnboarding: (StudyScope, UnderstandPathId?, SessionLevel) -> Unit,
-    onOpenAppSettings: () -> Unit,
-    onPreviewLockScreen: () -> Unit,
-    onOpenWebsite: () -> Unit,
-    onContactDeveloper: () -> Unit,
-    currentLanguage: AppLanguage,
-    onLanguageChange: (AppLanguage) -> Unit,
-    onQuietHoursEnabledChange: (Boolean) -> Unit,
-    onQuietHoursChange: (Int, Int) -> Unit,
-    onLockScreenDailyLimitChange: (Int) -> Unit,
-    onPauseLockScreenOneHour: () -> Unit,
-    onPauseLockScreenToday: () -> Unit,
-    onResumeLockScreen: () -> Unit,
-    onLockScreenCooldownChange: (Int) -> Unit,
-    onExportBackup: () -> Unit,
-    onImportBackup: () -> Unit,
-    backupImportPreview: DecodedProgressBackup?,
-    onConfirmBackupImport: () -> Unit,
-    onCancelBackupImport: () -> Unit,
-    offlineWordAudioState: OfflineWordAudioDownloadState,
-    onDownloadOfflineWordAudio: (List<QuranWordAudioLocation>, List<QuranVerseAudioLocation>) -> Unit,
-    onCancelOfflineWordAudio: () -> Unit,
-    studyLaunchTarget: StudyLaunchTarget? = null,
-    onStudyLaunchTargetHandled: (Long) -> Unit = {},
+    state: KalimaUiState,
+    actions: KalimaAppActions,
 ) {
+    val progress = state.progress
+    val studyActions = actions.study
+    val learningActions = actions.learning
+    val preferences = actions.preferences
+    val lockScreen = actions.lockScreen
+    val backup = actions.backup
+    val offlineAudio = actions.offlineAudio
+    val external = actions.external
+    val studyLaunchTarget = state.studyLaunchTarget
     var selectedName by rememberSaveable { mutableStateOf(AppTab.Study.name) }
     var selectedLearnSectionName by rememberSaveable { mutableStateOf(LearnSection.Dictionary.name) }
     var quizUnderstandPathName by rememberSaveable { mutableStateOf<String?>(null) }
@@ -160,7 +115,7 @@ fun KalimaApp(
             }
         }
         if (!progress.onboardingComplete) {
-            OnboardingScreen(onComplete = onCompleteOnboarding)
+            OnboardingScreen(onComplete = learningActions.onCompleteOnboarding)
             return@KalimaTheme
         }
         Scaffold(
@@ -215,36 +170,36 @@ fun KalimaApp(
                         SettingsScreen(
                             progress = progress,
                             showTitle = false,
-                            currentLanguage = currentLanguage,
-                            onThemeModeChange = onThemeModeChange,
-                            onLanguageChange = onLanguageChange,
-                            onReminderChange = onReminderChange,
-                            onSessionLevelChange = onSessionLevelChange,
-                            onAdvancedSettingsVisibleChange = onAdvancedSettingsVisibleChange,
-                            onSpacedRepetitionEnabledChange = onSpacedRepetitionEnabledChange,
-                            onLockScreenChange = onLockScreenChange,
-                            onLockScreenQuizChange = onLockScreenQuizChange,
-                            onLockScreenQuizIntervalChange = onLockScreenQuizIntervalChange,
-                            onMaximumWordsChange = onMaximumWordsChange,
-                            onOpenAppSettings = onOpenAppSettings,
-                            onPreviewLockScreen = onPreviewLockScreen,
-                            onOpenWebsite = onOpenWebsite,
-                            onContactDeveloper = onContactDeveloper,
-                            onQuietHoursEnabledChange = onQuietHoursEnabledChange,
-                            onQuietHoursChange = onQuietHoursChange,
-                            onLockScreenDailyLimitChange = onLockScreenDailyLimitChange,
-                            onPauseLockScreenOneHour = onPauseLockScreenOneHour,
-                            onPauseLockScreenToday = onPauseLockScreenToday,
-                            onResumeLockScreen = onResumeLockScreen,
-                            onLockScreenCooldownChange = onLockScreenCooldownChange,
-                            onExportBackup = onExportBackup,
-                            onImportBackup = onImportBackup,
-                            backupImportPreview = backupImportPreview,
-                            onConfirmBackupImport = onConfirmBackupImport,
-                            onCancelBackupImport = onCancelBackupImport,
-                            offlineWordAudioState = offlineWordAudioState,
-                            onDownloadOfflineWordAudio = onDownloadOfflineWordAudio,
-                            onCancelOfflineWordAudio = onCancelOfflineWordAudio,
+                            currentLanguage = state.currentLanguage,
+                            onThemeModeChange = preferences.onThemeModeChange,
+                            onLanguageChange = preferences.onLanguageChange,
+                            onReminderChange = preferences.onReminderChange,
+                            onSessionLevelChange = studyActions.onSessionLevelChange,
+                            onAdvancedSettingsVisibleChange = preferences.onAdvancedSettingsVisibleChange,
+                            onSpacedRepetitionEnabledChange = preferences.onSpacedRepetitionEnabledChange,
+                            onLockScreenChange = lockScreen.onEnabledChange,
+                            onLockScreenQuizChange = lockScreen.onQuizEnabledChange,
+                            onLockScreenQuizIntervalChange = lockScreen.onQuizIntervalChange,
+                            onMaximumWordsChange = preferences.onMaximumWordsChange,
+                            onOpenAppSettings = lockScreen.onOpenAppSettings,
+                            onPreviewLockScreen = lockScreen.onPreview,
+                            onOpenWebsite = external.onOpenWebsite,
+                            onContactDeveloper = external.onContactDeveloper,
+                            onQuietHoursEnabledChange = lockScreen.onQuietHoursEnabledChange,
+                            onQuietHoursChange = lockScreen.onQuietHoursChange,
+                            onLockScreenDailyLimitChange = lockScreen.onDailyLimitChange,
+                            onPauseLockScreenOneHour = lockScreen.onPauseOneHour,
+                            onPauseLockScreenToday = lockScreen.onPauseToday,
+                            onResumeLockScreen = lockScreen.onResume,
+                            onLockScreenCooldownChange = lockScreen.onCooldownChange,
+                            onExportBackup = backup.onExport,
+                            onImportBackup = backup.onImport,
+                            backupImportPreview = state.backupImportPreview,
+                            onConfirmBackupImport = backup.onConfirmImport,
+                            onCancelBackupImport = backup.onCancelImport,
+                            offlineWordAudioState = state.offlineWordAudioState,
+                            onDownloadOfflineWordAudio = offlineAudio.onDownload,
+                            onCancelOfflineWordAudio = offlineAudio.onCancel,
                         )
                     }
                 } else {
@@ -252,32 +207,32 @@ fun KalimaApp(
                         when (selected) {
                         AppTab.Study -> StudyScreen(
                             progress = progress,
-                            onIntroduce = onIntroduce,
-                            onAnswer = onAnswer,
-                            onCheckpointAnswer = onQuizAnswer,
-                            onCurrentWordChange = onCurrentStudyWordChange,
-                            onEnableLockScreen = { onLockScreenChange(true) },
+                            onIntroduce = studyActions.onIntroduce,
+                            onAnswer = studyActions.onAnswer,
+                            onCheckpointAnswer = studyActions.onQuizAnswer,
+                            onCurrentWordChange = studyActions.onCurrentWordChange,
+                            onEnableLockScreen = { lockScreen.onEnabledChange(true) },
                             onOpenExcludedWords = {
                                 excludedWordsRequestId += 1L
                                 selectedLearnSectionName = LearnSection.Dictionary.name
                                 selectedName = AppTab.Learn.name
                             },
                             pronouncer = pronouncer,
-                            onToggleCustomList = onToggleCustomList,
-                            onToggleAlreadyKnown = onToggleAlreadyKnown,
+                            onToggleCustomList = learningActions.onToggleCustomList,
+                            onToggleAlreadyKnown = learningActions.onToggleAlreadyKnown,
                             onOpenQuiz = {
                                 quizUnderstandPathName = progress.activeUnderstandPath?.name
                                 selectedLearnSectionName = LearnSection.Quiz.name
                                 selectedName = AppTab.Learn.name
                             },
-                            onSessionLevelChange = onSessionLevelChange,
-                            onAdvanceUnderstandPath = onAdvanceUnderstandPath,
+                            onSessionLevelChange = studyActions.onSessionLevelChange,
+                            onAdvanceUnderstandPath = studyActions.onAdvanceUnderstandPath,
                             onOpenSettings = { settingsVisible = true },
                             launchTarget = studyLaunchTarget,
                             onLaunchTargetHandled = { requestId ->
                                 selectedName = AppTab.Study.name
                                 handledStudyRequestId = requestId
-                                onStudyLaunchTargetHandled(requestId)
+                                studyActions.onLaunchTargetHandled(requestId)
                             },
                         )
                         AppTab.Quran -> QuranReaderScreen(
@@ -285,9 +240,9 @@ fun KalimaApp(
                             fontSizeSp = progress.quranFontSizeSp,
                             customStudyIds = progress.customStudyIds,
                             learningOverlayEnabled = progress.quranLearningOverlayEnabled,
-                            onFontSizeChange = onQuranFontSizeChange,
-                            onLearningOverlayChange = onQuranLearningOverlayChange,
-                            onToggleCustomList = onToggleCustomList,
+                            onFontSizeChange = preferences.onQuranFontSizeChange,
+                            onLearningOverlayChange = preferences.onQuranLearningOverlayChange,
+                            onToggleCustomList = learningActions.onToggleCustomList,
                             onOpenSettings = { settingsVisible = true },
                         )
                         AppTab.Learn -> LearnScreen(
@@ -298,11 +253,11 @@ fun KalimaApp(
                                 if (it == LearnSection.Quiz) quizUnderstandPathName = null
                             },
                             pronouncer = pronouncer,
-                            onToggleCustomList = onToggleCustomList,
-                            onToggleAlreadyKnown = onToggleAlreadyKnown,
-                            onShowCompleteAyahChange = onShowCompleteAyahChange,
+                            onToggleCustomList = learningActions.onToggleCustomList,
+                            onToggleAlreadyKnown = learningActions.onToggleAlreadyKnown,
+                            onShowCompleteAyahChange = learningActions.onShowCompleteAyahChange,
                             openExcludedWordsRequestId = excludedWordsRequestId,
-                            onQuizAnswer = onQuizAnswer,
+                            onQuizAnswer = studyActions.onQuizAnswer,
                             quizUnderstandPath = quizUnderstandPathName?.let { stored ->
                                 UnderstandPathId.entries.firstOrNull { it.name == stored }
                             },
@@ -311,10 +266,10 @@ fun KalimaApp(
                         )
                         AppTab.Progress -> ProgressScreen(
                             progress = progress,
-                            onStudyScopeChange = onStudyScopeChange,
-                            onSelectUnderstandPath = onSelectUnderstandPath,
-                            onAdvanceUnderstandPath = onAdvanceUnderstandPath,
-                            onToggleSurah = onToggleSurah,
+                            onStudyScopeChange = learningActions.onStudyScopeChange,
+                            onSelectUnderstandPath = learningActions.onSelectUnderstandPath,
+                            onAdvanceUnderstandPath = studyActions.onAdvanceUnderstandPath,
+                            onToggleSurah = learningActions.onToggleSurah,
                             pronouncer = pronouncer,
                             onOpenSettings = { settingsVisible = true },
                         )

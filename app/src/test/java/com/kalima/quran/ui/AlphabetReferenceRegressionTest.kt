@@ -8,7 +8,7 @@ import org.junit.Test
 class AlphabetReferenceRegressionTest {
     @Test
     fun `Arabic alphabet answers leave room for full glyph metrics`() {
-        val study = source("ui/StudyScreen.kt")
+        val study = source("ui/AlphabetScreen.kt")
         val options = study
             .substringAfter("question.options.forEachIndexed")
             .substringBefore("if (selectedOptionIndex != null)")
@@ -18,7 +18,7 @@ class AlphabetReferenceRegressionTest {
 
     @Test
     fun `alphabet answer is final after the first choice`() {
-        val study = source("ui/StudyScreen.kt")
+        val study = source("ui/AlphabetScreen.kt")
         val options = study
             .substringAfter("question.options.forEachIndexed")
             .substringBefore("TextButton(\n                        onClick = {\n                            recalling = false")
@@ -32,10 +32,10 @@ class AlphabetReferenceRegressionTest {
 
     @Test
     fun `vowelled alphabet prompt centers kasra independently of font anchor`() {
-        val study = source("ui/StudyScreen.kt")
+        val study = source("ui/AlphabetMilestone.kt")
         val prompt = study
-            .substringAfter("private fun AlphabetPromptArabicText")
-            .substringBefore("private fun AlphabetDecodingMilestone")
+            .substringAfter("internal fun AlphabetPromptArabicText")
+            .substringBefore("internal fun AlphabetDecodingMilestone")
 
         assertTrue(prompt.contains("text.endsWith(ARABIC_KASRA)"))
         assertTrue(prompt.contains("val centerX = this.size.width / 2f"))
@@ -45,9 +45,9 @@ class AlphabetReferenceRegressionTest {
 
     @Test
     fun `alphabet reference has no search and renders rows right to left`() {
-        val study = source("ui/StudyScreen.kt")
+        val study = source("ui/AlphabetOverviewComponents.kt")
         val table = study
-            .substringAfter("private fun AlphabetReferenceTable")
+            .substringAfter("internal fun AlphabetReferenceTable")
             .substringBefore("private fun NumberFoundationCard")
 
         assertFalse(table.contains("OutlinedTextField"))
@@ -65,7 +65,7 @@ class AlphabetReferenceRegressionTest {
 
     @Test
     fun `letter lesson keeps study controls in the first viewport`() {
-        val study = source("ui/StudyScreen.kt")
+        val study = source("ui/AlphabetScreen.kt")
         val lesson = study
             .substringAfter("private fun AlphabetFoundationScreen")
             .substringBefore("private fun AlphabetPromptArabicText")
@@ -79,7 +79,7 @@ class AlphabetReferenceRegressionTest {
 
     @Test
     fun `number lessons are not shown inside the alphabet course`() {
-        val study = source("ui/StudyScreen.kt")
+        val study = source("ui/AlphabetScreen.kt")
         val lesson = study
             .substringAfter("private fun AlphabetFoundationScreen")
             .substringBefore("private fun AlphabetPromptArabicText")
@@ -90,16 +90,10 @@ class AlphabetReferenceRegressionTest {
 
     @Test
     fun `alphabet and number tabs keep their study content separate`() {
-        val study = source("ui/StudyScreen.kt")
-        val alphabet = study
-            .substringAfter("fun AlphabetScreen")
-            .substringBefore("fun NumberScreen")
-        val numbers = study
-            .substringAfter("fun NumberScreen")
-            .substringBefore("private fun WordStudyLockedScreen")
-        val table = study
+        val alphabet = source("ui/AlphabetScreen.kt")
+        val numbers = source("ui/NumberScreen.kt")
+        val table = source("ui/AlphabetOverviewComponents.kt")
             .substringAfter("private fun AlphabetReferenceTable")
-            .substringBefore("private fun NumberFoundationCard")
 
         assertTrue(alphabet.contains("AlphabetReferenceTable"))
         assertFalse(alphabet.contains("NumberFoundationCard"))
@@ -112,13 +106,9 @@ class AlphabetReferenceRegressionTest {
 
     @Test
     fun `alphabet overview does not repeat the selected tab label`() {
-        val study = source("ui/StudyScreen.kt")
-        val alphabet = study
-            .substringAfter("fun AlphabetScreen")
-            .substringBefore("fun NumberScreen")
-        val accessCard = study
-            .substringAfter("private fun AlphabetAccessCard")
-            .substringBefore("private fun StudyActionBar")
+        val alphabet = source("ui/AlphabetScreen.kt")
+        val accessCard = source("ui/AlphabetOverviewComponents.kt")
+            .substringAfter("internal fun AlphabetAccessCard")
 
         assertFalse(alphabet.contains("R.string.alphabet_shortcut_title"))
         assertTrue(accessCard.contains("R.string.foundation_course_title"))
@@ -127,16 +117,13 @@ class AlphabetReferenceRegressionTest {
 
     @Test
     fun `numbers overview does not repeat the selected tab label`() {
-        val study = source("ui/StudyScreen.kt")
-        val numbers = study
+        val numbers = source("ui/NumberScreen.kt")
             .substringAfter("fun NumberScreen")
-            .substringBefore("private fun WordStudyLockedScreen")
-        val lessonCard = study
+        val lessonCard = source("ui/NumberScreen.kt")
             .substringAfter("private fun NumberFoundationCard")
             .substringBefore("private fun NumberAccessCard")
-        val accessCard = study
+        val accessCard = source("ui/NumberScreen.kt")
             .substringAfter("private fun NumberAccessCard")
-            .substringBefore("private fun AlphabetAccessCard")
 
         assertFalse(numbers.contains("R.string.numbers_shortcut_title"))
         assertFalse(lessonCard.contains("R.string.number_course_title"))

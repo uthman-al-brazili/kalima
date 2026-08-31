@@ -35,8 +35,17 @@ import com.kalima.quran.localization.LanguageManager
 import com.kalima.quran.notifications.NotificationHelper
 import com.kalima.quran.notifications.ReminderScheduler
 import com.kalima.quran.ui.KalimaApp
+import com.kalima.quran.ui.BackupActions
+import com.kalima.quran.ui.ExternalActions
+import com.kalima.quran.ui.KalimaAppActions
+import com.kalima.quran.ui.KalimaUiState
+import com.kalima.quran.ui.LearningActions
+import com.kalima.quran.ui.LockScreenActions
+import com.kalima.quran.ui.OfflineAudioActions
+import com.kalima.quran.ui.PreferenceActions
 import com.kalima.quran.ui.ProgressStatisticsCache
 import com.kalima.quran.ui.StartupLoadingScreen
+import com.kalima.quran.ui.StudyActions
 import com.kalima.quran.ui.StudyLaunchTarget
 import java.time.Instant
 import java.time.LocalDate
@@ -111,55 +120,73 @@ class MainActivity : ComponentActivity() {
             val progress by store.progress.collectAsStateWithLifecycle()
             val offlineWordAudioState by offlineWordAudioManager.state.collectAsStateWithLifecycle()
             KalimaApp(
-                progress = progress,
-                onIntroduce = store::introduce,
-                onAnswer = store::answer,
-                onCurrentStudyWordChange = store::setCurrentStudyWord,
-                onQuizAnswer = store::answerQuiz,
-                onLockScreenChange = ::changeLockScreen,
-                onLockScreenQuizChange = store::setLockScreenQuizEnabled,
-                onLockScreenQuizIntervalChange = store::setLockScreenQuizInterval,
-                onReminderChange = ::changeReminder,
-                onSessionLevelChange = store::setSessionLevel,
-                onMaximumWordsChange = store::setMaximumWords,
-                onThemeModeChange = store::setThemeMode,
-                onQuranFontSizeChange = store::setQuranFontSize,
-                onQuranLearningOverlayChange = store::setQuranLearningOverlayEnabled,
-                onAdvancedSettingsVisibleChange = store::setAdvancedSettingsVisible,
-                onShowCompleteAyahChange = store::setShowCompleteAyah,
-                onSpacedRepetitionEnabledChange = store::setSpacedRepetitionEnabled,
-                onStudyScopeChange = store::toggleStudyScope,
-                onSelectUnderstandPath = store::setActiveUnderstandPath,
-                onAdvanceUnderstandPath = store::advanceUnderstandPathStage,
-                onToggleSurah = store::toggleSurah,
-                onToggleCustomList = store::toggleCustomStudy,
-                onToggleAlreadyKnown = store::toggleAlreadyKnown,
-                onCompleteOnboarding = store::completeOnboarding,
-                onOpenAppSettings = ::openAppSettings,
-                onPreviewLockScreen = ::previewLockScreen,
-                onOpenWebsite = ::openWebsite,
-                onContactDeveloper = ::openSupportEmail,
-                currentLanguage = LanguageManager.selectedLanguage(this),
-                onLanguageChange = ::changeLanguage,
-                onQuietHoursEnabledChange = store::setQuietHoursEnabled,
-                onQuietHoursChange = store::setQuietHours,
-                onLockScreenDailyLimitChange = store::setLockScreenDailyLimit,
-                onPauseLockScreenOneHour = store::pauseLockScreenForHour,
-                onPauseLockScreenToday = store::pauseLockScreenUntilTomorrow,
-                onResumeLockScreen = store::resumeLockScreen,
-                onLockScreenCooldownChange = store::setLockScreenCooldownMinutes,
-                onExportBackup = ::chooseBackupDestination,
-                onImportBackup = ::chooseBackupFile,
-                backupImportPreview = pendingBackupImport,
-                onConfirmBackupImport = ::confirmBackupImport,
-                onCancelBackupImport = { pendingBackupImport = null },
-                offlineWordAudioState = offlineWordAudioState,
-                onDownloadOfflineWordAudio = { wordLocations, verseLocations ->
-                    offlineWordAudioManager.download(wordLocations, verseLocations)
-                },
-                onCancelOfflineWordAudio = offlineWordAudioManager::cancel,
-                studyLaunchTarget = studyLaunchTarget,
-                onStudyLaunchTargetHandled = ::consumeStudyLaunchTarget,
+                state = KalimaUiState(
+                    progress = progress,
+                    currentLanguage = LanguageManager.selectedLanguage(this),
+                    backupImportPreview = pendingBackupImport,
+                    offlineWordAudioState = offlineWordAudioState,
+                    studyLaunchTarget = studyLaunchTarget,
+                ),
+                actions = KalimaAppActions(
+                    study = StudyActions(
+                        onIntroduce = store::introduce,
+                        onAnswer = store::answer,
+                        onCurrentWordChange = store::setCurrentStudyWord,
+                        onQuizAnswer = store::answerQuiz,
+                        onSessionLevelChange = store::setSessionLevel,
+                        onAdvanceUnderstandPath = store::advanceUnderstandPathStage,
+                        onLaunchTargetHandled = ::consumeStudyLaunchTarget,
+                    ),
+                    learning = LearningActions(
+                        onStudyScopeChange = store::toggleStudyScope,
+                        onSelectUnderstandPath = store::setActiveUnderstandPath,
+                        onToggleSurah = store::toggleSurah,
+                        onToggleCustomList = store::toggleCustomStudy,
+                        onToggleAlreadyKnown = store::toggleAlreadyKnown,
+                        onShowCompleteAyahChange = store::setShowCompleteAyah,
+                        onCompleteOnboarding = store::completeOnboarding,
+                    ),
+                    preferences = PreferenceActions(
+                        onReminderChange = ::changeReminder,
+                        onMaximumWordsChange = store::setMaximumWords,
+                        onThemeModeChange = store::setThemeMode,
+                        onQuranFontSizeChange = store::setQuranFontSize,
+                        onQuranLearningOverlayChange = store::setQuranLearningOverlayEnabled,
+                        onAdvancedSettingsVisibleChange = store::setAdvancedSettingsVisible,
+                        onSpacedRepetitionEnabledChange = store::setSpacedRepetitionEnabled,
+                        onLanguageChange = ::changeLanguage,
+                    ),
+                    lockScreen = LockScreenActions(
+                        onEnabledChange = ::changeLockScreen,
+                        onQuizEnabledChange = store::setLockScreenQuizEnabled,
+                        onQuizIntervalChange = store::setLockScreenQuizInterval,
+                        onOpenAppSettings = ::openAppSettings,
+                        onPreview = ::previewLockScreen,
+                        onQuietHoursEnabledChange = store::setQuietHoursEnabled,
+                        onQuietHoursChange = store::setQuietHours,
+                        onDailyLimitChange = store::setLockScreenDailyLimit,
+                        onPauseOneHour = store::pauseLockScreenForHour,
+                        onPauseToday = store::pauseLockScreenUntilTomorrow,
+                        onResume = store::resumeLockScreen,
+                        onCooldownChange = store::setLockScreenCooldownMinutes,
+                    ),
+                    backup = BackupActions(
+                        onExport = ::chooseBackupDestination,
+                        onImport = ::chooseBackupFile,
+                        onConfirmImport = ::confirmBackupImport,
+                        onCancelImport = { pendingBackupImport = null },
+                    ),
+                    offlineAudio = OfflineAudioActions(
+                        onDownload = { wordLocations, verseLocations ->
+                            offlineWordAudioManager.download(wordLocations, verseLocations)
+                        },
+                        onCancel = offlineWordAudioManager::cancel,
+                    ),
+                    external = ExternalActions(
+                        onOpenWebsite = ::openWebsite,
+                        onContactDeveloper = ::openSupportEmail,
+                    ),
+                ),
             )
         }
 

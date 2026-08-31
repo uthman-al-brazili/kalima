@@ -27,10 +27,10 @@ class QuizExperienceRegressionTest {
     @Test
     fun `determinate progress bars do not draw trailing stop markers`() {
         val expectedMarkerSuppressions = mapOf(
-            "ui/ProgressScreen.kt" to 4,
+            "ui/ProgressComponents.kt" to 4,
             "ui/QuizScreen.kt" to 1,
             "ui/SettingsScreen.kt" to 1,
-            "ui/StudyScreen.kt" to 1,
+            "ui/StudySessionComponents.kt" to 1,
             "ui/UnderstandPathsPanel.kt" to 1,
         )
 

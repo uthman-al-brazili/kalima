@@ -138,7 +138,7 @@ class ContextCheckpointTest {
         val appSource = File("src/main/java/com/kalima/quran/ui/KalimaApp.kt").readText()
 
         assertTrue(studySource.contains("onAnswer = onCheckpointAnswer"))
-        assertTrue(appSource.contains("onCheckpointAnswer = onQuizAnswer"))
+        assertTrue(appSource.contains("onCheckpointAnswer = studyActions.onQuizAnswer"))
     }
 
     @Test
