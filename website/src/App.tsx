@@ -4,7 +4,7 @@ type Language = 'en' | 'pt';
 type Route = '/' | '/privacy' | '/support';
 type FeatureIconName = 'lockscreen' | 'quiz' | 'widget' | 'audio' | 'quran' | 'progress';
 
-const artworkRevision = '0.30.5-2026-08-29-shared-bezel';
+const artworkRevision = '0.34.0-2026-08-31-current-ui';
 
 const facts = {
   email: 'uthman-al-brazili@proton.me',
@@ -23,18 +23,18 @@ const featureIconPaths: Record<Exclude<FeatureIconName, 'lockscreen'>, string> =
   progress: 'M3,13h2v8H3v-8zM7,9h2v12H7V9zM11,3h2v18h-2V3zM15,11h2v10h-2V11zM19,6h2v15h-2V6z',
 };
 
-const stepIcons: readonly FeatureIconName[] = ['lockscreen', 'quiz', 'quran'];
+const stepIcons: readonly FeatureIconName[] = ['progress', 'quran', 'quiz'];
 
 const content = {
   en: {
     seo: { title: 'Kalima — Learn Quranic Arabic on your lock screen', description: 'Learn Quranic Arabic on your lock screen when your screen turns on. Kalima is private, offline-first, and never bypasses your PIN, password, or biometrics.' },
-    nav: { learn: 'Lock-screen learning', features: 'Features', privacy: 'Privacy', support: 'Support', cta: 'Get Kalima' },
+    nav: { learn: 'How it works', features: 'Features', privacy: 'Privacy', support: 'Support', cta: 'Get Kalima' },
     hero: {
       eyebrow: 'Quranic Arabic • On your lock screen',
       title: 'Learn Quranic Arabic before you unlock.',
-      body: 'Turn screen-on moments into short Quranic Arabic lessons. Kalima keeps your device locked and never bypasses your PIN, password, or biometrics.',
+      body: 'Follow a guided path from Quranic words into Quran context, with short lessons that can also meet you when the screen turns on. Kalima never bypasses your PIN, password, or biometrics.',
       cta: 'Get Kalima',
-      secondary: 'See lock-screen learning',
+      secondary: 'See how it works',
       note: 'Free • No ads • Android 8+',
     },
     card: { label: 'Lock-screen word', date: 'Tuesday, August 24', security: 'Device stays locked', transliteration: 'hudā', meaning: 'guidance', again: 'Again', gotIt: 'Got it', ready: 'Choose how this word felt.', saved: 'Nice. Kalima will bring it back at the right time.', retry: 'No pressure. This word will return sooner.' },
@@ -43,37 +43,36 @@ const content = {
       ['42,117', 'offline study cards'],
       ['0', 'ads or trackers'],
     ],
-    promise: 'Make every screen-on moment count.',
-    promiseBody: 'Kalima brings short Quranic Arabic practice to the lock screen, then connects each word to its Quran context.',
+    promise: 'Build vocabulary with a clear Quran goal.',
+    promiseBody: 'Kalima turns individual words into a focused journey through guided Quran understanding, contextual meaning, and reliable recall.',
     steps: [
-      ['01', 'Meet a Quranic Arabic word', 'See the Arabic, transliteration, pronunciation, and meaning directly on your lock screen.'],
-      ['02', 'Recall it with a quick quiz', 'Answer listening, context, cloze, and root questions when the screen turns on.'],
-      ['03', 'Continue in Quran context', 'Open the exact lesson, listen to real Quran audio, and explore the ayah, grammar, root, and related occurrences.'],
+      ['01', 'Choose a meaningful Quran goal', 'Work through Al-Fatihah one ayah at a time or build recognition across the last ten surahs, with a finite path you can complete.'],
+      ['02', 'Study the current ayah word by word', 'Choose a quick, steady, or deep session. Kalima balances earlier reviews with the vocabulary in your current guided lesson.'],
+      ['03', 'Prove recall in Quran context', 'Strengthen meaning with contextual checkpoints, focused quizzes, and the word-by-word Quran reader.'],
     ],
-    screensTitle: 'From the lock screen into Quran context.',
-    screensBody: 'Start with a screen-on card, then continue with focused word study, Quran reading, and Arabic foundations.',
+    screensTitle: 'From focused word study into Quran context.',
+    screensBody: 'Follow a guided study path in the app, practice on the optional lock screen, and connect every word back to the Quran.',
     screens: [
-      ['lock-screen-learning.webp', 'Quranic Arabic word shown on the lock screen inside a simulated Android phone', 'Review a Quranic Arabic word at screen-on while Android keeps your PIN and biometrics in control.'],
-      ['word-study.webp', 'Kalima daily Quranic word study screen with Arabic, pronunciation, and review controls', 'Build vocabulary one word at a time with pronunciation, contextual meaning, and spaced review.'],
-      ['quran-reading.webp', 'Kalima Quran reader with tappable Arabic words', 'Tap any word anywhere in the Quran to connect vocabulary with its ayah and deeper context.'],
-      ['arabic-foundations.webp', 'Kalima Arabic basics screen with alphabet and Arabic-Indic number lessons', 'Practice the alphabet and Arabic-Indic numbers separately whenever you need the foundation.'],
+      ['lock-screen-learning.webp', 'Quranic Arabic word shown on the lock screen inside a simulated Android phone', 'Keep reviews moving with optional screen-on cards while Android leaves your PIN and biometrics fully in control.'],
+      ['word-study.webp', 'Kalima daily Quranic word study screen with Arabic, pronunciation, and review controls', 'Choose a quick, steady, or deep session that balances due reviews, new words, and the current guided lesson.'],
+      ['quran-reading.webp', 'Kalima Quran reader with tappable Arabic words', 'Tap any word in the complete ayah to inspect its meaning, grammar, audio, and other indexed occurrences.'],
     ],
-    featuresTitle: 'Built around small moments that add up.',
+    featuresTitle: 'A complete path, built for steady progress.',
     features: [
       ['lockscreen', 'Lock-screen lessons', 'Practice when the screen turns on while Android keeps the device keyguard fully in control.'],
-      ['quiz', 'Quick lock-screen quizzes', 'Listening, context, cloze, and root questions turn brief moments into active recall.'],
+      ['quiz', 'Contextual recall', 'Test meaning in an ayah, fill Quranic cloze prompts, work with roots, and revisit weak words through spaced review.'],
       ['widget', 'Daily Quran word widget', 'See one word at a glance and open its exact lesson without altering your progress.'],
-      ['audio', 'Real Quran audio', 'Hear word recordings and Al-Hussary’s complete-ayah recitation. Played audio can be saved locally.'],
-      ['quran', 'Context, not isolation', 'Open the ayah, inspect roots and grammar, and find other indexed occurrences offline.'],
-      ['progress', 'Spaced repetition', 'Review what is due instead of restarting from the beginning.'],
+      ['audio', 'Offline-first audio', 'Hear word recordings and Al-Hussary’s complete-ayah recitation, with downloads continuing safely in the background.'],
+      ['quran', 'Guided understanding paths', 'Study Al-Fatihah in seven stages or recognize the last ten surahs through meaning, vocabulary coverage, and proven recall.'],
+      ['progress', 'Sessions at your pace', 'Choose quick, steady, or deep study without losing your place, while due reviews remain the priority.'],
     ],
     trustTitle: 'Your learning belongs to you.',
     trustBody: 'No account, advertising, analytics, or remote learning database. Progress stays on your device and can be exported manually.',
     trustLinks: ['Read the privacy policy', 'See support details'],
     availability: {
       kicker: 'Kalima for Android',
-      title: 'Turn unlock moments into Quranic Arabic practice.',
-      body: 'Download the official signed APK from GitHub. Kalima is free, bilingual, private, and built for offline-first study.',
+      title: 'Begin your path into Quranic Arabic.',
+      body: 'Download the official signed APK from GitHub. Kalima is free, bilingual, private, and built for guided, offline-first study with optional lock-screen practice.',
       cta: 'Download Kalima 0.34.0',
       secondary: 'View the GitHub release',
       installKicker: 'Updates through GitHub',
@@ -93,13 +92,13 @@ const content = {
   },
   pt: {
     seo: { title: 'Kalima — Aprenda árabe corânico na tela bloqueada', description: 'Aprenda árabe corânico na tela bloqueada quando a tela acende. O Kalima prioriza a privacidade e nunca contorna seu PIN, senha ou biometria.' },
-    nav: { learn: 'Tela bloqueada', features: 'Recursos', privacy: 'Privacidade', support: 'Suporte', cta: 'Conheça o Kalima' },
+    nav: { learn: 'Como funciona', features: 'Recursos', privacy: 'Privacidade', support: 'Suporte', cta: 'Conheça o Kalima' },
     hero: {
       eyebrow: 'Árabe corânico • Na tela bloqueada',
       title: 'Aprenda árabe corânico antes de desbloquear.',
-      body: 'Transforme o acender da tela em lições curtas de árabe corânico. O Kalima mantém o aparelho bloqueado e nunca contorna seu PIN, senha ou biometria.',
+      body: 'Siga um caminho guiado das palavras ao contexto do Alcorão, com lições curtas que também podem aparecer quando a tela acende. O Kalima nunca contorna seu PIN, senha ou biometria.',
       cta: 'Conheça o Kalima',
-      secondary: 'Veja o aprendizado na tela bloqueada',
+      secondary: 'Veja como funciona',
       note: 'Grátis • Sem anúncios • Android 8+',
     },
     card: { label: 'Palavra na tela bloqueada', date: 'Terça-feira, 24 de agosto', security: 'Aparelho permanece bloqueado', transliteration: 'hudā', meaning: 'orientação', again: 'De novo', gotIt: 'Entendi', ready: 'Como esta palavra pareceu?', saved: 'Muito bem. O Kalima vai trazê-la de volta no momento certo.', retry: 'Sem pressão. Esta palavra voltará mais cedo.' },
@@ -108,37 +107,36 @@ const content = {
       ['42.117', 'cartões offline'],
       ['0', 'anúncios ou rastreadores'],
     ],
-    promise: 'Faça cada acender da tela valer a pena.',
-    promiseBody: 'O Kalima leva práticas curtas de árabe corânico à tela bloqueada e conecta cada palavra ao contexto do Alcorão.',
+    promise: 'Construa vocabulário com um objetivo claro no Alcorão.',
+    promiseBody: 'O Kalima transforma palavras individuais em um percurso focado de compreensão guiada, significado no contexto e recordação confiável.',
     steps: [
-      ['01', 'Conheça uma palavra do Alcorão', 'Veja o árabe, a transliteração, a pronúncia e o significado diretamente na tela bloqueada.'],
-      ['02', 'Relembre com um quiz rápido', 'Responda a questões de áudio, contexto, lacunas e raízes quando a tela acender.'],
-      ['03', 'Continue no contexto do Alcorão', 'Abra a lição exata, ouça áudio real e explore a ayah, a gramática, a raiz e ocorrências relacionadas.'],
+      ['01', 'Escolha um objetivo no Alcorão', 'Percorra a Al-Fatihah uma ayah por vez ou desenvolva reconhecimento nas dez últimas suratas, seguindo um caminho finito que você pode concluir.'],
+      ['02', 'Estude a ayah atual palavra por palavra', 'Escolha uma sessão rápida, constante ou profunda. O Kalima equilibra revisões anteriores com o vocabulário da lição guiada atual.'],
+      ['03', 'Comprove a recordação no contexto', 'Fortaleça o significado com desafios de contexto, quizzes focados e o leitor palavra por palavra.'],
     ],
-    screensTitle: 'Da tela bloqueada ao contexto do Alcorão.',
-    screensBody: 'Comece com um cartão ao acender a tela e continue com estudo de palavras, leitura do Alcorão e fundamentos do árabe.',
+    screensTitle: 'Do estudo focado de palavras ao contexto do Alcorão.',
+    screensBody: 'Siga um caminho guiado no app, pratique na tela bloqueada opcional e conecte cada palavra de volta ao Alcorão.',
     screens: [
-      ['lock-screen-learning.webp', 'Palavra do Alcorão exibida na tela bloqueada dentro de um telefone Android simulado', 'Revise uma palavra do Alcorão ao acender a tela, com o PIN e a biometria sob o controle do Android.'],
-      ['word-study.webp', 'Tela do Kalima para estudar a palavra corânica do dia, com áudio e controles de revisão', 'Construa vocabulário uma palavra de cada vez, com pronúncia, significado em contexto e revisão espaçada.'],
-      ['quran-reading.webp', 'Leitor do Alcorão do Kalima com palavras árabes tocáveis', 'Toque em qualquer palavra, em qualquer parte do Alcorão, para conectá-la à ayah e ao seu contexto.'],
-      ['arabic-foundations.webp', 'Tela de fundamentos do árabe do Kalima com alfabeto e números indo-arábicos', 'Pratique o alfabeto e os números indo-arábicos separadamente quando precisar reforçar a base.'],
+      ['lock-screen-learning.webp', 'Palavra do Alcorão exibida na tela bloqueada dentro de um telefone Android simulado', 'Mantenha as revisões em movimento com cartões opcionais ao acender a tela, enquanto o PIN e a biometria continuam sob controle do Android.'],
+      ['word-study.webp', 'Tela do Kalima para estudar a palavra corânica do dia, com áudio e controles de revisão', 'Escolha uma sessão rápida, constante ou profunda que equilibra revisões pendentes, palavras novas e a lição guiada atual.'],
+      ['quran-reading.webp', 'Leitor do Alcorão do Kalima com palavras árabes tocáveis', 'Toque em qualquer palavra da ayah completa para consultar significado, gramática, áudio e outras ocorrências indexadas.'],
     ],
-    featuresTitle: 'Pequenos momentos que constroem conhecimento.',
+    featuresTitle: 'Um caminho completo para avançar com constância.',
     features: [
       ['lockscreen', 'Lições na tela bloqueada', 'Pratique quando a tela acender enquanto o bloqueio do Android continua totalmente no controle.'],
-      ['quiz', 'Quizzes rápidos na tela bloqueada', 'Questões de áudio, contexto, lacunas e raízes transformam momentos breves em recordação ativa.'],
+      ['quiz', 'Recordação em contexto', 'Teste significados dentro da ayah, complete lacunas corânicas, trabalhe com raízes e reveja palavras difíceis por repetição espaçada.'],
       ['widget', 'Widget da palavra diária', 'Veja uma palavra num relance e abra sua lição exata sem alterar seu progresso.'],
-      ['audio', 'Áudio real do Alcorão', 'Ouça palavras e a recitação de ayahs completas por Al-Hussary. Os áudios tocados podem ser salvos.'],
-      ['quran', 'Palavras em contexto', 'Abra a ayah, consulte raiz e gramática e encontre outras ocorrências offline.'],
-      ['progress', 'Repetição espaçada', 'Revise o que está pendente em vez de sempre recomeçar do início.'],
+      ['audio', 'Áudio pensado para uso offline', 'Ouça palavras e a recitação de ayahs completas por Al-Hussary, com downloads seguros que continuam em segundo plano.'],
+      ['quran', 'Caminhos de compreensão', 'Estude a Al-Fatihah em sete etapas ou reconheça as dez últimas suratas por significado, cobertura de vocabulário e recordação comprovada.'],
+      ['progress', 'Sessões no seu ritmo', 'Escolha estudo rápido, constante ou profundo sem perder seu lugar, sempre priorizando as revisões pendentes.'],
     ],
     trustTitle: 'Seu aprendizado pertence a você.',
     trustBody: 'Sem conta, publicidade, análises ou banco remoto de atividades. O progresso fica no aparelho e pode ser exportado manualmente.',
     trustLinks: ['Leia a política de privacidade', 'Veja os detalhes de suporte'],
     availability: {
       kicker: 'Kalima para Android',
-      title: 'Transforme o desbloqueio em prática de árabe corânico.',
-      body: 'Baixe o APK oficial assinado pelo GitHub. O Kalima é gratuito, bilíngue, privado e feito para estudar mesmo sem internet.',
+      title: 'Comece seu caminho no árabe corânico.',
+      body: 'Baixe o APK oficial assinado pelo GitHub. O Kalima é gratuito, bilíngue, privado e feito para estudo guiado mesmo sem internet, com prática opcional na tela bloqueada.',
       cta: 'Baixar Kalima 0.34.0',
       secondary: 'Ver a versão no GitHub',
       installKicker: 'Atualizações pelo GitHub',
@@ -358,7 +356,7 @@ function Home({ language }: { language: Language }) {
 
     <section className="screens-section" aria-labelledby="screens-title">
       <div className="section-pad screens-intro">
-        <div className="section-heading"><span className="section-kicker">{language === 'en' ? 'Lock-screen learning' : 'Aprendizado na tela bloqueada'}</span><h2 id="screens-title">{t.screensTitle}</h2></div>
+        <div className="section-heading"><span className="section-kicker">{language === 'en' ? 'One connected journey' : 'Uma jornada conectada'}</span><h2 id="screens-title">{t.screensTitle}</h2></div>
         <p>{t.screensBody}</p>
       </div>
       <div className="screen-rail section-pad">
@@ -414,7 +412,7 @@ const policy = {
   en: {
     eyebrow: 'Privacy policy', title: 'Clear, human privacy.', intro: 'Effective August 28, 2026. Kalima is an offline-first Quranic Arabic learning app developed by Uthman (Gustavo).',
     sections: [
-      ['What stays on your device', 'Study progress and preferences are stored locally. This may include learned and reviewing words, study selections, foundation progress, reminders, downloaded audio, and display preferences. The developer does not receive this information.'],
+      ['What stays on your device', 'Study progress and preferences are stored locally. This may include learned and reviewing words, study selections, guided-path progress, reminders, downloaded audio, and display preferences. The developer does not receive this information.'],
       ['Backups you control', 'You may export a progress backup to a file location you choose and import it later. Kalima does not upload that backup. You control any external service or device location where you copy it.'],
       ['Network access and audio', 'Core lessons, study data, and Quran text are bundled for offline use. When you choose to stream or download Quran audio, word recordings come from QuranCDN and complete-ayah recitations come from EveryAyah. Those providers may receive normal connection information such as an IP address and request metadata.'],
       ['Feature permissions', 'Optional lock-screen lessons never bypass the keyguard, PIN, password, or biometrics. Everything remains off until you turn it on.'],
@@ -425,7 +423,7 @@ const policy = {
   pt: {
     eyebrow: 'Política de privacidade', title: 'Privacidade clara e humana.', intro: 'Vigente desde 28 de agosto de 2026. O Kalima é um app de árabe corânico que prioriza o uso offline, desenvolvido por Uthman (Gustavo).',
     sections: [
-      ['O que fica no seu aparelho', 'O progresso e as preferências ficam armazenados localmente. Isso pode incluir palavras aprendidas ou em revisão, seleções de estudo, progresso inicial, lembretes, áudios baixados e preferências visuais. O desenvolvedor não recebe essas informações.'],
+      ['O que fica no seu aparelho', 'O progresso e as preferências ficam armazenados localmente. Isso pode incluir palavras aprendidas ou em revisão, seleções de estudo, progresso nos caminhos guiados, lembretes, áudios baixados e preferências visuais. O desenvolvedor não recebe essas informações.'],
       ['Backups sob seu controle', 'Você pode exportar um backup do progresso para um local escolhido e importá-lo depois. O Kalima não envia esse arquivo. Você controla qualquer serviço externo ou aparelho para onde decida copiá-lo.'],
       ['Internet e áudio', 'As lições principais, os dados de estudo e o texto do Alcorão vêm incluídos para uso offline. Quando você escolhe ouvir ou baixar áudio, as palavras vêm do QuranCDN e as recitações de ayahs completas vêm do EveryAyah. Esses serviços podem receber informações normais da conexão, como endereço IP e metadados.'],
       ['Permissões opcionais', 'As lições opcionais na tela bloqueada nunca contornam o bloqueio, PIN, senha ou biometria. Tudo permanece desligado até você ativar.'],

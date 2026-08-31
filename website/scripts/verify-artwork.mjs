@@ -17,8 +17,8 @@ if (!/^\d{4}-\d{2}-\d{2}$/.test(manifest.createdAt)
 
 for (const locale of ['en', 'pt-BR']) {
   const images = manifest.locales?.[locale];
-  if (!images || Object.keys(images).length !== 4) {
-    throw new Error(`Artwork manifest must contain exactly four ${locale} images.`);
+  if (!images || Object.keys(images).length !== 3) {
+    throw new Error(`Artwork manifest must contain exactly three ${locale} images.`);
   }
   for (const [fileName, expectedHash] of Object.entries(images)) {
     if (!fileName.endsWith('.webp')) {

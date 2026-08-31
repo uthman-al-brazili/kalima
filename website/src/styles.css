@@ -120,7 +120,7 @@ h1, h2, h3, p { margin-top: 0; }
 .screens-intro { display: grid; grid-template-columns: 1.2fr 0.8fr; align-items: end; gap: 8vw; }
 .screens-intro .section-kicker, .section-kicker.light { color: #b6d1c9; }
 .screens-intro > p { margin-bottom: 7px; color: #b9cec8; }
-.screen-rail { margin-top: 60px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.screen-rail { margin-top: 60px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .screen-card { min-width: 0; padding: 14px 14px 24px; border-radius: 24px; color: var(--forest); }
 .screen-tone-1 { background: var(--peach); }
 .screen-tone-2 { background: var(--mint); }
@@ -242,7 +242,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid #e49e3c; outline-offs
   .step-card { min-height: 330px; }
   .screens-section { padding-block: 84px 95px; }
   .screens-intro { grid-template-columns: 1fr; gap: 10px; }
-  .screen-rail { width: 100%; box-sizing: border-box; padding-inline: 10px; grid-template-columns: repeat(4, minmax(306px, calc(100vw - 20px))); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .screen-rail { width: 100%; box-sizing: border-box; padding-inline: 10px; grid-template-columns: repeat(3, minmax(306px, calc(100vw - 20px))); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .screen-rail::-webkit-scrollbar { display: none; }
   .screen-card { padding: 12px 12px 20px; scroll-snap-align: center; }
   .feature-grid { grid-template-columns: 1fr; }

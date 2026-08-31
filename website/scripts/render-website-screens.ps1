@@ -192,10 +192,6 @@ $screens = @(
         Source = Join-Path $captureRoot 'en\quran.png'; CropX = 0; CropY = 135; CropWidth = 1080; CropHeight = 1460
     },
     @{
-        Locale = 'en'; Output = 'arabic-foundations.webp'; Background = '#D9EEF1'; Accent = '#78B8C2'
-        Source = Join-Path $captureRoot 'en\foundations.png'; CropX = 0; CropY = 420; CropWidth = 1080; CropHeight = 1460
-    },
-    @{
         Locale = 'pt-BR'; Output = 'lock-screen-learning.webp'; Background = '#F6E0D0'; Accent = '#F2C94C'
         Source = Join-Path $captureRoot 'device-captures\lock-screen-secure-pt-BR.png'; CropX = 0; CropY = 0; CropWidth = 1080; CropHeight = 1460
     },
@@ -206,10 +202,6 @@ $screens = @(
     @{
         Locale = 'pt-BR'; Output = 'quran-reading.webp'; Background = '#E7DFF2'; Accent = '#B7A4D7'
         Source = Join-Path $captureRoot 'pt-BR\quran.png'; CropX = 0; CropY = 135; CropWidth = 1080; CropHeight = 1460
-    },
-    @{
-        Locale = 'pt-BR'; Output = 'arabic-foundations.webp'; Background = '#D9EEF1'; Accent = '#78B8C2'
-        Source = Join-Path $captureRoot 'pt-BR\foundations.png'; CropX = 0; CropY = 420; CropWidth = 1080; CropHeight = 1460
     }
 )
 

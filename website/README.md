@@ -58,7 +58,7 @@ with FFmpeg available on `PATH`:
 
 For every Android UI release:
 
-1. Review the four promotional images in both app languages against the
+1. Review the three promotional images in both app languages against the
    candidate APK and current product claims.
 2. Replace the website images and the matching Uptodown listing images.
 3. Record the release version, candidate APK SHA-256, artwork date, and image
@@ -78,4 +78,4 @@ For every Android UI release:
 
 No Worker, database, or paid Cloudflare feature is required. Cloudflare Pages serves the SPA routes through `index.html` because the build intentionally has no top-level `404.html`.
 
-After connecting a final domain, update the `og:image` value in `index.html` to the absolute deployed URL for the best social sharing compatibility.
+When a current social-preview image is available, add it to `index.html` with an absolute deployed URL for the best sharing compatibility. Never reuse artwork for a removed feature.
