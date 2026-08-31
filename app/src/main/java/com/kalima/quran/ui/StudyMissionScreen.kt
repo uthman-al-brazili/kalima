@@ -40,10 +40,13 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kalima.quran.R
 import com.kalima.quran.audio.ArabicPronouncer
 import com.kalima.quran.data.SessionLevel
@@ -366,8 +369,8 @@ internal fun ContextCheckpointScreen(
         correctOptionIndex = question.correctOptionIndex,
     )
     val answered = feedback != ContextCheckpointFeedbackState.Unanswered
-    val blankAyahDescription = stringResource(
-        R.string.checkpoint_blank_ayah_description,
+    val highlightedAyahDescription = stringResource(
+        R.string.checkpoint_highlighted_ayah_description,
         question.ayah.text,
     )
     if (showCompleteAyah) {
@@ -382,7 +385,7 @@ internal fun ContextCheckpointScreen(
                     .padding(horizontal = 20.dp, vertical = 8.dp),
             ) {
                 Text(
-                    stringResource(R.string.checkpoint_restored_ayah),
+                    stringResource(R.string.checkpoint_complete_ayah),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                 )
@@ -452,22 +455,35 @@ internal fun ContextCheckpointScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        stringResource(R.string.quiz_cloze_prompt),
+                        stringResource(R.string.checkpoint_meaning_prompt),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                     )
                     Spacer(Modifier.height(6.dp))
+                    val highlightedAyah = buildAnnotatedString {
+                        append(question.ayah.text)
+                        addStyle(
+                            SpanStyle(
+                                background = MaterialTheme.colorScheme.secondary.copy(alpha = 0.42f),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                            ),
+                            question.ayah.highlightStart,
+                            question.ayah.highlightEnd,
+                        )
+                    }
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        ArabicText(
-                            question.ayah.text,
+                        Text(
+                            text = highlightedAyah,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .semantics { contentDescription = blankAyahDescription },
-                            size = 27,
-                            color = MaterialTheme.colorScheme.primary,
-                            align = TextAlign.End,
+                                .semantics { contentDescription = highlightedAyahDescription },
+                            textAlign = TextAlign.End,
+                            fontSize = 27.sp,
+                            lineHeight = 40.sp,
+                            fontWeight = FontWeight.Medium,
                         )
                     }
                     Text(
@@ -486,22 +502,20 @@ internal fun ContextCheckpointScreen(
                     index + 1,
                     option,
                 )
-                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                    QuizOption(
-                        text = option,
-                        arabic = true,
-                        selected = selectedOptionIndex == index,
-                        correct = index == question.correctOptionIndex,
-                        answered = answered,
-                        accessibilityDescription = choiceDescription,
-                        onClick = {
-                            if (selectedOptionIndex == null) {
-                                selectedOptionIndex = index
-                                onAnswer(question.word.id, index == question.correctOptionIndex)
-                            }
-                        },
-                    )
-                }
+                QuizOption(
+                    text = option,
+                    arabic = false,
+                    selected = selectedOptionIndex == index,
+                    correct = index == question.correctOptionIndex,
+                    answered = answered,
+                    accessibilityDescription = choiceDescription,
+                    onClick = {
+                        if (selectedOptionIndex == null) {
+                            selectedOptionIndex = index
+                            onAnswer(question.word.id, index == question.correctOptionIndex)
+                        }
+                    },
+                )
                 Spacer(Modifier.height(5.dp))
             }
         }
@@ -536,7 +550,7 @@ internal fun ContextCheckpointScreen(
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        stringResource(R.string.checkpoint_correct_word),
+                        stringResource(R.string.checkpoint_practiced_word),
                         fontWeight = FontWeight.SemiBold,
                     )
                     Surface(

@@ -38,7 +38,7 @@ class ContextCheckpointTest {
     }
 
     @Test
-    fun `checkpoint has four unique Arabic choices including the answer`() {
+    fun `checkpoint has four unique meaning choices including the answer`() {
         val checkpoint = buildContextCheckpointQuestion(
             practicedWords = listOf(words.first()),
             activeCollection = words,
@@ -49,8 +49,10 @@ class ContextCheckpointTest {
         requireNotNull(checkpoint)
         assertEquals(4, checkpoint.options.size)
         assertEquals(4, checkpoint.options.toSet().size)
-        assertTrue(checkpoint.word.arabic in checkpoint.options)
-        assertEquals(checkpoint.word.arabic, checkpoint.options[checkpoint.correctOptionIndex])
+        assertTrue(checkpoint.word.meaning in checkpoint.options)
+        assertEquals(checkpoint.word.meaning, checkpoint.options[checkpoint.correctOptionIndex])
+        assertEquals(checkpoint.word.verseArabic, checkpoint.ayah.text)
+        assertTrue(checkpoint.ayah.hasHighlight)
     }
 
     @Test

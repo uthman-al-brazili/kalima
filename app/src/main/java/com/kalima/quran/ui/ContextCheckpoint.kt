@@ -1,16 +1,16 @@
 package com.kalima.quran.ui
 
 import com.kalima.quran.data.QuranWord
-import com.kalima.quran.quiz.FullVerseCloze
 import com.kalima.quran.quiz.QuizEngine
 import com.kalima.quran.quiz.QuizQuestion
 import com.kalima.quran.quiz.QuizQuestionType
+import com.kalima.quran.quiz.VerseExcerpt
 import com.kalima.quran.quiz.VerseExcerptBuilder
 import kotlin.random.Random
 
 internal data class ContextCheckpointQuestion(
     val quizQuestion: QuizQuestion,
-    val ayah: FullVerseCloze,
+    val ayah: VerseExcerpt,
 ) {
     val word: QuranWord get() = quizQuestion.word
     val options: List<String> get() = quizQuestion.options
@@ -46,10 +46,11 @@ internal fun buildContextCheckpointQuestion(
     val orderedCandidates = candidates.filter { it.id in preferredWordIds }.shuffled(random) +
         candidates.filterNot { it.id in preferredWordIds }.shuffled(random)
     return orderedCandidates.firstNotNullOfOrNull { word ->
-        val ayah = VerseExcerptBuilder.buildFullCloze(word) ?: return@firstNotNullOfOrNull null
+        val ayah = VerseExcerptBuilder.build(word, maxChars = word.verseArabic.length.coerceAtLeast(1))
+        if (!ayah.hasHighlight) return@firstNotNullOfOrNull null
         val quizQuestion = QuizEngine.createQuestionOrNull(
             word = word,
-            type = QuizQuestionType.ClozeToArabic,
+            type = QuizQuestionType.ContextualMeaning,
             source = optionWords,
             random = random,
         ) ?: return@firstNotNullOfOrNull null
