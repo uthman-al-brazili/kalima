@@ -3,7 +3,6 @@ package com.kalima.quran.audio
 import android.content.Context
 import com.kalima.quran.data.QuranVerseAudioLocation
 import java.io.File
-import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CancellationException
@@ -53,17 +52,19 @@ internal class OfflineVerseAudioStore private constructor(context: Context) {
         val directory = requireNotNull(destination.parentFile)
         check(directory.isDirectory || directory.mkdirs()) { "Unable to create offline audio directory" }
         val temporary = File(directory, "${destination.name}.${System.nanoTime()}.part")
-        val connection = URL(location.hussaryUrl).openConnection() as HttpURLConnection
+        val connection = openPinnedAudioConnection(
+            url = URL(location.hussaryUrl),
+            expectedHost = AUDIO_HOST,
+            userAgent = USER_AGENT,
+            connectTimeoutMs = CONNECT_TIMEOUT_MS,
+            readTimeoutMs = READ_TIMEOUT_MS,
+        )
         try {
-            connection.instanceFollowRedirects = true
-            connection.connectTimeout = CONNECT_TIMEOUT_MS
-            connection.readTimeout = READ_TIMEOUT_MS
-            connection.setRequestProperty("User-Agent", USER_AGENT)
-            check(connection.responseCode == HttpURLConnection.HTTP_OK) {
-                "Al-Hussary audio returned HTTP ${connection.responseCode}"
-            }
+            validateAudioResponse(connection, MAX_AUDIO_BYTES)
             connection.inputStream.use { input ->
-                temporary.outputStream().buffered().use { output -> input.copyTo(output) }
+                temporary.outputStream().buffered().use { output ->
+                    copyWithLimit(input, output, MAX_AUDIO_BYTES)
+                }
             }
             check(isUsableAudioFile(temporary)) { "Downloaded ayah audio is incomplete" }
             if (destination.exists()) check(destination.delete()) { "Unable to replace incomplete ayah audio" }
@@ -79,11 +80,16 @@ internal class OfflineVerseAudioStore private constructor(context: Context) {
         location.fileName,
     )
 
-    private fun isUsableAudioFile(file: File): Boolean = file.isFile && file.length() >= MIN_AUDIO_BYTES
+    private fun isUsableAudioFile(file: File): Boolean =
+        file.isFile &&
+            file.length() in MIN_AUDIO_BYTES..MAX_AUDIO_BYTES &&
+            hasMp3Signature(file)
 
     companion object {
         private const val DIRECTORY_NAME = "quran-verse-audio-hussary"
+        private const val AUDIO_HOST = "everyayah.com"
         private const val MIN_AUDIO_BYTES = 4_096L
+        private const val MAX_AUDIO_BYTES = 16L * 1024 * 1024
         private const val CONNECT_TIMEOUT_MS = 15_000
         private const val READ_TIMEOUT_MS = 60_000
         private const val USER_AGENT = "Kalima Android Al-Hussary ayah audio"

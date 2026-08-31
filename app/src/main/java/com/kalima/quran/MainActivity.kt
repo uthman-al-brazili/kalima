@@ -333,8 +333,8 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             val decoded = withContext(Dispatchers.IO) {
                 runCatching {
-                    val text = requireNotNull(contentResolver.openInputStream(uri)).bufferedReader().use {
-                        it.readText()
+                    val text = requireNotNull(contentResolver.openInputStream(uri)).use { input ->
+                        ProgressBackupCodec.read(input)
                     }
                     ProgressBackupCodec.decode(
                         backup = text,

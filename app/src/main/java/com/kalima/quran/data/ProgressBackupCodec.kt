@@ -1,5 +1,7 @@
 package com.kalima.quran.data
 
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.time.Instant
@@ -21,6 +23,7 @@ class ProgressBackupValidationException(message: String) : IllegalArgumentExcept
 
 object ProgressBackupCodec {
     const val FILE_EXTENSION = "kalima-backup"
+    internal const val MAX_BACKUP_BYTES = 5 * 1024 * 1024
     private const val HEADER = "#kalima-progress-backup-v1"
     private const val PAYLOAD_MARKER = "payload="
     private const val CHECKSUM_MARKER = "sha256="
@@ -297,6 +300,34 @@ object ProgressBackupCodec {
         return DecodedProgressBackup(metadata, progress)
     }
 
+    internal fun read(input: InputStream, maxBytes: Int = MAX_BACKUP_BYTES): String {
+        require(maxBytes > 0) { "Backup byte limit must be positive" }
+        val bytes = ByteArrayOutputStream(minOf(maxBytes, READ_BUFFER_BYTES))
+        val buffer = ByteArray(READ_BUFFER_BYTES)
+        var totalBytes = 0
+        while (true) {
+            val remainingBytes = maxBytes - totalBytes
+            val requestedBytes = if (remainingBytes >= buffer.size) {
+                buffer.size
+            } else {
+                remainingBytes + 1
+            }
+            val bytesRead = input.read(
+                buffer,
+                0,
+                requestedBytes,
+            )
+            if (bytesRead < 0) break
+            if (bytesRead == 0) continue
+            if (totalBytes + bytesRead > maxBytes) {
+                throw invalid("Backup exceeds the $maxBytes-byte import limit")
+            }
+            bytes.write(buffer, 0, bytesRead)
+            totalBytes += bytesRead
+        }
+        return bytes.toString(StandardCharsets.UTF_8.name())
+    }
+
     private fun Map<String, String>.required(key: String): String =
         this[key] ?: throw invalid("Backup field '$key' is missing")
 
@@ -366,4 +397,6 @@ object ProgressBackupCodec {
         .joinToString("") { "%02x".format(it.toInt() and 0xff) }
 
     private fun invalid(message: String) = ProgressBackupValidationException(message)
+
+    private const val READ_BUFFER_BYTES = 8 * 1024
 }
