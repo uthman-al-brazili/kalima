@@ -15,6 +15,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.kalima.quran.MainActivity
 import com.kalima.quran.R
+import com.kalima.quran.background.AsyncBroadcastWork
+import com.kalima.quran.data.ProgressFeatureFlags
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.StudyPlan
 import com.kalima.quran.data.WordRepository
@@ -24,8 +26,10 @@ import com.kalima.quran.localization.LanguageManager
 
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        if (ProgressStore.get(context).progress.value.reminderEnabled) {
-            NotificationHelper.showWordOfTheDay(context)
+        if (!ProgressFeatureFlags.isReminderEnabled(context)) return
+        val applicationContext = context.applicationContext
+        AsyncBroadcastWork.run(this, "daily reminder") {
+            NotificationHelper.showWordOfTheDay(applicationContext)
         }
     }
 }
@@ -33,11 +37,10 @@ class ReminderReceiver : BroadcastReceiver() {
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent?.action != Intent.ACTION_BOOT_COMPLETED) return
-        val progress = ProgressStore.get(context).progress.value
-        if (progress.reminderEnabled) {
+        if (ProgressFeatureFlags.isReminderEnabled(context)) {
             ReminderScheduler.schedule(context)
         }
-        if (progress.lockScreenEnabled && Settings.canDrawOverlays(context)) {
+        if (ProgressFeatureFlags.isLockScreenEnabled(context) && Settings.canDrawOverlays(context)) {
             LockScreenStudyService.start(context)
         }
     }

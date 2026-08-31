@@ -26,8 +26,9 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.kalima.quran.MainActivity
 import com.kalima.quran.R
-import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.LockScreenDeviceBlockReason
+import com.kalima.quran.data.ProgressFeatureFlags
+import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.data.LockScreenWakeEvent
 import com.kalima.quran.data.LockScreenWakePolicy
 import com.kalima.quran.localization.LanguageManager
@@ -36,7 +37,8 @@ import java.util.concurrent.Executors
 class LockScreenStudyService : Service() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private val precomputeExecutor = Executors.newSingleThreadExecutor()
-    private lateinit var progressStore: ProgressStore
+    @Volatile private var progressStore: ProgressStore? = null
+    private var progressStoreInitializationStarted = false
     private lateinit var audioManager: AudioManager
     private var receiverRegistered = false
     private var audioCallbackRegistered = false
@@ -46,7 +48,8 @@ class LockScreenStudyService : Service() {
     private var launchRetryCount = 0
 
     private val showCard: Runnable = Runnable {
-        if (!progressStore.canShowLockScreenCard() || !Settings.canDrawOverlays(this)) return@Runnable
+        val store = progressStore ?: return@Runnable
+        if (!store.canShowLockScreenCard() || !Settings.canDrawOverlays(this)) return@Runnable
         val systemBlock = LockScreenSystemSafety.blockReason(
             context = this,
             criticalAudioActive = criticalAudioActive,
@@ -58,7 +61,7 @@ class LockScreenStudyService : Service() {
                 mainHandler.postDelayed(showCard, LAUNCH_RETRY_DELAY_MS)
                 return@Runnable
             }
-            progressStore.recordLockScreenSafetySkip()
+            store.recordLockScreenSafetySkip()
             return@Runnable
         }
         try {
@@ -100,9 +103,10 @@ class LockScreenStudyService : Service() {
                         awaitingUnlock,
                         LockScreenWakeEvent.ScreenOff,
                     ).awaitingUnlock
-                    if (progressStore.canShowLockScreenCard()) {
+                    val store = progressStore
+                    if (store?.canShowLockScreenCard() == true) {
                         precomputeExecutor.execute {
-                            runCatching { progressStore.prepareNextLockScreenSession() }
+                            runCatching { store.prepareNextLockScreenSession() }
                                 .onFailure { error -> Log.w(TAG, "Unable to precompute study card", error) }
                         }
                     }
@@ -131,11 +135,11 @@ class LockScreenStudyService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        progressStore = ProgressStore.get(applicationContext)
+        createChannel()
+        enterForeground()
         audioManager = getSystemService(AudioManager::class.java)
         awaitingUnlock = !getSystemService(PowerManager::class.java).isInteractive ||
             getSystemService(KeyguardManager::class.java).isKeyguardLocked
-        createChannel()
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_SCREEN_ON)
@@ -153,11 +157,17 @@ class LockScreenStudyService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
-            progressStore.setLockScreenEnabled(false)
+            progressStore?.setLockScreenEnabled(false)
+                ?: ProgressFeatureFlags.setLockScreenEnabled(applicationContext, false)
             stopSelf()
             return START_NOT_STICKY
         }
 
+        initializeProgressStore()
+        return START_STICKY
+    }
+
+    private fun enterForeground() {
         val serviceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
         } else {
@@ -170,7 +180,19 @@ class LockScreenStudyService : Service() {
             buildNotification(),
             serviceType,
         )
-        return START_STICKY
+    }
+
+    private fun initializeProgressStore() {
+        if (progressStoreInitializationStarted) return
+        progressStoreInitializationStarted = true
+        precomputeExecutor.execute {
+            runCatching { ProgressStore.get(applicationContext) }
+                .onSuccess { progressStore = it }
+                .onFailure { error ->
+                    Log.e(TAG, "Unable to initialize lock-screen study data", error)
+                    mainHandler.post { stopSelf() }
+                }
+        }
     }
 
     override fun onDestroy() {

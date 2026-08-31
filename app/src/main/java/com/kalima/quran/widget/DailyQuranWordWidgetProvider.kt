@@ -11,6 +11,7 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import com.kalima.quran.MainActivity
 import com.kalima.quran.R
+import com.kalima.quran.background.AsyncBroadcastWork
 import com.kalima.quran.data.ProgressStore
 import com.kalima.quran.localization.LanguageManager
 
@@ -21,26 +22,40 @@ import com.kalima.quran.localization.LanguageManager
  */
 class DailyQuranWordWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, appWidgetIds: IntArray) {
-        appWidgetIds.forEach { appWidgetId -> updateWidget(context, manager, appWidgetId) }
+        val applicationContext = context.applicationContext
+        AsyncBroadcastWork.run(this, "widget update") {
+            appWidgetIds.forEach { appWidgetId ->
+                updateWidget(applicationContext, manager, appWidgetId)
+            }
+        }
     }
 
     override fun onEnabled(context: Context) {
-        updateAll(context)
+        val applicationContext = context.applicationContext
+        AsyncBroadcastWork.run(this, "widget enable") { updateAll(applicationContext) }
     }
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if (intent.action != ACTION_NEXT) return
 
-        val manager = AppWidgetManager.getInstance(context)
-        val widgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS)
-            ?: manager.getAppWidgetIds(ComponentName(context, DailyQuranWordWidgetProvider::class.java))
-        val preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
-        widgetIds.forEach { appWidgetId ->
-            preferences.edit {
-                putInt(sequenceKey(appWidgetId), preferences.getInt(sequenceKey(appWidgetId), 0) + 1)
+        val applicationContext = context.applicationContext
+        AsyncBroadcastWork.run(this, "widget next") {
+            val manager = AppWidgetManager.getInstance(applicationContext)
+            val widgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS)
+                ?: manager.getAppWidgetIds(
+                    ComponentName(applicationContext, DailyQuranWordWidgetProvider::class.java),
+                )
+            val preferences = applicationContext.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+            widgetIds.forEach { appWidgetId ->
+                preferences.edit {
+                    putInt(
+                        sequenceKey(appWidgetId),
+                        preferences.getInt(sequenceKey(appWidgetId), 0) + 1,
+                    )
+                }
+                updateWidget(applicationContext, manager, appWidgetId)
             }
-            updateWidget(context, manager, appWidgetId)
         }
     }
 
@@ -54,7 +69,7 @@ class DailyQuranWordWidgetProvider : AppWidgetProvider() {
     private fun updateAll(context: Context) {
         val manager = AppWidgetManager.getInstance(context)
         val ids = manager.getAppWidgetIds(ComponentName(context, DailyQuranWordWidgetProvider::class.java))
-        onUpdate(context, manager, ids)
+        ids.forEach { appWidgetId -> updateWidget(context, manager, appWidgetId) }
     }
 
     private fun updateWidget(context: Context, manager: AppWidgetManager, appWidgetId: Int) {

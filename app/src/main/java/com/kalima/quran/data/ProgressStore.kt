@@ -1088,7 +1088,7 @@ class ProgressStore private constructor(context: Context) {
             instance ?: ProgressStore(context.applicationContext).also { instance = it }
         }
 
-        private const val PREFERENCES = "kalima_progress"
+        private const val PREFERENCES = ProgressFeatureFlags.PREFERENCES
         private const val KEY_LEARNED = "learned"
         private const val KEY_REVIEWING = "reviewing"
         private const val KEY_ALREADY_KNOWN_IDS = "already_known_ids"
@@ -1098,8 +1098,8 @@ class ProgressStore private constructor(context: Context) {
         private const val KEY_DAILY_GOAL = "daily_goal"
         private const val KEY_MAXIMUM_WORDS = "maximum_words"
         private const val KEY_STREAK = "streak"
-        private const val KEY_REMINDER = "reminder"
-        private const val KEY_LOCK_SCREEN_ENABLED = "lock_screen_enabled"
+        private const val KEY_REMINDER = ProgressFeatureFlags.KEY_REMINDER
+        private const val KEY_LOCK_SCREEN_ENABLED = ProgressFeatureFlags.KEY_LOCK_SCREEN_ENABLED
         private const val KEY_LOCK_SCREEN_SEQUENCE = "lock_screen_sequence"
         private const val KEY_LAST_STUDY_DATE = "last_study_date"
         private const val KEY_STUDY_SCOPE = "study_scope"
