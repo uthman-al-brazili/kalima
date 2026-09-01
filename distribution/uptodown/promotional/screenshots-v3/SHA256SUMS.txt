@@ -1,0 +1,16 @@
+28707f5d5f8749f60ca4a477ea44f3073f9a99d33491c662672c95a1d4467c7d  distribution/uptodown/promotional/screenshots-v3/en/01-learn-before-you-unlock.png
+f79a756e013b39e334bec4af61a59a30321c17e994ba6a7b4893ea8f2624da9d  distribution/uptodown/promotional/screenshots-v3/en/02-short-daily-sessions.png
+6ecd3f0770fc3e279558015dd069a483dea2d60938f53faaf405d4276f6235f0  distribution/uptodown/promotional/screenshots-v3/en/03-words-in-context.png
+90c95694e9cebd6824433a6303ad52aafb429eb26dedb87359ef5be2f56ec87c  distribution/uptodown/promotional/screenshots-v3/en/04-quran-word-by-word.png
+5937ff1fd4b6ecbda6c123494c188bb39087684905903cb0bca63d7c821aca89  distribution/uptodown/promotional/screenshots-v3/pt-BR/01-aprenda-antes-de-desbloquear.png
+3c26245a03a59a18c27de3157f86d2302659375ad5f3540cb5f5638469a4d943  distribution/uptodown/promotional/screenshots-v3/pt-BR/02-sessoes-curtas.png
+4fc27c9dd04680f45e2cb4b5aac22a75b147ce4e651310ce9697857b98048cab  distribution/uptodown/promotional/screenshots-v3/pt-BR/03-palavras-no-contexto.png
+0b91df8acfcc4c2c618a604bd4a1a894bcbcdf65c0781190d2791ebed93d8a2c  distribution/uptodown/promotional/screenshots-v3/pt-BR/04-alcorao-palavra-por-palavra.png
+59b6c265bd29a8c072b4cb986e2f6639634d3f507e1de888a7d14dffa7b15aa8  distribution/uptodown/screenshots/current-v0.34.0/en/01-lock-screen.png
+8072ce227a5a651bd04292e271b65c8e44140ab4e2851bfa0d33d3237eab9201  distribution/uptodown/screenshots/current-v0.34.0/en/02-daily-mission.png
+f8c92e8c62fbed6bdab7879a7afab6c270e5fd227a130926805ffc89a54da7b1  distribution/uptodown/screenshots/current-v0.34.0/en/03-context-quiz.png
+5d67a4678a93e401fca06f97ac0bbb52529a3507462ea2e758ed37d4121b39ac  distribution/uptodown/screenshots/current-v0.34.0/en/04-quran-reading.png
+a833df1c55f3e68d78dff891f1a83c1b83673e9241969aebcb7a0dee56c05d9f  distribution/uptodown/screenshots/current-v0.34.0/pt-BR/01-lock-screen.png
+044b99315d3a3ae7c5f228d11109787740b0061498c30796bb0d2c9e858ff6d6  distribution/uptodown/screenshots/current-v0.34.0/pt-BR/02-daily-mission.png
+5188a965c49ba5c8e5bdf3f9267a0d35b2d73f5439dba6052e35339c081e24ee  distribution/uptodown/screenshots/current-v0.34.0/pt-BR/03-context-quiz.png
+66b735eeebfaad5fb2d72a68ffafae4b791bbd6536b3111cda9ba45995f7bbe9  distribution/uptodown/screenshots/current-v0.34.0/pt-BR/04-quran-reading.png

@@ -2,19 +2,27 @@
 
 ## Current upload-ready set
 
-The current Uptodown artwork is in `screenshots-v2/en/` and
-`screenshots-v2/pt-BR/`. It uses unmodified 1080×2400 Android screenshots
-inside a deterministic, matching text frame. The English and Brazilian
-Portuguese versions use the same layout; only the localized headline,
-explanation, and real in-app locale differ.
+The current Uptodown artwork is in `screenshots-v3/en/` and
+`screenshots-v3/pt-BR/`. It uses real 1080×2400 Android screenshots from
+Kalima 0.34.0 inside a deterministic, matching text frame. The English and
+Brazilian Portuguese versions use the same layout; only the localized
+headline and real in-app locale differ.
 
-The first image in each locale was captured from Kalima 0.30.3 running on an
+The first image in each locale was captured from Kalima 0.34.0 running on an
 Android 14 emulator during a real screen-off/screen-on cycle. At capture time,
 Android reported `deviceLocked=1`, `isKeyguardShowing=true`, and Kalima's
 `LockScreenStudyActivity` as the focused activity.
 
-The earlier generated mockups under `final/`, `en/`, and `pt-BR/` are retained
-only as design history and must not be submitted.
+The visual rhythm takes inspiration from Duolingo's September 1, 2026 Google
+Play screenshot set only in its concise lowercase benefit headlines and clear
+product focus. Kalima keeps its own restrained forest, sage, sand, cream, and
+muted-gold palette, and every screenshot appears inside a complete consistent
+Android phone. It does not reuse Duolingo's characters, illustrations, bright
+brand colors, copy, logo, or interface.
+
+The earlier generated mockups under `final/`, `en/`, and `pt-BR/`, plus the
+older `screenshots-v2/` set, are retained only as design history and must not
+be submitted.
 
 ## Archived generated-art brief
 

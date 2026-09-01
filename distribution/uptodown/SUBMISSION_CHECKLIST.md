@@ -14,7 +14,7 @@ Official references checked on 2026-08-20:
 - `assets/kalima-featured-1024x500.png`, an exact-size featured image.
 - Plain-language permission disclosure and `PRIVACY_POLICY.md`.
 - Raw English and Brazilian Portuguese portrait screenshots captured from the Android UI in `screenshots/en/` and `screenshots/pt-BR/`; retain these as evidence of the real app UI.
-- Separate edited promotional images for the listing in `promotional/en/` and `promotional/pt-BR/`. Upload these edited images as the public screenshot set, while keeping the raw screenshots available for verification.
+- Current edited promotional images for the listing in `promotional/screenshots-v3/en/` and `promotional/screenshots-v3/pt-BR/`. Upload these edited images as the public screenshot set, while keeping the raw Kalima 0.34.0 captures in `screenshots/current-v0.34.0/` available for verification.
 
 ## Developer-controlled steps before submission
 
@@ -26,7 +26,7 @@ Official references checked on 2026-08-20:
 - Build and verify the release-signed APK that will be uploaded. A separate debug APK backup is not required.
 - Upload the APK and select Android, Education, Free, Beta, no ads, no country restrictions, and English + Portuguese.
 - Before every screenshot upload, capture from the candidate APK, record its SHA-256 in `website/screenshots-manifest.json`, run the website's `pnpm check`, and visually confirm each raw capture reflects the final UI. Edited promotional images must preserve the truthful UI and be traceable to that evidence.
-- Upload the icon, featured image, and four accurate portrait promotional images per language from `promotional/final/en/` and `promotional/final/pt-BR/`.
+- Upload the icon, featured image, and four accurate portrait promotional images per language from `promotional/screenshots-v3/en/` and `promotional/screenshots-v3/pt-BR/`.
 - Paste both descriptions and both localized version-note sets from this directory.
 - Submit for review and answer any permission, content-license, or support questions from Uptodown’s editorial team.
 
